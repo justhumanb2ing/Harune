@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/table";
 import { useDebounce } from "@/hooks/use-debounce";
 import { apiFetch } from "@/lib/react-query/fetcher";
+import { mutationToasts } from "@/lib/react-query/query-client";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -94,6 +95,9 @@ export default function CouponsPage() {
     onSuccess: async () => {
       await refreshCoupons();
     },
+    meta: {
+      toast: mutationToasts.couponExpired,
+    },
     onError: (requestError) => {
       console.error("Error expiring coupon:", requestError);
     },
@@ -106,6 +110,9 @@ export default function CouponsPage() {
       }),
     onSuccess: async () => {
       await refreshCoupons();
+    },
+    meta: {
+      toast: mutationToasts.couponDeleted,
     },
     onError: (requestError) => {
       console.error("Error deleting coupon:", requestError);
@@ -218,6 +225,7 @@ export default function CouponsPage() {
                         {!coupon.expired && !coupon.usedAt && (
                           <DropdownMenuItem
                             onClick={() => expireCouponMutation.mutate(coupon.id)}
+                            disabled={expireCouponMutation.isPending}
                             className="text-destructive"
                           >
                             <AlertTriangle className="mr-2 h-4 w-4" />
@@ -230,6 +238,7 @@ export default function CouponsPage() {
                               deleteCouponMutation.mutate(coupon.id);
                             }
                           }}
+                          disabled={deleteCouponMutation.isPending}
                           className="text-destructive"
                         >
                           Delete

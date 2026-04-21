@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { apiFetch } from "@/lib/react-query/fetcher";
+import { mutationToasts } from "@/lib/react-query/query-client";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
@@ -50,11 +51,12 @@ export default function DeleteUserPage() {
       }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.users.all() });
-      toast.success("User deleted successfully");
       router.push("/super-admin/users");
     },
+    meta: {
+      toast: mutationToasts.userDeleted,
+    },
     onError: (error) => {
-      toast.error("Failed to delete user");
       console.error(error);
     },
   });

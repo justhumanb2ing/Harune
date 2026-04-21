@@ -3,6 +3,7 @@
 import { PlanForm } from "@/components/forms/plan-form";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/react-query/fetcher";
+import { mutationToasts } from "@/lib/react-query/query-client";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import type { PlanFormValues } from "@/lib/validations/plan.schema";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -38,9 +39,11 @@ export default function EditPlanPage() {
       ]);
       router.push("/super-admin/plans");
     },
+    meta: {
+      toast: mutationToasts.planUpdated,
+    },
     onError: (error) => {
       console.error("Error updating plan:", error);
-      // TODO: Add error toast
     },
   });
 

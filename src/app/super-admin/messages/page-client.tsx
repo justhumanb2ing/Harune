@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/table";
 import { useDebounce } from "@/hooks/use-debounce";
 import { apiFetch } from "@/lib/react-query/fetcher";
+import { mutationToasts } from "@/lib/react-query/query-client";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Mail, Search, Trash2 } from "lucide-react";
@@ -113,6 +114,9 @@ export default function MessagesPage() {
       );
       await refreshMessages();
     },
+    meta: {
+      toast: mutationToasts.messageUpdated,
+    },
     onError: (requestError) => {
       console.error("Error toggling message read status:", requestError);
     },
@@ -126,6 +130,9 @@ export default function MessagesPage() {
     onSuccess: async () => {
       setSelectedMessage(null);
       await refreshMessages();
+    },
+    meta: {
+      toast: mutationToasts.messageDeleted,
     },
     onError: (requestError) => {
       console.error("Error deleting message:", requestError);
@@ -253,6 +260,7 @@ export default function MessagesPage() {
               <Button
                 variant="outline"
                 onClick={() => selectedMessage && handleToggleRead(selectedMessage)}
+                disabled={updateMessageMutation.isPending}
               >
                 Mark as {selectedMessage?.readAt ? "unread" : "read"}
               </Button>
@@ -273,6 +281,7 @@ export default function MessagesPage() {
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
+                      disabled={deleteMessageMutation.isPending}
                       onClick={() =>
                         selectedMessage && deleteMessageMutation.mutate(selectedMessage.id)
                       }

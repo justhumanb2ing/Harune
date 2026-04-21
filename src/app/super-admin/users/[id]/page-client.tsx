@@ -27,6 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { plans } from "@/db/schema/plans";
 import { enableCredits } from "@/lib/credits/config";
 import { apiFetch } from "@/lib/react-query/fetcher";
+import { mutationToasts } from "@/lib/react-query/query-client";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -164,8 +165,10 @@ export default function UserDetailsPage() {
       setImpersonationUrl(url);
       setIsModalOpen(true);
     },
+    meta: {
+      toast: mutationToasts.impersonationCreated,
+    },
     onError: (error) => {
-      toast.error("Failed to impersonate user");
       console.error("Impersonation error:", error);
     },
   });
@@ -202,11 +205,12 @@ export default function UserDetailsPage() {
       }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.users.detail(id) });
-      toast.success("Plan updated successfully");
+    },
+    meta: {
+      toast: mutationToasts.userPlanUpdated,
     },
     onError: (error) => {
       console.error("Error updating plan:", error);
-      toast.error("Failed to update plan");
     },
   });
 
@@ -228,14 +232,15 @@ export default function UserDetailsPage() {
       await queryClient.invalidateQueries({
         queryKey: queryKeys.superAdmin.users.credits({ id, limit: 10, page: creditPage }),
       });
-      toast.success(result.message);
       setCreditAmount("");
       setCreditReason("");
       setIsCreditModalOpen(false);
     },
+    meta: {
+      toast: mutationToasts.userCreditsManaged,
+    },
     onError: (error) => {
       console.error("Error managing credits:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to manage credits");
     },
   });
 

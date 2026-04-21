@@ -3,7 +3,7 @@ import { env } from "@/env";
 import { NextResponse } from "next/server";
 
 const getSafeRedirectUrl = (value: string | undefined) => {
-  const fallback = "/app";
+  const fallback = "/section";
 
   if (!value) {
     return fallback;

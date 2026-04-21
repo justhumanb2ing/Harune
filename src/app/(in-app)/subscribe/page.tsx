@@ -6,7 +6,6 @@ import { env } from "@/env";
 import { createOneTimePaymentCheckout, createSubscriptionCheckout } from "@/lib/dodopayments";
 import { createCheckoutSession } from "@/lib/lemonsqueezy";
 import { createPaddleCheckout } from "@/lib/paddle";
-import { createPaypalOrderLink, createPaypalSubscriptionLink } from "@/lib/paypal/api";
 import {
   PlanProvider,
   PlanType,
@@ -45,7 +44,7 @@ async function SubscribePage({
   } catch (error) {
     if (error instanceof z.ZodError) {
       return redirect(
-        `${env.NEXT_PUBLIC_APP_URL}/app/subscribe/error?code=INVALID_PARAMS&message=${error.message}`
+        `${env.NEXT_PUBLIC_APP_URL}/subscribe/error?code=INVALID_PARAMS&message=${error.message}`
       );
     }
     throw error;
@@ -75,16 +74,6 @@ async function SubscribePage({
   const plan = plansList[0];
 
   switch (provider) {
-    case PlanProvider.PAYPAL: {
-      // If this is one time plan then create Order
-      // else create subscription
-      if (type === PlanType.ONETIME) {
-        const orderLink = await createPaypalOrderLink(plan.id, user.id);
-        return redirect(orderLink);
-      }
-      const subscriptionLink = await createPaypalSubscriptionLink(plan.id, user.id, type);
-      return redirect(subscriptionLink);
-    }
     case PlanProvider.STRIPE: {
       // Check type and get price id from db
       const key: keyof typeof plan | null =
@@ -111,11 +100,11 @@ async function SubscribePage({
         // cancel existing subscription
         if (type === PlanType.ONETIME) {
           return redirect(
-            `${env.NEXT_PUBLIC_APP_URL}/app/subscribe/error?code=STRIPE_CANCEL_BEFORE_SUBSCRIBING`
+            `${env.NEXT_PUBLIC_APP_URL}/subscribe/error?code=STRIPE_CANCEL_BEFORE_SUBSCRIBING`
           );
         }
         // If this is monthly or yearly plan then redirect to billing page
-        return redirect(`${env.NEXT_PUBLIC_APP_URL}/app/billing`);
+        return redirect(`${env.NEXT_PUBLIC_APP_URL}/billing`);
       }
 
       //  Create checkout session
@@ -152,8 +141,8 @@ async function SubscribePage({
           : type === PlanType.ONETIME
             ? "always"
             : undefined,
-        success_url: `${env.NEXT_PUBLIC_APP_URL}/app/subscribe/success?provider=${provider}&codename=${codename}&type=${type}&sessionId={CHECKOUT_SESSION_ID}&trialPeriodDays=${trialPeriodDays}`,
-        cancel_url: `${env.NEXT_PUBLIC_APP_URL}/app/subscribe/cancel?provider=${provider}&codename=${codename}&type=${type}&sessionId={CHECKOUT_SESSION_ID}&trialPeriodDays=${trialPeriodDays}`,
+        success_url: `${env.NEXT_PUBLIC_APP_URL}/subscribe/success?provider=${provider}&codename=${codename}&type=${type}&sessionId={CHECKOUT_SESSION_ID}&trialPeriodDays=${trialPeriodDays}`,
+        cancel_url: `${env.NEXT_PUBLIC_APP_URL}/subscribe/cancel?provider=${provider}&codename=${codename}&type=${type}&sessionId={CHECKOUT_SESSION_ID}&trialPeriodDays=${trialPeriodDays}`,
       });
 
       if (!stripeCheckoutSession.url) {
@@ -185,11 +174,11 @@ async function SubscribePage({
         // cancel existing subscription
         if (type === PlanType.ONETIME) {
           return redirect(
-            `${env.NEXT_PUBLIC_APP_URL}/app/subscribe/error?code=LEMON_SQUEEZY_CANCEL_BEFORE_SUBSCRIBING`
+            `${env.NEXT_PUBLIC_APP_URL}/subscribe/error?code=LEMON_SQUEEZY_CANCEL_BEFORE_SUBSCRIBING`
           );
         }
         // If this is monthly or yearly plan then redirect to billing page
-        return redirect(`${env.NEXT_PUBLIC_APP_URL}/app/billing`);
+        return redirect(`${env.NEXT_PUBLIC_APP_URL}/billing`);
       }
 
       const checkoutSession = await createCheckoutSession({
@@ -225,11 +214,11 @@ async function SubscribePage({
         // cancel existing subscription
         if (type === PlanType.ONETIME) {
           return redirect(
-            `${env.NEXT_PUBLIC_APP_URL}/app/subscribe/error?code=DODO_CANCEL_BEFORE_SUBSCRIBING`
+            `${env.NEXT_PUBLIC_APP_URL}/subscribe/error?code=DODO_CANCEL_BEFORE_SUBSCRIBING`
           );
         }
         // If this is monthly or yearly plan then redirect to billing page
-        return redirect(`${env.NEXT_PUBLIC_APP_URL}/app/billing`);
+        return redirect(`${env.NEXT_PUBLIC_APP_URL}/billing`);
       }
       const {
         billing_country,
@@ -246,19 +235,19 @@ async function SubscribePage({
       // If not, redirect to the billing form
       if (!hasBillingInfo) {
         // Create the current URL as the callback URL
-        const currentUrl = new URL("/app/subscribe", env.NEXT_PUBLIC_APP_URL);
+        const currentUrl = new URL("/subscribe", env.NEXT_PUBLIC_APP_URL);
 
         // Add all current search params to the URL
-        Object.entries(await searchParams).forEach(([key, value]) => {
+        for (const [key, value] of Object.entries(await searchParams)) {
           if (typeof value === "string") {
             currentUrl.searchParams.set(key, value);
           }
-        });
+        }
 
         console.log("currentUrl", currentUrl.toString());
 
         return redirect(
-          `/app/subscribe/billing-form?callbackUrl=${encodeURIComponent(currentUrl.toString())}`
+          `/subscribe/billing-form?callbackUrl=${encodeURIComponent(currentUrl.toString())}`
         );
       }
 
@@ -266,7 +255,7 @@ async function SubscribePage({
       const taxId = tax_id;
 
       // Create checkout session based on plan type
-      let dodoCheckoutResponse;
+      let dodoCheckoutResponse: Awaited<ReturnType<typeof createOneTimePaymentCheckout>>;
       if (type === PlanType.ONETIME) {
         dodoCheckoutResponse = await createOneTimePaymentCheckout({
           productId: dodoProductId,
@@ -327,11 +316,11 @@ async function SubscribePage({
         // cancel existing subscription
         if (type === PlanType.ONETIME) {
           return redirect(
-            `${env.NEXT_PUBLIC_APP_URL}/app/subscribe/error?code=PADDLE_CANCEL_BEFORE_SUBSCRIBING`
+            `${env.NEXT_PUBLIC_APP_URL}/subscribe/error?code=PADDLE_CANCEL_BEFORE_SUBSCRIBING`
           );
         }
         // If this is monthly or yearly plan then redirect to billing page
-        return redirect(`${env.NEXT_PUBLIC_APP_URL}/app/billing`);
+        return redirect(`${env.NEXT_PUBLIC_APP_URL}/billing`);
       }
 
       const paddleCheckout = await createPaddleCheckout({
@@ -346,7 +335,7 @@ async function SubscribePage({
       // Redirect to client-side page to open Paddle checkout modal
       if (paddleCheckout.transactionId) {
         return redirect(
-          `${env.NEXT_PUBLIC_APP_URL}/app/subscribe/paddle?transactionId=${paddleCheckout.transactionId}`
+          `${env.NEXT_PUBLIC_APP_URL}/subscribe/paddle?transactionId=${paddleCheckout.transactionId}`
         );
       }
       throw new Error("Paddle transaction id not found");

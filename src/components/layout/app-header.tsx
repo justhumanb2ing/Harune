@@ -11,7 +11,7 @@ export function AppHeader() {
         <div className="flex h-14 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/app" className="flex items-center space-x-2">
+            <Link href="/section" className="flex items-center space-x-2">
               <span className="text-lg font-bold">{appConfig.projectName}</span>
             </Link>
           </div>

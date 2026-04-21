@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { appConfig } from "@/lib/config";
 import { XCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -23,7 +24,7 @@ export default function ErrorRedirector() {
           {/* Contact Support */}
           <div className="flex flex-row gap-2 items-center">
             <Button variant="outline" asChild>
-              <Link href="/contact">Contact Support</Link>
+              <a href={`mailto:${appConfig.legal.email}`}>Contact Support</a>
             </Button>
             <Button variant="outline" asChild>
               <Link href="/">Back to Home</Link>

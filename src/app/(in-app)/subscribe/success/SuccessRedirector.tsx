@@ -16,7 +16,7 @@ export default function SuccessRedirector() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(countdownInterval);
-          router.push("/app");
+          router.push("/section");
           return 0;
         }
         return prev - 1;
@@ -45,10 +45,10 @@ export default function SuccessRedirector() {
 
           <div className="flex flex-row gap-2 items-center">
             <Button asChild>
-              <Link href="/app">Go to Dashboard</Link>
+              <Link href="/section">Go to Dashboard</Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link href="/app/billing">View Billing</Link>
+              <Link href="/billing">View Billing</Link>
             </Button>
           </div>
         </div>

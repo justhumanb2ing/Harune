@@ -147,7 +147,7 @@ export const betterAuthServer = betterAuth({
       requireEmailVerificationOnInvitation: true,
       sendInvitationEmail: async ({ id, email, organization, invitation, inviter }) => {
         const baseUrl = env.BETTER_AUTH_URL ?? env.NEXT_PUBLIC_APP_URL;
-        const inviteUrl = `${baseUrl}/app/invitations/accept?id=${encodeURIComponent(id)}`;
+        const inviteUrl = `${baseUrl}/section`;
         const html = await render(
           InvitationEmail({
             organizationName: organization.name,

@@ -98,7 +98,7 @@ export type CreditBuyParams = z.infer<typeof creditBuyParams>;
 
 export const getCreditsBuyUrl = (params: CreditBuyParams) => {
   const { creditType, amount, provider } = params;
-  const url = `${env.NEXT_PUBLIC_APP_URL}/app/credits/buy?creditType=${creditType}&amount=${amount}&provider=${provider}`;
+  const url = `${env.NEXT_PUBLIC_APP_URL}/credits/buy?creditType=${creditType}&amount=${amount}&provider=${provider}`;
   return url;
 };
 

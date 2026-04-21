@@ -1,8 +1,9 @@
 import type { AppConfigPublic } from "./types";
 
 export const appConfig: AppConfigPublic = {
-  projectName: "Indie Kit",
-  projectSlug: "indie-kit",
+  projectName: "Leeve",
+  projectSlug: "leeve",
+  url: "https://leeve.li",
   keywords: [
     "Indie Kit",
     "NextJS Boilerplate",

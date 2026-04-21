@@ -9,27 +9,24 @@ interface AuthLayoutProps {
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <div className="flex flex-col items-center">
-          {/* Replace with your actual logo path */}
+    <div className="min-h-lvh flex flex-col bg-background py-4 px-4">
+      <header>
+        <Link href={'/'}>
           <Image
-            src="/assets/logo.png"
-            alt={appConfig.projectName}
-            width={48}
-            height={48}
-            className="mb-4"
+              src="/assets/logo.jpeg"
+              alt={appConfig.projectName}
+              width={48}
+              height={48}
+              className="mb-4 rounded-xl"
           />
-          <h2 className="text-center text-3xl font-bold tracking-tight text-foreground">
-            {appConfig.projectName}
-          </h2>
-        </div>
-
-        <div className="bg-background py-8 px-4 rounded-lg sm:px-10 border border-border shadow-lg">
+        </Link>
+      </header>
+      <div className="w-full space-y-8 flex-1 max-w-md justify-center flex flex-col mx-auto">
+        <div className="bg-background py-8 px-4">
           {children}
         </div>
 
-        <p className="text-center text-sm text-muted-foreground">
+        {/* <p className="text-center text-xs text-muted-foreground">
           By continuing, you agree to our{" "}
           <Link
             href="/terms"
@@ -44,7 +41,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           >
             Privacy Policy
           </Link>
-        </p>
+        </p> */}
       </div>
     </div>
   );

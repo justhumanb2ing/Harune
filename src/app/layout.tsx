@@ -47,8 +47,8 @@ export const metadata: Metadata = {
     images: [absoluteUrl(seoConfig.defaultOgImagePath)],
   },
   icons: {
-    icon: "/assets/logo.png",
-    apple: "/assets/logo.png",
+    icon: "/assets/logo.jpeg",
+    apple: "/assets/logo.jpeg",
   },
 };
 
@@ -58,13 +58,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={cn("font-sans", geist.variable)}>
+    <html lang="en" suppressHydrationWarning className={cn("h-full font-sans", geist.variable)}>
       <head>
         {/* For Google Search Console */}
         <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE_HERE" />
         <AnalyticsScript />
       </head>
-      <body className={`${inter.variable} antialiased bg-background`}>
+      <body className={`${inter.variable} h-full min-h-screen antialiased bg-background`}>
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -1,6 +1,7 @@
 export interface AppConfigPublic {
   projectName: string;
   projectSlug: string;
+  url: string;
   description: string;
   keywords: string[];
   auth: {

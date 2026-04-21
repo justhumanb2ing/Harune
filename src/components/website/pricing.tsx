@@ -191,9 +191,9 @@ export function WebsitePricing() {
                 <span>Multi-tenant Setup</span>
               </li>
             </ul>
-            <Button className="w-full mt-8" asChild>
-              <Link href="/join-waitlist">Join B2B Waitlist</Link>
-            </Button>
+            <p className="mt-8 text-sm text-muted-foreground">
+              B2B edition is not open for signup yet. Contact us if you need early access.
+            </p>
           </div>
         </div>
       </div>

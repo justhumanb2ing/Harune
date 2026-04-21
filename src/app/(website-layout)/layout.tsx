@@ -1,5 +1,5 @@
+import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
-import FooterSection from "@/components/sections/footer-1";
 import { seoConfig } from "@/lib/seo";
 import type { Metadata } from "next";
 import type React from "react";
@@ -19,7 +19,7 @@ function WebsiteLayout({ children }: { children: React.ReactNode }) {
       <main className="flex-1">
         <div className="mx-auto max-w-(--breakpoint-xl) px-2 sm:px-4 lg:px-6">{children}</div>
       </main>
-      <FooterSection />
+      <Footer />
     </div>
   );
 }

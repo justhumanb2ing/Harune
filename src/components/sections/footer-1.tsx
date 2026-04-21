@@ -14,22 +14,18 @@ const FooterSection = () => {
               </Link>
               <span className="text-muted-foreground">© {new Date().getFullYear()}</span>
             </div>
-            <BuiltWithIndieKit variant="compact" />
           </div>
 
           <nav className="flex items-center gap-6 text-muted-foreground">
-            <Link href="/about" className="hover:text-primary">
-              About
-            </Link>
             <Link href="/terms" className="hover:text-primary">
               Terms
             </Link>
             <Link href="/privacy" className="hover:text-primary">
               Privacy
             </Link>
-            <Link href="/contact" className="hover:text-primary">
+            <a href={`mailto:${appConfig.legal.email}`} className="hover:text-primary">
               Contact
-            </Link>
+            </a>
           </nav>
         </div>
       </div>

@@ -1,113 +1,91 @@
 "use client";
 
-import { env } from "@/env";
+import { useState, useEffect } from "react";
 
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Button } from "@/components/ui/button";
+import { env } from "@/env";
 import { appConfig } from "@/lib/config";
-import { Menu } from "lucide-react";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useState } from "react";
-
-const navItems: { label: string; href: string }[] = [
-  // { label: "Pricing", href: "/#pricing" },
-];
-
-const CTAText = "Get Started";
-const CTAHref = "/#pricing";
+import Image from "next/image";
 
 const signInEnabled = env.NEXT_PUBLIC_SIGNIN_ENABLED === "true";
 
 export function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 24);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/60 backdrop-blur-xs supports-backdrop-filter:bg-background/60">
-      <div className="mx-auto max-w-(--breakpoint-xl) px-4 sm:px-6 lg:px-8">
-        <div className="flex h-14 items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <span className="text-lg font-bold">{appConfig.projectName}</span>
-            </Link>
+    <header className="sticky top-0 z-50 w-full transition-all duration-300 ease-out">
+      <div
+        className={cn(
+          "mx-auto w-full max-w-(--breakpoint-xl) px-4 transition-all duration-300 ease-out sm:px-6 lg:px-8",
+          isScrolled && "mt-6 max-w-5xl"
+        )}
+      >
+        <div
+          className={cn(
+            "flex h-16 items-center justify-between bg-background px-4 transition-all duration-300 ease-out sm:px-6",
+            isScrolled &&
+              "h-16 rounded-full bg-background"
+          )}
+        >
+          <div className="flex items-center transition-all duration-300 ease-out">
+            <Link href={'/'} className="flex items-center justify-center">
+          <Image
+              src="/assets/logo.jpeg"
+              alt={appConfig.projectName}
+              width={40}
+              height={40}
+              className="rounded-xl"
+          />
+        </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex md:items-center md:space-x-6">
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className="text-sm font-medium text-muted-foreground hover:text-primary"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          {/* Desktop CTA */}
-          <div className="hidden items-center space-x-4 md:flex">
-            <ThemeSwitcher />
+          <div className="flex items-center gap-2 transition-all duration-300 ease-out">
             {signInEnabled && (
-              <Link
-                href="/sign-in"
-                className="text-sm font-medium text-muted-foreground hover:text-primary"
-              >
-                Sign In
-              </Link>
+              <Button
+                nativeButton={false}
+                size="lg"
+                variant="ghost"
+                className="rounded-full transition-all duration-300 ease-out"
+                render={
+                  <Link
+                    href="/sign-in"
+                    className="text-sm font-medium uppercase transition-all duration-300 ease-out hover:bg-primary hover:text-white"
+                  >
+                    Log In
+                  </Link>
+                }
+              />
             )}
-            <Button nativeButton={false} render={<Link href={CTAHref}>{CTAText}</Link>} />
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="flex items-center space-x-2 md:hidden">
-            <ThemeSwitcher />
             <Button
-              className="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              <span className="sr-only">Open main menu</span>
-              <Menu className="h-6 w-6" />
-            </Button>
+              nativeButton={false}
+              size="lg"
+              variant="default"
+              className="rounded-full transition-all duration-300 ease-out"
+              render={
+                <Link
+                  href="/sign-up"
+                  className="text-sm font-medium transition-all duration-300 ease-out hover:bg-primary hover:text-white"
+                >
+                  <span className="uppercase sm:hidden">Sign up</span>
+                  <span className="hidden uppercase sm:inline">Sign Up For Free</span>
+                </Link>
+              }
+            />
           </div>
         </div>
-
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="border-t border-border/40 md:hidden">
-            <div className="space-y-1 px-2 pb-3 pt-2">
-              <Link
-                href="/features"
-                className="block rounded-md px-3 py-2 text-base font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-              >
-                Features
-              </Link>
-              <Link
-                href="/solutions"
-                className="block rounded-md px-3 py-2 text-base font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-              >
-                Solutions
-              </Link>
-              <Link
-                href="/blog"
-                className="block rounded-md px-3 py-2 text-base font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-              >
-                Blog
-              </Link>
-              <Link
-                href="/sign-in"
-                className="block rounded-md px-3 py-2 text-base font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-              >
-                Sign In
-              </Link>
-              <div className="px-3 py-2">
-                <Button className="w-full" asChild>
-                  <Link href="/get-started">Get Started</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </header>
   );

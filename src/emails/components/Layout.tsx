@@ -48,7 +48,7 @@ export const Layout = ({ children, previewText }: LayoutProps) => {
           <Container className="border border-solid border-border rounded my-[40px] mx-auto p-[20px] max-w-[465px]">
             <div className="flex justify-center items-center">
               <Img
-                src={`${baseUrl}/assets/logo.png`}
+                src={`${baseUrl}/assets/logo.jpeg`}
                 width="20"
                 height="20"
                 alt={`${appConfig.projectName} Logo`}
@@ -59,7 +59,7 @@ export const Layout = ({ children, previewText }: LayoutProps) => {
             {children}
             <Hr className="border border-solid border-border my-[26px] mx-0 w-full" />
             <Img
-              src={`${baseUrl}/assets/logo.png`}
+              src={`${baseUrl}/assets/logo.jpeg`}
               width="20"
               height="20"
               alt={`${appConfig.projectName} Logo`}
@@ -75,10 +75,6 @@ export const Layout = ({ children, previewText }: LayoutProps) => {
               If you have any questions, feel free to reach out to us at{" "}
               <Link className="text-primary-400" href={`mailto:${appConfig.legal.email}`}>
                 {appConfig.legal.email}
-              </Link>{" "}
-              or{" "}
-              <Link className="text-primary-400" href={`${baseUrl}/contact`}>
-                Contact Us
               </Link>
               .
             </Text>

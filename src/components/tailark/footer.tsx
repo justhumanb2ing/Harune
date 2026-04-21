@@ -186,7 +186,6 @@ export default function Footer() {
         <div className="bg-muted mt-16 flex flex-col items-center justify-between gap-3 rounded-md p-4 px-6 py-3 sm:flex-row">
           <span>&copy; tailus 2021 - Present</span>
           <div className="flex items-center gap-4">
-            <BuiltWithIndieKit />
             <Link href="#" className="text-muted-foreground hover:text-primary text-sm">
               Licence
             </Link>

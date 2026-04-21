@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { profilePages } from "@/db/schema/profile-page";
+import { profilePages, profileSocialLinks } from "@/db/schema/profile-page";
 import { users } from "@/db/schema/user";
 import withAuthRequired from "@/lib/auth/withAuthRequired";
 import { onboardingSchema } from "@/lib/validations/auth.schema";
@@ -62,24 +62,42 @@ export const POST = withAuthRequired(async (req, context) => {
     return NextResponse.json({ error: "This handle is already taken." }, { status: 409 });
   }
 
-  const createdPages = await db
-    .insert(profilePages)
-    .values({
-      userId: context.session.user.id,
-      name,
-      bio: bio ?? null,
-      image: image ?? null,
-      handle,
-      socialLinks,
-    })
-    .returning({
-      id: profilePages.id,
-      handle: profilePages.handle,
-      name: profilePages.name,
-    });
+  const createdPage = await db.transaction(async (tx) => {
+    const page = await tx
+      .insert(profilePages)
+      .values({
+        userId: context.session.user.id,
+        name,
+        bio: bio ?? null,
+        image: image ?? null,
+        handle,
+        updatedAt: new Date(),
+      })
+      .returning({
+        id: profilePages.id,
+        handle: profilePages.handle,
+        name: profilePages.name,
+      })
+      .then((rows) => rows[0]);
+
+    const socialLinkValues = Object.entries(socialLinks)
+      .filter(([, value]) => typeof value === "string" && value.length > 0)
+      .map(([platform, url]) => ({
+        profilePageId: page.id,
+        platform: platform as (typeof profileSocialLinks.$inferInsert)["platform"],
+        url,
+        updatedAt: new Date(),
+      }));
+
+    if (socialLinkValues.length > 0) {
+      await tx.insert(profileSocialLinks).values(socialLinkValues);
+    }
+
+    return page;
+  });
 
   return NextResponse.json({
     success: true,
-    page: createdPages[0],
+    page: createdPage,
   });
 });

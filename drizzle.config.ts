@@ -1,8 +1,12 @@
-import "dotenv/config";
+import { config as loadEnv } from "dotenv";
 import { defineConfig } from "drizzle-kit";
-import { env } from "./src/env";
 
-if (!env.DATABASE_URL) {
+loadEnv({ path: ".env" });
+loadEnv({ path: ".env.local", override: true });
+
+const databaseUrl = process.env.DATABASE_URL;
+
+if (!databaseUrl) {
   throw new Error("DATABASE_URL is required to run Drizzle commands.");
 }
 
@@ -33,6 +37,6 @@ export default defineConfig({
     // "postgis", // Uncomment if you need postgis
   ],
   dbCredentials: {
-    url: env.DATABASE_URL,
+    url: databaseUrl,
   },
 });

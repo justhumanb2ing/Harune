@@ -10,20 +10,31 @@ CREATE TABLE IF NOT EXISTS "profile_page" (
 CREATE UNIQUE INDEX IF NOT EXISTS "profile_page_handle_idx" ON "profile_page" USING btree ("handle");
 CREATE INDEX IF NOT EXISTS "profile_page_user_id_idx" ON "profile_page" USING btree ("userId");
 
-INSERT INTO "profile_page" ("id", "userId", "handle", "createdAt", "updatedAt")
-SELECT
-  'page_' || "id",
-  "id",
-  "handle",
-  COALESCE("createdAt", now()),
-  now()
-FROM "app_user"
-WHERE "handle" IS NOT NULL
-  AND NOT EXISTS (
+DO $$
+BEGIN
+  IF EXISTS (
     SELECT 1
-    FROM "profile_page"
-    WHERE "profile_page"."handle" = "app_user"."handle"
-  );
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'app_user'
+      AND column_name = 'handle'
+  ) THEN
+    INSERT INTO "profile_page" ("id", "userId", "handle", "createdAt", "updatedAt")
+    SELECT
+      'page_' || "app_user"."id",
+      "app_user"."id",
+      "app_user"."handle",
+      COALESCE("app_user"."createdAt", now()),
+      now()
+    FROM "app_user"
+    WHERE "app_user"."handle" IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "profile_page"
+        WHERE "profile_page"."handle" = "app_user"."handle"
+      );
+  END IF;
+END $$;
 
 DROP INDEX IF EXISTS "app_user_handle_idx";
 

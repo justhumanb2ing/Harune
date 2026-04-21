@@ -1,0 +1,6 @@
+[shell_environment_policy]
+inherit = "core"
+
+[shell_environment_policy.set]
+NEXT_PUBLIC_APP_ENV = "development"
+NODE_ENV = "development"

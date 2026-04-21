@@ -10,6 +10,7 @@ const useUser = () => {
 
   return {
     user: data?.user,
+    profilePage: data?.profilePage,
     isLoading: isPending,
     error,
     mutate: () => queryClient.invalidateQueries({ queryKey: queryKeys.app.me() }),

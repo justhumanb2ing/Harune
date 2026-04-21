@@ -1,7 +1,9 @@
 export const queryKeys = {
+  handles: {
+    availability: (handle: string) => ["handles", "availability", handle] as const,
+  },
   app: {
     me: () => ["app", "me"] as const,
-    paypal: () => ["app", "paypal"] as const,
     organizations: () => ["app", "organizations"] as const,
     activeOrganization: () => ["app", "organizations", "active"] as const,
   },

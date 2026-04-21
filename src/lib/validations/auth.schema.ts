@@ -1,4 +1,24 @@
+import { isReservedHandle, isValidHandleFormat, normalizeHandle } from "@/lib/handles";
 import { z } from "zod";
+
+const emptyStringToUndefined = (value: unknown) => {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  const trimmedValue = value.trim();
+  return trimmedValue.length > 0 ? trimmedValue : undefined;
+};
+
+const optionalTextSchema = z.preprocess(
+  emptyStringToUndefined,
+  z.string().max(280, "Must be 280 characters or fewer.").optional()
+);
+
+const optionalUrlSchema = z.preprocess(
+  emptyStringToUndefined,
+  z.string().url("Enter a valid URL.").optional()
+);
 
 export const signUpRequestSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -34,8 +54,42 @@ export const resetPasswordConfirmSchema = z
     path: ["confirmPassword"],
   });
 
+export const handleSchema = z.preprocess(
+  (value) => (typeof value === "string" ? normalizeHandle(value) : value),
+  z
+    .string()
+    .min(1, "Handle is required.")
+    .refine((value) => isValidHandleFormat(value), {
+      message: "Only letters, numbers, and underscores are allowed.",
+    })
+    .refine((value) => !isReservedHandle(value), {
+      message: "This handle is not available.",
+    })
+);
+
+export const onboardingSchema = z.object({
+  handle: handleSchema,
+  name: z
+    .string()
+    .trim()
+    .min(1, "Name is required.")
+    .max(100, "Name must be 100 characters or fewer."),
+  bio: optionalTextSchema,
+  image: optionalUrlSchema,
+  socialLinks: z
+    .object({
+      x: optionalUrlSchema,
+      instagram: optionalUrlSchema,
+      youtube: optionalUrlSchema,
+      linkedin: optionalUrlSchema,
+      github: optionalUrlSchema,
+    })
+    .default({}),
+});
+
 export type SignUpRequestInput = z.infer<typeof signUpRequestSchema>;
 export type SetPasswordInput = z.infer<typeof setPasswordSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ResetPasswordRequestInput = z.infer<typeof resetPasswordRequestSchema>;
 export type ResetPasswordConfirmInput = z.infer<typeof resetPasswordConfirmSchema>;
+export type OnboardingInput = z.infer<typeof onboardingSchema>;

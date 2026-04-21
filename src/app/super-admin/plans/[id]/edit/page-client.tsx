@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import type { PlanFormValues } from "@/lib/validations/plan.schema";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -22,30 +22,27 @@ export default function EditPlanPage() {
     enabled: Boolean(id),
   });
 
-  const handleSubmit = async (data: PlanFormValues) => {
-    try {
-      const response = await fetch("/api/super-admin/plans", {
+  const updatePlanMutation = useMutation({
+    mutationFn: (data: PlanFormValues) =>
+      apiFetch("/api/super-admin/plans", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ ...data, id }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update plan");
-      }
-
+      }),
+    onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.plans.all() }),
         queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.plans.detail(planId) }),
       ]);
       router.push("/super-admin/plans");
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("Error updating plan:", error);
       // TODO: Add error toast
-    }
-  };
+    },
+  });
 
   if (error) {
     return (
@@ -80,7 +77,13 @@ export default function EditPlanPage() {
 
       <div className="border rounded-lg p-4">
         {plan ? (
-          <PlanForm initialData={plan} onSubmit={handleSubmit} submitLabel="Update Plan" />
+          <PlanForm
+            initialData={plan}
+            onSubmit={async (data) => {
+              await updatePlanMutation.mutateAsync(data);
+            }}
+            submitLabel="Update Plan"
+          />
         ) : (
           <div className="flex items-center justify-center h-96">
             <div className="text-center">

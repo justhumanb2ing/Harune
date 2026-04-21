@@ -1,5 +1,7 @@
 "use client";
 
+import { AdminPagination } from "@/components/layout/admin-pagination";
+import { AdminTableState } from "@/components/layout/admin-table-state";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -22,7 +24,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Download, Search, Trash2 } from "lucide-react";
+import { Download, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -163,23 +165,13 @@ export default function WaitlistPage() {
           </TableHeader>
           <TableBody>
             {isPending ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center">
-                  Loading...
-                </TableCell>
-              </TableRow>
+              <AdminTableState.Loading colSpan={5} />
             ) : error ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-red-500">
-                  Error loading waitlist entries
-                </TableCell>
-              </TableRow>
+              <AdminTableState.Error colSpan={5}>
+                Error loading waitlist entries
+              </AdminTableState.Error>
             ) : data?.entries.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center">
-                  No entries found
-                </TableCell>
-              </TableRow>
+              <AdminTableState.Empty colSpan={5}>No entries found</AdminTableState.Empty>
             ) : (
               data?.entries.map((entry) => (
                 <TableRow key={entry.id}>
@@ -216,30 +208,15 @@ export default function WaitlistPage() {
       </div>
 
       {data?.pagination && (
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-muted-foreground text-center sm:text-left">
-            Showing {(page - 1) * limit + 1} to {Math.min(page * limit, data.pagination.total)} of{" "}
-            {data.pagination.total} entries
-          </div>
-          <div className="flex items-center justify-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((currentPage) => currentPage - 1)}
-              disabled={page <= 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((currentPage) => currentPage + 1)}
-              disabled={page >= data.pagination.pageCount}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <AdminPagination
+          itemLabel="entries"
+          limit={limit}
+          page={page}
+          pageCount={data.pagination.pageCount}
+          total={data.pagination.total}
+          onPreviousPage={() => setPage((currentPage) => currentPage - 1)}
+          onNextPage={() => setPage((currentPage) => currentPage + 1)}
+        />
       )}
     </div>
   );

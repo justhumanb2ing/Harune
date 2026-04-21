@@ -1,5 +1,7 @@
 "use client";
 
+import { AdminPagination } from "@/components/layout/admin-pagination";
+import { AdminTableState } from "@/components/layout/admin-table-state";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,7 +18,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -101,23 +103,11 @@ export default function UsersPage() {
           </TableHeader>
           <TableBody>
             {isPending ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center">
-                  Loading...
-                </TableCell>
-              </TableRow>
+              <AdminTableState.Loading colSpan={5} />
             ) : error ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-red-500">
-                  Error loading users
-                </TableCell>
-              </TableRow>
+              <AdminTableState.Error colSpan={5}>Error loading users</AdminTableState.Error>
             ) : data?.users.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center">
-                  No users found
-                </TableCell>
-              </TableRow>
+              <AdminTableState.Empty colSpan={5}>No users found</AdminTableState.Empty>
             ) : (
               data?.users.map((user) => (
                 <TableRow key={user.id}>
@@ -146,30 +136,15 @@ export default function UsersPage() {
       </div>
 
       {data?.pagination && (
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-muted-foreground text-center sm:text-left">
-            Showing {(page - 1) * limit + 1} to {Math.min(page * limit, data.pagination.total)} of{" "}
-            {data.pagination.total} users
-          </div>
-          <div className="flex items-center justify-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((currentPage) => currentPage - 1)}
-              disabled={page <= 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((currentPage) => currentPage + 1)}
-              disabled={page >= data.pagination.pageCount}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <AdminPagination
+          itemLabel="users"
+          limit={limit}
+          page={page}
+          pageCount={data.pagination.pageCount}
+          total={data.pagination.total}
+          onPreviousPage={() => setPage((currentPage) => currentPage - 1)}
+          onNextPage={() => setPage((currentPage) => currentPage + 1)}
+        />
       )}
     </div>
   );

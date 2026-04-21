@@ -2,34 +2,36 @@
 
 import { PlanForm } from "@/components/forms/plan-form";
 import { Button } from "@/components/ui/button";
+import { apiFetch } from "@/lib/react-query/fetcher";
+import { queryKeys } from "@/lib/react-query/query-keys";
 import type { PlanFormValues } from "@/lib/validations/plan.schema";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function CreatePlanPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
-  const handleSubmit = async (data: PlanFormValues) => {
-    try {
-      const response = await fetch("/api/super-admin/plans", {
+  const createPlanMutation = useMutation({
+    mutationFn: (data: PlanFormValues) =>
+      apiFetch("/api/super-admin/plans", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create plan");
-      }
-
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.plans.all() });
       router.push("/super-admin/plans");
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("Error creating plan:", error);
       // TODO: Add error toast
-    }
-  };
+    },
+  });
 
   return (
     <div className="space-y-6">
@@ -44,7 +46,12 @@ export default function CreatePlanPage() {
       </div>
 
       <div className="border rounded-lg p-4">
-        <PlanForm onSubmit={handleSubmit} submitLabel="Create Plan" />
+        <PlanForm
+          onSubmit={async (data) => {
+            await createPlanMutation.mutateAsync(data);
+          }}
+          submitLabel="Create Plan"
+        />
       </div>
     </div>
   );

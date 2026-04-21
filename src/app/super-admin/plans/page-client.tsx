@@ -1,5 +1,7 @@
 "use client";
 
+import { AdminPagination } from "@/components/layout/admin-pagination";
+import { AdminTableState } from "@/components/layout/admin-table-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,15 +25,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import {
-  ChevronLeft,
-  ChevronRight,
-  MoreHorizontal,
-  Pencil,
-  Plus,
-  Search,
-  Trash2,
-} from "lucide-react";
+import { MoreHorizontal, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -131,23 +125,11 @@ export default function PlansPage() {
           </TableHeader>
           <TableBody>
             {isPending ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center">
-                  Loading...
-                </TableCell>
-              </TableRow>
+              <AdminTableState.Loading colSpan={8} />
             ) : error ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center text-red-500">
-                  Error loading plans
-                </TableCell>
-              </TableRow>
+              <AdminTableState.Error colSpan={8}>Error loading plans</AdminTableState.Error>
             ) : data?.plans.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center">
-                  No plans found
-                </TableCell>
-              </TableRow>
+              <AdminTableState.Empty colSpan={8}>No plans found</AdminTableState.Empty>
             ) : (
               data?.plans.map((plan) => (
                 <TableRow key={plan.id}>
@@ -202,30 +184,15 @@ export default function PlansPage() {
       </div>
 
       {data?.pagination && (
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-muted-foreground text-center sm:text-left">
-            Showing {(page - 1) * limit + 1} to {Math.min(page * limit, data.pagination.total)} of{" "}
-            {data.pagination.total} plans
-          </div>
-          <div className="flex items-center justify-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((currentPage) => currentPage - 1)}
-              disabled={page <= 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((currentPage) => currentPage + 1)}
-              disabled={page >= data.pagination.pageCount}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <AdminPagination
+          itemLabel="plans"
+          limit={limit}
+          page={page}
+          pageCount={data.pagination.pageCount}
+          total={data.pagination.total}
+          onPreviousPage={() => setPage((currentPage) => currentPage - 1)}
+          onNextPage={() => setPage((currentPage) => currentPage + 1)}
+        />
       )}
     </div>
   );

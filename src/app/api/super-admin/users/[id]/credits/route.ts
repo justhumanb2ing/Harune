@@ -25,22 +25,17 @@ export const GET = withSuperAdminAuthRequired(async (req, context) => {
   const offset = (page - 1) * limit;
 
   try {
-    // Get current user credits
-    const currentCredits = await getUserCredits(id);
-
-    // Get credit transactions with pagination
-    const allTransactions = await db
-      .select()
-      .from(creditTransactions)
-      .where(eq(creditTransactions.userId, id))
-      .orderBy(desc(creditTransactions.createdAt))
-      .limit(limit)
-      .offset(offset);
-
-    const totalTransactions = await db.$count(
-      creditTransactions,
-      eq(creditTransactions.userId, id)
-    );
+    const [currentCredits, allTransactions, totalTransactions] = await Promise.all([
+      getUserCredits(id),
+      db
+        .select()
+        .from(creditTransactions)
+        .where(eq(creditTransactions.userId, id))
+        .orderBy(desc(creditTransactions.createdAt))
+        .limit(limit)
+        .offset(offset),
+      db.$count(creditTransactions, eq(creditTransactions.userId, id)),
+    ]);
 
     return NextResponse.json({
       currentCredits,

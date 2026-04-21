@@ -28,7 +28,7 @@ import type { plans } from "@/db/schema/plans";
 import { enableCredits } from "@/lib/credits/config";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
-import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -90,6 +90,14 @@ interface CreditData {
   };
 }
 
+interface ImpersonationResponse {
+  url: string;
+}
+
+interface CreditMutationResponse {
+  message: string;
+}
+
 const creditTypeSeparatorPattern = /_/g;
 const creditTypeWordPattern = /\b\w/g;
 const formatDate = (date: string | null) => {
@@ -109,7 +117,6 @@ export default function UserDetailsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [impersonationUrl, setImpersonationUrl] = useState("");
   const [isCopied, setIsCopied] = useState(false);
-  const [isUpdatingPlan, setIsUpdatingPlan] = useState(false);
 
   // Credit management state
   const [creditPage, setCreditPage] = useState(1);
@@ -120,7 +127,6 @@ export default function UserDetailsPage() {
   );
   const [creditAmount, setCreditAmount] = useState("");
   const [creditReason, setCreditReason] = useState("");
-  const [isProcessingCredit, setIsProcessingCredit] = useState(false);
 
   const {
     data: user,
@@ -146,28 +152,23 @@ export default function UserDetailsPage() {
     placeholderData: keepPreviousData,
   });
 
-  const handleImpersonate = async () => {
-    try {
-      const response = await fetch(`/api/super-admin/users/${id}/impersonate`, {
+  const impersonateMutation = useMutation({
+    mutationFn: () =>
+      apiFetch<ImpersonationResponse>(`/api/super-admin/users/${id}/impersonate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to create impersonation link");
-      }
-
-      const { url } = await response.json();
+      }),
+    onSuccess: ({ url }) => {
       setImpersonationUrl(url);
       setIsModalOpen(true);
-    } catch (error) {
+    },
+    onError: (error) => {
       toast.error("Failed to impersonate user");
       console.error("Impersonation error:", error);
-    }
-  };
+    },
+  });
 
   const copyToClipboard = async () => {
     try {
@@ -190,40 +191,28 @@ export default function UserDetailsPage() {
     window.open(impersonationUrl, "_blank");
   };
 
-  const handlePlanChange = async (planId: string) => {
-    try {
-      setIsUpdatingPlan(true);
-      const response = await fetch(`/api/super-admin/users/${id}/plan`, {
+  const updatePlanMutation = useMutation({
+    mutationFn: (planId: string) =>
+      apiFetch(`/api/super-admin/users/${id}/plan`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ planId }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update plan");
-      }
-
+      }),
+    onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.users.detail(id) });
       toast.success("Plan updated successfully");
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("Error updating plan:", error);
       toast.error("Failed to update plan");
-    } finally {
-      setIsUpdatingPlan(false);
-    }
-  };
+    },
+  });
 
-  const handleCreditSubmit = async () => {
-    if (!creditAmount || !creditReason || Number.parseFloat(creditAmount) <= 0) {
-      toast.error("Please provide a valid amount (> 0) and reason");
-      return;
-    }
-
-    try {
-      setIsProcessingCredit(true);
-      const response = await fetch(`/api/super-admin/users/${id}/credits`, {
+  const manageCreditsMutation = useMutation({
+    mutationFn: () =>
+      apiFetch<CreditMutationResponse>(`/api/super-admin/users/${id}/credits`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -234,29 +223,29 @@ export default function UserDetailsPage() {
           amount: Number.parseFloat(creditAmount),
           reason: creditReason,
         }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to manage credits");
-      }
-
+      }),
+    onSuccess: async (result) => {
       await queryClient.invalidateQueries({
         queryKey: queryKeys.superAdmin.users.credits({ id, limit: 10, page: creditPage }),
       });
       toast.success(result.message);
-
-      // Reset form
       setCreditAmount("");
       setCreditReason("");
       setIsCreditModalOpen(false);
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("Error managing credits:", error);
       toast.error(error instanceof Error ? error.message : "Failed to manage credits");
-    } finally {
-      setIsProcessingCredit(false);
+    },
+  });
+
+  const handleCreditSubmit = () => {
+    if (!creditAmount || !creditReason || Number.parseFloat(creditAmount) <= 0) {
+      toast.error("Please provide a valid amount (> 0) and reason");
+      return;
     }
+
+    manageCreditsMutation.mutate();
   };
 
   if (error) {
@@ -310,7 +299,7 @@ export default function UserDetailsPage() {
               Manage Credits
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={handleImpersonate}>
+          <Button variant="outline" size="sm" onClick={() => impersonateMutation.mutate()}>
             <User className="h-4 w-4 mr-2" />
             Impersonate
           </Button>
@@ -469,20 +458,20 @@ export default function UserDetailsPage() {
             <Button
               variant="outline"
               onClick={() => setIsCreditModalOpen(false)}
-              disabled={isProcessingCredit}
+              disabled={manageCreditsMutation.isPending}
             >
               Cancel
             </Button>
             <Button
               onClick={handleCreditSubmit}
               disabled={
-                isProcessingCredit ||
+                manageCreditsMutation.isPending ||
                 !creditAmount ||
                 !creditReason ||
                 Number.parseFloat(creditAmount) <= 0
               }
             >
-              {isProcessingCredit
+              {manageCreditsMutation.isPending
                 ? "Processing..."
                 : `${creditAction === "add" ? "Add" : "Deduct"} Credits`}
             </Button>
@@ -548,9 +537,9 @@ export default function UserDetailsPage() {
                   value={user?.currentPlan?.id || ""}
                   onValueChange={(value) => {
                     if (!value) return;
-                    void handlePlanChange(value);
+                    updatePlanMutation.mutate(value);
                   }}
-                  disabled={isUpdatingPlan}
+                  disabled={updatePlanMutation.isPending}
                 >
                   <SelectTrigger id="current-plan" className="w-full mt-1.5">
                     <SelectValue placeholder="Select a plan" />

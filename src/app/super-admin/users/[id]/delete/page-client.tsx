@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -29,8 +29,8 @@ interface User {
 export default function DeleteUserPage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [confirmation, setConfirmation] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
 
   const {
     data: user,
@@ -43,30 +43,30 @@ export default function DeleteUserPage() {
 
   const confirmationText = "delete this user";
 
-  const handleDelete = async () => {
+  const deleteUserMutation = useMutation({
+    mutationFn: () =>
+      apiFetch(`/api/super-admin/users/${id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.users.all() });
+      toast.success("User deleted successfully");
+      router.push("/super-admin/users");
+    },
+    onError: (error) => {
+      toast.error("Failed to delete user");
+      console.error(error);
+    },
+  });
+
+  const handleDelete = () => {
     if (!user) return;
     if (confirmation !== confirmationText) {
       toast.error("Please enter the correct confirmation text");
       return;
     }
 
-    setIsDeleting(true);
-    try {
-      const response = await fetch(`/api/super-admin/users/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete user");
-      }
-
-      toast.success("User deleted successfully");
-      router.push("/super-admin/users");
-    } catch (error) {
-      toast.error("Failed to delete user");
-      console.error(error);
-      setIsDeleting(false);
-    }
+    deleteUserMutation.mutate();
   };
 
   if (error) {
@@ -159,9 +159,9 @@ export default function DeleteUserPage() {
           <Button
             variant="destructive"
             onClick={handleDelete}
-            disabled={isDeleting || confirmation !== confirmationText}
+            disabled={deleteUserMutation.isPending || confirmation !== confirmationText}
           >
-            {isDeleting ? "Deleting..." : "Delete User"}
+            {deleteUserMutation.isPending ? "Deleting..." : "Delete User"}
           </Button>
         </CardFooter>
       </Card>

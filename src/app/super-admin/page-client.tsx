@@ -5,19 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { useQuery } from "@tanstack/react-query";
-import { format, parseISO } from "date-fns";
-import {
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import dynamic from "next/dynamic";
 
-interface DailyStats {
+const UserGrowthChart = dynamic(
+  () => import("./user-growth-chart").then((mod) => mod.UserGrowthChart),
+  {
+    ssr: false,
+  }
+);
+
+export interface DailyStats {
   date: string;
   users: number;
   waitlist: number;
@@ -57,25 +54,7 @@ export default function SuperAdminDashboard() {
             <CardTitle>User Growth (Last 30 Days)</CardTitle>
           </CardHeader>
           <CardContent className="h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={dailyStats?.data || []}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="date"
-                  tickFormatter={(date: string) => format(parseISO(date), "MMM dd")}
-                />
-                <YAxis />
-                <Tooltip
-                  labelFormatter={(label) => {
-                    if (typeof label !== "string") return label;
-                    return format(parseISO(label), "MMM dd, yyyy");
-                  }}
-                />
-                <Legend />
-                <Line type="monotone" dataKey="users" stroke="#8884d8" name="New Users" />
-                <Line type="monotone" dataKey="waitlist" stroke="#82ca9d" name="Waitlist Entries" />
-              </LineChart>
-            </ResponsiveContainer>
+            <UserGrowthChart data={dailyStats?.data ?? []} />
           </CardContent>
         </Card>
 

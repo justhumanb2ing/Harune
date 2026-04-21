@@ -29,8 +29,17 @@ import { enableCredits } from "@/lib/credits/config";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, ArrowLeft, Check, Copy, Trash2, User } from "lucide-react";
-import { CreditCard, Minus, Plus } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Check,
+  Copy,
+  CreditCard,
+  Minus,
+  Plus,
+  Trash2,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -81,6 +90,18 @@ interface CreditData {
   };
 }
 
+const creditTypeSeparatorPattern = /_/g;
+const creditTypeWordPattern = /\b\w/g;
+const formatDate = (date: string | null) => {
+  if (!date) return "N/A";
+  return new Date(date).toLocaleDateString();
+};
+const formatDateTime = (date: string) => new Date(date).toLocaleString();
+const formatCreditType = (type: string) =>
+  type
+    .replace(creditTypeSeparatorPattern, " ")
+    .replace(creditTypeWordPattern, (l) => l.toUpperCase());
+
 export default function UserDetailsPage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
@@ -124,11 +145,6 @@ export default function UserDetailsPage() {
       }),
     placeholderData: keepPreviousData,
   });
-
-  const formatDate = (date: string | null) => {
-    if (!date) return "N/A";
-    return new Date(date).toLocaleDateString();
-  };
 
   const handleImpersonate = async () => {
     try {
@@ -241,10 +257,6 @@ export default function UserDetailsPage() {
     } finally {
       setIsProcessingCredit(false);
     }
-  };
-
-  const formatCreditType = (type: string) => {
-    return type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
   if (error) {
@@ -655,7 +667,7 @@ export default function UserDetailsPage() {
                                 {transaction.metadata?.reason || "No reason provided"}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                {new Date(transaction.createdAt).toLocaleString()}
+                                {formatDateTime(transaction.createdAt)}
                               </p>
                             </div>
                             {transaction.metadata?.adminAction && (
@@ -677,7 +689,7 @@ export default function UserDetailsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => setCreditPage(creditPage - 1)}
+                              onClick={() => setCreditPage((currentPage) => currentPage - 1)}
                               disabled={!creditData.pagination.hasPrev}
                             >
                               Previous
@@ -685,7 +697,7 @@ export default function UserDetailsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => setCreditPage(creditPage + 1)}
+                              onClick={() => setCreditPage((currentPage) => currentPage + 1)}
                               disabled={!creditData.pagination.hasNext}
                             >
                               Next

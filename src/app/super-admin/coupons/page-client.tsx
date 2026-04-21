@@ -81,6 +81,10 @@ export default function CouponsPage() {
   const totalPages = data ? Math.max(1, Math.ceil(data.totalItems / data.limit)) : 1;
   const refreshCoupons = () =>
     queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.coupons.all() });
+  const handleStatusFilterChange = (value: StatusFilter | null) => {
+    setStatusFilter((value ?? "all") as StatusFilter);
+    setPage(1);
+  };
 
   const expireCoupon = async (id: string) => {
     try {
@@ -125,12 +129,12 @@ export default function CouponsPage() {
             placeholder="Search coupons..."
             className="max-w-sm"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setPage(1);
+            }}
           />
-          <Select
-            value={statusFilter}
-            onValueChange={(value) => setStatusFilter((value ?? "all") as StatusFilter)}
-          >
+          <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>

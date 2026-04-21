@@ -13,28 +13,28 @@ export const GET = withSuperAdminAuthRequired(async (req) => {
 
     const offset = (page - 1) * limit;
 
-    // Get total count for pagination
-    const totalCountResult = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(users)
-      .where(search ? sql`email LIKE ${`%${search}%`} OR name LIKE ${`%${search}%`}` : sql`1=1`);
+    const where = search
+      ? sql`email LIKE ${`%${search}%`} OR name LIKE ${`%${search}%`}`
+      : sql`1=1`;
 
-    const totalCount = totalCountResult[0].count;
+    const [totalCountResult, usersList] = await Promise.all([
+      db.select({ count: sql<number>`count(*)` }).from(users).where(where),
+      db
+        .select({
+          id: users.id,
+          name: users.name,
+          email: users.email,
+          image: users.image,
+          createdAt: users.createdAt,
+        })
+        .from(users)
+        .where(where)
+        .orderBy(desc(users.createdAt))
+        .limit(limit)
+        .offset(offset),
+    ]);
 
-    // Get paginated users
-    const usersList = await db
-      .select({
-        id: users.id,
-        name: users.name,
-        email: users.email,
-        image: users.image,
-        createdAt: users.createdAt,
-      })
-      .from(users)
-      .where(search ? sql`email LIKE ${`%${search}%`} OR name LIKE ${`%${search}%`}` : sql`1=1`)
-      .orderBy(desc(users.createdAt))
-      .limit(limit)
-      .offset(offset);
+    const totalCount = Number(totalCountResult[0]?.count ?? 0);
 
     return NextResponse.json({
       users: usersList,

@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useDebounce } from "@/hooks/use-debounce";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
@@ -35,11 +36,20 @@ interface PaginationInfo {
   perPage: number;
 }
 
+const limit = 10;
+const formatDate = (date: string) => new Date(date).toLocaleDateString();
+const getInitials = (name: string) =>
+  name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
+
 export default function UsersPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const limit = 10;
-  const queryKey = queryKeys.superAdmin.users.list({ limit, page, search });
+  const debouncedSearch = useDebounce(search);
+  const queryKey = queryKeys.superAdmin.users.list({ limit, page, search: debouncedSearch });
 
   const { data, error, isPending } = useQuery<{
     users: User[];
@@ -50,7 +60,7 @@ export default function UsersPage() {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString(),
-        search,
+        search: debouncedSearch,
       });
 
       return apiFetch(`/api/super-admin/users?${params.toString()}`, { signal });
@@ -61,14 +71,6 @@ export default function UsersPage() {
   const handleSearch = (value: string) => {
     setSearch(value);
     setPage(1);
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
   };
 
   return (
@@ -134,7 +136,7 @@ export default function UsersPage() {
                       {user.active ? "Active" : "Inactive"}
                     </Badge>
                   </TableCell>
-                  <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell>{formatDate(user.createdAt)}</TableCell>
                   <TableCell className="font-mono text-sm">{user.id}</TableCell>
                 </TableRow>
               ))
@@ -153,7 +155,7 @@ export default function UsersPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage(page - 1)}
+              onClick={() => setPage((currentPage) => currentPage - 1)}
               disabled={page <= 1}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -161,7 +163,7 @@ export default function UsersPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage(page + 1)}
+              onClick={() => setPage((currentPage) => currentPage + 1)}
               disabled={page >= data.pagination.pageCount}
             >
               <ChevronRight className="h-4 w-4" />

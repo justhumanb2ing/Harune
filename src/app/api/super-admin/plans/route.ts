@@ -14,22 +14,22 @@ export const GET = withSuperAdminAuthRequired(async (req) => {
 
     const offset = (page - 1) * limit;
 
-    // Get total count for pagination
-    const totalCountResult = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(plans)
-      .where(search ? sql`name LIKE ${`%${search}%`} OR codename LIKE ${`%${search}%`}` : sql`1=1`);
+    const where = search
+      ? sql`name LIKE ${`%${search}%`} OR codename LIKE ${`%${search}%`}`
+      : sql`1=1`;
 
-    const totalCount = totalCountResult[0].count;
+    const [totalCountResult, plansList] = await Promise.all([
+      db.select({ count: sql<number>`count(*)` }).from(plans).where(where),
+      db
+        .select()
+        .from(plans)
+        .where(where)
+        .orderBy(desc(plans.createdAt))
+        .limit(limit)
+        .offset(offset),
+    ]);
 
-    // Get paginated plans
-    const plansList = await db
-      .select()
-      .from(plans)
-      .where(search ? sql`name LIKE ${`%${search}%`} OR codename LIKE ${`%${search}%`}` : sql`1=1`)
-      .orderBy(desc(plans.createdAt))
-      .limit(limit)
-      .offset(offset);
+    const totalCount = Number(totalCountResult[0]?.count ?? 0);
 
     return NextResponse.json({
       plans: plansList,

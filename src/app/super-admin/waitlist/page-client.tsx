@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useDebounce } from "@/hooks/use-debounce";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -40,13 +41,16 @@ interface PaginationInfo {
   perPage: number;
 }
 
+const limit = 10;
+const formatDate = (date: string) => new Date(date).toLocaleDateString();
+
 export default function WaitlistPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [isExporting, setIsExporting] = useState(false);
-  const limit = 10;
-  const queryKey = queryKeys.superAdmin.waitlist.list({ limit, page, search });
+  const debouncedSearch = useDebounce(search);
+  const queryKey = queryKeys.superAdmin.waitlist.list({ limit, page, search: debouncedSearch });
 
   const { data, error, isPending } = useQuery<{
     entries: WaitlistEntry[];
@@ -57,7 +61,7 @@ export default function WaitlistPage() {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString(),
-        search,
+        search: debouncedSearch,
       });
 
       return apiFetch(`/api/super-admin/waitlist-entries?${params.toString()}`, { signal });
@@ -69,8 +73,6 @@ export default function WaitlistPage() {
     setSearch(value);
     setPage(1);
   };
-
-  const formatDate = (date: string) => new Date(date).toLocaleDateString();
 
   const handleDelete = async (id: number) => {
     try {
@@ -226,7 +228,7 @@ export default function WaitlistPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage(page - 1)}
+              onClick={() => setPage((currentPage) => currentPage - 1)}
               disabled={page <= 1}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -234,7 +236,7 @@ export default function WaitlistPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage(page + 1)}
+              onClick={() => setPage((currentPage) => currentPage + 1)}
               disabled={page >= data.pagination.pageCount}
             >
               <ChevronRight className="h-4 w-4" />

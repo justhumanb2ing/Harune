@@ -7,6 +7,7 @@ import {
 } from "@/db/schema/profile-page";
 import { users } from "@/db/schema/user";
 import { asc, eq } from "drizzle-orm";
+import { cache } from "react";
 
 export const getOwnedProfilePage = async (userId: string) => {
   return db
@@ -74,7 +75,7 @@ export const getProfilePageEditorData = async (userId: string) => {
   };
 };
 
-export const getPublicProfilePage = async (handle: string) => {
+export const getPublicProfilePage = cache(async (handle: string) => {
   const owner = await db
     .select({
       id: profilePages.id,
@@ -133,4 +134,4 @@ export const getPublicProfilePage = async (handle: string) => {
     linkItems,
     textBoxItems,
   };
-};
+});

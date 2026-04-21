@@ -13,30 +13,22 @@ export const GET = withSuperAdminAuthRequired(async (req) => {
 
     const offset = (page - 1) * limit;
 
-    // Get total count for pagination
-    const totalCountResult = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(contacts)
-      .where(
-        search
-          ? sql`email LIKE ${`%${search}%`} OR name LIKE ${`%${search}%`} OR message LIKE ${`%${search}%`}`
-          : sql`1=1`
-      );
+    const where = search
+      ? sql`email LIKE ${`%${search}%`} OR name LIKE ${`%${search}%`} OR message LIKE ${`%${search}%`}`
+      : sql`1=1`;
 
-    const totalCount = totalCountResult[0].count;
+    const [totalCountResult, messagesList] = await Promise.all([
+      db.select({ count: sql<number>`count(*)` }).from(contacts).where(where),
+      db
+        .select()
+        .from(contacts)
+        .where(where)
+        .orderBy(desc(contacts.createdAt))
+        .limit(limit)
+        .offset(offset),
+    ]);
 
-    // Get paginated messages
-    const messagesList = await db
-      .select()
-      .from(contacts)
-      .where(
-        search
-          ? sql`email LIKE ${`%${search}%`} OR name LIKE ${`%${search}%`} OR message LIKE ${`%${search}%`}`
-          : sql`1=1`
-      )
-      .orderBy(desc(contacts.createdAt))
-      .limit(limit)
-      .offset(offset);
+    const totalCount = Number(totalCountResult[0]?.count ?? 0);
 
     return NextResponse.json({
       messages: messagesList,

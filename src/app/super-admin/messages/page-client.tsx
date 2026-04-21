@@ -29,6 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useDebounce } from "@/hooks/use-debounce";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -52,13 +53,16 @@ interface PaginationInfo {
   perPage: number;
 }
 
+const limit = 10;
+const formatDate = (date: string) => new Date(date).toLocaleString();
+
 export default function MessagesPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-  const limit = 10;
-  const queryKey = queryKeys.superAdmin.messages.list({ limit, page, search });
+  const debouncedSearch = useDebounce(search);
+  const queryKey = queryKeys.superAdmin.messages.list({ limit, page, search: debouncedSearch });
 
   const { data, error, isPending } = useQuery<{
     messages: Message[];
@@ -69,7 +73,7 @@ export default function MessagesPage() {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString(),
-        search,
+        search: debouncedSearch,
       });
 
       return apiFetch(`/api/super-admin/messages?${params.toString()}`, { signal });
@@ -138,8 +142,6 @@ export default function MessagesPage() {
       console.error("Error deleting message:", requestError);
     }
   };
-
-  const formatDate = (date: string) => new Date(date).toLocaleString();
 
   return (
     <div className="space-y-4">
@@ -226,7 +228,7 @@ export default function MessagesPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage(page - 1)}
+              onClick={() => setPage((currentPage) => currentPage - 1)}
               disabled={page <= 1}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -234,7 +236,7 @@ export default function MessagesPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage(page + 1)}
+              onClick={() => setPage((currentPage) => currentPage + 1)}
               disabled={page >= data.pagination.pageCount}
             >
               <ChevronRight className="h-4 w-4" />

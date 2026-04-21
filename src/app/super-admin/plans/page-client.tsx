@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useDebounce } from "@/hooks/use-debounce";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
@@ -54,12 +55,20 @@ interface PaginationInfo {
   perPage: number;
 }
 
+const limit = 10;
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+});
+const formatPrice = (price: number) => currencyFormatter.format(price / 100);
+const formatDate = (date: string) => new Date(date).toLocaleDateString();
+
 export default function PlansPage() {
   const router = useRouter();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const limit = 10;
-  const queryKey = queryKeys.superAdmin.plans.list({ page, limit, search });
+  const debouncedSearch = useDebounce(search);
+  const queryKey = queryKeys.superAdmin.plans.list({ page, limit, search: debouncedSearch });
 
   const { data, error, isPending } = useQuery<{
     plans: Plan[];
@@ -70,7 +79,7 @@ export default function PlansPage() {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString(),
-        search,
+        search: debouncedSearch,
       });
 
       return apiFetch(`/api/super-admin/plans?${params.toString()}`, { signal });
@@ -81,17 +90,6 @@ export default function PlansPage() {
   const handleSearch = (value: string) => {
     setSearch(value);
     setPage(1);
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(price / 100);
-  };
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString();
   };
 
   return (
@@ -213,7 +211,7 @@ export default function PlansPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage(page - 1)}
+              onClick={() => setPage((currentPage) => currentPage - 1)}
               disabled={page <= 1}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -221,7 +219,7 @@ export default function PlansPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setPage(page + 1)}
+              onClick={() => setPage((currentPage) => currentPage + 1)}
               disabled={page >= data.pagination.pageCount}
             >
               <ChevronRight className="h-4 w-4" />

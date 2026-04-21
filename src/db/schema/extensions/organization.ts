@@ -9,8 +9,8 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 
-import { plans } from "./plans";
-import { users } from "./user";
+import { plans } from "../core/plans";
+import { users } from "../core/user";
 
 export const organizationRole = pgEnum("organization_role", ["owner", "admin", "user"]);
 export const invitationStatus = pgEnum("invitation_status", [

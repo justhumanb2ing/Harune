@@ -1,1 +1,1 @@
-export * from "./core/organization";
+export * from "./extensions/organization";

@@ -1,4 +1,5 @@
 import { db } from "@/db";
+import { profilePages } from "@/db/schema/profile-page";
 import { users } from "@/db/schema/user";
 import withAuthRequired from "@/lib/auth/withAuthRequired";
 import { profileUpdateSchema } from "@/lib/validations/profile.schema";
@@ -14,9 +15,21 @@ export const GET = withAuthRequired(async (req, context) => {
 
   const currentPlan = await getCurrentPlan();
   const userFromDb = await getUser();
+  const ownedProfilePage = await db
+    .select({
+      id: profilePages.id,
+      handle: profilePages.handle,
+      name: profilePages.name,
+      image: profilePages.image,
+    })
+    .from(profilePages)
+    .where(eq(profilePages.userId, context.session.user.id))
+    .limit(1);
+
   return NextResponse.json<MeResponse>({
     user: userFromDb,
     currentPlan,
+    profilePage: ownedProfilePage[0] ?? null,
   });
 });
 

@@ -10,6 +10,7 @@ import { enableCredits, onRegisterCredits } from "../credits/config";
 import type { CreditType } from "../credits/credits";
 import { addCredits } from "../credits/recalculate";
 import sendMail from "../email/sendMail";
+import { isSignupEmailSendingEnabled } from "../email/signupMailPolicy";
 
 const onUserCreate = async (newUser: {
   id: string;
@@ -42,13 +43,15 @@ const onUserCreate = async (newUser: {
 
   // TIP: Send welcome email to user
 
-  const html = await render(
-    Welcome({
-      userName: newUser.name || "User",
-      dashboardUrl: `${appConfig.projectName}/dashboard`,
-    })
-  );
-  await sendMail(newUser.email!, `Welcome to ${appConfig.projectName}`, html);
+  if (isSignupEmailSendingEnabled && newUser.email) {
+    const html = await render(
+      Welcome({
+        userName: newUser.name || "User",
+        dashboardUrl: `${appConfig.projectName}/dashboard`,
+      })
+    );
+    await sendMail(newUser.email, `Welcome to ${appConfig.projectName}`, html);
+  }
 };
 
 export default onUserCreate;

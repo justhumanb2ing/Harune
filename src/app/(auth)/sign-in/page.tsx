@@ -9,9 +9,30 @@ export const metadata: Metadata = {
   description: `Sign in to your ${appConfig.projectName} account`,
 };
 
-export default function SignInPage() {
+type SignInPageProps = {
+  searchParams: Promise<{
+    callbackUrl?: string;
+    handle?: string;
+  }>;
+};
+
+export default async function SignInPage({ searchParams }: SignInPageProps) {
   const enableGoogleSignIn = true;
   const enableGithubSignIn = Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET);
+  const { callbackUrl, handle } = await searchParams;
+  const redirectTarget = new URLSearchParams();
+
+  if (callbackUrl) {
+    redirectTarget.set("next", callbackUrl);
+  }
+
+  if (handle) {
+    redirectTarget.set("handle", handle);
+  }
+
+  const resolvedCallbackUrl = `/post-sign-in${
+    redirectTarget.toString() ? `?${redirectTarget.toString()}` : ""
+  }`;
 
   return (
     <>
@@ -20,15 +41,29 @@ export default function SignInPage() {
         <p className="text-sm text-muted-foreground">Sign in to your account to continue</p>
       </div>
 
-      <AuthForm enableGoogleSignIn={enableGoogleSignIn} enableGithubSignIn={enableGithubSignIn} />
+      <AuthForm
+        callbackUrl={resolvedCallbackUrl}
+        enableGoogleSignIn={enableGoogleSignIn}
+        enableGithubSignIn={enableGithubSignIn}
+      />
 
       <div className="mt-6 text-center">
-        <Link
-          href="/sign-up"
-          className="text-sm text-primary hover:text-primary/90 underline underline-offset-4"
-        >
-          Don&apos;t have an account? Sign up
-        </Link>
+        <p className="text-center text-xs text-muted-foreground">
+          By continuing, you agree to our{" "}
+          <Link
+            href="/terms"
+            className="font-medium text-primary hover:text-primary/90 underline underline-offset-4"
+          >
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link
+            href="/privacy"
+            className="font-medium text-primary hover:text-primary/90 underline underline-offset-4"
+          >
+            Privacy Policy
+          </Link>
+        </p>
       </div>
     </>
   );

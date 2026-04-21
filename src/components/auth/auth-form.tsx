@@ -36,7 +36,7 @@ export function AuthForm({
   const showGoogleAuth = enableGoogleSignIn;
   const showGithubAuth = enableGithubSignIn;
   const showSocialAuth = showGoogleAuth || showGithubAuth;
-  const resolvedCallbackUrl = callbackUrl || searchParams?.get("callbackUrl") || "/app";
+  const resolvedCallbackUrl = callbackUrl || searchParams?.get("callbackUrl") || "/section";
 
   const {
     register,

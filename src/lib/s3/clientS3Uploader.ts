@@ -3,8 +3,14 @@ export interface ClientS3UploaderOptions {
 }
 
 export interface UploadFileOptions {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  meta?: any;
+  meta?: Record<string, unknown>;
+}
+
+interface PresignedUploadResponse {
+  fields?: Record<string, string>;
+  fileUrl?: string;
+  publicUrl?: string;
+  url: string;
 }
 
 export class ClientS3Uploader {
@@ -43,7 +49,7 @@ export class ClientS3Uploader {
         throw new Error(response.error || "Failed to get upload URL");
       }
 
-      const uploadData = await createUploadUrlResponse.json();
+      const uploadData = (await createUploadUrlResponse.json()) as PresignedUploadResponse;
 
       if (!uploadData.url) {
         throw new Error("No upload URL received");
@@ -72,8 +78,9 @@ export class ClientS3Uploader {
       }
 
       // Construct the file URL
-      const fileUrl = `${uploadData.url}${fields.key || file.name}`;
-      return fileUrl;
+      const key = fields.key || file.name;
+      const uploadUrl = uploadData.url.endsWith("/") ? uploadData.url : `${uploadData.url}/`;
+      return uploadData.publicUrl || uploadData.fileUrl || `${uploadUrl}${key}`;
     } catch (error) {
       console.error("S3 upload error:", error);
       throw error;

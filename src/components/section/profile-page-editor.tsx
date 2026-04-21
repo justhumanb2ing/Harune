@@ -19,15 +19,30 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, ImageMinus, Loader2, Plus, Save, Trash2 } from "lucide-react";
-import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  type ChangeEvent,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { S3Uploader } from "@/components/ui/s3-uploader";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  deleteUploadedProfileImage,
+  useProfileImageUpload,
+} from "@/hooks/use-profile-image-upload";
+import {
+  PROFILE_IMAGE_ACCEPT,
+  PROFILE_IMAGE_MAX_SIZE_BYTES,
+} from "@/lib/profile-page/image-upload";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import useUser from "@/lib/users/useUser";
 
@@ -149,6 +164,8 @@ export function ProfilePageEditor() {
   });
   const [newLink, setNewLink] = useState(createEmptyLinkItem());
   const [newTextBox, setNewTextBox] = useState(createEmptyTextBoxItem());
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const profileImageUpload = useProfileImageUpload();
 
   const loadData = useCallback(async () => {
     const response = await apiFetch<ProfilePageResponse>("/api/app/profile-page");
@@ -159,6 +176,7 @@ export function ProfilePageEditor() {
       bio: response.page.bio ?? "",
       image: response.page.image ?? null,
     });
+    profileImageUpload.clear();
     setSocialDrafts({
       x: response.socialLinks.find((item) => item.platform === "x")?.url ?? "",
       instagram: response.socialLinks.find((item) => item.platform === "instagram")?.url ?? "",
@@ -166,7 +184,7 @@ export function ProfilePageEditor() {
       linkedin: response.socialLinks.find((item) => item.platform === "linkedin")?.url ?? "",
       github: response.socialLinks.find((item) => item.platform === "github")?.url ?? "",
     });
-  }, []);
+  }, [profileImageUpload.clear]);
 
   useEffect(() => {
     let cancelled = false;
@@ -204,7 +222,8 @@ export function ProfilePageEditor() {
   }, [data?.page.name, profileForm.name, user?.name]);
 
   const fallbackName = profileForm.name || user?.name || "Profile";
-  const previewImage = profileForm.image ?? "";
+  const previewImage = profileImageUpload.previewUrl ?? profileForm.image;
+  const previewImageSrc = previewImage || undefined;
   const previewInitials =
     fallbackName
       .split(/\s+/)
@@ -218,8 +237,17 @@ export function ProfilePageEditor() {
   }, [data?.socialLinks]);
 
   const handleProfileSave = async () => {
+    if (profileImageUpload.isUploading) {
+      toast.error("Image is still uploading.");
+      return;
+    }
+
+    let uploadedImageUrl: string | null = null;
+
     try {
       setIsSavingProfile(true);
+      uploadedImageUrl = await profileImageUpload.uploadSelectedFile();
+
       const response = await apiFetch<{ page: ProfilePageData["page"] }>("/api/app/profile-page", {
         method: "PATCH",
         headers: {
@@ -229,10 +257,14 @@ export function ProfilePageEditor() {
           handle: profileForm.handle,
           name: profileForm.name,
           bio: profileForm.bio,
-          image: profileForm.image,
+          image: uploadedImageUrl ?? profileForm.image,
         }),
       });
 
+      setProfileForm((prev) => ({
+        ...prev,
+        image: response.page.image,
+      }));
       setData((prev) =>
         prev
           ? {
@@ -241,12 +273,38 @@ export function ProfilePageEditor() {
             }
           : prev
       );
+      if (uploadedImageUrl) {
+        profileImageUpload.clear();
+      }
       await mutate();
       toast.success("Profile updated.");
     } catch (error) {
+      if (uploadedImageUrl) {
+        try {
+          await deleteUploadedProfileImage(uploadedImageUrl);
+        } catch (rollbackError) {
+          console.error("Failed to rollback uploaded profile image:", rollbackError);
+        }
+      }
+
       toast.error(error instanceof Error ? error.message : "Failed to update profile.");
     } finally {
       setIsSavingProfile(false);
+    }
+  };
+
+  const handleProfileImageChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      profileImageUpload.selectFile(file);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to select image.");
     }
   };
 
@@ -629,44 +687,56 @@ export function ProfilePageEditor() {
             <CardContent className="space-y-5">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <Avatar className="size-20">
-                  <AvatarImage src={previewImage} alt={fallbackName} />
+                  <AvatarImage src={previewImageSrc} alt={fallbackName} />
                   <AvatarFallback className="text-lg">{previewInitials}</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-wrap gap-2">
-                  <S3Uploader
-                    presignedRouteProvider="/api/app/profile-page/upload-image"
-                    variant="button"
-                    onUpload={async (fileUrls) => {
-                      const [url] = fileUrls;
-                      if (url) {
-                        setProfileForm((prev) => ({
-                          ...prev,
-                          image: url,
-                        }));
-                      }
-                    }}
-                    accept="image/*"
-                    maxSize={5 * 1024 * 1024}
-                    buttonText="Upload image"
-                    buttonVariant="outline"
-                    buttonSize="sm"
+                  <input
+                    ref={imageInputRef}
+                    type="file"
+                    accept={PROFILE_IMAGE_ACCEPT}
+                    className="sr-only"
+                    onChange={handleProfileImageChange}
                   />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={profileImageUpload.isUploading || isSavingProfile}
+                  >
+                    {profileImageUpload.isUploading ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Plus className="size-4" />
+                    )}
+                    {profileImageUpload.isUploading ? "Uploading..." : "Select image"}
+                  </Button>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() =>
+                    disabled={profileImageUpload.isUploading || isSavingProfile}
+                    onClick={() => {
+                      profileImageUpload.clear();
                       setProfileForm((prev) => ({
                         ...prev,
                         image: null,
-                      }))
-                    }
+                      }));
+                    }}
                   >
                     <ImageMinus className="size-4" />
                     Remove image
                   </Button>
                 </div>
               </div>
+              {profileImageUpload.error ? (
+                <p className="text-destructive text-sm">{profileImageUpload.error}</p>
+              ) : (
+                <p className="text-muted-foreground text-xs">
+                  JPEG, PNG, WebP, or AVIF. Max {PROFILE_IMAGE_MAX_SIZE_BYTES / 1024 / 1024}MB.
+                </p>
+              )}
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
@@ -725,7 +795,7 @@ export function ProfilePageEditor() {
                 <Button
                   type="button"
                   onClick={() => void handleProfileSave()}
-                  disabled={isSavingProfile}
+                  disabled={isSavingProfile || profileImageUpload.isUploading}
                 >
                   {isSavingProfile ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -1047,7 +1117,7 @@ export function ProfilePageEditor() {
                 <p className="text-sm text-muted-foreground">@{profileForm.handle}</p>
               </div>
               <Avatar className="size-14">
-                <AvatarImage src={previewImage} alt={fallbackName} />
+                <AvatarImage src={previewImageSrc} alt={fallbackName} />
                 <AvatarFallback>{previewInitials}</AvatarFallback>
               </Avatar>
             </div>

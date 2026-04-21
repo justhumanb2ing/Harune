@@ -63,6 +63,15 @@ export const POST = withAuthRequired(async (req, context) => {
   }
 
   const createdPage = await db.transaction(async (tx) => {
+    await tx
+      .update(users)
+      .set({
+        name,
+        image: image ?? null,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, context.session.user.id));
+
     const page = await tx
       .insert(profilePages)
       .values({

@@ -23,8 +23,7 @@ export interface S3UploaderProps {
   variant: "button" | "dropzone";
   onUpload: (fileUrls: string[]) => Promise<void>;
   currentFileUrl?: string | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  meta?: any;
+  meta?: Record<string, unknown>;
   className?: string;
   accept?: string;
   maxFiles?: number;
@@ -147,6 +146,7 @@ function S3Uploader({
   const defaultSubtext =
     dropzoneSubtext ||
     `Or click to browse (max ${maxFiles} file${maxFiles > 1 ? "s" : ""}, up to ${Math.round(maxSize / (1024 * 1024))}MB each)`;
+  const getFileKey = (file: File) => `${file.name}-${file.size}-${file.lastModified}`;
 
   if (variant === "button") {
     return (
@@ -196,8 +196,8 @@ function S3Uploader({
           </FileUploadTrigger>
 
           <FileUploadList>
-            {files.map((file, index) => (
-              <FileUploadItem key={index} value={file}>
+            {files.map((file) => (
+              <FileUploadItem key={getFileKey(file)} value={file}>
                 <FileUploadItemPreview />
                 <FileUploadItemMetadata />
                 <FileUploadItemProgress />
@@ -268,8 +268,8 @@ function S3Uploader({
         </FileUploadDropzone>
 
         <FileUploadList>
-          {files.map((file, index) => (
-            <FileUploadItem key={index} value={file}>
+          {files.map((file) => (
+            <FileUploadItem key={getFileKey(file)} value={file}>
               <FileUploadItemPreview />
               <FileUploadItemMetadata />
               <FileUploadItemProgress />

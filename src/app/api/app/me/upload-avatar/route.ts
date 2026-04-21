@@ -1,5 +1,5 @@
-import { env } from "@/env";
 import withAuthRequired from "@/lib/auth/withAuthRequired";
+import { getMissingS3ConfigKeys, getPublicS3ObjectUrl } from "@/lib/s3/config";
 import createS3UploadFields from "@/lib/s3/createS3UploadFields";
 import { NextResponse } from "next/server";
 
@@ -13,17 +13,12 @@ export const POST = withAuthRequired(async (req, context) => {
   try {
     const { session } = context;
     const { fileName, fileType, fileSize }: UploadAvatarRequest = await req.json();
+    const missingConfigKeys = getMissingS3ConfigKeys();
 
-    if (
-      !env.AWS_BUCKET_NAME ||
-      !env.AWS_REGION ||
-      !env.AWS_ACCESS_KEY_ID ||
-      !env.AWS_SECRET_ACCESS_KEY
-    ) {
+    if (missingConfigKeys.length > 0) {
       return NextResponse.json(
         {
-          error:
-            "AWS_BUCKET_NAME, AWS_REGION, AWS_ACCESS_KEY_ID, or AWS_SECRET_ACCESS_KEY is not set",
+          error: `S3 storage is not configured: ${missingConfigKeys.join(", ")}`,
         },
         { status: 500 }
       );
@@ -69,10 +64,12 @@ export const POST = withAuthRequired(async (req, context) => {
       maxSize: maxSize,
       contentType: fileType,
     });
+    const publicUrl = getPublicS3ObjectUrl(s3Path);
 
     return NextResponse.json({
-      url: presignedPost.url,
       fields: presignedPost.fields,
+      publicUrl,
+      url: presignedPost.url,
     });
   } catch (error) {
     console.error("Error creating presigned URL for avatar upload:", error);

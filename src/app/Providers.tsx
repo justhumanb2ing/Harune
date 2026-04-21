@@ -15,7 +15,7 @@ function Providers({ children }: { children: React.ReactNode }) {
       <TooltipProvider>
         <QueryClientProvider client={queryClient}>
           {children}
-          <Toaster position="top-center" className="dark:hidden" richColors />
+          <Toaster position="top-center" className="dark:hidden" />
         </QueryClientProvider>
       </TooltipProvider>
     </ThemeProvider>

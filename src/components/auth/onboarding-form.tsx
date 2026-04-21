@@ -15,7 +15,12 @@ import {
 } from "@/components/ui/input-group";
 import { Textarea } from "@/components/ui/textarea";
 import { useHandleAvailability } from "@/hooks/use-handle-availability";
+import {
+  deleteUploadedProfileImage,
+  useProfileImageUpload,
+} from "@/hooks/use-profile-image-upload";
 import { normalizeHandle, validateHandle } from "@/lib/handles";
+import { PROFILE_IMAGE_ACCEPT } from "@/lib/profile-page/image-upload";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { useQueryClient } from "@tanstack/react-query";
@@ -96,6 +101,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const profileImageUpload = useProfileImageUpload();
   const [currentStep, setCurrentStep] = React.useState(0);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -105,8 +111,6 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
   const [name, setName] = React.useState("");
   const [bio, setBio] = React.useState("");
   const [socialLinks, setSocialLinks] = React.useState<SocialLinksState>(createInitialSocialLinks);
-  const [selectedImageName, setSelectedImageName] = React.useState<string | null>(null);
-  const [imagePreviewUrl, setImagePreviewUrl] = React.useState<string | null>(null);
 
   const currentStepMeta = steps[currentStep];
   const hasHandleInput = !!pageHandle;
@@ -124,14 +128,6 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
           : null
     : null;
   const showAvailableMessage = hasHandleInput && !handleErrorMessage && isHandleAvailable && !error;
-
-  React.useEffect(() => {
-    return () => {
-      if (imagePreviewUrl) {
-        URL.revokeObjectURL(imagePreviewUrl);
-      }
-    };
-  }, [imagePreviewUrl]);
 
   const getInitials = React.useCallback(() => {
     if (!trimmedName) {
@@ -183,19 +179,20 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
     setCurrentStep((step) => Math.min(step + 1, steps.length - 1));
   };
 
-  const handleSelectImage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSelectImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    event.target.value = "";
 
     if (!file) {
       return;
     }
 
-    if (imagePreviewUrl) {
-      URL.revokeObjectURL(imagePreviewUrl);
+    try {
+      setError(null);
+      profileImageUpload.selectFile(file);
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : "Failed to select image.");
     }
-
-    setSelectedImageName(file.name);
-    setImagePreviewUrl(URL.createObjectURL(file));
   };
 
   const submitOnboarding = async () => {
@@ -215,8 +212,24 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
       return;
     }
 
+    if (profileImageUpload.error) {
+      setCurrentStep(1);
+      setError(profileImageUpload.error);
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
+    let uploadedImageUrl: string | null = null;
+
+    try {
+      uploadedImageUrl = await profileImageUpload.uploadSelectedFile();
+    } catch (uploadError) {
+      setCurrentStep(1);
+      setError(uploadError instanceof Error ? uploadError.message : "Failed to upload image.");
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       await apiFetch<{ success: true }>("/api/app/onboarding", {
@@ -226,6 +239,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
         },
         body: JSON.stringify({
           handle: pageHandle,
+          image: uploadedImageUrl || undefined,
           name: trimmedName,
           bio,
           socialLinks,
@@ -233,7 +247,16 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
       });
       await queryClient.invalidateQueries({ queryKey: queryKeys.app.me() });
       router.push(`/onboarding/success?handle=${encodeURIComponent(pageHandle)}`);
-    } catch {
+    } catch (submitError) {
+      if (uploadedImageUrl) {
+        try {
+          await deleteUploadedProfileImage(uploadedImageUrl);
+        } catch (rollbackError) {
+          console.error("Failed to rollback uploaded onboarding profile image:", rollbackError);
+        }
+      }
+
+      console.error("Failed to complete onboarding:", submitError);
       router.push(`/onboarding/fail?handle=${encodeURIComponent(pageHandle)}`);
     } finally {
       setIsSubmitting(false);
@@ -350,14 +373,17 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                       <div className="space-y-3">
                         <button
                           type="button"
-                          className="flex size-40 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-secondary transition-colors hover:bg-input"
+                          className="relative flex size-40 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-secondary transition-colors hover:bg-input disabled:cursor-not-allowed disabled:opacity-70"
                           onClick={() => fileInputRef.current?.click()}
+                          disabled={profileImageUpload.isUploading || isSubmitting}
                         >
-                          {imagePreviewUrl ? (
+                          {profileImageUpload.previewUrl ? (
                             <Avatar className="size-full">
                               <AvatarImage
-                                src={imagePreviewUrl}
-                                alt={selectedImageName ?? "Selected profile image"}
+                                src={profileImageUpload.previewUrl}
+                                alt={
+                                  profileImageUpload.selectedFileName ?? "Selected profile image"
+                                }
                                 className="object-cover"
                               />
                               <AvatarFallback>{getInitials()}</AvatarFallback>
@@ -367,15 +393,26 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                               <CircleFadingArrowUpIcon className="size-6 text-muted-foreground" />
                             </span>
                           )}
+                          {profileImageUpload.isUploading ? (
+                            <span className="absolute inset-0 flex items-center justify-center bg-black/35">
+                              <Loader2Icon className="size-6 animate-spin text-white" />
+                            </span>
+                          ) : null}
                         </button>
                         <input
                           ref={fileInputRef}
                           id="image-upload"
                           type="file"
-                          accept="image/*"
+                          accept={PROFILE_IMAGE_ACCEPT}
                           className="sr-only"
                           onChange={handleSelectImage}
+                          disabled={profileImageUpload.isUploading || isSubmitting}
                         />
+                        {profileImageUpload.error ? (
+                          <p className="max-w-48 text-center text-destructive text-sm">
+                            {profileImageUpload.error}
+                          </p>
+                        ) : null}
                       </div>
                     </div>
 
@@ -458,7 +495,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                     }}
                     size="icon-lg"
                     className="size-11 rounded-full"
-                    disabled={!trimmedName}
+                    disabled={!trimmedName || profileImageUpload.isUploading}
                   >
                     <ChevronRightIcon className="size-6" />
                   </Button>
@@ -468,7 +505,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                     size="lg"
                     className="px-8 py-6 text-base"
                     onClick={() => void submitOnboarding()}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || profileImageUpload.isUploading}
                   >
                     {isSubmitting ? (
                       <>

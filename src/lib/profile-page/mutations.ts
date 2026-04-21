@@ -5,6 +5,7 @@ import {
   profileSocialLinks,
   profileTextBoxItems,
 } from "@/db/schema/profile-page";
+import { deletePublicS3Object } from "@/lib/s3/deleteObject";
 import type {
   LinkItemInput,
   ProfilePageUpdateValues,
@@ -109,6 +110,18 @@ export const updateProfileMetadata = async ({
 
   if (!updatedPage) {
     throw new ProfilePageError("Failed to update profile page.", 500);
+  }
+
+  if (ownedPage.image && ownedPage.image !== values.image) {
+    try {
+      await deletePublicS3Object(ownedPage.image);
+    } catch (error) {
+      console.error("Failed to delete profile image from storage:", {
+        error,
+        imageUrl: ownedPage.image,
+        userId,
+      });
+    }
   }
 
   return updatedPage;

@@ -11,7 +11,6 @@ export enum PlanProvider {
   STRIPE = "stripe",
   LEMON_SQUEEZY = "lemonsqueezy",
   DODO = "dodo",
-  PAYPAL = "paypal",
   PADDLE = "paddle",
 }
 
@@ -40,7 +39,7 @@ export const subscribeParams = z.object({
 export type SubscribeParams = z.infer<typeof subscribeParams>;
 
 const getSubscribeUrl = ({ codename, type, provider, trialPeriodDays }: SubscribeParams) => {
-  let url = `${env.NEXT_PUBLIC_APP_URL}/app/subscribe?codename=${codename}&type=${type}&provider=${provider}`;
+  let url = `${env.NEXT_PUBLIC_APP_URL}/subscribe?codename=${codename}&type=${type}&provider=${provider}`;
   if (trialPeriodDays) {
     url += `&trialPeriodDays=${trialPeriodDays}`;
   }

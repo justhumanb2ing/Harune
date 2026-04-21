@@ -37,7 +37,7 @@ export default function PaddleCheckoutPage() {
           allowLogout: false,
           showAddDiscounts: true,
           showAddTaxId: true,
-          successUrl: `${window.location.origin}/app/subscribe/success?provider=paddle&transactionId=${transactionId}`,
+          successUrl: `${window.location.origin}/subscribe/success?provider=paddle&transactionId=${transactionId}`,
         },
         customer: user?.paddleCustomerId
           ? { id: user?.paddleCustomerId }
@@ -52,6 +52,13 @@ export default function PaddleCheckoutPage() {
     // Initialize Paddle
     const initPaddle = async () => {
       try {
+        const paddleClientToken = env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN;
+
+        if (!paddleClientToken) {
+          setError("Paddle client token is missing.");
+          return;
+        }
+
         if (
           env.NEXT_PUBLIC_PADDLE_ENV !== "production" &&
           env.NEXT_PUBLIC_PADDLE_ENV !== "sandbox"
@@ -63,7 +70,7 @@ export default function PaddleCheckoutPage() {
 
         const paddleInstance = await initializePaddle({
           environment: env.NEXT_PUBLIC_PADDLE_ENV === "production" ? "production" : "sandbox",
-          token: env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
+          token: paddleClientToken,
           eventCallback: (event) => {
             // checkout.closed open checkout again
             if (event.name === "checkout.closed") {
@@ -110,14 +117,13 @@ export default function PaddleCheckoutPage() {
         setError("Transaction ID is missing.");
       }, 1000);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paddle, user?.paddleCustomerId, user?.email, searchParams]);
+  }, [openCheckout, paddle, searchParams, user?.paddleCustomerId]);
 
   if (error) {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-4">
         <p className="text-destructive">{error}</p>
-        <button onClick={() => router.push("/app")} className="text-sm underline">
+        <button type="button" onClick={() => router.push("/section")} className="text-sm underline">
           Go back
         </button>
       </div>
@@ -130,7 +136,7 @@ export default function PaddleCheckoutPage() {
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <p className="text-muted-foreground">Opening secure checkout...</p>
         {showRetry && (
-          <button onClick={openCheckout} className="text-sm underline cursor-pointer">
+          <button type="button" onClick={openCheckout} className="text-sm underline cursor-pointer">
             Click here if checkout doesn&apos;t open
           </button>
         )}

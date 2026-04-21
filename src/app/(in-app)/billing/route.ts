@@ -1,5 +1,4 @@
 import { db } from "@/db";
-import { paypalContext } from "@/db/schema/paypal";
 import { users } from "@/db/schema/user";
 import { env } from "@/env";
 import withAuthRequired from "@/lib/auth/withAuthRequired";
@@ -41,22 +40,13 @@ export const GET = withAuthRequired(async (req, context) => {
     // create customer portal link
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,
-      return_url: `${env.NEXT_PUBLIC_APP_URL}/app`,
+      return_url: `${env.NEXT_PUBLIC_APP_URL}/section`,
     });
     return redirect(portalSession.url);
   }
   const lemonSqueezyCustomerId = user.lemonSqueezyCustomerId;
   if (lemonSqueezyCustomerId) {
     // TODO: Get lemonSqueezy customer and redirect to lemonSqueezy customer portal
-  }
-
-  // Check if has paypal context
-  const paypalContexts = await db
-    .select()
-    .from(paypalContext)
-    .where(eq(paypalContext.userId, user.id));
-  if (paypalContexts.length > 0) {
-    return redirect(`${env.NEXT_PUBLIC_APP_URL}/app/billing/paypal`);
   }
 
   return NextResponse.json({

@@ -29,7 +29,7 @@ const useOrganization = () => {
         queryClient.invalidateQueries({ queryKey: queryKeys.app.organizations() }),
         queryClient.invalidateQueries({ queryKey: queryKeys.app.me() }),
       ]);
-      router.push("/app");
+      router.push("/section");
     });
 
     await toast.promise(switchPromise, {

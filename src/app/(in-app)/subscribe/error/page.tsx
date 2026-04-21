@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { appConfig } from "@/lib/config";
 import { XCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -8,7 +9,6 @@ type ErrorCodeType =
   | "LEMON_SQUEEZY_CANCEL_BEFORE_SUBSCRIBING"
   | "DODO_CANCEL_BEFORE_SUBSCRIBING"
   | "DODO_MISSING_BILLING_INFO"
-  | "PAYPAL_CANCELLED"
   | "INVALID_PARAMS";
 
 type ErrorMessages = {
@@ -24,7 +24,6 @@ const errorMessages: ErrorMessages = {
     "Please cancel your current subscription before subscribing to a new onetime plan.",
   DODO_MISSING_BILLING_INFO:
     "Billing information is required to complete your DodoPayments subscription.",
-  PAYPAL_CANCELLED: "PayPal subscription cancelled.",
   INVALID_PARAMS: "Invalid parameters.",
 };
 
@@ -51,7 +50,7 @@ export default async function SubscribeErrorPage({
                 If you want to cancel your current subscription, please go to your billing page.
               </p>
               <Button asChild>
-                <Link href="/app/billing">Go to Billing</Link>
+                <Link href="/billing">Go to Billing</Link>
               </Button>
             </div>
           )}
@@ -61,7 +60,7 @@ export default async function SubscribeErrorPage({
                 If you want to cancel your current subscription, please go to your billing page.
               </p>
               <Button asChild>
-                <Link href="/app/billing">Go to Billing</Link>
+                <Link href="/billing">Go to Billing</Link>
               </Button>
             </div>
           )}
@@ -71,7 +70,7 @@ export default async function SubscribeErrorPage({
                 If you want to cancel your current subscription, please go to your billing page.
               </p>
               <Button asChild>
-                <Link href="/app/billing">Go to Billing</Link>
+                <Link href="/billing">Go to Billing</Link>
               </Button>
             </div>
           )}
@@ -79,19 +78,14 @@ export default async function SubscribeErrorPage({
             <div className="flex flex-col gap-2 items-center">
               <p>Please provide your billing information to complete your subscription.</p>
               <Button asChild>
-                <Link href="/app/subscribe">Try Again</Link>
+                <Link href="/subscribe">Try Again</Link>
               </Button>
-            </div>
-          )}
-          {code === "PAYPAL_CANCELLED" && (
-            <div className="flex flex-col gap-2 items-center">
-              <p>PayPal subscription cancelled. Please try again.</p>
             </div>
           )}
           {/* Contact Support */}
           <div className="flex flex-row gap-2 items-center">
             <Button variant="outline" asChild>
-              <Link href="/contact">Contact Support</Link>
+              <a href={`mailto:${appConfig.legal.email}`}>Contact Support</a>
             </Button>
             <Button variant="outline" asChild>
               <Link href="/">Back to Home</Link>

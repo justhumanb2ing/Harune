@@ -75,7 +75,7 @@ type BillingFormValues = z.infer<typeof formSchema>;
 export default function BillingFormPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/app/subscribe";
+  const callbackUrl = searchParams.get("callbackUrl") || "/subscribe";
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<BillingFormValues>({

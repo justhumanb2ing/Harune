@@ -52,7 +52,7 @@ export const createOneTimePaymentCheckout = async (params: {
       tax_id: taxId,
       // @ts-expect-error - DodoPayments types are not updated
       billing_currency: currency,
-      return_url: `${env.NEXT_PUBLIC_APP_URL}/app/subscribe/success?provider=dodo`,
+      return_url: `${env.NEXT_PUBLIC_APP_URL}/subscribe/success?provider=dodo`,
     });
 
     return {
@@ -99,8 +99,7 @@ export const createCreditCheckout = async (params: {
           create_new_customer: true,
         };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const productCartItem: any = {
+    const productCartItem = {
       product_id: productId,
       quantity: 1, // Always 1 for credit purchases, actual amount is in metadata
       amount: Math.round(totalPrice * 100), // Convert to cents
@@ -122,7 +121,7 @@ export const createCreditCheckout = async (params: {
         userId: userId,
         totalPrice: totalPrice.toString(),
       },
-      return_url: `${env.NEXT_PUBLIC_APP_URL}/app/credits/buy/success?provider=dodo&creditType=${creditType}&amount=${creditAmount}`,
+      return_url: `${env.NEXT_PUBLIC_APP_URL}/credits/buy/success?provider=dodo&creditType=${creditType}&amount=${creditAmount}`,
     });
 
     return {
@@ -165,7 +164,7 @@ export const createSubscriptionCheckout = async (params: {
       tax_id: taxId,
       //   NON-USD subscriptions are not supported yet
       trial_period_days: trialPeriodDays ? trialPeriodDays : undefined,
-      return_url: `${env.NEXT_PUBLIC_APP_URL}/app/subscribe/success?provider=dodo`,
+      return_url: `${env.NEXT_PUBLIC_APP_URL}/subscribe/success?provider=dodo`,
     });
 
     return {

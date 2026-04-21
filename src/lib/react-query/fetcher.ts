@@ -28,7 +28,7 @@ export const apiFetch = async <T>(params: FetcherParams, init?: RequestInit): Pr
 
   if (!response.ok) {
     const body = await response.text();
-    const error = new ApiError(getErrorMessage(body) || "요청에 실패했습니다.");
+    const error = new ApiError(getErrorMessage(body) || "Request Failed");
     error.status = response.status;
     error.body = body;
     throw error;

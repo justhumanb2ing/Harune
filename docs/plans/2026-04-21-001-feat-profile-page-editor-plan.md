@@ -15,21 +15,22 @@ Leeve의 공개 프로필 페이지를 온보딩 전용 생성 흐름에서 실�
 
 현재 공개 페이지 데이터는 `profile_page` 단일 테이블과 `socialLinks` JSON 컬럼에 묶여 있고, 편집 UI는 `src/app/(in-app)/(sidebar)/section/profile/page.tsx`에서 `app_user`를 직접 수정한다. 이 구조는 아래 요구사항을 제대로 지원하지 못한다.
 
-- 프로필 이미지, 이름, 바이오, 사이트 핸들의 독립적 변경/삭제
+- 프로필 이미지 제거(`null` 저장), 이름/바이오 변경, 사이트 핸들 수정
 - 소셜 링크의 추가/수정/삭제
 - 링크 아이템의 추가/수정/삭제와 순서 변경
 - 텍스트 박스의 추가/수정/삭제와 순서 변경
 
-특히 `삭제` 요구사항이 있는 상태에서 공개 페이지가 `app_user.name` / `app_user.image`로 폴백하면 삭제 결과가 사용자에게 보이지 않는다. 따라서 페이지 편집 대상 데이터의 canonical source를 `profile_page` 계열로 통일하고, 반복 가능한 컬렉션은 관계형 테이블로 분리해야 한다.
+핵심 문제는 필드별 편집 가능성(`handle`/`name`은 수정-only, `bio`/`image`는 clear 가능)과 반복 가능한 컬렉션(소셜/링크/텍스트 박스)을 현재 구조가 제대로 표현하지 못한다는 점이다. 따라서 페이지 편집 규칙은 `profile_page` 계열 도메인으로 옮기되, 공개 페이지의 사용자 정보 폴백 여부는 별도 렌더링 결정으로 분리해야 한다.
 
 ## Requirements Trace
 
-- R1. 사용자는 공개 페이지의 프로필 이미지, 이름, 바이오, 사이트 핸들을 변경하거나 삭제할 수 있어야 한다.
-- R2. 사용자는 여러 소셜 링크를 추가, 수정, 삭제할 수 있어야 한다.
-- R3. 사용자는 링크 아이템을 추가, 수정, 삭제할 수 있고 각 아이템의 `title`, `description`, `url`을 편집할 수 있어야 한다.
-- R4. 사용자는 텍스트 박스를 추가, 수정, 삭제할 수 있고 각 아이템의 `title`, `description`을 편집할 수 있어야 한다.
-- R5. 링크 아이템과 텍스트 박스는 각 컬렉션 내부에서 순서를 바꿀 수 있어야 한다.
-- R6. 편집 결과는 공개 페이지(`src/app/(website-layout)/[handle]/page.tsx`)와 인앱 미리보기/네비게이션에 즉시 일관되게 반영되어야 한다.
+- R1. 사용자는 공개 페이지의 이름과 사이트 핸들을 수정할 수 있어야 한다.
+- R2. 사용자는 공개 페이지의 바이오를 수정하거나 비울 수 있어야 하며, 이미지는 교체하거나 제거하여 `null`로 저장할 수 있어야 한다.
+- R3. 사용자는 여러 소셜 링크를 추가, 수정, 삭제할 수 있어야 한다.
+- R4. 사용자는 링크 아이템을 추가, 수정, 삭제할 수 있고 각 아이템의 `title`, `description`, `url`을 편집할 수 있어야 한다.
+- R5. 사용자는 텍스트 박스를 추가, 수정, 삭제할 수 있고 각 아이템의 `title`, `description`을 편집할 수 있어야 한다.
+- R6. 링크 아이템과 텍스트 박스는 각 컬렉션 내부에서 순서를 바꿀 수 있어야 한다.
+- R7. 편집 결과는 공개 페이지(`src/app/(website-layout)/[handle]/page.tsx`)와 인앱 미리보기/네비게이션에 즉시 일관되게 반영되어야 한다.
 
 ## Scope Boundaries
 
@@ -61,8 +62,8 @@ Leeve의 공개 프로필 페이지를 온보딩 전용 생성 흐름에서 실�
 
 ## Key Technical Decisions
 
-- `profile_page`를 공개 페이지 메타데이터의 canonical source로 유지한다.
-  `handle`, `name`, `bio`, `image`는 공개 페이지 기준 값이므로 `app_user`가 아니라 `profile_page`에서 읽고 쓴다. 이렇게 해야 삭제 시 공개 페이지에 빈 상태가 정확히 반영된다.
+- `profile_page`를 공개 페이지 편집의 primary write source로 유지한다.
+  `handle`, `name`, `bio`, `image` 저장은 모두 `profile_page`로 통일하되, 공개 페이지 렌더링에서 `app_user` 값을 보조 폴백으로 사용할지는 표현 계층에서 결정한다.
 
 - `socialLinks` JSON 컬럼은 관계형 테이블로 정규화한다.
   소셜 링크는 추가/수정/삭제 단위가 분명하고 플랫폼별 검증이 필요하므로 `jsonb`보다 행 단위 CRUD가 맞다.
@@ -70,8 +71,8 @@ Leeve의 공개 프로필 페이지를 온보딩 전용 생성 흐름에서 실�
 - 링크 아이템과 텍스트 박스는 별도 테이블로 분리한다.
   `profile_link_item`은 `url`이 필수이고 `profile_text_box_item`은 `url`이 없어야 하므로, 하나의 generic block 테이블보다 별도 테이블이 검증과 쿼리, 순서 제약을 단순하게 만든다.
 
-- 재정렬은 `position` 기반의 dense ordering으로 구현한다.
-  각 컬렉션에 `position` 정수를 두고, reorder API는 정렬된 ID 배열을 받아 서버에서 재색인한다. 요구사항은 “순서 변경”이지 drag-and-drop 자체가 아니므로 초기 버전은 up/down 또는 순서 이동 액션으로 충분하다.
+- 재정렬 UI는 최신 안정 버전의 `dnd-kit`로 구현한다.
+  서버는 여전히 `position` 기반 dense ordering을 유지하고, 클라이언트는 drag-and-drop 상호작용을 `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/modifiers` 위에서 구현한다.
 
 - 편집용 API는 `me` 엔드포인트와 분리한다.
   `/api/app/me`는 인증된 사용자 부트스트랩 응답으로 유지하고, 공개 페이지 편집은 `/api/app/profile-page/**` 아래 전용 라우트로 분리한다. 이렇게 해야 account profile과 public page profile의 책임이 섞이지 않는다.
@@ -80,14 +81,14 @@ Leeve의 공개 프로필 페이지를 온보딩 전용 생성 흐름에서 실�
 
 ### Resolved During Planning
 
-- 공개 페이지가 이름/이미지 삭제 후에도 `app_user` 값으로 폴백해야 하는가?
-  아니다. 공개 페이지와 편집 미리보기는 `profile_page` 값을 우선이 아니라 단일 기준으로 사용하고, 값이 없으면 `handle` 또는 빈 상태 UI를 보여준다.
+- 공개 페이지가 `profile_page` 값이 비어 있을 때 `app_user` 값으로 폴백할 수 있는가?
+  가능하다. `name`과 `handle`은 수정-only이고 `image` 제거는 `null` 저장으로 표현하므로, 저장 모델과 렌더링 폴백 정책은 분리한다.
 
 - 링크와 텍스트 박스를 하나의 generic section 테이블로 합쳐야 하는가?
   아니다. 현재 요구사항은 타입별 CRUD와 타입별 순서 변경에 집중되어 있어 별도 테이블이 더 단순하고 구현 위험이 낮다.
 
-- 별도 drag-and-drop 라이브러리를 도입해야 하는가?
-  아니다. 현재 repo에 정렬용 DnD 패턴이 없고 요구사항도 drag gesture를 요구하지 않는다. 첫 버전은 명시적 reorder 액션으로 구현한다.
+- reorder UI는 무엇으로 구현할 것인가?
+  npm 최신 안정 태그 기준 `@dnd-kit/core 6.3.1`, `@dnd-kit/sortable 10.0.0`, `@dnd-kit/modifiers 9.0.0`, `@dnd-kit/utilities 3.2.2`를 사용한다.
 
 ### Deferred to Implementation
 
@@ -188,25 +189,23 @@ flowchart LR
 - Create: `src/app/api/app/profile-page/social-links/route.ts`
 - Create: `src/app/api/app/profile-page/social-links/[socialLinkId]/route.ts`
 - Create: `src/app/api/app/profile-page/handle-availability/route.ts`
-- Modify: `src/lib/handles.ts`
 - Test: `src/lib/profile-page/mutations.test.ts`
 - Test: `src/lib/validations/profile-page.schema.test.ts`
 
 **Approach:**
 - `getOwnedProfilePage(userId)` / `getPublicProfilePage(handle)` / `updateProfileMetadata()` / `upsertSocialLink()` / `deleteSocialLink()` 같은 도메인 함수를 분리한다.
 - 핸들 변경 시 현재 소유 페이지의 기존 핸들은 허용하고, 다른 페이지와 reserved handle만 차단하는 auth-aware availability 검사를 추가한다.
-- `name`, `bio`, `image`는 nullable로 허용해 “삭제”를 표현하고, `handle`만 필수/unique로 유지한다.
+- `name`과 `handle`은 필수 수정-only 필드로 유지하고, `bio`와 `image`만 nullable로 허용해 clear 동작을 표현한다.
 - 소셜 링크는 플랫폼 enum 또는 문자열 유니온으로 제한하되, URL 검증은 route가 아니라 validation schema에서 일관되게 수행한다.
 
 **Patterns to follow:**
 - `src/lib/validations/auth.schema.ts`
 - `src/app/api/handles/availability/route.ts`
-- `src/hooks/use-handle-availability.ts`
 
 **Test scenarios:**
 - Happy path: 현재 페이지의 `name`, `bio`, `image`, `handle`을 유효한 값으로 수정하면 새 값이 저장된다.
 - Happy path: 동일 플랫폼 소셜 링크를 수정하면 새 row를 추가하지 않고 기존 row를 갱신한다.
-- Edge case: `name`, `bio`, `image`를 모두 빈 값으로 제출하면 `null`로 저장되고 검증이 통과한다.
+- Edge case: `bio`와 `image`만 빈 값으로 제출하면 `null`로 저장되고, `name`과 `handle`은 빈 값에서 검증 오류가 난다.
 - Edge case: 현재 사용자가 이미 가진 핸들로 PATCH하면 “사용 가능”으로 간주된다.
 - Error path: reserved handle 또는 다른 사용자가 쓰는 handle로 변경하려 하면 검증 오류가 난다.
 - Error path: 잘못된 URL 형식의 소셜 링크는 저장되지 않는다.
@@ -308,26 +307,24 @@ flowchart LR
 - Create: `src/components/section/link-items-editor.tsx`
 - Create: `src/components/section/text-box-items-editor.tsx`
 - Create: `src/app/api/app/profile-page/upload-image/route.ts`
-- Modify: `src/hooks/use-handle-availability.ts`
 - Modify: `src/lib/react-query/query-keys.ts`
 - Test: `src/lib/profile-page/editor-state.test.ts`
 
 **Approach:**
 - 현재 placeholder인 `/section/page.tsx`를 메인 편집 화면으로 사용한다.
 - 프로필 이미지 업로드는 기존 `S3Uploader`를 재사용하되 저장 대상 route를 `/api/app/profile-page/upload-image`로 분리한다.
-- 컬렉션 편집은 “추가 버튼 + inline form + 저장/삭제 + 위/아래 이동” 구조로 시작한다.
+- 컬렉션 편집은 “추가 버튼 + inline form + 저장/삭제 + dnd-kit drag-and-drop” 구조로 시작한다.
 - React Query 캐시는 `me`와 별도 `profile-page` query key를 사용해, 편집기와 사이드바 갱신 범위를 제어한다.
 - 현재 `/section/profile`는 새 편집기의 세부 진입점으로 재사용하거나 `/section`으로 정리한다.
 
 **Patterns to follow:**
 - `src/app/(in-app)/(sidebar)/section/profile/page.tsx`
 - `src/components/ui/s3-uploader/s3-uploader.tsx`
-- `src/hooks/use-handle-availability.ts`
 
 **Test scenarios:**
 - Happy path: 사용자가 프로필 이름/바이오/이미지를 수정해 저장하면 새 값이 폼과 미리보기에 반영된다.
-- Happy path: 링크/텍스트 박스를 추가한 뒤 위/아래 이동 버튼으로 순서를 바꾸면 화면 순서가 즉시 바뀌고 저장 후에도 유지된다.
-- Edge case: 이미지 삭제, 바이오 삭제, 이름 삭제를 각각 수행하면 대응 필드가 빈 상태 UI로 돌아간다.
+- Happy path: 링크/텍스트 박스를 추가한 뒤 drag-and-drop으로 순서를 바꾸면 화면 순서가 즉시 바뀌고 저장 후에도 유지된다.
+- Edge case: 이미지 삭제와 바이오 삭제를 수행하면 대응 필드가 빈 상태 UI로 돌아가고, 이름을 비워 저장하려 하면 검증 오류가 난다.
 - Edge case: 현재 핸들을 다시 입력하면 중복 오류 없이 저장 가능 상태를 유지한다.
 - Error path: 저장 실패 시 낙관적 UI가 롤백되고 오류 메시지가 보인다.
 - Integration: 한 화면에서 프로필과 링크 목록을 연속 저장해도 캐시 충돌 없이 최신 상태가 유지된다.
@@ -356,7 +353,7 @@ flowchart LR
 
 **Approach:**
 - 온보딩은 `profile_page` 생성 + 초기 소셜 링크 삽입까지만 담당하고, 링크/텍스트 박스는 이후 `/section`에서 관리하도록 둔다.
-- 공개 페이지 조회는 `profile_page`와 새 하위 테이블을 함께 읽도록 바꾸고, `app_user.name` / `app_user.image` 폴백을 제거한다.
+- 공개 페이지 조회는 `profile_page`와 새 하위 테이블을 함께 읽도록 바꾸고, `app_user.name` / `app_user.image` 폴백은 표현 계층에서 계속 허용한다.
 - 공개 페이지는 프로필 섹션, 소셜 섹션, 링크 목록, 텍스트 박스 목록을 빈 상태를 포함해 안정적으로 렌더링한다.
 - 사이드바 요약은 페이지 편집 대상과 같은 데이터 소스를 읽도록 맞춰 “삭제했는데 남아 보이는” 문제를 없앤다.
 
@@ -368,7 +365,7 @@ flowchart LR
 **Test scenarios:**
 - Happy path: 온보딩으로 생성된 페이지는 새 읽기 모델에서도 정상적으로 공개 페이지에 렌더링된다.
 - Happy path: 링크와 텍스트 박스를 추가하면 공개 페이지에 같은 순서로 노출된다.
-- Edge case: 이름/이미지/바이오가 모두 비어 있으면 공개 페이지는 `handle` 기반 fallback label과 빈 상태 섹션을 보여준다.
+- Edge case: `bio`와 `image`가 비어 있으면 공개 페이지는 `app_user` 폴백을 포함한 fallback label과 빈 상태 섹션을 보여준다.
 - Edge case: 링크/텍스트 박스가 하나도 없으면 공개 페이지 레이아웃이 깨지지 않는다.
 - Error path: 존재하지 않는 핸들은 기존처럼 `notFound()`를 반환한다.
 - Integration: 편집기 저장 직후 `/section`, 사이드바, 공개 페이지가 동일한 데이터를 보여준다.
@@ -391,14 +388,14 @@ flowchart LR
 | Risk | Mitigation |
 |------|------------|
 | 기존 `socialLinks` JSON 데이터 유실 가능성 | 마이그레이션 매핑 테스트를 추가하고, 컬럼 제거 전 새 읽기 경로를 먼저 전환한다. |
-| 공개 페이지가 `app_user` 폴백을 계속 사용해 삭제가 반영되지 않을 위험 | 공개 페이지와 사이드바 모두 `profile_page` 기준으로 읽도록 명시적으로 수정한다. |
+| 공개 페이지의 `app_user` 폴백과 `profile_page` 저장 상태가 어긋날 위험 | 렌더링 계층에서 어떤 필드가 폴백 가능한지(`name`, `image`)를 명시적으로 구분하고, 저장은 항상 `profile_page`로 통일한다. |
 | reorder/delete 이후 `position` 중복 또는 공백 발생 | reorder와 delete mutation에 서버 측 재색인 로직을 공통화한다. |
 | 편집기 범위가 커져 `/section` UX가 산만해질 위험 | 프로필/소셜/링크/텍스트 박스를 카드 또는 아코디언으로 구획하고 저장 단위를 분리한다. |
 | 업로드된 이전 이미지 파일이 S3에 남는 문제 | 초기 범위에서는 DB 참조만 교체하고, orphan cleanup은 후속 작업으로 분리한다. |
 
 ## Documentation / Operational Notes
 
-- `docs/plans/` 외 별도 운영 문서 업데이트는 필수는 아니지만, 공개 페이지 편집 책임이 `app_user`에서 `profile_page`로 이동한다는 점은 구현 PR 설명에 명시하는 편이 좋다.
+- `docs/plans/` 외 별도 운영 문서 업데이트는 필수는 아니지만, 공개 페이지 편집 책임은 `profile_page`에 두고 렌더링 폴백만 `app_user`를 사용할 수 있다는 점은 구현 PR 설명에 명시하는 편이 좋다.
 - QA 체크리스트에는 “프로필 필드 삭제 후 공개 페이지 반영”, “링크/텍스트 박스 reorder 후 새로고침 유지”, “핸들 변경 후 새 URL 접근”이 포함돼야 한다.
 
 ## Priority Order
@@ -410,7 +407,7 @@ flowchart LR
 5. Unit 5: `/section` 통합 편집 UI 마감
 6. Unit 6: 공개 페이지, 온보딩, 사이드바 정합성 마무리
 
-이 순서를 권장하는 이유는, 먼저 스키마와 도메인 규칙을 고정한 뒤 컬렉션 CRUD를 완성해야 편집 UI가 얇게 유지되기 때문이다. Unit 6 안에서는 공개 페이지의 source-of-truth 정리를 먼저 적용해 삭제 동작이 기존 `app_user` 폴백에 가려지지 않게 한다.
+이 순서를 권장하는 이유는, 먼저 스키마와 도메인 규칙을 고정한 뒤 컬렉션 CRUD를 완성해야 편집 UI가 얇게 유지되기 때문이다. Unit 6에서는 저장 모델과 렌더링 폴백을 분리해 public view와 editor view가 같은 페이지 데이터를 공유하도록 마무리한다.
 
 ## Sources & References
 

@@ -15,6 +15,20 @@
       "when": 1776746468203,
       "tag": "0001_profile_page_details",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776762000000,
+      "tag": "0002_profile_page_editor",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1776783353674,
+      "tag": "0003_pale_jane_foster",
+      "breakpoints": true
     }
   ]
 }

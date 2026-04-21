@@ -5,7 +5,6 @@ import { AnalyticsScript } from "@/components/analytics/analytics-script";
 import { absoluteUrl, seoConfig } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 import Providers from "./Providers";
-import { Toaster } from "@/components/ui/sonner";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -67,7 +66,6 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} h-full min-h-screen antialiased bg-background`}>
         <Providers>{children}</Providers>
-        <Toaster />
       </body>
     </html>
   );

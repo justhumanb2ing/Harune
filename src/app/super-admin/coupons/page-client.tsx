@@ -26,7 +26,7 @@ import {
 import { useDebounce } from "@/hooks/use-debounce";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
-import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { AlertTriangle, ExternalLink, MoreVertical } from "lucide-react";
 import Link from "next/link";
@@ -86,33 +86,31 @@ export default function CouponsPage() {
     setPage(1);
   };
 
-  const expireCoupon = async (id: string) => {
-    try {
-      const response = await fetch(`/api/super-admin/coupons/${id}`, {
+  const expireCouponMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiFetch(`/api/super-admin/coupons/${id}`, {
         method: "PATCH",
-      });
-
-      if (!response.ok) throw new Error("Failed to expire coupon");
-
+      }),
+    onSuccess: async () => {
       await refreshCoupons();
-    } catch (requestError) {
+    },
+    onError: (requestError) => {
       console.error("Error expiring coupon:", requestError);
-    }
-  };
+    },
+  });
 
-  const deleteCoupon = async (id: string) => {
-    try {
-      const response = await fetch(`/api/super-admin/coupons/${id}`, {
+  const deleteCouponMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiFetch(`/api/super-admin/coupons/${id}`, {
         method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Failed to delete coupon");
-
+      }),
+    onSuccess: async () => {
       await refreshCoupons();
-    } catch (requestError) {
+    },
+    onError: (requestError) => {
       console.error("Error deleting coupon:", requestError);
-    }
-  };
+    },
+  });
 
   return (
     <div className="space-y-6">
@@ -219,7 +217,7 @@ export default function CouponsPage() {
                       <DropdownMenuContent align="end">
                         {!coupon.expired && !coupon.usedAt && (
                           <DropdownMenuItem
-                            onClick={() => expireCoupon(coupon.id)}
+                            onClick={() => expireCouponMutation.mutate(coupon.id)}
                             className="text-destructive"
                           >
                             <AlertTriangle className="mr-2 h-4 w-4" />
@@ -229,7 +227,7 @@ export default function CouponsPage() {
                         <DropdownMenuItem
                           onClick={() => {
                             if (confirm("Are you sure you want to delete this coupon?")) {
-                              deleteCoupon(coupon.id);
+                              deleteCouponMutation.mutate(coupon.id);
                             }
                           }}
                           className="text-destructive"

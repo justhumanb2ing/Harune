@@ -21,7 +21,7 @@ import {
 import { useDebounce } from "@/hooks/use-debounce";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
-import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Download, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -69,27 +69,24 @@ export default function WaitlistPage() {
     placeholderData: keepPreviousData,
   });
 
+  const deleteEntryMutation = useMutation({
+    mutationFn: (id: number) =>
+      apiFetch(`/api/super-admin/waitlist-entries?id=${id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: async () => {
+      toast.success("Entry deleted successfully");
+      await queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.waitlist.all() });
+    },
+    onError: (requestError) => {
+      console.error("Failed to delete entry", requestError);
+      toast.error("Failed to delete entry");
+    },
+  });
+
   const handleSearch = (value: string) => {
     setSearch(value);
     setPage(1);
-  };
-
-  const handleDelete = async (id: number) => {
-    try {
-      const response = await fetch(`/api/super-admin/waitlist-entries?id=${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete entry");
-      }
-
-      toast.success("Entry deleted successfully");
-      await queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.waitlist.all() });
-    } catch (requestError) {
-      console.error("Failed to delete entry", requestError);
-      toast.error("Failed to delete entry");
-    }
   };
 
   const handleExport = async () => {
@@ -203,7 +200,7 @@ export default function WaitlistPage() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-red-600"
-                          onClick={() => handleDelete(entry.id)}
+                          onClick={() => deleteEntryMutation.mutate(entry.id)}
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
                           Delete Entry

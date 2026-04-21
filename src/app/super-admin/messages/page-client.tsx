@@ -32,7 +32,7 @@ import {
 import { useDebounce } from "@/hooks/use-debounce";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
-import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Mail, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 
@@ -55,6 +55,11 @@ interface PaginationInfo {
 
 const limit = 10;
 const formatDate = (date: string) => new Date(date).toLocaleString();
+
+interface UpdateMessageInput {
+  id: string;
+  readAt: boolean;
+}
 
 export default function MessagesPage() {
   const queryClient = useQueryClient();
@@ -93,54 +98,48 @@ export default function MessagesPage() {
     ]);
   };
 
-  const handleOpenMessage = async (message: Message) => {
+  const updateMessageMutation = useMutation({
+    mutationFn: (input: UpdateMessageInput) =>
+      apiFetch<Message>("/api/super-admin/messages", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      }),
+    onSuccess: async (updatedMessage) => {
+      setSelectedMessage((current) =>
+        current?.id === updatedMessage.id ? { ...current, readAt: updatedMessage.readAt } : current
+      );
+      await refreshMessages();
+    },
+    onError: (requestError) => {
+      console.error("Error toggling message read status:", requestError);
+    },
+  });
+
+  const deleteMessageMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiFetch(`/api/super-admin/messages?id=${id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: async () => {
+      setSelectedMessage(null);
+      await refreshMessages();
+    },
+    onError: (requestError) => {
+      console.error("Error deleting message:", requestError);
+    },
+  });
+
+  const handleOpenMessage = (message: Message) => {
     setSelectedMessage(message);
 
     if (!message.readAt) {
-      try {
-        await fetch("/api/super-admin/messages", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: message.id, readAt: true }),
-        });
-
-        setSelectedMessage({ ...message, readAt: new Date().toISOString() });
-        await refreshMessages();
-      } catch (requestError) {
-        console.error("Error marking message as read:", requestError);
-      }
+      updateMessageMutation.mutate({ id: message.id, readAt: true });
     }
   };
 
-  const handleToggleRead = async (message: Message) => {
-    const nextReadAt = message.readAt ? null : new Date().toISOString();
-
-    try {
-      await fetch("/api/super-admin/messages", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: message.id, readAt: !message.readAt }),
-      });
-
-      setSelectedMessage((current) =>
-        current?.id === message.id ? { ...current, readAt: nextReadAt } : current
-      );
-      await refreshMessages();
-    } catch (requestError) {
-      console.error("Error toggling message read status:", requestError);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    try {
-      await fetch(`/api/super-admin/messages?id=${id}`, {
-        method: "DELETE",
-      });
-      setSelectedMessage(null);
-      await refreshMessages();
-    } catch (requestError) {
-      console.error("Error deleting message:", requestError);
-    }
+  const handleToggleRead = (message: Message) => {
+    updateMessageMutation.mutate({ id: message.id, readAt: !message.readAt });
   };
 
   return (
@@ -299,7 +298,9 @@ export default function MessagesPage() {
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
-                      onClick={() => selectedMessage && handleDelete(selectedMessage.id)}
+                      onClick={() =>
+                        selectedMessage && deleteMessageMutation.mutate(selectedMessage.id)
+                      }
                     >
                       Delete
                     </AlertDialogAction>

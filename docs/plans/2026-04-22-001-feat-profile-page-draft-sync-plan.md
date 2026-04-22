@@ -138,7 +138,7 @@ flowchart LR
 
 ## Implementation Units
 
-- [ ] **Unit 1: Define the full-draft sync contract and server apply pipeline**
+- [x] **Unit 1: Define the full-draft sync contract and server apply pipeline**
 
 **Goal:** Sync 버튼이 profile/social/link/text 전체 draft를 한 번에 검증하고 DB에 반영할 수 있는 서버 계약을 만든다.
 
@@ -180,7 +180,7 @@ flowchart LR
 - profile page 편집의 모든 서버 write가 단일 sync 진입점으로 수렴한다.
 - 응답 payload만으로 클라이언트 store와 React Query snapshot을 동일 상태로 재설정할 수 있다.
 
-- [ ] **Unit 2: Add a layout-scoped editor store with selector subscriptions**
+- [x] **Unit 2: Add a layout-scoped editor store with selector subscriptions**
 
 **Goal:** `(sidebar)` 라우트 하위 어디에서든 같은 draft를 읽고 수정할 수 있는 고성능 store를 만든다.
 
@@ -221,7 +221,7 @@ flowchart LR
 - section 라우트 간 이동으로 draft가 유실되지 않는다.
 - `Sync` 버튼은 store의 `hasUnsyncedChanges`만 구독해 활성/비활성을 안정적으로 결정한다.
 
-- [ ] **Unit 3: Refactor section editors to local-only draft mutations**
+- [x] **Unit 3: Refactor section editors to local-only draft mutations**
 
 **Goal:** 각 편집 화면이 더 이상 item별 write API를 호출하지 않고, 오직 editor store만 갱신하도록 바꾼다.
 
@@ -262,7 +262,7 @@ flowchart LR
 - editor interaction만으로는 DB write request가 발생하지 않는다.
 - 기존 개별 저장 UX 대신 하나의 draft 편집 UX로 일관되게 동작한다.
 
-- [ ] **Unit 4: Add the preview panel and Sync workflow in the sidebar layout**
+- [x] **Unit 4: Add the preview panel and Sync workflow in the sidebar layout**
 
 **Goal:** `(sidebar)` 레이아웃의 preview 영역에서 현재 draft를 렌더링하고, dirty 상태에 따라 `Sync` 버튼을 제어한다.
 

@@ -5,9 +5,11 @@ import {
   profileSocialLinks,
   profileTextBoxItems,
 } from "@/db/schema/profile-page";
+import { getProfilePageEditorData } from "@/lib/profile-page/queries";
 import { deletePublicS3Object } from "@/lib/s3/deleteObject";
 import type {
   LinkItemInput,
+  ProfilePageSyncValues,
   ProfilePageUpdateValues,
   SocialLinkInput,
   TextBoxItemInput,
@@ -23,6 +25,8 @@ export class ProfilePageError extends Error {
     this.name = "ProfilePageError";
   }
 }
+
+type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 const getOwnedPageOrThrow = async (userId: string) => {
   const page = await db
@@ -630,4 +634,149 @@ export const reorderTextBoxItems = async ({
         .where(eq(profileTextBoxItems.id, id));
     }
   });
+};
+
+const syncSocialLinks = async ({
+  tx,
+  profilePageId,
+  values,
+}: {
+  tx: DbTransaction;
+  profilePageId: string;
+  values: ProfilePageSyncValues["socialLinks"];
+}) => {
+  await tx.delete(profileSocialLinks).where(eq(profileSocialLinks.profilePageId, profilePageId));
+  const now = new Date();
+
+  for (const [index, socialLink] of values.entries()) {
+    await tx.insert(profileSocialLinks).values({
+      profilePageId,
+      platform: socialLink.platform,
+      url: socialLink.url,
+      position: index,
+      updatedAt: now,
+    });
+  }
+};
+
+const syncLinkItems = async ({
+  tx,
+  profilePageId,
+  values,
+}: {
+  tx: DbTransaction;
+  profilePageId: string;
+  values: ProfilePageSyncValues["linkItems"];
+}) => {
+  await tx.delete(profileLinkItems).where(eq(profileLinkItems.profilePageId, profilePageId));
+
+  const now = new Date();
+
+  for (const [index, linkItem] of values.entries()) {
+    await tx.insert(profileLinkItems).values({
+      profilePageId,
+      title: linkItem.title,
+      description: linkItem.description || null,
+      favicon: linkItem.favicon || null,
+      url: linkItem.url,
+      position: index,
+      updatedAt: now,
+    });
+  }
+};
+
+const syncTextBoxItems = async ({
+  tx,
+  profilePageId,
+  values,
+}: {
+  tx: DbTransaction;
+  profilePageId: string;
+  values: ProfilePageSyncValues["textBoxItems"];
+}) => {
+  await tx.delete(profileTextBoxItems).where(eq(profileTextBoxItems.profilePageId, profilePageId));
+
+  const now = new Date();
+
+  for (const [index, textBoxItem] of values.entries()) {
+    await tx.insert(profileTextBoxItems).values({
+      profilePageId,
+      title: textBoxItem.title,
+      description: textBoxItem.description || null,
+      position: index,
+      updatedAt: now,
+    });
+  }
+};
+
+export const syncProfilePageDraft = async ({
+  userId,
+  values,
+}: {
+  userId: string;
+  values: ProfilePageSyncValues;
+}) => {
+  const ownedPage = await getOwnedPageOrThrow(userId);
+
+  const existingOwner = await db
+    .select({
+      id: profilePages.id,
+    })
+    .from(profilePages)
+    .where(eq(profilePages.handle, values.page.handle))
+    .limit(1)
+    .then((rows) => rows[0] ?? null);
+
+  if (existingOwner && existingOwner.id !== ownedPage.id) {
+    throw new ProfilePageError("This handle is already taken.", 409);
+  }
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(profilePages)
+      .set({
+        handle: values.page.handle,
+        name: values.page.name,
+        bio: values.page.bio || null,
+        image: values.page.image,
+        updatedAt: new Date(),
+      })
+      .where(eq(profilePages.id, ownedPage.id));
+
+    await syncSocialLinks({
+      tx,
+      profilePageId: ownedPage.id,
+      values: values.socialLinks,
+    });
+    await syncLinkItems({
+      tx,
+      profilePageId: ownedPage.id,
+      values: values.linkItems,
+    });
+    await syncTextBoxItems({
+      tx,
+      profilePageId: ownedPage.id,
+      values: values.textBoxItems,
+    });
+  });
+
+  if (ownedPage.image && ownedPage.image !== values.page.image) {
+    try {
+      await deletePublicS3Object(ownedPage.image);
+    } catch (error) {
+      console.error("Failed to delete profile image from storage after sync:", {
+        error,
+        imageUrl: ownedPage.image,
+        userId,
+      });
+    }
+  }
+
+  const nextData = await getProfilePageEditorData(userId);
+
+  if (!nextData) {
+    throw new ProfilePageError("Profile page not found.", 404);
+  }
+
+  return nextData;
 };

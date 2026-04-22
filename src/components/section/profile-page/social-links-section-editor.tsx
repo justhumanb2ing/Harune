@@ -5,7 +5,7 @@ import { DndContext, closestCenter } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { XCircle } from "@phosphor-icons/react";
-import { GripVertical, Loader2Icon, Save } from "lucide-react";
+import { GripVertical } from "lucide-react";
 import { FaLinkedinIn, FaYoutube } from "react-icons/fa6";
 
 import { ProfilePageSectionLayout } from "@/components/section/profile-page/section-layout";
@@ -17,7 +17,6 @@ import {
 import {
   InputGroup,
   InputGroupAddon,
-  InputGroupButton,
   InputGroupInput,
   InputGroupText,
 } from "@/components/ui/input-group";
@@ -63,7 +62,7 @@ export function SocialLinksSectionEditor() {
             onDragEnd={(event) => void editor.handleSocialLinkDragEnd(event)}
           >
             <SortableContext
-              items={editor.data.socialLinks.map((item) => item.id)}
+              items={editor.data.socialLinks.map((item) => item.platform)}
               strategy={verticalListSortingStrategy}
             >
               <div className="space-y-3">
@@ -78,14 +77,14 @@ export function SocialLinksSectionEditor() {
                   }
 
                   return (
-                    <SortableShell key={socialLink.id} id={socialLink.id}>
+                    <SortableShell key={socialLink.platform} id={socialLink.platform}>
                       {({ attributes, listeners }) => (
                         <div className="group/item relative">
                           <button
                             type="button"
                             className="absolute top-1/2 -left-8 inline-flex size-7 -translate-y-1/2 items-center justify-center rounded-[min(var(--radius-md),12px)] text-muted-foreground opacity-0 outline-none transition-[opacity,background-color,color,box-shadow] group-hover/item:opacity-100 hover:bg-muted hover:text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
                             onClick={() => void editor.handleDeleteSocialLink(platform.key)}
-                            disabled={editor.isSavingSocial === platform.key}
+                            disabled={editor.isSyncing}
                             aria-label={`${platform.label} 삭제`}
                           >
                             <XCircle
@@ -103,32 +102,13 @@ export function SocialLinksSectionEditor() {
                             <InputGroupInput
                               value={editor.socialDrafts[platform.key]}
                               onChange={(event) =>
-                                editor.setSocialDrafts((prev) => ({
-                                  ...prev,
-                                  [platform.key]: event.target.value,
-                                }))
+                                editor.setSocialUrl(platform.key, event.target.value)
                               }
                               placeholder="Add handle or URL"
                               autoComplete="off"
                               aria-label={platform.label}
                               className="h-full px-0 pl-4!"
                             />
-                            <InputGroupAddon align="inline-end" className="pr-3">
-                              <InputGroupButton
-                                type="button"
-                                variant="default"
-                                size="icon-sm"
-                                onClick={() => void editor.handleSocialSave(platform.key)}
-                                disabled={editor.isSavingSocial === platform.key}
-                                aria-label={`${platform.label} 저장`}
-                              >
-                                {editor.isSavingSocial === platform.key ? (
-                                  <Loader2Icon className="size-5 animate-spin" />
-                                ) : (
-                                  <Save className="size-5" />
-                                )}
-                              </InputGroupButton>
-                            </InputGroupAddon>
                           </InputGroup>
                           <button
                             type="button"
@@ -161,33 +141,12 @@ export function SocialLinksSectionEditor() {
                   </InputGroupAddon>
                   <InputGroupInput
                     value={editor.socialDrafts[platform.key]}
-                    onChange={(event) =>
-                      editor.setSocialDrafts((prev) => ({
-                        ...prev,
-                        [platform.key]: event.target.value,
-                      }))
-                    }
+                    onChange={(event) => editor.setSocialUrl(platform.key, event.target.value)}
                     placeholder="Add handle or URL"
                     autoComplete="off"
                     aria-label={platform.label}
                     className="h-full px-0 pl-4!"
                   />
-                  <InputGroupAddon align="inline-end" className="pr-3">
-                    <InputGroupButton
-                      type="button"
-                      variant="default"
-                      size="icon-sm"
-                      onClick={() => void editor.handleSocialSave(platform.key)}
-                      disabled={editor.isSavingSocial === platform.key}
-                      aria-label={`${platform.label} 저장`}
-                    >
-                      {editor.isSavingSocial === platform.key ? (
-                        <Loader2Icon className="size-5 animate-spin" />
-                      ) : (
-                        <Save className="size-5" />
-                      )}
-                    </InputGroupButton>
-                  </InputGroupAddon>
                 </InputGroup>
               </div>
             );

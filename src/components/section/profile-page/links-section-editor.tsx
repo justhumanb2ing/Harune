@@ -255,6 +255,18 @@ export function LinksSectionEditor() {
                 </ItemContent>
               </Item>
             ) : null}
+
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                onClick={() => editor.handleCreateLink()}
+                disabled={
+                  !editor.newLink.url.trim() || !editor.newLink.title.trim() || editor.isSyncing
+                }
+              >
+                Add link
+              </Button>
+            </div>
           </div>
 
           <DndContext

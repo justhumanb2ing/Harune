@@ -4,7 +4,7 @@ import { DndContext, closestCenter } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { XCircleIcon } from "@phosphor-icons/react";
-import { CheckIcon, GripVertical, Loader2, Plus, XIcon } from "lucide-react";
+import { CheckIcon, GripVertical, Plus, XIcon } from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -89,14 +89,10 @@ export function TextBoxesSectionEditor() {
             <div className="flex justify-end">
               <Button
                 type="button"
-                onClick={() => void editor.handleCreateTextBox()}
-                disabled={editor.isCreatingTextBox}
+                onClick={() => editor.handleCreateTextBox()}
+                disabled={!editor.newTextBox.title.trim() || editor.isSyncing}
               >
-                {editor.isCreatingTextBox ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Plus className="size-4" />
-                )}
+                <Plus className="size-4" />
                 Add text box
               </Button>
             </div>
@@ -164,14 +160,17 @@ export function TextBoxesSectionEditor() {
         open={Boolean(selectedTextBox)}
         onOpenChange={(open) => !open && setSelectedTextBoxId(null)}
       >
-        <DialogPopup showCloseButton={false} className="fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-0 rounded-xl bg-popover p-0 text-sm text-popover-foreground ring-1 ring-foreground/10 outline-none sm:max-w-md">
+        <DialogPopup
+          showCloseButton={false}
+          className="fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-0 rounded-xl bg-popover p-0 text-sm text-popover-foreground ring-1 ring-foreground/10 outline-none sm:max-w-md"
+        >
           <DialogHeader className="px-3 py-2">
             <div className="grid grid-cols-3 items-center">
               <DialogClose>
                 <XIcon className="size-4" />
               </DialogClose>
               <DialogTitle className="justify-self-center text-sm font-semibold">Edit</DialogTitle>
-              <DialogClose className={'justify-items-end'}>
+              <DialogClose className={"justify-items-end"}>
                 <CheckIcon className="size-4" />
               </DialogClose>
             </div>

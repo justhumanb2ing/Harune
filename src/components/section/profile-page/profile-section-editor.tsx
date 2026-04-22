@@ -5,7 +5,6 @@ import {
   CircleFadingArrowUpIcon,
   Loader2,
   Loader2Icon,
-  Save,
   TrashIcon,
   XIcon,
 } from "lucide-react";
@@ -57,7 +56,7 @@ export function ProfileSectionEditor() {
                   variant="ghost"
                   className="relative size-28 overflow-hidden rounded-xl p-0 shadow-xs bg-background hover:bg-background"
                   onClick={() => editor.imageInputRef.current?.click()}
-                  disabled={editor.profileImageUpload.isUploading || editor.isSavingProfile}
+                  disabled={editor.isSyncing}
                   aria-label="Upload profile image"
                 >
                   {editor.previewImageSrc ? (
@@ -68,7 +67,7 @@ export function ProfileSectionEditor() {
                     />
                   ) : (
                     <div className="flex size-full flex-col items-center justify-center gap-2 bg-background text-muted-foreground">
-                      {editor.profileImageUpload.isUploading ? (
+                      {editor.isSyncing ? (
                         <Loader2 className="size-5 animate-spin" />
                       ) : (
                         <CircleFadingArrowUpIcon className="size-5" />
@@ -82,15 +81,11 @@ export function ProfileSectionEditor() {
                     type="button"
                     size="icon-lg"
                     className="absolute -top-2 -right-2 z-10 rounded-full opacity-0 shadow-sm transition-all group-hover:scale-100 group-hover:opacity-100 bg-background hover:bg-secondary text-black"
-                    disabled={editor.profileImageUpload.isUploading || editor.isSavingProfile}
+                    disabled={editor.isSyncing}
                     onClick={(event) => {
                       event.preventDefault();
                       event.stopPropagation();
-                      editor.profileImageUpload.clear();
-                      editor.setProfileForm((prev) => ({
-                        ...prev,
-                        image: null,
-                      }));
+                      editor.removeProfileImage();
                     }}
                     aria-label="Remove profile image"
                   >
@@ -100,9 +95,7 @@ export function ProfileSectionEditor() {
               </div>
             </div>
 
-            {editor.profileImageUpload.error && (
-              <p className="text-destructive text-sm">{editor.profileImageUpload.error}</p>
-            )}
+            {editor.syncError && <p className="text-destructive text-sm">{editor.syncError}</p>}
 
             <FieldGroup>
               <Field className="relative rounded-lg bg-background shadow-xs outline-none py-4">
@@ -119,12 +112,7 @@ export function ProfileSectionEditor() {
                     autoComplete="off"
                     className="text-sm"
                     value={editor.profileForm.name}
-                    onChange={(event) =>
-                      editor.setProfileForm((prev) => ({
-                        ...prev,
-                        name: event.target.value,
-                      }))
-                    }
+                    onChange={(event) => editor.setProfileField("name", event.target.value)}
                   />
                 </InputGroup>
               </Field>
@@ -139,12 +127,7 @@ export function ProfileSectionEditor() {
                   <InputGroupTextarea
                     id="profile-page-bio"
                     value={editor.profileForm.bio}
-                    onChange={(event) =>
-                      editor.setProfileForm((prev) => ({
-                        ...prev,
-                        bio: event.target.value,
-                      }))
-                    }
+                    onChange={(event) => editor.setProfileField("bio", event.target.value)}
                     placeholder="Say something short about yourself."
                     className="min-h-12 resize-none text-sm"
                   />
@@ -165,10 +148,7 @@ export function ProfileSectionEditor() {
                   autoComplete="off"
                   value={editor.profileForm.handle}
                   onChange={(event) =>
-                    editor.setProfileForm((prev) => ({
-                      ...prev,
-                      handle: event.target.value.toLowerCase(),
-                    }))
+                    editor.setProfileField("handle", event.target.value.toLowerCase())
                   }
                   className="px-0.5!"
                 />
@@ -188,20 +168,6 @@ export function ProfileSectionEditor() {
                 </InputGroupAddon>
               </InputGroup>
             </Field>
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                onClick={() => void editor.handleProfileSave()}
-                disabled={editor.isSavingProfile || editor.profileImageUpload.isUploading}
-              >
-                {editor.isSavingProfile ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Save className="size-4" />
-                )}
-                Save profile
-              </Button>
-            </div>
           </div>
         </div>
       ) : null}

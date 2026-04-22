@@ -43,11 +43,13 @@ export const profileSocialLinks = pgTable(
       .references(() => profilePages.id, { onDelete: "cascade" }),
     platform: profileSocialPlatformEnum("platform").notNull(),
     url: text("url").notNull(),
+    position: integer("position").notNull(),
     createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
   },
   (table) => [
     uniqueIndex("profile_social_link_page_platform_idx").on(table.profilePageId, table.platform),
+    uniqueIndex("profile_social_link_page_position_idx").on(table.profilePageId, table.position),
     index("profile_social_link_page_id_idx").on(table.profilePageId),
   ]
 );

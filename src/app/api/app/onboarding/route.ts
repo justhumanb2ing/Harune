@@ -91,10 +91,11 @@ export const POST = withAuthRequired(async (req, context) => {
 
     const socialLinkValues = Object.entries(socialLinks)
       .filter(([, value]) => typeof value === "string" && value.length > 0)
-      .map(([platform, url]) => ({
+      .map(([platform, url], index) => ({
         profilePageId: page.id,
         platform: platform as (typeof profileSocialLinks.$inferInsert)["platform"],
         url,
+        position: index,
         updatedAt: new Date(),
       }));
 

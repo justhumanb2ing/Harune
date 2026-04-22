@@ -4,6 +4,7 @@ export const queryKeys = {
   },
   app: {
     me: () => ["app", "me"] as const,
+    profilePage: () => ["app", "profile-page"] as const,
     organizations: () => ["app", "organizations"] as const,
     activeOrganization: () => ["app", "organizations", "active"] as const,
   },

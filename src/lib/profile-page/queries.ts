@@ -40,9 +40,11 @@ export const getProfilePageEditorData = async (userId: string) => {
         id: profileSocialLinks.id,
         platform: profileSocialLinks.platform,
         url: profileSocialLinks.url,
+        position: profileSocialLinks.position,
       })
       .from(profileSocialLinks)
-      .where(eq(profileSocialLinks.profilePageId, page.id)),
+      .where(eq(profileSocialLinks.profilePageId, page.id))
+      .orderBy(asc(profileSocialLinks.position)),
     db
       .select({
         id: profileLinkItems.id,
@@ -101,9 +103,11 @@ export const getPublicProfilePage = cache(async (handle: string) => {
         id: profileSocialLinks.id,
         platform: profileSocialLinks.platform,
         url: profileSocialLinks.url,
+        position: profileSocialLinks.position,
       })
       .from(profileSocialLinks)
-      .where(eq(profileSocialLinks.profilePageId, owner.id)),
+      .where(eq(profileSocialLinks.profilePageId, owner.id))
+      .orderBy(asc(profileSocialLinks.position)),
     db
       .select({
         id: profileLinkItems.id,

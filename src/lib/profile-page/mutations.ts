@@ -139,6 +139,7 @@ export const upsertSocialLink = async ({
   const existingLink = await db
     .select({
       id: profileSocialLinks.id,
+      position: profileSocialLinks.position,
     })
     .from(profileSocialLinks)
     .where(
@@ -162,9 +163,20 @@ export const upsertSocialLink = async ({
         id: profileSocialLinks.id,
         platform: profileSocialLinks.platform,
         url: profileSocialLinks.url,
+        position: profileSocialLinks.position,
       })
       .then((rows) => rows[0]);
   }
+
+  const lastLink = await db
+    .select({
+      position: profileSocialLinks.position,
+    })
+    .from(profileSocialLinks)
+    .where(eq(profileSocialLinks.profilePageId, ownedPage.id))
+    .orderBy(desc(profileSocialLinks.position))
+    .limit(1)
+    .then((rows) => rows[0] ?? null);
 
   return db
     .insert(profileSocialLinks)
@@ -172,12 +184,14 @@ export const upsertSocialLink = async ({
       profilePageId: ownedPage.id,
       platform: values.platform,
       url: values.url,
+      position: lastLink ? lastLink.position + 1 : 0,
       updatedAt: new Date(),
     })
     .returning({
       id: profileSocialLinks.id,
       platform: profileSocialLinks.platform,
       url: profileSocialLinks.url,
+      position: profileSocialLinks.position,
     })
     .then((rows) => rows[0]);
 };
@@ -190,24 +204,94 @@ export const deleteSocialLink = async ({
   socialLinkId: string;
 }) => {
   const ownedPage = await getOwnedPageOrThrow(userId);
-  const deleted = await db
-    .delete(profileSocialLinks)
-    .where(
-      and(
-        eq(profileSocialLinks.id, socialLinkId),
-        eq(profileSocialLinks.profilePageId, ownedPage.id)
-      )
-    )
-    .returning({
-      id: profileSocialLinks.id,
-    })
-    .then((rows) => rows[0] ?? null);
 
-  if (!deleted) {
-    throw new ProfilePageError("Social link not found.", 404);
+  return db.transaction(async (tx) => {
+    const deleted = await tx
+      .delete(profileSocialLinks)
+      .where(
+        and(
+          eq(profileSocialLinks.id, socialLinkId),
+          eq(profileSocialLinks.profilePageId, ownedPage.id)
+        )
+      )
+      .returning({
+        id: profileSocialLinks.id,
+      })
+      .then((rows) => rows[0] ?? null);
+
+    if (!deleted) {
+      throw new ProfilePageError("Social link not found.", 404);
+    }
+
+    const remainingLinks = await tx
+      .select({
+        id: profileSocialLinks.id,
+        position: profileSocialLinks.position,
+      })
+      .from(profileSocialLinks)
+      .where(eq(profileSocialLinks.profilePageId, ownedPage.id))
+      .orderBy(asc(profileSocialLinks.position));
+
+    for (const [index, link] of remainingLinks.entries()) {
+      if (link.position !== index) {
+        await tx
+          .update(profileSocialLinks)
+          .set({
+            position: index,
+            updatedAt: new Date(),
+          })
+          .where(eq(profileSocialLinks.id, link.id));
+      }
+    }
+
+    return deleted;
+  });
+};
+
+export const reorderSocialLinks = async ({
+  userId,
+  orderedIds,
+}: {
+  userId: string;
+  orderedIds: string[];
+}) => {
+  const ownedPage = await getOwnedPageOrThrow(userId);
+  const uniqueOrderedIds = new Set(orderedIds);
+
+  if (uniqueOrderedIds.size !== orderedIds.length) {
+    throw new ProfilePageError("Duplicate IDs are not allowed.", 400);
   }
 
-  return deleted;
+  await db.transaction(async (tx) => {
+    const currentLinks = await tx
+      .select({
+        id: profileSocialLinks.id,
+      })
+      .from(profileSocialLinks)
+      .where(eq(profileSocialLinks.profilePageId, ownedPage.id))
+      .orderBy(asc(profileSocialLinks.position));
+
+    if (currentLinks.length !== orderedIds.length) {
+      throw new ProfilePageError("Ordered IDs do not match current items.", 400);
+    }
+
+    const currentIds = currentLinks.map((item) => item.id).sort();
+    const nextIds = [...orderedIds].sort();
+
+    if (currentIds.some((id, index) => id !== nextIds[index])) {
+      throw new ProfilePageError("Ordered IDs do not match current items.", 400);
+    }
+
+    for (const [index, id] of orderedIds.entries()) {
+      await tx
+        .update(profileSocialLinks)
+        .set({
+          position: index,
+          updatedAt: new Date(),
+        })
+        .where(eq(profileSocialLinks.id, id));
+    }
+  });
 };
 
 export const createLinkItem = async ({

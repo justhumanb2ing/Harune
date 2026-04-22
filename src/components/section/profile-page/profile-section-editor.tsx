@@ -102,7 +102,7 @@ export function ProfileSectionEditor() {
                 <Button
                   type="button"
                   variant="ghost"
-                  className="relative size-28 overflow-hidden rounded-xl p-0 shadow-xs bg-background hover:bg-background"
+                  className="relative size-28 overflow-hidden rounded-xl p-0 shadow-brand bg-background hover:bg-background"
                   onClick={() => editor.imageInputRef.current?.click()}
                   disabled={editor.isSyncing}
                   aria-label="Upload profile image"
@@ -144,7 +144,7 @@ export function ProfileSectionEditor() {
             </div>
 
             <FieldGroup>
-              <Field className="relative rounded-lg bg-background shadow-xs outline-none py-4">
+              <Field className="relative rounded-lg bg-background shadow-brand outline-none py-4">
                 <FieldLabel
                   htmlFor="profile-page-name"
                   className="block px-4 font-medium text-xs text-foreground uppercase"
@@ -162,7 +162,7 @@ export function ProfileSectionEditor() {
                   />
                 </InputGroup>
               </Field>
-              <Field className="relative rounded-lg bg-background shadow-xs outline-none py-4">
+              <Field className="relative rounded-lg bg-background outline-none py-4 shadow-brand">
                 <FieldLabel
                   htmlFor="profile-page-bio"
                   className="block px-4 font-medium text-xs text-foreground uppercase"
@@ -181,7 +181,7 @@ export function ProfileSectionEditor() {
               </Field>
             </FieldGroup>
             <Dialog open={isHandleDialogOpen} onOpenChange={handleHandleDialogOpenChange}>
-              <Field className="relative rounded-lg bg-background shadow-xs outline-none py-4">
+              <Field className="relative rounded-lg bg-background shadow-brand outline-none py-4">
                 <FieldLabel className="block px-4 font-medium text-xs text-foreground uppercase">
                   Handle
                 </FieldLabel>

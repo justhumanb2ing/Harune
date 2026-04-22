@@ -50,7 +50,7 @@ export function TextBoxesSectionEditor() {
         <div className="space-y-6">
           <div ref={composerRef} className="space-y-3 border-b pb-6" onBlur={handleComposerBlur}>
             <FieldGroup className="gap-3">
-              <Field className="relative rounded-lg bg-background shadow-xs outline-none py-4">
+              <Field className="relative rounded-lg bg-background shadow-brand outline-none py-4">
                 <FieldLabel
                   htmlFor="new-text-box-title"
                   className="block px-4 font-medium text-xs text-foreground uppercase"
@@ -72,7 +72,7 @@ export function TextBoxesSectionEditor() {
                   />
                 </InputGroup>
               </Field>
-              <Field className="relative rounded-lg bg-background shadow-xs outline-none py-4">
+              <Field className="relative rounded-lg bg-background shadow-brand outline-none py-4">
                 <FieldLabel
                   htmlFor="new-text-box-description"
                   className="block px-4 font-medium text-xs text-foreground uppercase"
@@ -127,7 +127,7 @@ export function TextBoxesSectionEditor() {
                           <Item
                             render={<button type="button" />}
                             variant="default"
-                            className="min-h-16 flex-col items-stretch gap-1 rounded-md border-0 bg-background px-4 py-3 text-left shadow-xs"
+                            className="min-h-16 flex-col items-stretch gap-1 rounded-md border-0 bg-background px-4 py-3 text-left shadow-brand"
                             onClick={() => setSelectedTextBoxId(item.id)}
                           >
                             <ItemTitle className="w-full truncate line-clamp-1">{title}</ItemTitle>

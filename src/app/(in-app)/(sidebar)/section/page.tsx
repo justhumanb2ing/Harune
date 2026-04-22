@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
+import { Item, ItemActions, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { ChevronRightIcon, SparkleIcon } from "lucide-react";
 import Link from "next/link";
 
@@ -35,32 +35,30 @@ export default function SectionPage() {
 
       <div className="flex flex-col gap-2">
         {sections.map((section) => (
-          <Item key={section.href}
-            variant={'default'}
+          <Item
+            key={section.href}
+            variant={"default"}
+            
             render={
-            <Link
-              href={section.href}
-              className="rounded-2xl transition-colors bg-background hover:bg-background! py-3.5 shadow-xs"
-            >
-              <ItemMedia>
-                <SparkleIcon />
-              </ItemMedia>
-              <ItemContent>
-                <ItemTitle>{section.title}</ItemTitle>
-                {/* <ItemDescription>{section.description}</ItemDescription> */}
-              </ItemContent>
-              <ItemActions>
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            className=""
-            aria-label="Invite"
-          >
-            <ChevronRightIcon />
-          </Button>
-        </ItemActions>
-            </Link>
-            }/>
+              <Link
+                href={section.href}
+                className="rounded-2xl transition-colors bg-background hover:bg-background! py-3.5 shadow-brand"
+              >
+                <ItemMedia>
+                  <SparkleIcon />
+                </ItemMedia>
+                <ItemContent>
+                  <ItemTitle>{section.title}</ItemTitle>
+                  {/* <ItemDescription>{section.description}</ItemDescription> */}
+                </ItemContent>
+                <ItemActions>
+                  <Button size="icon-sm" variant="ghost" className="" aria-label="Invite">
+                    <ChevronRightIcon />
+                  </Button>
+                </ItemActions>
+              </Link>
+            }
+          />
         ))}
       </div>
     </main>

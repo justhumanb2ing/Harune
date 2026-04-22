@@ -99,23 +99,9 @@ interface CrawlResponseMeta {
 
 type CrawlApiResponse = ApiResponse<OgData, CrawlResponseMeta>;
 
-const fieldClassName = "relative rounded-lg bg-background py-4 shadow-xs outline-none";
+const fieldClassName = "relative rounded-lg bg-background py-4 shadow-brand! outline-none";
 const inputGroupClassName =
   "border-0 bg-background! px-1.5 ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0";
-
-const getLinkTitle = (title: string | null, url: string) => {
-  const trimmedTitle = title?.trim();
-
-  if (trimmedTitle) {
-    return trimmedTitle;
-  }
-
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return url;
-  }
-};
 
 export function LinksSectionEditor() {
   const editor = useProfilePageEditor();

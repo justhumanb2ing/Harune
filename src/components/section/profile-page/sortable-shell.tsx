@@ -31,6 +31,7 @@ export function SortableShell({
         transition,
         zIndex: isDragging ? 10 : 0,
       }}
+      className="shadow-brand"
     >
       {children({ attributes, isDragging, listeners })}
     </div>

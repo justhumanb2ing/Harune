@@ -88,7 +88,7 @@ export function SocialLinksSectionEditor() {
                               className="text-muted-foreground size-5"
                             />
                           </button>
-                          <InputGroup className="h-12 rounded-md border-0 bg-background shadow-xs has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
+                          <InputGroup className="h-12 rounded-md border-0 bg-background shadow-brand has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
                             <InputGroupAddon className="pl-3">
                               <InputGroupText>
                                 <Icon className="size-6 text-black" aria-hidden="true" />
@@ -127,7 +127,7 @@ export function SocialLinksSectionEditor() {
 
             return (
               <div key={platform.key} className="group/item relative">
-                <InputGroup className="h-12 rounded-md border-0 bg-background shadow-xs has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
+                <InputGroup className="h-12 rounded-md border-0 bg-background shadow-brand has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
                   <InputGroupAddon className="pl-3">
                     <InputGroupText>
                       <Icon className="size-6 text-black" aria-hidden="true" />

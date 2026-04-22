@@ -1,6 +1,7 @@
 "use client";
 
 import { UserButton } from "@/components/layout/user-button";
+import { useOptionalProfilePageEditorStore } from "@/components/section/profile-page/profile-page-editor-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,15 +54,19 @@ function isActiveRoute(pathname: string, href: string) {
 export default function Sidebar() {
   const pathname = usePathname();
   const { profilePage, user } = useUser();
+  const draftPage = useOptionalProfilePageEditorStore((state) => state.draftData?.page ?? null);
+  const previewImageUrl = useOptionalProfilePageEditorStore((state) => state.previewImageUrl);
   const previousPathnameRef = useRef(pathname);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const currentNavItem = navItems.find(({ href }) => isActiveRoute(pathname, href)) ?? navItems[0];
-  const pageName = profilePage?.name || user?.name || currentNavItem.label;
-  const pageHandle = profilePage?.handle
-    ? `${appConfig.url.replace(/^https?:\/\//, "")}/${profilePage.handle}`
+  const pageName = draftPage?.name || profilePage?.name || user?.name || currentNavItem.label;
+  const resolvedHandle = draftPage?.handle || profilePage?.handle;
+  const pageHandleLabel = resolvedHandle
+    ? `${appConfig.url.replace(/^https?:\/\//, "")}/${resolvedHandle}`
     : `${appConfig.url.replace(/^https?:\/\//, "")}/unknown`;
-  const pageImage = profilePage?.image || user?.image || undefined;
+  const pageImage =
+    previewImageUrl || draftPage?.image || profilePage?.image || user?.image || undefined;
   const pageInitial = pageName.trim().charAt(0).toUpperCase() || "P";
 
   useEffect(() => {
@@ -154,7 +159,7 @@ export default function Sidebar() {
                 <span className="truncate text-[11px] font-medium uppercase text-foreground">
                   {pageName}
                 </span>
-                <span className="truncate text-[9px] text-muted-foreground">{pageHandle}</span>
+                <span className="truncate text-[9px] text-muted-foreground">{pageHandleLabel}</span>
               </div>
               <CheckIcon className="ml-auto size-3.5 text-foreground" />
             </div>

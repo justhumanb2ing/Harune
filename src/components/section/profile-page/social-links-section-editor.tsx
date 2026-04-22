@@ -2,10 +2,11 @@
 
 import { GithubIcon, InstagramIcon, XTwitterIcon } from "@/components/icon";
 import { DndContext, closestCenter } from "@dnd-kit/core";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { XCircle } from "@phosphor-icons/react";
-import { GripVertical, Loader2Icon, Save } from "lucide-react";
+import { XCircleIcon } from "@phosphor-icons/react";
+import { GripVertical } from "lucide-react";
+import { useState } from "react";
 import { FaLinkedinIn, FaYoutube } from "react-icons/fa6";
 
 import { ProfilePageSectionLayout } from "@/components/section/profile-page/section-layout";
@@ -17,7 +18,6 @@ import {
 import {
   InputGroup,
   InputGroupAddon,
-  InputGroupButton,
   InputGroupInput,
   InputGroupText,
 } from "@/components/ui/input-group";
@@ -32,19 +32,20 @@ const socialPlatformIcons = {
 
 export function SocialLinksSectionEditor() {
   const editor = useProfilePageEditor();
-  const orderedPlatforms = socialPlatforms
-    .filter((platform) => editor.data?.socialLinks.some((link) => link.platform === platform.key))
-    .sort((a, b) => {
-      const aPosition =
-        editor.data?.socialLinks.find((link) => link.platform === a.key)?.position ??
-        Number.MAX_SAFE_INTEGER;
-      const bPosition =
-        editor.data?.socialLinks.find((link) => link.platform === b.key)?.position ??
-        Number.MAX_SAFE_INTEGER;
-      return aPosition - bPosition;
-    });
+  const [composingPlatform, setComposingPlatform] = useState<string | null>(null);
+  const socialLinksByPlatform = new Map(
+    editor.data?.socialLinks.map((link) => [link.platform, link]) ?? []
+  );
+  const savedPlatforms = socialPlatforms.filter(
+    (platform) => socialLinksByPlatform.has(platform.key) && composingPlatform !== platform.key
+  );
+  const orderedSavedPlatforms = [...savedPlatforms].sort((a, b) => {
+    const aPosition = socialLinksByPlatform.get(a.key)?.position ?? Number.MAX_SAFE_INTEGER;
+    const bPosition = socialLinksByPlatform.get(b.key)?.position ?? Number.MAX_SAFE_INTEGER;
+    return aPosition - bPosition;
+  });
   const unsavedPlatforms = socialPlatforms.filter(
-    (platform) => !editor.data?.socialLinks.some((link) => link.platform === platform.key)
+    (platform) => !socialLinksByPlatform.has(platform.key) || composingPlatform === platform.key
   );
 
   return (
@@ -59,36 +60,29 @@ export function SocialLinksSectionEditor() {
           <DndContext
             sensors={editor.sensors}
             collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis]}
+            modifiers={[restrictToVerticalAxis, restrictToParentElement]}
             onDragEnd={(event) => void editor.handleSocialLinkDragEnd(event)}
           >
             <SortableContext
-              items={editor.data.socialLinks.map((item) => item.id)}
+              items={orderedSavedPlatforms.map((platform) => platform.key)}
               strategy={verticalListSortingStrategy}
             >
               <div className="space-y-3">
-                {orderedPlatforms.map((platform) => {
+                {orderedSavedPlatforms.map((platform) => {
                   const Icon = socialPlatformIcons[platform.key];
-                  const socialLink = editor.data?.socialLinks.find(
-                    (link) => link.platform === platform.key
-                  );
-
-                  if (!socialLink) {
-                    return null;
-                  }
 
                   return (
-                    <SortableShell key={socialLink.id} id={socialLink.id}>
+                    <SortableShell key={platform.key} id={platform.key}>
                       {({ attributes, listeners }) => (
                         <div className="group/item relative">
                           <button
                             type="button"
                             className="absolute top-1/2 -left-8 inline-flex size-7 -translate-y-1/2 items-center justify-center rounded-[min(var(--radius-md),12px)] text-muted-foreground opacity-0 outline-none transition-[opacity,background-color,color,box-shadow] group-hover/item:opacity-100 hover:bg-muted hover:text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
                             onClick={() => void editor.handleDeleteSocialLink(platform.key)}
-                            disabled={editor.isSavingSocial === platform.key}
+                            disabled={editor.isSyncing}
                             aria-label={`${platform.label} 삭제`}
                           >
-                            <XCircle
+                            <XCircleIcon
                               size={18}
                               weight="fill"
                               className="text-muted-foreground size-5"
@@ -103,32 +97,13 @@ export function SocialLinksSectionEditor() {
                             <InputGroupInput
                               value={editor.socialDrafts[platform.key]}
                               onChange={(event) =>
-                                editor.setSocialDrafts((prev) => ({
-                                  ...prev,
-                                  [platform.key]: event.target.value,
-                                }))
+                                editor.setSocialUrl(platform.key, event.target.value)
                               }
                               placeholder="Add handle or URL"
                               autoComplete="off"
                               aria-label={platform.label}
                               className="h-full px-0 pl-4!"
                             />
-                            <InputGroupAddon align="inline-end" className="pr-3">
-                              <InputGroupButton
-                                type="button"
-                                variant="default"
-                                size="icon-sm"
-                                onClick={() => void editor.handleSocialSave(platform.key)}
-                                disabled={editor.isSavingSocial === platform.key}
-                                aria-label={`${platform.label} 저장`}
-                              >
-                                {editor.isSavingSocial === platform.key ? (
-                                  <Loader2Icon className="size-5 animate-spin" />
-                                ) : (
-                                  <Save className="size-5" />
-                                )}
-                              </InputGroupButton>
-                            </InputGroupAddon>
                           </InputGroup>
                           <button
                             type="button"
@@ -147,12 +122,11 @@ export function SocialLinksSectionEditor() {
               </div>
             </SortableContext>
           </DndContext>
-
           {unsavedPlatforms.map((platform) => {
             const Icon = socialPlatformIcons[platform.key];
 
             return (
-              <div key={platform.key}>
+              <div key={platform.key} className="group/item relative">
                 <InputGroup className="h-12 rounded-md border-0 bg-background shadow-xs has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
                   <InputGroupAddon className="pl-3">
                     <InputGroupText>
@@ -161,33 +135,22 @@ export function SocialLinksSectionEditor() {
                   </InputGroupAddon>
                   <InputGroupInput
                     value={editor.socialDrafts[platform.key]}
-                    onChange={(event) =>
-                      editor.setSocialDrafts((prev) => ({
-                        ...prev,
-                        [platform.key]: event.target.value,
-                      }))
-                    }
+                    onFocus={() => {
+                      if (!socialLinksByPlatform.has(platform.key)) {
+                        setComposingPlatform(platform.key);
+                      }
+                    }}
+                    onBlur={() => {
+                      setComposingPlatform((current) =>
+                        current === platform.key ? null : current
+                      );
+                    }}
+                    onChange={(event) => editor.setSocialUrl(platform.key, event.target.value)}
                     placeholder="Add handle or URL"
                     autoComplete="off"
                     aria-label={platform.label}
                     className="h-full px-0 pl-4!"
                   />
-                  <InputGroupAddon align="inline-end" className="pr-3">
-                    <InputGroupButton
-                      type="button"
-                      variant="default"
-                      size="icon-sm"
-                      onClick={() => void editor.handleSocialSave(platform.key)}
-                      disabled={editor.isSavingSocial === platform.key}
-                      aria-label={`${platform.label} 저장`}
-                    >
-                      {editor.isSavingSocial === platform.key ? (
-                        <Loader2Icon className="size-5 animate-spin" />
-                      ) : (
-                        <Save className="size-5" />
-                      )}
-                    </InputGroupButton>
-                  </InputGroupAddon>
                 </InputGroup>
               </div>
             );

@@ -2,10 +2,11 @@
 
 import { GithubIcon, InstagramIcon, XTwitterIcon } from "@/components/icon";
 import { DndContext, closestCenter } from "@dnd-kit/core";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { XCircle } from "@phosphor-icons/react";
+import { XCircleIcon } from "@phosphor-icons/react";
 import { GripVertical } from "lucide-react";
+import { useState } from "react";
 import { FaLinkedinIn, FaYoutube } from "react-icons/fa6";
 
 import { ProfilePageSectionLayout } from "@/components/section/profile-page/section-layout";
@@ -31,19 +32,20 @@ const socialPlatformIcons = {
 
 export function SocialLinksSectionEditor() {
   const editor = useProfilePageEditor();
-  const orderedPlatforms = socialPlatforms
-    .filter((platform) => editor.data?.socialLinks.some((link) => link.platform === platform.key))
-    .sort((a, b) => {
-      const aPosition =
-        editor.data?.socialLinks.find((link) => link.platform === a.key)?.position ??
-        Number.MAX_SAFE_INTEGER;
-      const bPosition =
-        editor.data?.socialLinks.find((link) => link.platform === b.key)?.position ??
-        Number.MAX_SAFE_INTEGER;
-      return aPosition - bPosition;
-    });
+  const [composingPlatform, setComposingPlatform] = useState<string | null>(null);
+  const socialLinksByPlatform = new Map(
+    editor.data?.socialLinks.map((link) => [link.platform, link]) ?? []
+  );
+  const savedPlatforms = socialPlatforms.filter(
+    (platform) => socialLinksByPlatform.has(platform.key) && composingPlatform !== platform.key
+  );
+  const orderedSavedPlatforms = [...savedPlatforms].sort((a, b) => {
+    const aPosition = socialLinksByPlatform.get(a.key)?.position ?? Number.MAX_SAFE_INTEGER;
+    const bPosition = socialLinksByPlatform.get(b.key)?.position ?? Number.MAX_SAFE_INTEGER;
+    return aPosition - bPosition;
+  });
   const unsavedPlatforms = socialPlatforms.filter(
-    (platform) => !editor.data?.socialLinks.some((link) => link.platform === platform.key)
+    (platform) => !socialLinksByPlatform.has(platform.key) || composingPlatform === platform.key
   );
 
   return (
@@ -58,26 +60,19 @@ export function SocialLinksSectionEditor() {
           <DndContext
             sensors={editor.sensors}
             collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis]}
+            modifiers={[restrictToVerticalAxis, restrictToParentElement]}
             onDragEnd={(event) => void editor.handleSocialLinkDragEnd(event)}
           >
             <SortableContext
-              items={editor.data.socialLinks.map((item) => item.platform)}
+              items={orderedSavedPlatforms.map((platform) => platform.key)}
               strategy={verticalListSortingStrategy}
             >
               <div className="space-y-3">
-                {orderedPlatforms.map((platform) => {
+                {orderedSavedPlatforms.map((platform) => {
                   const Icon = socialPlatformIcons[platform.key];
-                  const socialLink = editor.data?.socialLinks.find(
-                    (link) => link.platform === platform.key
-                  );
-
-                  if (!socialLink) {
-                    return null;
-                  }
 
                   return (
-                    <SortableShell key={socialLink.platform} id={socialLink.platform}>
+                    <SortableShell key={platform.key} id={platform.key}>
                       {({ attributes, listeners }) => (
                         <div className="group/item relative">
                           <button
@@ -87,7 +82,7 @@ export function SocialLinksSectionEditor() {
                             disabled={editor.isSyncing}
                             aria-label={`${platform.label} 삭제`}
                           >
-                            <XCircle
+                            <XCircleIcon
                               size={18}
                               weight="fill"
                               className="text-muted-foreground size-5"
@@ -127,12 +122,11 @@ export function SocialLinksSectionEditor() {
               </div>
             </SortableContext>
           </DndContext>
-
           {unsavedPlatforms.map((platform) => {
             const Icon = socialPlatformIcons[platform.key];
 
             return (
-              <div key={platform.key}>
+              <div key={platform.key} className="group/item relative">
                 <InputGroup className="h-12 rounded-md border-0 bg-background shadow-xs has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
                   <InputGroupAddon className="pl-3">
                     <InputGroupText>
@@ -141,6 +135,16 @@ export function SocialLinksSectionEditor() {
                   </InputGroupAddon>
                   <InputGroupInput
                     value={editor.socialDrafts[platform.key]}
+                    onFocus={() => {
+                      if (!socialLinksByPlatform.has(platform.key)) {
+                        setComposingPlatform(platform.key);
+                      }
+                    }}
+                    onBlur={() => {
+                      setComposingPlatform((current) =>
+                        current === platform.key ? null : current
+                      );
+                    }}
                     onChange={(event) => editor.setSocialUrl(platform.key, event.target.value)}
                     placeholder="Add handle or URL"
                     autoComplete="off"

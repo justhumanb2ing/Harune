@@ -129,6 +129,7 @@ export function useProfilePageEditor() {
 
   const handleSync = async () => {
     const currentState = store.getState();
+    const profilePageQueryKey = profilePageQueryOptions().queryKey;
 
     if (!currentState.draftData || currentState.syncStatus === "syncing") {
       return;
@@ -138,6 +139,7 @@ export function useProfilePageEditor() {
 
     try {
       store.actions.setSyncStatus("syncing");
+      await queryClient.cancelQueries({ queryKey: profilePageQueryKey });
 
       let nextDraftData = currentState.draftData;
 
@@ -160,10 +162,10 @@ export function useProfilePageEditor() {
         body: JSON.stringify(buildSyncPayload(nextDraftData)),
       });
 
+      queryClient.setQueryData(profilePageQueryKey, response);
       store.actions.rebaseFromServer(response);
-      queryClient.setQueryData(profilePageQueryOptions().queryKey, response);
       await mutate();
-      toast.success("Profile page synced.");
+      toast("Synced");
     } catch (error) {
       if (uploadedImageUrl) {
         try {
@@ -175,7 +177,6 @@ export function useProfilePageEditor() {
 
       const message = error instanceof Error ? error.message : "Failed to sync profile page.";
       store.actions.setSyncError(message);
-      toast.error(message);
     }
   };
 
@@ -236,6 +237,7 @@ export function useProfilePageEditor() {
       key: keyof Omit<DraftLinkItem, "id" | "position">,
       value: string
     ) => store.actions.updateLinkItem(id, key, value),
+    handleNewTextBoxComposerBlur: () => store.actions.resetNewTextBoxComposer(),
     handleProfileImageChange,
     handleSocialLinkDragEnd,
     handleSync,

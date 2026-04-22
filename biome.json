@@ -28,6 +28,7 @@
         "noForEach": "warn"
       },
       "correctness": {
+        "noUnusedImports": "error",
         "useExhaustiveDependencies": "warn"
       },
       "security": {

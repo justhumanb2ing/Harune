@@ -2,13 +2,23 @@
 
 import {
   CheckIcon,
+  ChevronRightIcon,
   CircleFadingArrowUpIcon,
   Loader2,
   Loader2Icon,
   TrashIcon,
   XIcon,
 } from "lucide-react";
+import { useState } from "react";
 
+import {
+  Dialog,
+  DialogClose,
+  DialogHeader,
+  DialogPopup,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/animate-ui/components/base/dialog";
 import { ProfilePageSectionLayout } from "@/components/section/profile-page/section-layout";
 import { useProfilePageEditor } from "@/components/section/profile-page/use-profile-page-editor";
 import { Button } from "@/components/ui/button";
@@ -21,16 +31,54 @@ import {
   InputGroupTextarea,
 } from "@/components/ui/input-group";
 import { useProfilePageHandleAvailability } from "@/hooks/use-profile-page-handle-availability";
-import { normalizeHandle } from "@/lib/handles";
+import { normalizeHandle, validateHandle } from "@/lib/handles";
 import { PROFILE_IMAGE_ACCEPT } from "@/lib/profile-page/image-upload";
+import { cn } from "@/lib/utils";
 
 export function ProfileSectionEditor() {
   const editor = useProfilePageEditor();
-  const initialHandle = normalizeHandle(editor.data?.page.handle ?? "");
-  const currentHandle = normalizeHandle(editor.profileForm.handle);
+  const [isHandleDialogOpen, setIsHandleDialogOpen] = useState(false);
+  const [handleDraft, setHandleDraft] = useState(editor.profileForm.handle);
+  const initialHandle = normalizeHandle(editor.profileForm.handle);
+  const currentHandle = normalizeHandle(handleDraft);
   const hasChangedHandle = currentHandle !== initialHandle;
+  const handleValidationError = hasChangedHandle ? validateHandle(handleDraft) : null;
   const { isCheckingAvailability, isHandleAvailable, isHandleTaken, shouldShowState } =
-    useProfilePageHandleAvailability(hasChangedHandle ? editor.profileForm.handle : "");
+    useProfilePageHandleAvailability(hasChangedHandle ? handleDraft : "");
+  const isHandleSaveDisabled =
+    !hasChangedHandle ||
+    !!handleValidationError ||
+    isCheckingAvailability ||
+    !isHandleAvailable ||
+    editor.isSyncing;
+  const handleStatusMessage = handleValidationError
+    ? handleValidationError
+    : hasChangedHandle && isHandleTaken
+      ? "This handle is already taken."
+      : hasChangedHandle && isHandleAvailable
+        ? "This handle is available."
+        : null;
+
+  const handleHandleDialogOpenChange = (open: boolean) => {
+    setIsHandleDialogOpen(open);
+
+    if (open) {
+      setHandleDraft(editor.profileForm.handle);
+      return;
+    }
+
+    setHandleDraft(editor.profileForm.handle);
+  };
+
+  const handleSaveHandle = async () => {
+    if (isHandleSaveDisabled) {
+      return;
+    }
+
+    editor.setProfileField("handle", currentHandle);
+    setIsHandleDialogOpen(false);
+    await editor.handleSync();
+  };
 
   return (
     <ProfilePageSectionLayout
@@ -95,8 +143,6 @@ export function ProfileSectionEditor() {
               </div>
             </div>
 
-            {editor.syncError && <p className="text-destructive text-sm">{editor.syncError}</p>}
-
             <FieldGroup>
               <Field className="relative rounded-lg bg-background shadow-xs outline-none py-4">
                 <FieldLabel
@@ -134,40 +180,88 @@ export function ProfileSectionEditor() {
                 </InputGroup>
               </Field>
             </FieldGroup>
-            <Field className="relative rounded-lg bg-background shadow-xs outline-none py-4">
-              <FieldLabel
-                htmlFor="profile-page-handle"
-                className="block px-4 font-medium text-xs text-foreground uppercase"
-              >
-                Handle
-              </FieldLabel>
-              <InputGroup className="bg-background border-0 px-2 font-medium ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
-                <InputGroupInput
-                  id="profile-page-handle"
-                  placeholder="Handle"
-                  autoComplete="off"
-                  value={editor.profileForm.handle}
-                  onChange={(event) =>
-                    editor.setProfileField("handle", event.target.value.toLowerCase())
+            <Dialog open={isHandleDialogOpen} onOpenChange={handleHandleDialogOpenChange}>
+              <Field className="relative rounded-lg bg-background shadow-xs outline-none py-4">
+                <FieldLabel className="block px-4 font-medium text-xs text-foreground uppercase">
+                  Handle
+                </FieldLabel>
+                <DialogTrigger
+                  render={
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="h-auto w-full justify-start px-4 py-2 font-medium hover:bg-transparent focus-visible:bg-background!"
+                      disabled={editor.isSyncing}
+                    >
+                      <div className="flex w-full items-center gap-1 text-left">
+                        <span className="text-sm text-muted-foreground">leeve.li/</span>
+                        <span
+                          className={cn(
+                            "flex-1 truncate text-sm",
+                            editor.profileForm.handle ? "text-foreground" : "text-muted-foreground"
+                          )}
+                        >
+                          {editor.profileForm.handle || "Handle"}
+                        </span>
+                        <ChevronRightIcon className="size-4 text-muted-foreground" />
+                      </div>
+                    </Button>
                   }
-                  className="px-0.5!"
                 />
-                <InputGroupAddon align="inline-start">
-                  <InputGroupText>leeve.li/</InputGroupText>
-                </InputGroupAddon>
-                <InputGroupAddon align="inline-end">
-                  {isCheckingAvailability ? (
-                    <Loader2Icon className="size-4 animate-spin" />
-                  ) : hasChangedHandle && shouldShowState ? (
-                    isHandleAvailable ? (
-                      <CheckIcon className="size-4 text-emerald-600" />
-                    ) : isHandleTaken ? (
-                      <XIcon className="size-4 text-destructive" />
-                    ) : null
-                  ) : null}
-                </InputGroupAddon>
-              </InputGroup>
-            </Field>
+              </Field>
+
+              <DialogPopup className="max-w-sm! gap-0 overflow-hidden p-0" showCloseButton={false}>
+                <DialogHeader className="px-3 py-2">
+                  <div className="grid grid-cols-3 items-center">
+                    <DialogClose className="w-fit justify-self-start">
+                      <XIcon className="size-4" />
+                    </DialogClose>
+                    <DialogTitle className="justify-self-center text-sm font-semibold">
+                      Edit
+                    </DialogTitle>
+                    <DialogClose
+                      disabled={isHandleSaveDisabled}
+                      onClick={() => void handleSaveHandle()}
+                      className={
+                        "w-fit justify-self-end text-right uppercase text-xs font-medium disabled:text-muted-foreground"
+                      }
+                    >
+                      Save
+                    </DialogClose>
+                  </div>
+                </DialogHeader>
+
+                <div className="space-y-3 py-4">
+                  <Field className="relative rounded-lg bg-background outline-none">
+                    <InputGroup className="bg-background border-0 px-2 font-medium ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
+                      <InputGroupInput
+                        id="profile-page-handle-dialog"
+                        placeholder="Handle"
+                        autoComplete="off"
+                        autoFocus
+                        value={handleDraft}
+                        onChange={(event) => setHandleDraft(event.target.value.toLowerCase())}
+                        className="px-0.5!"
+                      />
+                      <InputGroupAddon align="inline-start">
+                        <InputGroupText>leeve.li/</InputGroupText>
+                      </InputGroupAddon>
+                      <InputGroupAddon align="inline-end">
+                        {isCheckingAvailability ? (
+                          <Loader2Icon className="size-4 animate-spin" />
+                        ) : hasChangedHandle && shouldShowState ? (
+                          isHandleAvailable ? (
+                            <CheckIcon className="size-4 text-emerald-600" />
+                          ) : isHandleTaken ? (
+                            <XIcon className="size-4 text-destructive" />
+                          ) : null
+                        ) : null}
+                      </InputGroupAddon>
+                    </InputGroup>
+                  </Field>
+                </div>
+              </DialogPopup>
+            </Dialog>
           </div>
         </div>
       ) : null}

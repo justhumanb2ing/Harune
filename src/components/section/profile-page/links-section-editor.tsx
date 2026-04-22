@@ -1,26 +1,33 @@
 "use client";
 
 import { DndContext, closestCenter } from "@dnd-kit/core";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { XCircle, XCircleIcon } from "@phosphor-icons/react";
-import { ArrowRightIcon, GripVertical, LoaderIcon } from "lucide-react";
+import { CheckIcon, XCircleIcon } from "@phosphor-icons/react";
+import { ArrowRightIcon, GripVertical, LoaderIcon, XIcon } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import {
+  Dialog,
+  DialogClose,
+  DialogHeader,
+  DialogPopup,
+  DialogTitle,
+} from "@/components/animate-ui/components/base/dialog";
 import { ProfilePageSectionLayout } from "@/components/section/profile-page/section-layout";
 import { SortableShell } from "@/components/section/profile-page/sortable-shell";
 import { useProfilePageEditor } from "@/components/section/profile-page/use-profile-page-editor";
-import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
+import { Textarea } from "@/components/ui/textarea";
 
 type CrawlMode = "auto" | "static" | "dynamic";
 
@@ -113,7 +120,8 @@ const getLinkTitle = (title: string | null, url: string) => {
 export function LinksSectionEditor() {
   const editor = useProfilePageEditor();
   const [isCrawling, setIsCrawling] = useState(false);
-  const [preview, setPreview] = useState<OgData | null>(null);
+  const [selectedLinkId, setSelectedLinkId] = useState<string | null>(null);
+  const selectedLink = editor.data?.linkItems.find((item) => item.id === selectedLinkId) ?? null;
 
   const handleCrawl = async () => {
     const rawUrl = editor.newLink.url.trim();
@@ -150,16 +158,15 @@ export function LinksSectionEditor() {
         favicon: body.data.favicon?.trim() || null,
       };
       const nextLink = {
-        title: getLinkTitle(nextPreview.title, resolvedUrl),
-        description: resolvedUrl,
+        title: nextPreview.title ?? "",
+        description: nextPreview.description ?? "",
         favicon: nextPreview.favicon ?? "",
         url: resolvedUrl,
       };
 
-      setPreview(nextPreview);
       editor.setNewLink(nextLink);
+      editor.handleCreateLink();
     } catch (error) {
-      setPreview(null);
       toast.error(error instanceof Error ? error.message : "링크 정보를 불러오지 못했습니다.");
     } finally {
       setIsCrawling(false);
@@ -198,7 +205,6 @@ export function LinksSectionEditor() {
                     className="text-sm"
                     value={editor.newLink.url}
                     onChange={(event) => {
-                      setPreview(null);
                       editor.setNewLink((prev) => ({
                         ...prev,
                         title: "",
@@ -226,53 +232,12 @@ export function LinksSectionEditor() {
                 </InputGroup>
               </Field>
             </form>
-
-            {preview ? (
-              <Item variant="default" className="bg-background hover:bg-background! p-4">
-                {preview.favicon ? (
-                  <ItemMedia variant="image" className="size-8">
-                    <Image
-                      src={preview.favicon}
-                      alt={getLinkTitle(preview.title, preview.url ?? editor.newLink.url)}
-                      width={28}
-                      height={28}
-                      unoptimized
-                      className="object-cover"
-                    />
-                  </ItemMedia>
-                ) : (
-                  <ItemMedia variant="image">
-                    <div className="size-full rounded-sm bg-secondary" />
-                  </ItemMedia>
-                )}
-                <ItemContent>
-                  <ItemTitle className="line-clamp-1 text-xs!">
-                    {getLinkTitle(preview.title, preview.url ?? editor.newLink.url)}
-                  </ItemTitle>
-                  <ItemDescription className="text-xs">
-                    {preview.url ?? editor.newLink.url}
-                  </ItemDescription>
-                </ItemContent>
-              </Item>
-            ) : null}
-
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                onClick={() => editor.handleCreateLink()}
-                disabled={
-                  !editor.newLink.url.trim() || !editor.newLink.title.trim() || editor.isSyncing
-                }
-              >
-                Add link
-              </Button>
-            </div>
           </div>
 
           <DndContext
             sensors={editor.sensors}
             collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis]}
+            modifiers={[restrictToVerticalAxis, restrictToParentElement]}
             onDragEnd={(event) => void editor.handleLinkDragEnd(event)}
           >
             <SortableContext
@@ -283,13 +248,14 @@ export function LinksSectionEditor() {
                 {editor.data.linkItems.map((item) => (
                   <SortableShell key={item.id} id={item.id}>
                     {({ attributes, listeners }) => (
-                      <div className="group/item relative before:absolute before:-inset-y-2 before:-left-9 before:-right-9 before:content-['']">
-                        <Button
+                      <div className="group/item relative before:pointer-events-none before:absolute before:-inset-y-2 before:-left-9 before:-right-9 before:content-['']">
+                        <button
                           type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          className="absolute top-1/2 -left-8 z-10 -translate-y-1/2 opacity-0 pointer-events-none transition-opacity active:not-aria-[haspopup]:translate-y-0 group-hover/item:opacity-100 group-hover/item:pointer-events-auto"
-                          onClick={() => void editor.handleDeleteLink(item.id)}
+                          className="absolute top-1/2 -left-8 z-10 inline-flex size-7 -translate-y-1/2 items-center justify-center rounded-[min(var(--radius-md),12px)] text-muted-foreground opacity-0 outline-none transition-[opacity,background-color,color,box-shadow] group-hover/item:opacity-100 hover:bg-muted hover:text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void editor.handleDeleteLink(item.id);
+                          }}
                           aria-label="링크 삭제"
                         >
                           <XCircleIcon
@@ -297,10 +263,14 @@ export function LinksSectionEditor() {
                             weight="fill"
                             className="size-5 text-muted-foreground"
                           />
-                        </Button>
-                        <Item variant="default" className="bg-background hover:bg-background! p-4">
+                        </button>
+                        <button
+                          type="button"
+                          className="relative z-0 flex w-full flex-wrap items-center gap-2.5 rounded-lg border border-transparent bg-background p-4 text-left text-sm outline-none transition-colors duration-100 hover:bg-background! focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                          onClick={() => setSelectedLinkId(item.id)}
+                        >
                           {item.favicon ? (
-                            <ItemMedia variant="image" className="size-8">
+                            <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-sm">
                               <Image
                                 src={item.favicon}
                                 alt={item.title}
@@ -309,35 +279,31 @@ export function LinksSectionEditor() {
                                 unoptimized
                                 className="object-cover"
                               />
-                            </ItemMedia>
+                            </span>
                           ) : (
-                            <ItemMedia variant="image">
-                              <div className="size-full rounded-sm bg-secondary" />
-                            </ItemMedia>
+                            <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-sm">
+                              <span className="size-full rounded-sm bg-secondary" />
+                            </span>
                           )}
-                          <ItemContent>
-                            <a
-                              href={item.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="rounded-lg"
-                            >
-                              <ItemTitle className="line-clamp-1 text-xs!">{item.title}</ItemTitle>
-                              <ItemDescription className="text-xs">{item.url}</ItemDescription>
-                            </a>
-                          </ItemContent>
-                        </Item>
-                        <Button
+                          <span className="flex min-w-0 flex-1 flex-col gap-1">
+                            <span className="line-clamp-1 text-xs font-medium leading-snug">
+                              {item.title}
+                            </span>
+                            <span className="line-clamp-2 text-left text-xs font-normal leading-normal text-muted-foreground">
+                              {item.url}
+                            </span>
+                          </span>
+                        </button>
+                        <button
                           type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          className="absolute top-1/2 -right-6 z-10 inline-flex -translate-y-1/2 cursor-grab items-center justify-center text-muted-foreground opacity-0 pointer-events-none transition-opacity active:not-aria-[haspopup]:translate-y-0 group-hover/item:opacity-100 group-hover/item:pointer-events-auto"
+                          className="absolute top-1/2 -right-6 z-10 inline-flex -translate-y-1/2 cursor-grab items-center justify-center bg-transparent text-muted-foreground opacity-0 transition-opacity group-hover/item:opacity-100"
                           aria-label="링크 순서 변경"
+                          onClick={(event) => event.stopPropagation()}
                           {...attributes}
                           {...listeners}
                         >
                           <GripVertical className="size-4" />
-                        </Button>
+                        </button>
                       </div>
                     )}
                   </SortableShell>
@@ -347,6 +313,49 @@ export function LinksSectionEditor() {
           </DndContext>
         </div>
       ) : null}
+
+      <Dialog
+        open={Boolean(selectedLink)}
+        onOpenChange={(open) => !open && setSelectedLinkId(null)}
+      >
+        <DialogPopup
+          showCloseButton={false}
+          className="fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-0 rounded-xl bg-popover p-0 text-sm text-popover-foreground ring-1 ring-foreground/10 outline-none sm:max-w-md"
+        >
+          <DialogHeader className="px-3 py-2">
+            <div className="grid grid-cols-3 items-center">
+              <DialogClose className="w-fit justify-self-start">
+                <XIcon size={20} className="size-4" />
+              </DialogClose>
+              <DialogTitle className="justify-self-center text-sm font-semibold">Edit</DialogTitle>
+              <DialogClose className="w-fit justify-self-end">
+                <CheckIcon size={20} weight="bold" className="size-4" />
+              </DialogClose>
+            </div>
+          </DialogHeader>
+
+          {selectedLink ? (
+            <div className="space-y-0 p-2">
+              <Input
+                value={selectedLink.title}
+                onChange={(event) =>
+                  editor.handleLinkItemChange(selectedLink.id, "title", event.target.value)
+                }
+                placeholder="What do you want to show?"
+                className="border-0 font-medium text-base! focus-visible:ring-0"
+              />
+              <Textarea
+                value={selectedLink.description ?? ""}
+                onChange={(event) =>
+                  editor.handleLinkItemChange(selectedLink.id, "description", event.target.value)
+                }
+                placeholder="Add description for detail"
+                className="min-h-32 resize-none border-0 focus-visible:ring-0"
+              />
+            </div>
+          ) : null}
+        </DialogPopup>
+      </Dialog>
     </ProfilePageSectionLayout>
   );
 }

@@ -1,11 +1,11 @@
 "use client";
 
 import { DndContext, closestCenter } from "@dnd-kit/core";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { XCircleIcon } from "@phosphor-icons/react";
-import { CheckIcon, GripVertical, Plus, XIcon } from "lucide-react";
-import { useState } from "react";
+import { CheckIcon, GripVertical, XIcon } from "lucide-react";
+import { type FocusEvent, useRef, useState } from "react";
 
 import {
   Dialog,
@@ -17,7 +17,6 @@ import {
 import { ProfilePageSectionLayout } from "@/components/section/profile-page/section-layout";
 import { SortableShell } from "@/components/section/profile-page/sortable-shell";
 import { useProfilePageEditor } from "@/components/section/profile-page/use-profile-page-editor";
-import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupInput, InputGroupTextarea } from "@/components/ui/input-group";
@@ -26,9 +25,19 @@ import { Textarea } from "@/components/ui/textarea";
 
 export function TextBoxesSectionEditor() {
   const editor = useProfilePageEditor();
+  const composerRef = useRef<HTMLDivElement | null>(null);
   const [selectedTextBoxId, setSelectedTextBoxId] = useState<string | null>(null);
   const selectedTextBox =
     editor.data?.textBoxItems.find((item) => item.id === selectedTextBoxId) ?? null;
+  const handleComposerBlur = (event: FocusEvent<HTMLDivElement>) => {
+    const nextFocusedNode = event.relatedTarget;
+
+    if (nextFocusedNode instanceof Node && composerRef.current?.contains(nextFocusedNode)) {
+      return;
+    }
+
+    editor.handleNewTextBoxComposerBlur();
+  };
 
   return (
     <ProfilePageSectionLayout
@@ -39,7 +48,7 @@ export function TextBoxesSectionEditor() {
     >
       {editor.data ? (
         <div className="space-y-6">
-          <div className="space-y-3 border-b pb-6">
+          <div ref={composerRef} className="space-y-3 border-b pb-6" onBlur={handleComposerBlur}>
             <FieldGroup className="gap-3">
               <Field className="relative rounded-lg bg-background shadow-xs outline-none py-4">
                 <FieldLabel
@@ -86,22 +95,12 @@ export function TextBoxesSectionEditor() {
                 </InputGroup>
               </Field>
             </FieldGroup>
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                onClick={() => editor.handleCreateTextBox()}
-                disabled={!editor.newTextBox.title.trim() || editor.isSyncing}
-              >
-                <Plus className="size-4" />
-                Add text box
-              </Button>
-            </div>
           </div>
 
           <DndContext
             sensors={editor.sensors}
             collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis]}
+            modifiers={[restrictToVerticalAxis, restrictToParentElement]}
             onDragEnd={(event) => void editor.handleTextBoxDragEnd(event)}
           >
             <SortableContext
@@ -131,7 +130,7 @@ export function TextBoxesSectionEditor() {
                             className="min-h-16 flex-col items-stretch gap-1 rounded-md border-0 bg-background px-4 py-3 text-left shadow-xs"
                             onClick={() => setSelectedTextBoxId(item.id)}
                           >
-                            <ItemTitle className="w-full truncate">{title}</ItemTitle>
+                            <ItemTitle className="w-full truncate line-clamp-1">{title}</ItemTitle>
                             <ItemDescription className="w-full truncate line-clamp-1">
                               {description}
                             </ItemDescription>
@@ -140,6 +139,7 @@ export function TextBoxesSectionEditor() {
                             type="button"
                             className="absolute top-1/2 -right-6 inline-flex -translate-y-1/2 cursor-grab items-center justify-center bg-transparent text-muted-foreground opacity-0 transition-opacity group-hover/item:opacity-100"
                             aria-label={`${title} 순서 변경`}
+                            onClick={(event) => event.stopPropagation()}
                             {...attributes}
                             {...listeners}
                           >
@@ -166,11 +166,11 @@ export function TextBoxesSectionEditor() {
         >
           <DialogHeader className="px-3 py-2">
             <div className="grid grid-cols-3 items-center">
-              <DialogClose>
+              <DialogClose className="w-fit justify-self-start">
                 <XIcon className="size-4" />
               </DialogClose>
               <DialogTitle className="justify-self-center text-sm font-semibold">Edit</DialogTitle>
-              <DialogClose className={"justify-items-end"}>
+              <DialogClose className="w-fit justify-self-end">
                 <CheckIcon className="size-4" />
               </DialogClose>
             </div>
@@ -184,7 +184,7 @@ export function TextBoxesSectionEditor() {
                   editor.handleTextBoxChange(selectedTextBox.id, "title", event.target.value)
                 }
                 placeholder="What do you want to write?"
-                className="border-0 focus-visible:ring-0 font-medium text-base!"
+                className="border-0 focus-visible:ring-0 font-medium text-base! truncate"
               />
               <Textarea
                 value={selectedTextBox.description ?? ""}
@@ -192,7 +192,7 @@ export function TextBoxesSectionEditor() {
                   editor.handleTextBoxChange(selectedTextBox.id, "description", event.target.value)
                 }
                 placeholder="Add description for detail"
-                className="min-h-32 resize-none border-0 focus-visible:ring-0"
+                className="min-h-32 max-h-64 resize-none overflow-y-auto border-0 focus-visible:ring-0"
               />
             </div>
           ) : null}

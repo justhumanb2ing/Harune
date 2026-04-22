@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 
 export function SortableShell({
   children,
+  disabled = false,
   id,
 }: {
   children: (args: {
@@ -13,9 +14,11 @@ export function SortableShell({
     isDragging: boolean;
     listeners: ReturnType<typeof useSortable>["listeners"];
   }) => ReactNode;
+  disabled?: boolean;
   id: string;
 }) {
   const { attributes, isDragging, listeners, setNodeRef, transform, transition } = useSortable({
+    disabled,
     id,
   });
 

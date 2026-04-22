@@ -12,8 +12,8 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
         </aside>
 
         <div className="flex h-full min-h-0 grow flex-row gap-4">
-          <section className="min-h-0 flex-1 overflow-auto p-10">{children}</section>
-          <section className="min-h-0 flex-1 overflow-auto p-10">
+          <section className="min-h-0 flex-1 overflow-auto">{children}</section>
+          <section className="min-h-0 flex-1 overflow-auto">
             <ProfilePagePreview />
           </section>
         </div>

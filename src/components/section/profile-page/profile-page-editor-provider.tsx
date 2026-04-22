@@ -9,6 +9,7 @@ import {
   type ProfilePageEditorStore,
   createProfilePageEditorStore,
 } from "@/components/section/profile-page/profile-page-editor-store";
+import { toast } from "sonner";
 
 const ProfilePageEditorStoreContext = React.createContext<ProfilePageEditorStore | null>(null);
 
@@ -43,6 +44,7 @@ export function ProfilePageEditorProvider({ children }: { children: React.ReactN
 
   const store = storeRef.current;
   const profilePageQuery = useQuery(profilePageQueryOptions());
+  const syncError = useStoreSelector(store, (state) => state.syncError);
 
   React.useEffect(() => {
     if (profilePageQuery.data === undefined) {
@@ -55,6 +57,15 @@ export function ProfilePageEditorProvider({ children }: { children: React.ReactN
       store.actions.rebaseFromServer(profilePageQuery.data);
     }
   }, [profilePageQuery.data, store]);
+
+  React.useEffect(() => {
+    if (!syncError) {
+      return;
+    }
+
+    toast.error(syncError, { id: "profile-page-sync-error" });
+    store.actions.setSyncError(null);
+  }, [store, syncError]);
 
   React.useEffect(
     () => () => {

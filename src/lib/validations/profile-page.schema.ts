@@ -62,6 +62,7 @@ export const reorderItemsSchema = z.object({
 
 export const profilePageSyncSocialLinkSchema = z.object({
   platform: socialPlatformSchema,
+  position: z.number().int().nonnegative(),
   url: z.string().trim().url("Enter a valid URL."),
 });
 
@@ -70,6 +71,7 @@ export const profilePageSyncLinkItemSchema = z.object({
   title: requiredText("Title", 100),
   description: z.string().trim().max(280, "Must be 280 characters or fewer."),
   favicon: z.string().trim().max(2048, "Must be 2048 characters or fewer."),
+  position: z.number().int().nonnegative(),
   url: z.string().trim().url("Enter a valid URL."),
 });
 
@@ -77,6 +79,7 @@ export const profilePageSyncTextBoxItemSchema = z.object({
   id: entityIdSchema,
   title: requiredText("Title", 100),
   description: z.string().trim().max(1000, "Must be 1000 characters or fewer."),
+  position: z.number().int().nonnegative(),
 });
 
 export const profilePageSyncSchema = z
@@ -93,6 +96,7 @@ export const profilePageSyncSchema = z
   })
   .superRefine((value, ctx) => {
     const socialPlatforms = new Set<string>();
+    const socialPositions = new Set<number>();
 
     for (const [index, socialLink] of value.socialLinks.entries()) {
       if (socialPlatforms.has(socialLink.platform)) {
@@ -104,9 +108,20 @@ export const profilePageSyncSchema = z
       }
 
       socialPlatforms.add(socialLink.platform);
+
+      if (socialPositions.has(socialLink.position)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Duplicate social link positions are not allowed.",
+          path: ["socialLinks", index, "position"],
+        });
+      }
+
+      socialPositions.add(socialLink.position);
     }
 
     const linkIds = new Set<string>();
+    const linkPositions = new Set<number>();
     for (const [index, linkItem] of value.linkItems.entries()) {
       if (linkIds.has(linkItem.id)) {
         ctx.addIssue({
@@ -117,9 +132,20 @@ export const profilePageSyncSchema = z
       }
 
       linkIds.add(linkItem.id);
+
+      if (linkPositions.has(linkItem.position)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Duplicate link item positions are not allowed.",
+          path: ["linkItems", index, "position"],
+        });
+      }
+
+      linkPositions.add(linkItem.position);
     }
 
     const textBoxIds = new Set<string>();
+    const textBoxPositions = new Set<number>();
     for (const [index, textBoxItem] of value.textBoxItems.entries()) {
       if (textBoxIds.has(textBoxItem.id)) {
         ctx.addIssue({
@@ -130,6 +156,16 @@ export const profilePageSyncSchema = z
       }
 
       textBoxIds.add(textBoxItem.id);
+
+      if (textBoxPositions.has(textBoxItem.position)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Duplicate text box positions are not allowed.",
+          path: ["textBoxItems", index, "position"],
+        });
+      }
+
+      textBoxPositions.add(textBoxItem.position);
     }
   });
 

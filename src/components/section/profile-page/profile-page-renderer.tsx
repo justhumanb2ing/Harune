@@ -33,14 +33,11 @@ export function ProfilePageRenderer({
   const displayName = name || userName || handle;
 
   return (
-    <section className="mx-auto flex min-h-full w-full max-w-3xl items-center px-4 py-12 sm:px-6">
-      <div className="w-full rounded-[32px] bg-[linear-gradient(160deg,rgba(249,248,242,1),rgba(255,255,255,0.96))] px-8 py-12 shadow-[0_24px_80px_rgba(15,23,42,0.08)] ring-1 ring-black/5">
+    <section className="mx-auto flex min-h-full w-full max-w-3xl items-center">
+      <div className="w-full bg-background">
         <div className="space-y-8">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-3">
-              <p className="text-sm font-medium uppercase tracking-[0.2em] text-foreground/45">
-                {isPreview ? "Preview" : "Public page"}
-              </p>
               <h1 className="text-4xl font-semibold tracking-tight">{displayName}</h1>
               <p className="text-lg text-foreground/65">@{handle}</p>
             </div>

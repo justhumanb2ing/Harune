@@ -4,7 +4,7 @@ import { ProfilePageRenderer } from "@/components/section/profile-page/profile-p
 import { useProfilePageEditor } from "@/components/section/profile-page/use-profile-page-editor";
 import { Button } from "@/components/ui/button";
 import useUser from "@/lib/users/useUser";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export function ProfilePagePreview() {
   const editor = useProfilePageEditor();
@@ -15,37 +15,22 @@ export function ProfilePagePreview() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
-      <div className="flex items-center justify-between rounded-[24px] bg-background px-5 py-4 shadow-xs">
-        <div>
-          <p className="text-sm font-medium text-foreground">Preview</p>
-          <p className="text-xs text-muted-foreground">
-            {editor.hasUnsyncedChanges
-              ? "로컬 변경사항이 아직 DB에 반영되지 않았습니다."
-              : "로컬 상태와 DB가 동기화되어 있습니다."}
-          </p>
-        </div>
+    <div className="flex min-h-0 flex-1 flex-col gap-4 h-full bg-input p-10">
+      <div className="flex items-center justify-between px-5 py-4">
+        <div>leeve.li/{editor.data.page.handle}</div>
         <Button
           type="button"
+          size={"lg"}
           onClick={() => void editor.handleSync()}
           disabled={!editor.hasUnsyncedChanges || editor.isSyncing}
+          className={"px-6 rounded-md uppercase text-xs"}
         >
-          {editor.isSyncing ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <RefreshCw className="size-4" />
-          )}
+          {editor.isSyncing && <Loader2 className="size-4 animate-spin" />}
           Sync
         </Button>
       </div>
 
-      {editor.syncError ? (
-        <p className="rounded-2xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {editor.syncError}
-        </p>
-      ) : null}
-
-      <div className="min-h-0 flex-1 overflow-auto rounded-[32px] bg-background shadow-xs">
+      <div className="min-h-0 flex-1 overflow-auto max-w-[375px] mx-auto">
         <ProfilePageRenderer
           isPreview
           handle={editor.data.page.handle || "preview"}

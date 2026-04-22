@@ -12,6 +12,7 @@ const validPayload = {
   socialLinks: [
     {
       platform: "github",
+      position: 0,
       url: "https://github.com/leeve",
     },
   ],
@@ -21,6 +22,7 @@ const validPayload = {
       title: "Docs",
       description: "",
       favicon: "",
+      position: 0,
       url: "https://example.com/docs",
     },
   ],
@@ -29,6 +31,7 @@ const validPayload = {
       id: "draft:text-1",
       title: "About",
       description: "",
+      position: 0,
     },
   ],
 };
@@ -46,10 +49,12 @@ describe("profile page sync schema", () => {
       socialLinks: [
         {
           platform: "github",
+          position: 0,
           url: "https://github.com/leeve",
         },
         {
           platform: "github",
+          position: 1,
           url: "https://github.com/leeve-2",
         },
       ],
@@ -67,6 +72,7 @@ describe("profile page sync schema", () => {
           title: "Docs",
           description: "",
           favicon: "",
+          position: 0,
           url: "https://example.com/docs",
         },
         {
@@ -74,7 +80,60 @@ describe("profile page sync schema", () => {
           title: "Blog",
           description: "",
           favicon: "",
+          position: 1,
           url: "https://example.com/blog",
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  test("rejects duplicate positions for every item type", () => {
+    const result = profilePageSyncSchema.safeParse({
+      ...validPayload,
+      socialLinks: [
+        {
+          platform: "github",
+          position: 0,
+          url: "https://github.com/leeve",
+        },
+        {
+          platform: "x",
+          position: 0,
+          url: "https://x.com/leeve",
+        },
+      ],
+      linkItems: [
+        {
+          id: "draft:link-1",
+          title: "Docs",
+          description: "",
+          favicon: "",
+          position: 0,
+          url: "https://example.com/docs",
+        },
+        {
+          id: "draft:link-2",
+          title: "Blog",
+          description: "",
+          favicon: "",
+          position: 0,
+          url: "https://example.com/blog",
+        },
+      ],
+      textBoxItems: [
+        {
+          id: "draft:text-1",
+          title: "About",
+          description: "",
+          position: 0,
+        },
+        {
+          id: "draft:text-2",
+          title: "Notes",
+          description: "",
+          position: 0,
         },
       ],
     });

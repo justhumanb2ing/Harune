@@ -39,6 +39,7 @@ export type ProfilePageEditorState = {
   hasUnsyncedChanges: boolean;
   newLink: NewLinkDraft;
   newTextBox: NewTextBoxDraft;
+  newTextBoxId: string | null;
   pendingImageFile: File | null;
   previewImageUrl: string | null;
   syncError: string | null;
@@ -74,6 +75,7 @@ const initialState = (): ProfilePageEditorState => ({
   hasUnsyncedChanges: false,
   newLink: initialNewLink(),
   newTextBox: initialNewTextBox(),
+  newTextBoxId: null,
   pendingImageFile: null,
   previewImageUrl: null,
   syncError: null,
@@ -83,6 +85,7 @@ const initialState = (): ProfilePageEditorState => ({
 const createDraftId = () => `draft:${crypto.randomUUID()}`;
 
 const normalizeNullableText = (value: string | null | undefined) => value ?? "";
+const hasTextBoxDraftContent = (value: NewTextBoxDraft) => value.title.trim().length > 0;
 
 export const createDraftData = (data: ProfilePageData): ProfilePageDraftData => ({
   page: {
@@ -123,6 +126,7 @@ const toComparableProfile = (draftData: ProfilePageDraftData) => ({
 const toComparableSocialLinks = (draftData: ProfilePageDraftData) =>
   draftData.socialLinks.map((item) => ({
     platform: item.platform,
+    position: item.position,
     url: item.url,
   }));
 
@@ -132,6 +136,7 @@ const toComparableLinkItems = (draftData: ProfilePageDraftData) =>
     title: item.title,
     description: item.description,
     favicon: item.favicon,
+    position: item.position,
     url: item.url,
   }));
 
@@ -140,6 +145,7 @@ const toComparableTextBoxItems = (draftData: ProfilePageDraftData) =>
     id: item.id,
     title: item.title,
     description: item.description,
+    position: item.position,
   }));
 
 const recalculateDirtyState = (state: ProfilePageEditorState): ProfilePageEditorState => {
@@ -188,21 +194,24 @@ export const buildSyncPayload = (draftData: ProfilePageDraftData): ProfilePageSy
     bio: draftData.page.bio,
     image: draftData.page.image,
   },
-  socialLinks: draftData.socialLinks.map((item) => ({
+  socialLinks: draftData.socialLinks.map((item, index) => ({
     platform: item.platform,
+    position: index,
     url: item.url.trim(),
   })),
-  linkItems: draftData.linkItems.map((item) => ({
+  linkItems: draftData.linkItems.map((item, index) => ({
     id: item.id,
     title: item.title,
     description: item.description,
     favicon: item.favicon,
+    position: index,
     url: item.url,
   })),
-  textBoxItems: draftData.textBoxItems.map((item) => ({
+  textBoxItems: draftData.textBoxItems.map((item, index) => ({
     id: item.id,
     title: item.title,
     description: item.description,
+    position: index,
   })),
 });
 
@@ -282,6 +291,7 @@ export function createProfilePageEditorStore() {
     ...current,
     newLink: initialNewLink(),
     newTextBox: initialNewTextBox(),
+    newTextBoxId: null,
     pendingImageFile: null,
     previewImageUrl: null,
     syncError: null,
@@ -340,10 +350,77 @@ export function createProfilePageEditorStore() {
         }));
       },
       setNewTextBox(updater: NewTextBoxDraft | ((current: NewTextBoxDraft) => NewTextBoxDraft)) {
-        setState((current) => ({
-          ...current,
-          newTextBox: typeof updater === "function" ? updater(current.newTextBox) : updater,
-        }));
+        setState((current) => {
+          const nextNewTextBox =
+            typeof updater === "function" ? updater(current.newTextBox) : updater;
+
+          if (!current.draftData) {
+            return {
+              ...current,
+              newTextBox: nextNewTextBox,
+            };
+          }
+
+          if (!current.newTextBoxId) {
+            if (!hasTextBoxDraftContent(nextNewTextBox)) {
+              return {
+                ...current,
+                newTextBox: nextNewTextBox,
+              };
+            }
+
+            const nextTextBoxItem: DraftTextBoxItem = {
+              id: createDraftId(),
+              title: nextNewTextBox.title,
+              description: nextNewTextBox.description,
+              position: current.draftData.textBoxItems.length,
+            };
+
+            return recalculateDirtyState({
+              ...current,
+              draftData: {
+                ...current.draftData,
+                textBoxItems: [...current.draftData.textBoxItems, nextTextBoxItem],
+              },
+              newTextBox: nextNewTextBox,
+              newTextBoxId: nextTextBoxItem.id,
+              syncError: null,
+            });
+          }
+
+          if (!hasTextBoxDraftContent(nextNewTextBox)) {
+            return recalculateDirtyState({
+              ...current,
+              draftData: {
+                ...current.draftData,
+                textBoxItems: rebuildPositions(
+                  current.draftData.textBoxItems.filter((item) => item.id !== current.newTextBoxId)
+                ),
+              },
+              newTextBox: nextNewTextBox,
+              newTextBoxId: null,
+              syncError: null,
+            });
+          }
+
+          return recalculateDirtyState({
+            ...current,
+            draftData: {
+              ...current.draftData,
+              textBoxItems: current.draftData.textBoxItems.map((item) =>
+                item.id === current.newTextBoxId
+                  ? {
+                      ...item,
+                      title: nextNewTextBox.title,
+                      description: nextNewTextBox.description,
+                    }
+                  : item
+              ),
+            },
+            newTextBox: nextNewTextBox,
+            syncError: null,
+          });
+        });
       },
       addNewLink() {
         setState((current) => {
@@ -487,6 +564,8 @@ export function createProfilePageEditorStore() {
                 current.draftData.textBoxItems.filter((item) => item.id !== id)
               ),
             },
+            newTextBox: current.newTextBoxId === id ? initialNewTextBox() : current.newTextBox,
+            newTextBoxId: current.newTextBoxId === id ? null : current.newTextBoxId,
             syncError: null,
           });
         });
@@ -505,6 +584,20 @@ export function createProfilePageEditorStore() {
             },
             syncError: null,
           });
+        });
+      },
+      resetNewTextBoxComposer() {
+        setState((current) => {
+          if (!hasTextBoxDraftContent(current.newTextBox)) {
+            return current;
+          }
+
+          return {
+            ...current,
+            newTextBox: initialNewTextBox(),
+            newTextBoxId: null,
+            syncError: null,
+          };
         });
       },
       setSocialUrl(platform: SocialPlatform, url: string) {

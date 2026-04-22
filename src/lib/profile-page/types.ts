@@ -84,6 +84,7 @@ export type ProfilePageSyncPayload = {
   };
   socialLinks: Array<{
     platform: SocialPlatform;
+    position: number;
     url: string;
   }>;
   linkItems: Array<{
@@ -91,11 +92,13 @@ export type ProfilePageSyncPayload = {
     title: string;
     description: string;
     favicon: string;
+    position: number;
     url: string;
   }>;
   textBoxItems: Array<{
     id: string;
     title: string;
     description: string;
+    position: number;
   }>;
 };

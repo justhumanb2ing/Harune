@@ -316,9 +316,15 @@ const revokePreviewUrl = (previewImageUrl: string | null) => {
   }
 };
 
-export function createProfilePageEditorStore() {
+export function createProfilePageEditorStore(initialData?: ProfilePageData | null) {
   const listeners = new Set<() => void>();
-  let state = initialState();
+  let state = initialData
+    ? recalculateDirtyState({
+        ...initialState(),
+        baseData: initialData,
+        draftData: createDraftData(initialData),
+      })
+    : initialState();
 
   const emit = () => {
     for (const listener of listeners) {

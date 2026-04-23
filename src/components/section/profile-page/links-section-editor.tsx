@@ -222,6 +222,7 @@ export function LinksSectionEditor() {
           </div>
 
           <DndContext
+            id="section-link-items"
             sensors={editor.sensors}
             collisionDetection={closestCenter}
             modifiers={[restrictToVerticalAxis, restrictToParentElement]}

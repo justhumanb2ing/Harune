@@ -100,12 +100,13 @@ export default function SectionPage() {
             />
           ))}
 
-          {editor.isBooting || editor.isUserLoading ? (
+          {editor.isBooting ? (
             <div className="flex min-h-14 items-center justify-center rounded-lg bg-background shadow-brand">
               <Loader2Icon className="size-4 animate-spin text-muted-foreground" />
             </div>
           ) : editor.data ? (
             <DndContext
+              id="section-page-blocks"
               sensors={editor.sensors}
               collisionDetection={closestCenter}
               modifiers={[restrictToVerticalAxis, restrictToParentElement]}

@@ -1,7 +1,7 @@
 "use client";
 
 import { profilePageQueryOptions } from "@/lib/profile-page/query-options";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import * as React from "react";
 
 import {
@@ -36,14 +36,14 @@ function useStoreSelector<T>(
 }
 
 export function ProfilePageEditorProvider({ children }: { children: React.ReactNode }) {
+  const profilePageQuery = useSuspenseQuery(profilePageQueryOptions());
   const storeRef = React.useRef<ProfilePageEditorStore | null>(null);
 
   if (!storeRef.current) {
-    storeRef.current = createProfilePageEditorStore();
+    storeRef.current = createProfilePageEditorStore(profilePageQuery.data);
   }
 
   const store = storeRef.current;
-  const profilePageQuery = useQuery(profilePageQueryOptions());
   const syncError = useStoreSelector(store, (state) => state.syncError);
 
   React.useEffect(() => {

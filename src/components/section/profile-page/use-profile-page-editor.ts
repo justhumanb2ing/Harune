@@ -8,7 +8,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { type ChangeEvent, useEffect, useMemo, useRef } from "react";
+import { type ChangeEvent, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
 import {
@@ -33,7 +33,7 @@ import {
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { ClientS3Uploader } from "@/lib/s3/clientS3Uploader";
 import useUser from "@/lib/users/useUser";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 
 export const socialPlatforms: Array<{ key: SocialPlatform; label: string; placeholder: string }> = [
   { key: "x", label: "X", placeholder: "https://x.com/yourname" },
@@ -70,7 +70,7 @@ export function useProfilePageEditor() {
   const { isLoading: isUserLoading, mutate, user } = useUser();
   const queryClient = useQueryClient();
   const store = useProfilePageEditorStoreApi();
-  const profilePageQuery = useQuery(profilePageQueryOptions());
+  useSuspenseQuery(profilePageQueryOptions());
   const draftData = useProfilePageEditorStore((state) => state.draftData);
   const newLink = useProfilePageEditorStore((state) => state.newLink);
   const newTextBox = useProfilePageEditorStore((state) => state.newTextBox);
@@ -96,16 +96,6 @@ export function useProfilePageEditor() {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
-
-  useEffect(() => {
-    if (profilePageQuery.error && !draftData) {
-      toast.error(
-        profilePageQuery.error instanceof Error
-          ? profilePageQuery.error.message
-          : "Failed to load profile page."
-      );
-    }
-  }, [draftData, profilePageQuery.error]);
 
   const fallbackName = draftData?.page.name || user?.name || "Profile";
   const previewImageSrc = previewImageUrl ?? draftData?.page.image ?? undefined;
@@ -295,7 +285,7 @@ export function useProfilePageEditor() {
     handleTextBoxDragEnd,
     hasUnsyncedChanges,
     imageInputRef,
-    isBooting: !draftData && profilePageQuery.isPending,
+    isBooting: false,
     isSyncing: syncStatus === "syncing",
     isUserLoading,
     newLink,

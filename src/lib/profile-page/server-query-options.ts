@@ -1,0 +1,36 @@
+import "server-only";
+
+import { getProfilePageEditorData } from "@/lib/profile-page/queries";
+import type { ProfilePageData } from "@/lib/profile-page/types";
+import { queryKeys } from "@/lib/react-query/query-keys";
+import { queryOptions } from "@tanstack/react-query";
+
+const getSerializableProfilePageEditorData = async (
+  userId: string
+): Promise<ProfilePageData | null> => {
+  const data = await getProfilePageEditorData(userId);
+
+  if (!data) {
+    return null;
+  }
+
+  return {
+    page: {
+      id: data.page.id,
+      handle: data.page.handle,
+      linkBlockPosition: data.page.linkBlockPosition,
+      name: data.page.name,
+      bio: data.page.bio,
+      image: data.page.image,
+    },
+    socialLinks: data.socialLinks,
+    linkItems: data.linkItems,
+    textBoxItems: data.textBoxItems,
+  };
+};
+
+export const profilePageServerQueryOptions = (userId: string) =>
+  queryOptions({
+    queryKey: queryKeys.app.profilePage(),
+    queryFn: () => getSerializableProfilePageEditorData(userId),
+  });

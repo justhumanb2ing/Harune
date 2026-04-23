@@ -112,6 +112,7 @@ export function SocialLinksSectionEditor() {
           </div>
 
           <DndContext
+            id="section-social-links"
             sensors={editor.sensors}
             collisionDetection={closestCenter}
             modifiers={[restrictToVerticalAxis, restrictToParentElement]}
@@ -163,7 +164,6 @@ export function SocialLinksSectionEditor() {
               </div>
             </SortableContext>
           </DndContext>
-
         </div>
       ) : null}
     </ProfilePageSectionLayout>

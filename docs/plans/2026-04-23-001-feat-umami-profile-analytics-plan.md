@@ -1,7 +1,7 @@
 ---
 title: feat: Add Umami-backed profile analytics dashboard
 type: feat
-status: active
+status: completed
 date: 2026-04-23
 ---
 
@@ -147,7 +147,7 @@ flowchart LR
 
 ## Implementation Units
 
-- [ ] **Unit 1: Define the profile analytics tracking contract**
+- [x] **Unit 1: Define the profile analytics tracking contract**
 
 **Goal:** 공개 핸들 페이지에서 어떤 이벤트를 어떤 식별자 기준으로 보낼지 계약을 고정한다.
 
@@ -186,7 +186,7 @@ flowchart LR
 - 공개 핸들 페이지의 수집 키가 `handle`이 아니라 `profilePage.id` 기준으로 일관된다.
 - 추적 이벤트 이름과 stable path 규칙이 한 곳에서 정의된다.
 
-- [ ] **Unit 2: Build a server-side Umami reporting service for period summaries**
+- [x] **Unit 2: Build a server-side Umami reporting service for period summaries**
 
 **Goal:** 현재 로그인한 사용자의 `profilePage.id`를 기준으로 Umami에서 기간별 요약 지표를 읽어오는 서버 계층을 만든다.
 
@@ -230,7 +230,7 @@ flowchart LR
 - `/api/app/analytics` 한 곳에서 period summary를 안정적으로 받을 수 있다.
 - Umami credential은 클라이언트 번들로 노출되지 않는다.
 
-- [ ] **Unit 3: Connect analytics queries to the app shell**
+- [x] **Unit 3: Connect analytics queries to the app shell**
 
 **Goal:** 앱 내부에서 `/analytics` 화면이 React Query로 period summary를 요청할 수 있게 한다.
 
@@ -262,7 +262,7 @@ flowchart LR
 - UI는 period selector만 바꿔도 올바른 캐시 키로 재조회한다.
 - analytics 응답 계약이 컴포넌트와 route 사이에서 일치한다.
 
-- [ ] **Unit 4: Implement the in-app analytics dashboard UI**
+- [x] **Unit 4: Implement the in-app analytics dashboard UI**
 
 **Goal:** `/analytics` 화면에서 기간 전환과 5개 핵심 지표를 읽기 쉬운 카드 UI로 보여준다.
 

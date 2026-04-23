@@ -41,6 +41,7 @@
     "@react-email/html": "^0.0.12",
     "@react-email/text": "^0.1.6",
     "@sentry/nextjs": "^10.32.1",
+    "@ssgoi/react": "^4.2.1",
     "@t3-oss/env-nextjs": "^0.13.8",
     "@tanstack/react-query": "5.99.0",
     "@types/mdx": "^2.0.13",

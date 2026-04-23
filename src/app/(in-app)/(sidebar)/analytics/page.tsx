@@ -1,7 +1,9 @@
-import React from 'react'
-
 export default function AnalyticsPage() {
   return (
-    <div>AnalyticsPage</div>
-  )
+    <main className="p-8">
+      <header>
+        <h1 className="text-3xl">Analytics</h1>
+      </header>
+    </main>
+  );
 }

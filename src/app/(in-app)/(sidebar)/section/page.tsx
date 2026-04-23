@@ -84,6 +84,9 @@ export default function SectionPage() {
 
   return (
     <main className="space-y-8">
+      <header>
+        <h1 className="text-3xl">My Page</h1>
+      </header>
       <section className="space-y-3">
         <p className="text-sm text-muted-foreground">Page editor</p>
 
@@ -98,7 +101,7 @@ export default function SectionPage() {
           ))}
 
           {editor.isBooting || editor.isUserLoading ? (
-            <div className="flex min-h-14 items-center justify-center rounded-2xl bg-background shadow-brand">
+            <div className="flex min-h-14 items-center justify-center rounded-lg bg-background shadow-brand">
               <Loader2Icon className="size-4 animate-spin text-muted-foreground" />
             </div>
           ) : editor.data ? (

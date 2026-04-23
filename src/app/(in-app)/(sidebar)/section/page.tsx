@@ -47,7 +47,7 @@ const otherBlockSections = [
   },
 ];
 
-function SectionLinkItem({ href, title }: { href: string; title: string }) {
+function SectionLinkItem({ count, href, title }: { count?: number; href: string; title: string }) {
   return (
     <Item
       variant="default"
@@ -63,6 +63,9 @@ function SectionLinkItem({ href, title }: { href: string; title: string }) {
             <ItemTitle>{title}</ItemTitle>
           </ItemContent>
           <ItemActions>
+            {typeof count === "number" ? (
+              <span className="text-xs font-medium text-muted-foreground">{count}</span>
+            ) : null}
             <Button size="icon-sm" variant="ghost" aria-label={`${title} 열기`}>
               <ChevronRightIcon />
             </Button>
@@ -86,7 +89,12 @@ export default function SectionPage() {
 
         <div className="flex flex-col gap-2">
           {pageEditorSections.map((section) => (
-            <SectionLinkItem key={section.href} href={section.href} title={section.title} />
+            <SectionLinkItem
+              key={section.href}
+              href={section.href}
+              title={section.title}
+              count={section.title === "Social" ? editor.data?.socialLinks.length : undefined}
+            />
           ))}
 
           {editor.isBooting || editor.isUserLoading ? (
@@ -127,6 +135,9 @@ export default function SectionPage() {
                                   <ItemTitle>Link</ItemTitle>
                                 </ItemContent>
                                 <ItemActions>
+                                  <span className="text-xs font-medium text-muted-foreground">
+                                    {editor.data?.linkItems.length ?? 0}
+                                  </span>
                                   <Button size="icon-sm" variant="ghost" aria-label="Link 열기">
                                     <ChevronRightIcon />
                                   </Button>

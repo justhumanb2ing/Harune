@@ -39,7 +39,7 @@ export function ProfilePagePreview() {
         </Button>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto max-w-[375px] mx-auto">
+      <div className="min-h-0 flex-1 max-w-[375px] mx-auto">
         <ProfilePageRenderer
           isPreview
           handle={editor.data.page.handle || "preview"}

@@ -163,12 +163,16 @@ export function PublicProfilePage({
     .filter((socialLink): socialLink is SocialLink & { href: string } => Boolean(socialLink.href));
 
   return (
-    <section className="mx-auto flex h-full min-h-full w-full max-w-3xl items-start">
-      <div className="h-full w-full rounded-2xl bg-background">
+    <section className="mx-auto flex h-full min-h-full w-full items-start">
+      <div className="h-full w-full rounded-2xl bg-background flex flex-col">
         <div className="flex items-center justify-center px-4 py-4 pt-8">
-          {image ? (
-            <img src={image} alt={displayName} className="size-36 border object-cover" />
-          ) : null}
+          <div className="size-36">
+            {image ? (
+              <img src={image} alt={displayName} className="size-full object-cover" />
+            ) : (
+              <div className="size-full bg-secondary" />
+            )}
+          </div>
         </div>
 
         <div className="flex flex-col items-center justify-center gap-6 px-4 py-1 sm:flex-row">
@@ -205,62 +209,70 @@ export function PublicProfilePage({
           </div>
         ) : null}
 
-        {contentBlocks.map((block) => {
-          if (block.type === "links") {
-            return (
-              <div key={block.id} className="space-y-3 px-4 py-4">
-                <div className="space-y-3">
-                  {block.linkItems.map((item) => {
-                    const faviconUrl = resolveFaviconUrl(item.favicon, item.url);
+        <div className="flex-1">
+          {contentBlocks.map((block) => {
+            if (block.type === "links") {
+              return (
+                <div key={block.id} className="space-y-3 px-4 py-4">
+                  <div className="space-y-3">
+                    {block.linkItems.map((item) => {
+                      const faviconUrl = resolveFaviconUrl(item.favicon, item.url);
 
-                    return (
-                      <a
-                        key={item.id}
-                        href={item.url}
-                        className="flex flex-col gap-2 rounded-sm bg-background p-2 shadow-brand-small"
-                      >
-                        <div className="flex min-w-0 items-start gap-3">
-                          <div className="size-8 shrink-0">
-                            {faviconUrl ? (
-                              <img
-                                src={faviconUrl}
-                                alt={`${item.title || "Link"} favicon`}
-                                className="size-full rounded-sm object-contain"
-                              />
-                            ) : (
-                              <div className="size-full" />
-                            )}
+                      return (
+                        <a
+                          key={item.id}
+                          href={item.url}
+                          className="flex flex-col gap-2 rounded-sm bg-background p-3 shadow-brand-small"
+                        >
+                          <div className="flex min-w-0 items-start gap-3">
+                            <div className="size-8 shrink-0">
+                              {faviconUrl ? (
+                                <img
+                                  src={faviconUrl}
+                                  alt={`${item.title || "Link"} favicon`}
+                                  className="size-full rounded-sm object-contain"
+                                />
+                              ) : (
+                                <div className="size-full" />
+                              )}
+                            </div>
+                            <div className="flex min-w-0 items-center self-stretch">
+                              <p className="flex-1 break-words text-sm leading-snug">
+                                {item.title}
+                              </p>
+                            </div>
                           </div>
-                          <div className="flex min-w-0 items-center self-stretch">
-                            <p className="flex-1 break-words text-sm leading-snug">{item.title}</p>
-                          </div>
-                        </div>
-                        {item.description ? (
-                          <div className="text-xs text-neutral-600">
-                            <p className="break-words">{item.description}</p>
-                          </div>
-                        ) : null}
-                      </a>
-                    );
-                  })}
+                          {item.description ? (
+                            <div className="text-xs text-neutral-600">
+                              <p className="break-words">{item.description}</p>
+                            </div>
+                          ) : null}
+                        </a>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <div key={block.item.id} className="my-6 space-y-3">
+                <div className="flex flex-col items-center px-5 py-4">
+                  <p className="text-base font-medium">{block.item.title}</p>
+                  {block.item.description ? (
+                    <p className="mt-1 break-words text-center text-sm leading-6 text-neutral-800">
+                      {block.item.description}
+                    </p>
+                  ) : null}
                 </div>
               </div>
             );
-          }
+          })}
+        </div>
 
-          return (
-            <div key={block.item.id} className="my-6 space-y-3">
-              <div className="flex flex-col items-center px-5 py-4">
-                <p className="text-base font-medium">{block.item.title}</p>
-                {block.item.description ? (
-                  <p className="mt-1 break-words text-center text-sm leading-6 text-neutral-800">
-                    {block.item.description}
-                  </p>
-                ) : null}
-              </div>
-            </div>
-          );
-        })}
+        <div className="p-12 text-xs flex items-center justify-center text-primary uppercase">
+          <div className="px-5 py-2 rounded-full border border-primary">Build your page</div>
+        </div>
       </div>
     </section>
   );

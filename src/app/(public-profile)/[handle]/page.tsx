@@ -34,7 +34,7 @@ export default async function HandlePage({ params }: HandlePageProps) {
   }
 
   return (
-    <main className="max-w-md mx-auto h-full">
+    <main className="max-w-lg mx-auto h-full">
       <PublicProfilePage
         handle={owner.handle}
         name={owner.name}

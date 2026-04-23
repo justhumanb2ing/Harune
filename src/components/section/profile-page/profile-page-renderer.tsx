@@ -126,9 +126,9 @@ export function ProfilePageRenderer({
   const contentBlocks = getContentBlocks({ linkBlockPosition, linkItems, textBoxItems });
 
   return (
-    <section className="mx-auto flex min-h-full h-full w-full max-w-3xl items-center">
-      <div className="w-full h-[700px] overflow-y-scroll scrollbar-hidden overflow-hidden rounded-2xl">
-        <div className="min-h-full rounded-2xl overflow-hidden bg-background pb-12 cursor-default">
+    <section className="mx-auto flex min-h-full h-full w-full items-center">
+      <div className="w-full h-[700px] overflow-y-scroll scrollbar-hidden overflow-hidden rounded-2xl shadow-brand">
+        <div className="min-h-full rounded-2xl overflow-hidden bg-background cursor-default">
           <div className="flex items-center justify-center pt-8 hover:bg-secondary py-4 px-4">
             {image ? (
               <img src={image} alt={name ?? ""} className="size-36 border object-cover" />
@@ -225,6 +225,10 @@ export function ProfilePageRenderer({
               </div>
             );
           })}
+
+          <div className="p-12 text-xs flex items-center justify-center text-primary uppercase">
+            <div className="px-5 py-2 rounded-full border border-primary">Build your page</div>
+          </div>
         </div>
       </div>
     </section>

@@ -36,6 +36,7 @@ export default async function HandlePage({ params }: HandlePageProps) {
   return (
     <main className="max-w-lg mx-auto h-full">
       <PublicProfilePage
+        profilePageId={owner.id}
         handle={owner.handle}
         name={owner.name}
         bio={owner.bio}

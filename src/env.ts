@@ -42,6 +42,9 @@ export const env = createEnv({
     SUPABASE_S3_ENDPOINT: z.string().optional(),
     SUPABASE_S3_REGION: z.string().optional(),
     SUPABASE_S3_SECRET_ACCESS_KEY: z.string().optional(),
+    UMAMI_API_ENDPOINT: z.string().optional(),
+    UMAMI_API_KEY: z.string().optional(),
+    UMAMI_API_TOKEN: z.string().optional(),
   },
   client: {
     NEXT_PUBLIC_ANALYTICS_PROVIDER: z.string().optional(),

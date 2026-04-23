@@ -1,4 +1,8 @@
 import {
+  ProfilePageAnalyticsTracker,
+  TrackedProfilePageLink,
+} from "@/components/analytics/profile-page-analytics-tracker";
+import {
   AppleMusicIcon,
   GithubIcon,
   InstagramIcon,
@@ -20,6 +24,7 @@ type PublicProfilePageProps = {
   linkBlockPosition: number;
   linkItems: LinkItem[];
   name: string | null;
+  profilePageId: string;
   socialLinks: SocialLink[];
   textBoxItems: TextBoxItem[];
   userName?: string | null;
@@ -149,6 +154,7 @@ export function PublicProfilePage({
   linkBlockPosition,
   linkItems,
   name,
+  profilePageId,
   socialLinks,
   textBoxItems,
   userName,
@@ -164,6 +170,12 @@ export function PublicProfilePage({
 
   return (
     <section className="mx-auto flex h-full min-h-full w-full items-start">
+      <ProfilePageAnalyticsTracker
+        displayName={displayName}
+        handle={handle}
+        profilePageId={profilePageId}
+      />
+
       <div className="h-full w-full rounded-2xl bg-background flex flex-col">
         <div className="flex items-center justify-center px-4 py-4 pt-8">
           <div className="size-36">
@@ -195,14 +207,19 @@ export function PublicProfilePage({
                 const label = socialPlatformLabels[socialLink.platform];
 
                 return (
-                  <a
+                  <TrackedProfilePageLink
                     key={socialLink.id}
                     href={socialLink.href}
                     aria-label={label}
                     className="inline-flex size-7 items-center justify-center rounded-full text-foreground"
+                    itemId={socialLink.id}
+                    itemKind="social"
+                    itemLabel={label}
+                    platform={socialLink.platform}
+                    profilePageId={profilePageId}
                   >
                     <Icon className="size-5" aria-hidden="true" />
-                  </a>
+                  </TrackedProfilePageLink>
                 );
               })}
             </div>
@@ -219,10 +236,14 @@ export function PublicProfilePage({
                       const faviconUrl = resolveFaviconUrl(item.favicon, item.url);
 
                       return (
-                        <a
+                        <TrackedProfilePageLink
                           key={item.id}
                           href={item.url}
                           className="flex flex-col gap-2 rounded-sm bg-background p-3 shadow-brand-small"
+                          itemId={item.id}
+                          itemKind="link"
+                          itemLabel={item.title}
+                          profilePageId={profilePageId}
                         >
                           <div className="flex min-w-0 items-start gap-3">
                             <div className="size-8 shrink-0">
@@ -247,7 +268,7 @@ export function PublicProfilePage({
                               <p className="break-words">{item.description}</p>
                             </div>
                           ) : null}
-                        </a>
+                        </TrackedProfilePageLink>
                       );
                     })}
                   </div>

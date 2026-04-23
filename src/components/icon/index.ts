@@ -1,3 +1,10 @@
+export { AppleMusicIcon } from "./apple-music-icon";
 export { GithubIcon } from "./github-icon";
 export { InstagramIcon } from "./instagram-icon";
+export { LogoBehanceIcon } from "./logo-behance-icon";
+export { LogoThreadsIcon } from "./logo-threads-icon";
+export { MailIcon } from "./mail-icon";
+export { SoundcloudLogoSolidIcon } from "./soundcloud-logo-solid-icon";
+export { SpotifyIcon } from "./spotify-icon";
+export { TiktokIcon } from "./tiktok-icon";
 export { XTwitterIcon } from "./x-twitter-icon";

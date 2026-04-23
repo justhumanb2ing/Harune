@@ -22,11 +22,12 @@ import {
 import { deleteUploadedProfileImage } from "@/hooks/use-profile-image-upload";
 import { PROFILE_IMAGE_UPLOAD_ROUTE } from "@/lib/profile-page/image-upload";
 import { profilePageQueryOptions } from "@/lib/profile-page/query-options";
-import type {
-  DraftLinkItem,
-  DraftTextBoxItem,
-  ProfilePageData,
-  SocialPlatform,
+import {
+  type DraftLinkItem,
+  type DraftTextBoxItem,
+  MAX_SOCIAL_LINKS,
+  type ProfilePageData,
+  type SocialPlatform,
 } from "@/lib/profile-page/types";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { ClientS3Uploader } from "@/lib/s3/clientS3Uploader";
@@ -39,6 +40,17 @@ export const socialPlatforms: Array<{ key: SocialPlatform; label: string; placeh
   { key: "youtube", label: "YouTube", placeholder: "https://youtube.com/@yourname" },
   { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/yourname" },
   { key: "github", label: "GitHub", placeholder: "https://github.com/yourname" },
+  { key: "threads", label: "Threads", placeholder: "https://www.threads.net/@yourname" },
+  { key: "soundcloud", label: "SoundCloud", placeholder: "https://soundcloud.com/yourname" },
+  { key: "spotify", label: "Spotify", placeholder: "https://open.spotify.com/artist/yourid" },
+  { key: "behance", label: "Behance", placeholder: "https://www.behance.net/yourname" },
+  { key: "tiktok", label: "TikTok", placeholder: "https://www.tiktok.com/@yourname" },
+  { key: "mail", label: "Email", placeholder: "example@domain.com" },
+  {
+    key: "apple_music",
+    label: "Apple Music",
+    placeholder: "https://music.apple.com/profile/yourname",
+  },
 ];
 
 const uploader = new ClientS3Uploader({ presignedRouteProvider: PROFILE_IMAGE_UPLOAD_ROUTE });
@@ -66,6 +78,9 @@ export function useProfilePageEditor() {
   const syncError = useProfilePageEditorStore((state) => state.syncError);
   const hasUnsyncedChanges = useProfilePageEditorStore((state) => state.hasUnsyncedChanges);
   const socialDrafts = useProfilePageEditorStore(selectSocialDrafts);
+  const selectedSocialLinkCount = useProfilePageEditorStore(
+    (state) => state.draftData?.socialLinks.length ?? 0
+  );
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -127,6 +142,24 @@ export function useProfilePageEditor() {
     store.actions.setSocialUrl(platform, value);
   };
 
+  const toggleSocialLink = (platform: SocialPlatform) => {
+    const currentState = store.getState();
+    const isSelected = currentState.draftData?.socialLinks.some(
+      (item) => item.platform === platform
+    );
+
+    if (isSelected) {
+      store.actions.removeSocialLink(platform);
+      return;
+    }
+
+    if ((currentState.draftData?.socialLinks.length ?? 0) >= MAX_SOCIAL_LINKS) {
+      return;
+    }
+
+    store.actions.addSocialLink(platform);
+  };
+
   const handleSync = async () => {
     const currentState = store.getState();
     const profilePageQueryKey = profilePageQueryOptions().queryKey;
@@ -175,7 +208,7 @@ export function useProfilePageEditor() {
         }
       }
 
-      const message = error instanceof Error ? error.message : "Failed to sync profile page.";
+      const message = error instanceof Error ? error.message : "Failed to sync";
       store.actions.setSyncError(message);
     }
   };
@@ -258,11 +291,13 @@ export function useProfilePageEditor() {
     previewInitials,
     profileForm,
     removeProfileImage: () => store.actions.removeImage(),
+    selectedSocialLinkCount,
     setNewLink,
     setNewTextBox,
     setProfileField: (field: "bio" | "handle" | "name", value: string) =>
       store.actions.setProfileField(field, value),
     setSocialUrl,
+    toggleSocialLink,
     socialDrafts,
     syncError,
     syncStatus,

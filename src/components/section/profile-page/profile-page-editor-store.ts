@@ -1,6 +1,7 @@
 "use client";
 
 import { getProfileImageFileError } from "@/lib/profile-page/image-upload";
+import { MAX_SOCIAL_LINKS } from "@/lib/profile-page/types";
 import type {
   DraftLinkItem,
   DraftTextBoxItem,
@@ -220,28 +221,26 @@ const replaceSocialLink = (
   platform: SocialPlatform,
   url: string
 ) => {
-  const nextUrl = url;
   const existing = socialLinks.find((item) => item.platform === platform);
 
-  if (!nextUrl.trim()) {
-    return rebuildPositions(socialLinks.filter((item) => item.platform !== platform));
-  }
-
   if (existing) {
-    return socialLinks.map((item) =>
-      item.platform === platform ? { ...item, url: nextUrl } : item
-    );
+    return socialLinks.map((item) => (item.platform === platform ? { ...item, url } : item));
   }
 
   return rebuildPositions([
     ...socialLinks,
     {
       platform,
-      url: nextUrl,
+      url,
       position: socialLinks.length,
     },
   ]);
 };
+
+const removeSocialLink = (
+  socialLinks: ProfilePageDraftData["socialLinks"],
+  platform: SocialPlatform
+) => rebuildPositions(socialLinks.filter((item) => item.platform !== platform));
 
 const reorderItemsById = <T extends { id: string; position: number }>(
   items: T[],
@@ -616,6 +615,30 @@ export function createProfilePageEditorStore() {
           });
         });
       },
+      addSocialLink(platform: SocialPlatform) {
+        setState((current) => {
+          if (!current.draftData) {
+            return current;
+          }
+
+          if (current.draftData.socialLinks.some((item) => item.platform === platform)) {
+            return current;
+          }
+
+          if (current.draftData.socialLinks.length >= MAX_SOCIAL_LINKS) {
+            return current;
+          }
+
+          return recalculateDirtyState({
+            ...current,
+            draftData: {
+              ...current.draftData,
+              socialLinks: replaceSocialLink(current.draftData.socialLinks, platform, ""),
+            },
+            syncError: null,
+          });
+        });
+      },
       removeSocialLink(platform: SocialPlatform) {
         setState((current) => {
           if (!current.draftData) {
@@ -626,9 +649,7 @@ export function createProfilePageEditorStore() {
             ...current,
             draftData: {
               ...current.draftData,
-              socialLinks: rebuildPositions(
-                current.draftData.socialLinks.filter((item) => item.platform !== platform)
-              ),
+              socialLinks: removeSocialLink(current.draftData.socialLinks, platform),
             },
             syncError: null,
           });

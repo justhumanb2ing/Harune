@@ -1,3 +1,4 @@
+import { MAX_SOCIAL_LINKS } from "@/lib/profile-page/types";
 import { handleSchema } from "@/lib/validations/auth.schema";
 import { z } from "zod";
 
@@ -28,7 +29,20 @@ const nullableUrl = z.preprocess(
   z.string().url("Enter a valid URL.").nullable()
 );
 
-export const socialPlatformSchema = z.enum(["x", "instagram", "youtube", "linkedin", "github"]);
+export const socialPlatformSchema = z.enum([
+  "x",
+  "instagram",
+  "youtube",
+  "linkedin",
+  "github",
+  "threads",
+  "soundcloud",
+  "spotify",
+  "behance",
+  "tiktok",
+  "mail",
+  "apple_music",
+]);
 
 export const profilePageUpdateSchema = z.object({
   handle: handleSchema,
@@ -39,7 +53,7 @@ export const profilePageUpdateSchema = z.object({
 
 export const socialLinkInputSchema = z.object({
   platform: socialPlatformSchema,
-  url: z.string().trim().url("Enter a valid URL."),
+  url: z.string().trim().max(2048, "Must be 2048 characters or fewer."),
 });
 
 const entityIdSchema = z.string().trim().min(1, "Entity id is required.");
@@ -63,7 +77,7 @@ export const reorderItemsSchema = z.object({
 export const profilePageSyncSocialLinkSchema = z.object({
   platform: socialPlatformSchema,
   position: z.number().int().nonnegative(),
-  url: z.string().trim().url("Enter a valid URL."),
+  url: z.string().trim().max(2048, "Must be 2048 characters or fewer."),
 });
 
 export const profilePageSyncLinkItemSchema = z.object({
@@ -90,7 +104,9 @@ export const profilePageSyncSchema = z
       bio: z.string().trim().max(280, "Must be 280 characters or fewer."),
       image: nullableUrl,
     }),
-    socialLinks: z.array(profilePageSyncSocialLinkSchema),
+    socialLinks: z
+      .array(profilePageSyncSocialLinkSchema)
+      .max(MAX_SOCIAL_LINKS, `You can add up to ${MAX_SOCIAL_LINKS} social links.`),
     linkItems: z.array(profilePageSyncLinkItemSchema),
     textBoxItems: z.array(profilePageSyncTextBoxItemSchema),
   })

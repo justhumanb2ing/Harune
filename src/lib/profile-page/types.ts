@@ -1,4 +1,18 @@
-export type SocialPlatform = "x" | "instagram" | "youtube" | "linkedin" | "github";
+export const MAX_SOCIAL_LINKS = 8;
+
+export type SocialPlatform =
+  | "x"
+  | "instagram"
+  | "youtube"
+  | "linkedin"
+  | "github"
+  | "threads"
+  | "soundcloud"
+  | "spotify"
+  | "behance"
+  | "tiktok"
+  | "mail"
+  | "apple_music";
 
 export type ProfilePage = {
   id: string;

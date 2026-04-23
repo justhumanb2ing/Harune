@@ -36,6 +36,13 @@
       "when": 1776854901022,
       "tag": "0004_clear_captain_stacy",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1776925212074,
+      "tag": "0005_add_profile_social_platforms",
+      "breakpoints": true
     }
   ]
 }

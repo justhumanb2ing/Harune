@@ -1,10 +1,19 @@
 "use client";
 
-import { GithubIcon, InstagramIcon, XTwitterIcon } from "@/components/icon";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  AppleMusicIcon,
+  GithubIcon,
+  InstagramIcon,
+  LogoBehanceIcon,
+  LogoThreadsIcon,
+  MailIcon,
+  SoundcloudLogoSolidIcon,
+  SpotifyIcon,
+  TiktokIcon,
+  XTwitterIcon,
+} from "@/components/icon";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   InputGroup,
@@ -25,16 +34,15 @@ import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  ArrowLeftIcon,
   ArrowRightIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   CircleFadingArrowUpIcon,
-  ImagePlusIcon,
   Loader2Icon,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
+import { FaLinkedinIn, FaYoutube } from "react-icons/fa6";
 
 type OnboardingFormProps = {
   handle?: string;
@@ -42,7 +50,19 @@ type OnboardingFormProps = {
 
 type StepKey = "handle" | "profile" | "socials";
 
-type SocialLinkKey = "x" | "instagram" | "youtube" | "linkedin" | "github";
+type SocialLinkKey =
+  | "x"
+  | "instagram"
+  | "youtube"
+  | "linkedin"
+  | "github"
+  | "threads"
+  | "soundcloud"
+  | "spotify"
+  | "behance"
+  | "tiktok"
+  | "mail"
+  | "apple_music";
 
 type SocialLinksState = Record<SocialLinkKey, string>;
 
@@ -85,7 +105,56 @@ const socialPlatforms: Array<{
     placeholder: "https://instagram.com/yourname",
     icon: InstagramIcon,
   },
+  {
+    key: "youtube",
+    label: "YouTube",
+    placeholder: "https://youtube.com/@yourname",
+    icon: FaYoutube,
+  },
+  {
+    key: "linkedin",
+    label: "LinkedIn",
+    placeholder: "https://linkedin.com/in/yourname",
+    icon: FaLinkedinIn,
+  },
   { key: "github", label: "GitHub", placeholder: "https://github.com/yourname", icon: GithubIcon },
+  {
+    key: "threads",
+    label: "Threads",
+    placeholder: "https://www.threads.net/@yourname",
+    icon: LogoThreadsIcon,
+  },
+  {
+    key: "soundcloud",
+    label: "SoundCloud",
+    placeholder: "https://soundcloud.com/yourname",
+    icon: SoundcloudLogoSolidIcon,
+  },
+  {
+    key: "spotify",
+    label: "Spotify",
+    placeholder: "https://open.spotify.com/artist/yourid",
+    icon: SpotifyIcon,
+  },
+  {
+    key: "behance",
+    label: "Behance",
+    placeholder: "https://www.behance.net/yourname",
+    icon: LogoBehanceIcon,
+  },
+  {
+    key: "tiktok",
+    label: "TikTok",
+    placeholder: "https://www.tiktok.com/@yourname",
+    icon: TiktokIcon,
+  },
+  { key: "mail", label: "Email", placeholder: "example@domain.com", icon: MailIcon },
+  {
+    key: "apple_music",
+    label: "Apple Music",
+    placeholder: "https://music.apple.com/profile/yourname",
+    icon: AppleMusicIcon,
+  },
 ];
 
 const createInitialSocialLinks = (): SocialLinksState => ({
@@ -94,6 +163,13 @@ const createInitialSocialLinks = (): SocialLinksState => ({
   youtube: "",
   linkedin: "",
   github: "",
+  threads: "",
+  soundcloud: "",
+  spotify: "",
+  behance: "",
+  tiktok: "",
+  mail: "",
+  apple_music: "",
 });
 
 export function OnboardingForm({ handle }: OnboardingFormProps) {

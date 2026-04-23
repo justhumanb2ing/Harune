@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
+import { MAX_SOCIAL_LINKS } from "@/lib/profile-page/types";
 import { profilePageSyncSchema } from "@/lib/validations/profile-page.schema";
 
 const validPayload = {
@@ -41,6 +42,61 @@ describe("profile page sync schema", () => {
     const result = profilePageSyncSchema.safeParse(validPayload);
 
     expect(result.success).toBe(true);
+  });
+
+  test("accepts arbitrary social link values", () => {
+    const result = profilePageSyncSchema.safeParse({
+      ...validPayload,
+      socialLinks: [
+        {
+          platform: "github",
+          position: 0,
+          url: "@leeve",
+        },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  test("accepts empty social link values for selected platforms", () => {
+    const result = profilePageSyncSchema.safeParse({
+      ...validPayload,
+      socialLinks: [
+        {
+          platform: "github",
+          position: 0,
+          url: "",
+        },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  test("rejects more than the maximum number of social links", () => {
+    const result = profilePageSyncSchema.safeParse({
+      ...validPayload,
+      socialLinks: Array.from({ length: MAX_SOCIAL_LINKS + 1 }, (_, index) => ({
+        platform: (
+          [
+            "x",
+            "instagram",
+            "youtube",
+            "linkedin",
+            "github",
+            "threads",
+            "soundcloud",
+            "spotify",
+            "behance",
+          ] as const
+        )[index],
+        position: index,
+        url: "",
+      })),
+    });
+
+    expect(result.success).toBe(false);
   });
 
   test("rejects duplicate social platforms", () => {

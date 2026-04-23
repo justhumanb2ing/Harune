@@ -1,4 +1,5 @@
 import { isReservedHandle, isValidHandleFormat, normalizeHandle } from "@/lib/handles";
+import { MAX_SOCIAL_LINKS } from "@/lib/profile-page/types";
 import { z } from "zod";
 
 const emptyStringToUndefined = (value: unknown) => {
@@ -18,6 +19,11 @@ const optionalTextSchema = z.preprocess(
 const optionalUrlSchema = z.preprocess(
   emptyStringToUndefined,
   z.string().url("Enter a valid URL.").optional()
+);
+
+const optionalSocialValueSchema = z.preprocess(
+  emptyStringToUndefined,
+  z.string().trim().optional()
 );
 
 export const signUpRequestSchema = z.object({
@@ -67,25 +73,46 @@ export const handleSchema = z.preprocess(
     })
 );
 
-export const onboardingSchema = z.object({
-  handle: handleSchema,
-  name: z
-    .string()
-    .trim()
-    .min(1, "Name is required.")
-    .max(100, "Name must be 100 characters or fewer."),
-  bio: optionalTextSchema,
-  image: optionalUrlSchema,
-  socialLinks: z
-    .object({
-      x: optionalUrlSchema,
-      instagram: optionalUrlSchema,
-      youtube: optionalUrlSchema,
-      linkedin: optionalUrlSchema,
-      github: optionalUrlSchema,
-    })
-    .default({}),
-});
+export const onboardingSchema = z
+  .object({
+    handle: handleSchema,
+    name: z
+      .string()
+      .trim()
+      .min(1, "Name is required.")
+      .max(100, "Name must be 100 characters or fewer."),
+    bio: optionalTextSchema,
+    image: optionalUrlSchema,
+    socialLinks: z
+      .object({
+        x: optionalSocialValueSchema,
+        instagram: optionalSocialValueSchema,
+        youtube: optionalSocialValueSchema,
+        linkedin: optionalSocialValueSchema,
+        github: optionalSocialValueSchema,
+        threads: optionalSocialValueSchema,
+        soundcloud: optionalSocialValueSchema,
+        spotify: optionalSocialValueSchema,
+        behance: optionalSocialValueSchema,
+        tiktok: optionalSocialValueSchema,
+        mail: optionalSocialValueSchema,
+        apple_music: optionalSocialValueSchema,
+      })
+      .default({}),
+  })
+  .superRefine((value, ctx) => {
+    const selectedSocialLinks = Object.values(value.socialLinks).filter(
+      (socialLink) => typeof socialLink === "string" && socialLink.trim().length > 0
+    );
+
+    if (selectedSocialLinks.length > MAX_SOCIAL_LINKS) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `You can add up to ${MAX_SOCIAL_LINKS} social links.`,
+        path: ["socialLinks"],
+      });
+    }
+  });
 
 export type SignUpRequestInput = z.infer<typeof signUpRequestSchema>;
 export type SetPasswordInput = z.infer<typeof setPasswordSchema>;

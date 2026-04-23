@@ -4,7 +4,7 @@ import {
   buildSyncPayload,
   createProfilePageEditorStore,
 } from "@/components/section/profile-page/profile-page-editor-store";
-import type { ProfilePageData } from "@/lib/profile-page/types";
+import { MAX_SOCIAL_LINKS, type ProfilePageData } from "@/lib/profile-page/types";
 
 const createProfilePageData = (): ProfilePageData => ({
   page: {
@@ -90,6 +90,86 @@ describe("profile page editor store", () => {
         url: "https://github.com/leeve",
       },
     ]);
+  });
+
+  test("selecting a social platform without a value keeps it in the sync payload", () => {
+    const store = createProfilePageEditorStore();
+
+    store.actions.rebaseFromServer(createProfilePageData());
+    store.actions.addSocialLink("spotify");
+
+    const draftData = store.getState().draftData;
+
+    if (!draftData) {
+      throw new Error("Expected draft data to exist");
+    }
+
+    expect(store.getState().hasUnsyncedChanges).toBe(true);
+    expect(buildSyncPayload(draftData).socialLinks).toEqual([
+      {
+        platform: "github",
+        position: 0,
+        url: "https://github.com/leeve",
+      },
+      {
+        platform: "spotify",
+        position: 1,
+        url: "",
+      },
+    ]);
+  });
+
+  test("clearing a selected social link input does not unregister it", () => {
+    const store = createProfilePageEditorStore();
+
+    store.actions.rebaseFromServer(createProfilePageData());
+    store.actions.setSocialUrl("github", "");
+
+    const draftData = store.getState().draftData;
+
+    if (!draftData) {
+      throw new Error("Expected draft data to exist");
+    }
+
+    expect(draftData.socialLinks).toEqual([
+      {
+        platform: "github",
+        position: 0,
+        url: "",
+      },
+    ]);
+    expect(buildSyncPayload(draftData).socialLinks).toEqual([
+      {
+        platform: "github",
+        position: 0,
+        url: "",
+      },
+    ]);
+  });
+
+  test("cannot select more than the maximum social links", () => {
+    const store = createProfilePageEditorStore();
+
+    store.actions.rebaseFromServer({
+      ...createProfilePageData(),
+      socialLinks: [
+        { id: "social-1", platform: "x", url: "", position: 0 },
+        { id: "social-2", platform: "instagram", url: "", position: 1 },
+        { id: "social-3", platform: "youtube", url: "", position: 2 },
+        { id: "social-4", platform: "linkedin", url: "", position: 3 },
+        { id: "social-5", platform: "github", url: "", position: 4 },
+        { id: "social-6", platform: "threads", url: "", position: 5 },
+        { id: "social-7", platform: "soundcloud", url: "", position: 6 },
+        { id: "social-8", platform: "spotify", url: "", position: 7 },
+      ],
+    });
+
+    store.actions.addSocialLink("behance");
+
+    expect(store.getState().draftData?.socialLinks).toHaveLength(MAX_SOCIAL_LINKS);
+    expect(
+      store.getState().draftData?.socialLinks.some((item) => item.platform === "behance")
+    ).toBe(false);
   });
 
   test("reordering existing social links stays dirty and serializes positions", () => {

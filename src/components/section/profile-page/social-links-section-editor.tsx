@@ -1,12 +1,21 @@
 "use client";
 
-import { GithubIcon, InstagramIcon, XTwitterIcon } from "@/components/icon";
+import {
+  AppleMusicIcon,
+  GithubIcon,
+  InstagramIcon,
+  LogoBehanceIcon,
+  LogoThreadsIcon,
+  MailIcon,
+  SoundcloudLogoSolidIcon,
+  SpotifyIcon,
+  TiktokIcon,
+  XTwitterIcon,
+} from "@/components/icon";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { XCircleIcon } from "@phosphor-icons/react";
 import { GripVertical } from "lucide-react";
-import { useState } from "react";
 import { FaLinkedinIn, FaYoutube } from "react-icons/fa6";
 
 import { ProfilePageSectionLayout } from "@/components/section/profile-page/section-layout";
@@ -21,6 +30,8 @@ import {
   InputGroupInput,
   InputGroupText,
 } from "@/components/ui/input-group";
+import { MAX_SOCIAL_LINKS } from "@/lib/profile-page/types";
+import { cn } from "@/lib/utils";
 
 const socialPlatformIcons = {
   x: XTwitterIcon,
@@ -28,35 +39,78 @@ const socialPlatformIcons = {
   youtube: FaYoutube,
   linkedin: FaLinkedinIn,
   github: GithubIcon,
+  threads: LogoThreadsIcon,
+  soundcloud: SoundcloudLogoSolidIcon,
+  spotify: SpotifyIcon,
+  behance: LogoBehanceIcon,
+  tiktok: TiktokIcon,
+  mail: MailIcon,
+  apple_music: AppleMusicIcon,
 } as const;
 
 export function SocialLinksSectionEditor() {
   const editor = useProfilePageEditor();
-  const [composingPlatform, setComposingPlatform] = useState<string | null>(null);
   const socialLinksByPlatform = new Map(
     editor.data?.socialLinks.map((link) => [link.platform, link]) ?? []
   );
-  const savedPlatforms = socialPlatforms.filter(
-    (platform) => socialLinksByPlatform.has(platform.key) && composingPlatform !== platform.key
-  );
-  const orderedSavedPlatforms = [...savedPlatforms].sort((a, b) => {
-    const aPosition = socialLinksByPlatform.get(a.key)?.position ?? Number.MAX_SAFE_INTEGER;
-    const bPosition = socialLinksByPlatform.get(b.key)?.position ?? Number.MAX_SAFE_INTEGER;
-    return aPosition - bPosition;
-  });
-  const unsavedPlatforms = socialPlatforms.filter(
-    (platform) => !socialLinksByPlatform.has(platform.key) || composingPlatform === platform.key
-  );
+  const orderedSelectedPlatforms = socialPlatforms
+    .filter((platform) => socialLinksByPlatform.has(platform.key))
+    .sort((a, b) => {
+      const aPosition = socialLinksByPlatform.get(a.key)?.position ?? Number.MAX_SAFE_INTEGER;
+      const bPosition = socialLinksByPlatform.get(b.key)?.position ?? Number.MAX_SAFE_INTEGER;
+      return aPosition - bPosition;
+    });
 
   return (
     <ProfilePageSectionLayout
-      title="Social links"
-      description="Use a full URL. Leaving a field empty removes that platform."
+      title="Social"
+      description="Select icons below to register platforms. Selected items stay synced even with an empty value."
       isLoading={editor.isBooting || editor.isUserLoading}
       hasData={Boolean(editor.data)}
     >
       {editor.data ? (
         <div className="space-y-3">
+          <div className="flex flex-col gap-4">
+            <div>
+              {/* Count */}
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Available Social</span>
+                <span className="font-medium">
+                  {editor.selectedSocialLinkCount}/{MAX_SOCIAL_LINKS}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-7 gap-4 pt-2 mb-16 px-4">
+              {socialPlatforms.map((platform) => {
+                const Icon = socialPlatformIcons[platform.key];
+                const isSelected = socialLinksByPlatform.has(platform.key);
+                const isSelectionDisabled =
+                  !isSelected && editor.selectedSocialLinkCount >= MAX_SOCIAL_LINKS;
+
+                return (
+                  <button
+                    key={platform.key}
+                    type="button"
+                    onClick={() => editor.toggleSocialLink(platform.key)}
+                    disabled={editor.isSyncing}
+                    aria-pressed={isSelected}
+                    aria-label={`${platform.label} ${isSelected ? "등록 해제" : "등록"}`}
+                    className={cn(
+                      "inline-flex size-10 items-center justify-center rounded-full bg-background text-foreground shadow-brand transition-[transform,box-shadow,opacity] hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-50",
+                      isSelected
+                        ? "ring-2 ring-ring ring-offset-2 ring-foreground bg-background"
+                        : "",
+                      isSelectionDisabled ? "opacity-100" : ""
+                    )}
+                  >
+                    <Icon className="size-5" aria-hidden="true" />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <DndContext
             sensors={editor.sensors}
             collisionDetection={closestCenter}
@@ -64,30 +118,17 @@ export function SocialLinksSectionEditor() {
             onDragEnd={(event) => void editor.handleSocialLinkDragEnd(event)}
           >
             <SortableContext
-              items={orderedSavedPlatforms.map((platform) => platform.key)}
+              items={orderedSelectedPlatforms.map((platform) => platform.key)}
               strategy={verticalListSortingStrategy}
             >
               <div className="space-y-3">
-                {orderedSavedPlatforms.map((platform) => {
+                {orderedSelectedPlatforms.map((platform) => {
                   const Icon = socialPlatformIcons[platform.key];
 
                   return (
                     <SortableShell key={platform.key} id={platform.key}>
                       {({ attributes, listeners }) => (
                         <div className="group/item relative">
-                          <button
-                            type="button"
-                            className="absolute top-1/2 -left-8 inline-flex size-7 -translate-y-1/2 items-center justify-center rounded-[min(var(--radius-md),12px)] text-muted-foreground opacity-0 outline-none transition-[opacity,background-color,color,box-shadow] group-hover/item:opacity-100 hover:bg-muted hover:text-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
-                            onClick={() => void editor.handleDeleteSocialLink(platform.key)}
-                            disabled={editor.isSyncing}
-                            aria-label={`${platform.label} 삭제`}
-                          >
-                            <XCircleIcon
-                              size={18}
-                              weight="fill"
-                              className="text-muted-foreground size-5"
-                            />
-                          </button>
                           <InputGroup className="h-12 rounded-md border-0 bg-background shadow-brand has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
                             <InputGroupAddon className="pl-3">
                               <InputGroupText>
@@ -99,7 +140,7 @@ export function SocialLinksSectionEditor() {
                               onChange={(event) =>
                                 editor.setSocialUrl(platform.key, event.target.value)
                               }
-                              placeholder="Add handle or URL"
+                              placeholder={platform.placeholder}
                               autoComplete="off"
                               aria-label={platform.label}
                               className="h-full px-0 pl-4!"
@@ -122,39 +163,7 @@ export function SocialLinksSectionEditor() {
               </div>
             </SortableContext>
           </DndContext>
-          {unsavedPlatforms.map((platform) => {
-            const Icon = socialPlatformIcons[platform.key];
 
-            return (
-              <div key={platform.key} className="group/item relative">
-                <InputGroup className="h-12 rounded-md border-0 bg-background shadow-brand has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
-                  <InputGroupAddon className="pl-3">
-                    <InputGroupText>
-                      <Icon className="size-6 text-black" aria-hidden="true" />
-                    </InputGroupText>
-                  </InputGroupAddon>
-                  <InputGroupInput
-                    value={editor.socialDrafts[platform.key]}
-                    onFocus={() => {
-                      if (!socialLinksByPlatform.has(platform.key)) {
-                        setComposingPlatform(platform.key);
-                      }
-                    }}
-                    onBlur={() => {
-                      setComposingPlatform((current) =>
-                        current === platform.key ? null : current
-                      );
-                    }}
-                    onChange={(event) => editor.setSocialUrl(platform.key, event.target.value)}
-                    placeholder="Add handle or URL"
-                    autoComplete="off"
-                    aria-label={platform.label}
-                    className="h-full px-0 pl-4!"
-                  />
-                </InputGroup>
-              </div>
-            );
-          })}
         </div>
       ) : null}
     </ProfilePageSectionLayout>

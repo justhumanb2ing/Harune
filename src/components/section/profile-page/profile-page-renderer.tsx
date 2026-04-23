@@ -19,6 +19,21 @@ type ProfilePageRendererProps = {
   userName?: string | null;
 };
 
+const socialPlatformLabels: Record<SocialLink["platform"], string> = {
+  x: "X",
+  instagram: "Instagram",
+  youtube: "YouTube",
+  linkedin: "LinkedIn",
+  github: "GitHub",
+  threads: "Threads",
+  soundcloud: "SoundCloud",
+  spotify: "Spotify",
+  behance: "Behance",
+  tiktok: "TikTok",
+  mail: "Email",
+  apple_music: "Apple Music",
+};
+
 export function ProfilePageRenderer({
   bio,
   handle,
@@ -31,6 +46,7 @@ export function ProfilePageRenderer({
   userName,
 }: ProfilePageRendererProps) {
   const displayName = name || userName || handle;
+  const visibleSocialLinks = socialLinks.filter((socialLink) => socialLink.url.trim().length > 0);
 
   return (
     <section className="mx-auto flex min-h-full w-full max-w-3xl items-center">
@@ -64,11 +80,11 @@ export function ProfilePageRenderer({
             </p>
           )}
 
-          {socialLinks.length > 0 ? (
+          {visibleSocialLinks.length > 0 ? (
             <div className="space-y-3">
               <p className="text-sm font-medium text-foreground/55">Social links</p>
               <div className="flex flex-wrap gap-2">
-                {socialLinks.map((socialLink) => (
+                {visibleSocialLinks.map((socialLink) => (
                   <a
                     key={socialLink.platform}
                     href={socialLink.url}
@@ -76,7 +92,7 @@ export function ProfilePageRenderer({
                     rel="noreferrer"
                     className="rounded-full border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
                   >
-                    {socialLink.platform}
+                    {socialPlatformLabels[socialLink.platform]}
                   </a>
                 ))}
               </div>

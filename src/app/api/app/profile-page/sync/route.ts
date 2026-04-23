@@ -9,10 +9,7 @@ export const POST = withAuthRequired(async (req, context) => {
     const validation = profilePageSyncSchema.safeParse(body);
 
     if (!validation.success) {
-      return NextResponse.json(
-        { error: validation.error.issues[0]?.message ?? "Invalid profile page sync payload." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Failed to sync" }, { status: 400 });
     }
 
     const data = await syncProfilePageDraft({
@@ -26,7 +23,7 @@ export const POST = withAuthRequired(async (req, context) => {
       return NextResponse.json({ error: error.message }, { status: error.status });
     }
 
-    console.error("Failed to sync profile page:", error);
-    return NextResponse.json({ error: "Failed to sync profile page." }, { status: 500 });
+    console.error("Failed to sync:", error);
+    return NextResponse.json({ error: "Failed to sync" }, { status: 500 });
   }
 });

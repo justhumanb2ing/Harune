@@ -8,6 +8,13 @@ export const profileSocialPlatformEnum = pgEnum("profile_social_platform", [
   "youtube",
   "linkedin",
   "github",
+  "threads",
+  "soundcloud",
+  "spotify",
+  "behance",
+  "tiktok",
+  "mail",
+  "apple_music",
 ]);
 
 export const profilePages = pgTable(

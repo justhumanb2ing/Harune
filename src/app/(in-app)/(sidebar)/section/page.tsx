@@ -17,7 +17,7 @@ export default function SectionPage() {
     },
     {
       href: "/section/link",
-      title: "Links",
+      title: "Link",
       description: "외부 링크 카드를 추가하고 순서를 정렬합니다.",
     },
     {
@@ -38,7 +38,6 @@ export default function SectionPage() {
           <Item
             key={section.href}
             variant={"default"}
-            
             render={
               <Link
                 href={section.href}

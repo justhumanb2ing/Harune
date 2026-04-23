@@ -161,7 +161,7 @@ export function LinksSectionEditor() {
 
   return (
     <ProfilePageSectionLayout
-      title="Links"
+      title="Link"
       description="Drag to reorder. URLs are fetched and added automatically."
       isLoading={editor.isBooting || editor.isUserLoading}
       hasData={Boolean(editor.data)}

@@ -1,8 +1,11 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+  LINK_BLOCK_ID,
   buildSyncPayload,
   createProfilePageEditorStore,
+  getPageEditorBlocks,
+  textBoxBlockId,
 } from "@/components/section/profile-page/profile-page-editor-store";
 import { MAX_SOCIAL_LINKS, type ProfilePageData } from "@/lib/profile-page/types";
 
@@ -10,6 +13,7 @@ const createProfilePageData = (): ProfilePageData => ({
   page: {
     id: "page-1",
     handle: "leeve",
+    linkBlockPosition: 0,
     name: "Leeve",
     bio: "hello",
     image: "https://cdn.example.com/profile.png",
@@ -293,12 +297,14 @@ describe("profile page editor store", () => {
           title: "About",
           description: null,
           position: 0,
+          blockPosition: 1,
         },
         {
           id: "text-2",
           title: "Notes",
           description: null,
           position: 1,
+          blockPosition: 2,
         },
       ],
     });
@@ -369,12 +375,14 @@ describe("profile page editor store", () => {
           title: "About",
           description: null,
           position: 0,
+          blockPosition: 1,
         },
         {
           id: "text-2",
           title: "Notes",
           description: null,
           position: 1,
+          blockPosition: 2,
         },
       ],
     });
@@ -393,6 +401,52 @@ describe("profile page editor store", () => {
     ).toEqual([
       ["text-2", 0],
       ["text-1", 1],
+    ]);
+  });
+
+  test("reordering page editor blocks serializes link and text block positions", () => {
+    const store = createProfilePageEditorStore();
+
+    store.actions.rebaseFromServer({
+      ...createProfilePageData(),
+      textBoxItems: [
+        {
+          id: "text-1",
+          title: "About",
+          description: null,
+          position: 0,
+          blockPosition: 1,
+        },
+        {
+          id: "text-2",
+          title: "Notes",
+          description: null,
+          position: 1,
+          blockPosition: 2,
+        },
+      ],
+    });
+
+    store.actions.reorderPageBlocks(textBoxBlockId("text-2"), LINK_BLOCK_ID);
+
+    const draftData = store.getState().draftData;
+
+    if (!draftData) {
+      throw new Error("Expected draft data to exist");
+    }
+
+    expect(store.getState().hasUnsyncedChanges).toBe(true);
+    expect(getPageEditorBlocks(draftData).map((block) => block.id)).toEqual([
+      textBoxBlockId("text-2"),
+      LINK_BLOCK_ID,
+      textBoxBlockId("text-1"),
+    ]);
+    expect(buildSyncPayload(draftData).page.linkBlockPosition).toBe(1);
+    expect(
+      buildSyncPayload(draftData).textBoxItems.map((item) => [item.id, item.blockPosition])
+    ).toEqual([
+      ["text-1", 2],
+      ["text-2", 0],
     ]);
   });
 

@@ -233,7 +233,7 @@ export function LinksSectionEditor() {
             >
               <div className="space-y-3">
                 {editor.data.linkItems.map((item) => (
-                  <SortableShell key={item.id} id={item.id}>
+                  <SortableShell key={item.id} id={item.id} className="shadow-none">
                     {({ attributes, listeners }) => (
                       <div className="group/item relative before:pointer-events-none before:absolute before:-inset-y-2 before:-left-9 before:-right-9 before:content-['']">
                         <button
@@ -253,7 +253,7 @@ export function LinksSectionEditor() {
                         </button>
                         <button
                           type="button"
-                          className="relative z-0 flex w-full flex-wrap items-center gap-2.5 rounded-lg border border-transparent bg-background p-4 text-left text-sm outline-none transition-colors duration-100 hover:bg-background! focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                          className="relative z-0 flex w-full flex-wrap items-center gap-2.5 rounded-lg border border-transparent bg-background p-2 text-left text-sm shadow-brand outline-none transition-colors duration-100 hover:bg-background! focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                           onClick={() => setSelectedLinkId(item.id)}
                         >
                           {item.favicon ? (

@@ -15,6 +15,7 @@ export const getOwnedProfilePage = async (userId: string) => {
       id: profilePages.id,
       userId: profilePages.userId,
       handle: profilePages.handle,
+      linkBlockPosition: profilePages.linkBlockPosition,
       name: profilePages.name,
       bio: profilePages.bio,
       image: profilePages.image,
@@ -63,6 +64,7 @@ export const getProfilePageEditorData = async (userId: string) => {
         title: profileTextBoxItems.title,
         description: profileTextBoxItems.description,
         position: profileTextBoxItems.position,
+        blockPosition: profileTextBoxItems.blockPosition,
       })
       .from(profileTextBoxItems)
       .where(eq(profileTextBoxItems.profilePageId, page.id))
@@ -82,6 +84,7 @@ export const getPublicProfilePage = cache(async (handle: string) => {
     .select({
       id: profilePages.id,
       handle: profilePages.handle,
+      linkBlockPosition: profilePages.linkBlockPosition,
       name: profilePages.name,
       bio: profilePages.bio,
       image: profilePages.image,
@@ -126,6 +129,7 @@ export const getPublicProfilePage = cache(async (handle: string) => {
         title: profileTextBoxItems.title,
         description: profileTextBoxItems.description,
         position: profileTextBoxItems.position,
+        blockPosition: profileTextBoxItems.blockPosition,
       })
       .from(profileTextBoxItems)
       .where(eq(profileTextBoxItems.profilePageId, owner.id))

@@ -1,11 +1,13 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { ReactNode } from "react";
 
 export function SortableShell({
   children,
+  className,
   disabled = false,
   id,
 }: {
@@ -14,6 +16,7 @@ export function SortableShell({
     isDragging: boolean;
     listeners: ReturnType<typeof useSortable>["listeners"];
   }) => ReactNode;
+  className?: string;
   disabled?: boolean;
   id: string;
 }) {
@@ -31,7 +34,7 @@ export function SortableShell({
         transition,
         zIndex: isDragging ? 10 : 0,
       }}
-      className="shadow-brand"
+      className={cn("shadow-brand", className)}
     >
       {children({ attributes, isDragging, listeners })}
     </div>

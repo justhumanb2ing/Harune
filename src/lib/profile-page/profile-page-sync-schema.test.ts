@@ -6,6 +6,7 @@ import { profilePageSyncSchema } from "@/lib/validations/profile-page.schema";
 const validPayload = {
   page: {
     handle: "leeve",
+    linkBlockPosition: 0,
     name: "Leeve",
     bio: "",
     image: null,
@@ -33,6 +34,7 @@ const validPayload = {
       title: "About",
       description: "",
       position: 0,
+      blockPosition: 1,
     },
   ],
 };
@@ -184,12 +186,14 @@ describe("profile page sync schema", () => {
           title: "About",
           description: "",
           position: 0,
+          blockPosition: 1,
         },
         {
           id: "draft:text-2",
           title: "Notes",
           description: "",
           position: 0,
+          blockPosition: 2,
         },
       ],
     });

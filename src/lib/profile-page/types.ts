@@ -17,6 +17,7 @@ export type SocialPlatform =
 export type ProfilePage = {
   id: string;
   handle: string;
+  linkBlockPosition: number;
   name: string | null;
   bio: string | null;
   image: string | null;
@@ -43,6 +44,7 @@ export type TextBoxItem = {
   title: string;
   description: string | null;
   position: number;
+  blockPosition: number;
 };
 
 export type ProfilePageData = {
@@ -55,6 +57,7 @@ export type ProfilePageData = {
 export type DraftProfilePage = {
   id: string;
   handle: string;
+  linkBlockPosition: number;
   name: string;
   bio: string;
   image: string | null;
@@ -80,6 +83,7 @@ export type DraftTextBoxItem = {
   title: string;
   description: string;
   position: number;
+  blockPosition: number;
 };
 
 export type ProfilePageDraftData = {
@@ -92,6 +96,7 @@ export type ProfilePageDraftData = {
 export type ProfilePageSyncPayload = {
   page: {
     handle: string;
+    linkBlockPosition: number;
     name: string;
     bio: string;
     image: string | null;
@@ -114,5 +119,6 @@ export type ProfilePageSyncPayload = {
     title: string;
     description: string;
     position: number;
+    blockPosition: number;
   }>;
 };

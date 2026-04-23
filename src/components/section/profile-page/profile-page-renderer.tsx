@@ -26,6 +26,7 @@ type ProfilePageRendererProps = {
   handle: string;
   image: string | null;
   isPreview?: boolean;
+  linkBlockPosition: number;
   linkItems: Array<LinkItem | DraftLinkItem>;
   name: string | null;
   socialLinks: Array<SocialLink | DraftSocialLink>;
@@ -81,23 +82,57 @@ function resolveFaviconUrl(favicon: string | null | undefined, pageUrl: string) 
   }
 }
 
+function getContentBlocks({
+  linkBlockPosition,
+  linkItems,
+  textBoxItems,
+}: {
+  linkBlockPosition: number;
+  linkItems: Array<LinkItem | DraftLinkItem>;
+  textBoxItems: Array<TextBoxItem | DraftTextBoxItem>;
+}) {
+  return [
+    ...(linkItems.length > 0
+      ? [
+          {
+            id: "links",
+            linkItems,
+            position: linkBlockPosition,
+            type: "links" as const,
+          },
+        ]
+      : []),
+    ...textBoxItems.map((item) => ({
+      id: item.id,
+      item,
+      position: item.blockPosition,
+      type: "textBox" as const,
+    })),
+  ].sort((a, b) => a.position - b.position);
+}
+
 export function ProfilePageRenderer({
   bio,
   handle,
   image,
   isPreview = false,
+  linkBlockPosition,
   linkItems,
   name,
   socialLinks,
   textBoxItems,
   userName,
 }: ProfilePageRendererProps) {
+  const contentBlocks = getContentBlocks({ linkBlockPosition, linkItems, textBoxItems });
+
   return (
     <section className="mx-auto flex min-h-full h-full w-full max-w-3xl items-center">
       <div className="w-full h-[700px] overflow-y-scroll scrollbar-hidden overflow-hidden rounded-2xl">
-        <div className="rounded-2xl overflow-hidden bg-background h-full cursor-default">
+        <div className="min-h-full rounded-2xl overflow-hidden bg-background pb-12 cursor-default">
           <div className="flex items-center justify-center pt-8 hover:bg-secondary py-4 px-4">
-            {image ? <img src={image} alt={name ?? ""} className="size-36 border object-cover" /> : null}
+            {image ? (
+              <img src={image} alt={name ?? ""} className="size-36 border object-cover" />
+            ) : null}
           </div>
           <div className="flex flex-col gap-6 sm:flex-row items-center justify-center px-4 mt-0 mb-2 hover:bg-secondary py-1">
             <div className="space-y-3">
@@ -133,61 +168,63 @@ export function ProfilePageRenderer({
             </div>
           ) : null}
 
-          {linkItems.length > 0 ? (
-            <div className="space-y-3 hover:bg-secondary px-4 py-4">
-              <div className="space-y-3">
-                {linkItems.map((item) => {
-                  const faviconUrl = resolveFaviconUrl(item.favicon, item.url);
+          {contentBlocks.map((block) => {
+            if (block.type === "links") {
+              return (
+                <div key={block.id} className="hover:bg-secondary px-4 py-4">
+                  <div className="space-y-3">
+                    {block.linkItems.map((item) => {
+                      const faviconUrl = resolveFaviconUrl(item.favicon, item.url);
 
-                  return (
-                    <div
-                      key={item.id}
-                      className="bg-background shadow-brand-small rounded-sm p-2 flex flex-col gap-2"
-                    >
-                      <div className="flex min-w-0 items-start gap-3">
-                        <div className="size-8 shrink-0">
-                          {faviconUrl ? (
-                            <img
-                              src={faviconUrl}
-                              alt={`${item.title || "Link"} favicon`}
-                              className="size-full rounded-sm object-contain"
-                            />
-                          ) : (
-                            <div className="size-full" />
+                      return (
+                        <div
+                          key={item.id}
+                          className="bg-background shadow-brand-small rounded-sm p-2 flex flex-col gap-2"
+                        >
+                          <div className="flex min-w-0 items-start gap-3">
+                            <div className="size-8 shrink-0">
+                              {faviconUrl ? (
+                                <img
+                                  src={faviconUrl}
+                                  alt={`${item.title || "Link"} favicon`}
+                                  className="size-full rounded-sm object-contain"
+                                />
+                              ) : (
+                                <div className="size-full" />
+                              )}
+                            </div>
+                            <div className="flex items-center self-stretch min-w-0">
+                              <p className="flex-1 text-sm leading-snug truncate line-clamp-1">
+                                {item.title}
+                              </p>
+                            </div>
+                          </div>
+                          {item.description && (
+                            <div className="text-xs text-neutral-600">
+                              <p>{item.description}</p>
+                            </div>
                           )}
                         </div>
-                        <div className="flex items-center self-stretch min-w-0">
-                          <p className="flex-1 text-sm leading-snug truncate line-clamp-1">
-                            {item.title}
-                          </p>
-                        </div>
-                      </div>
-                      {item.description && <div className="text-xs text-neutral-600">
-                        <p>{item.description}</p>
-                      </div>}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ) : null}
-
-          {textBoxItems.length > 0 ? (
-            <div className="space-y-3 hover:bg-secondary my-6">
-              <div className="space-y-3">
-                {textBoxItems.map((item) => (
-                  <div key={item.id} className="px-5 py-4 flex flex-col items-center">
-                    <p className="text-base font-medium">{item.title}</p>
-                    {item.description ? (
-                      <p className="text-center mt-1 text-sm leading-6 text-neutral-800 break-all">
-                        {item.description}
-                      </p>
-                    ) : null}
+                      );
+                    })}
                   </div>
-                ))}
+                </div>
+              );
+            }
+
+            return (
+              <div key={block.item.id} className="space-y-3 hover:bg-secondary my-4">
+                <div className="px-5 py-4 flex flex-col items-center">
+                  <p className="text-base font-medium">{block.item.title}</p>
+                  {block.item.description ? (
+                    <p className="text-center mt-1 text-sm leading-6 text-neutral-800 break-all">
+                      {block.item.description}
+                    </p>
+                  ) : null}
+                </div>
               </div>
-            </div>
-          ) : null}
+            );
+          })}
         </div>
       </div>
     </section>

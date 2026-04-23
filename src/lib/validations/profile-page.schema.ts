@@ -94,12 +94,14 @@ export const profilePageSyncTextBoxItemSchema = z.object({
   title: requiredText("Title", 100),
   description: z.string().trim().max(1000, "Must be 1000 characters or fewer."),
   position: z.number().int().nonnegative(),
+  blockPosition: z.number().int().nonnegative(),
 });
 
 export const profilePageSyncSchema = z
   .object({
     page: z.object({
       handle: handleSchema,
+      linkBlockPosition: z.number().int().nonnegative(),
       name: requiredText("Name", 100),
       bio: z.string().trim().max(280, "Must be 280 characters or fewer."),
       image: nullableUrl,
@@ -162,6 +164,7 @@ export const profilePageSyncSchema = z
 
     const textBoxIds = new Set<string>();
     const textBoxPositions = new Set<number>();
+    const pageBlockPositions = new Set<number>([value.page.linkBlockPosition]);
     for (const [index, textBoxItem] of value.textBoxItems.entries()) {
       if (textBoxIds.has(textBoxItem.id)) {
         ctx.addIssue({
@@ -182,6 +185,16 @@ export const profilePageSyncSchema = z
       }
 
       textBoxPositions.add(textBoxItem.position);
+
+      if (pageBlockPositions.has(textBoxItem.blockPosition)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Duplicate page editor block positions are not allowed.",
+          path: ["textBoxItems", index, "blockPosition"],
+        });
+      }
+
+      pageBlockPositions.add(textBoxItem.blockPosition);
     }
   });
 

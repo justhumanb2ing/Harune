@@ -5,6 +5,7 @@ import { useProfilePageEditor } from "@/components/section/profile-page/use-prof
 import { Button } from "@/components/ui/button";
 import useUser from "@/lib/users/useUser";
 import { ArrowUpRightIcon, Loader2 } from "lucide-react";
+import Link from "next/link";
 
 export function ProfilePagePreview() {
   const editor = useProfilePageEditor();
@@ -17,9 +18,14 @@ export function ProfilePagePreview() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4 h-full bg-input p-10">
       <div className="flex items-center justify-between px-5 py-4">
-        <div className="flex items-center gap-1 rounded-xl bg-foreground text-primary-foreground py-2 px-6 font-medium text-sm group">
-          <span>leeve.li/{editor.data.page.handle}</span>
-          <ArrowUpRightIcon className="size-4 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform"/>
+        <div className="">
+          <Link
+            href={`/${editor.data.page.handle}`}
+            className="flex items-center gap-1 rounded-xl bg-foreground text-primary-foreground py-2 px-6 font-medium text-sm group"
+          >
+            <span>leeve.li/{editor.data.page.handle}</span>
+            <ArrowUpRightIcon className="size-4 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform" />
+          </Link>
         </div>
         <Button
           type="button"
@@ -40,6 +46,7 @@ export function ProfilePagePreview() {
           name={editor.data.page.name || null}
           bio={editor.data.page.bio || null}
           image={editor.previewImageSrc ?? null}
+          linkBlockPosition={editor.data.page.linkBlockPosition}
           linkItems={editor.data.linkItems}
           socialLinks={editor.data.socialLinks}
           textBoxItems={editor.data.textBoxItems}

@@ -18,6 +18,7 @@ import {
 import {
   type ProfilePageEditorState,
   buildSyncPayload,
+  getPageEditorBlocks,
 } from "@/components/section/profile-page/profile-page-editor-store";
 import { deleteUploadedProfileImage } from "@/hooks/use-profile-image-upload";
 import { PROFILE_IMAGE_UPLOAD_ROUTE } from "@/lib/profile-page/image-upload";
@@ -78,6 +79,9 @@ export function useProfilePageEditor() {
   const syncError = useProfilePageEditorStore((state) => state.syncError);
   const hasUnsyncedChanges = useProfilePageEditorStore((state) => state.hasUnsyncedChanges);
   const socialDrafts = useProfilePageEditorStore(selectSocialDrafts);
+  const pageEditorBlocks = useProfilePageEditorStore((state) =>
+    state.draftData ? getPageEditorBlocks(state.draftData) : []
+  );
   const selectedSocialLinkCount = useProfilePageEditorStore(
     (state) => state.draftData?.socialLinks.length ?? 0
   );
@@ -256,6 +260,14 @@ export function useProfilePageEditor() {
     store.actions.reorderTextBoxItems(String(event.active.id), String(event.over.id));
   };
 
+  const handlePageBlockDragEnd = (event: DragEndEvent) => {
+    if (!event.over || event.active.id === event.over.id) {
+      return;
+    }
+
+    store.actions.reorderPageBlocks(String(event.active.id), String(event.over.id));
+  };
+
   return {
     data: draftData,
     fallbackName,
@@ -271,12 +283,13 @@ export function useProfilePageEditor() {
       value: string
     ) => store.actions.updateLinkItem(id, key, value),
     handleNewTextBoxComposerBlur: () => store.actions.resetNewTextBoxComposer(),
+    handlePageBlockDragEnd,
     handleProfileImageChange,
     handleSocialLinkDragEnd,
     handleSync,
     handleTextBoxChange: (
       id: string,
-      key: keyof Omit<DraftTextBoxItem, "id" | "position">,
+      key: keyof Omit<DraftTextBoxItem, "blockPosition" | "id" | "position">,
       value: string
     ) => store.actions.updateTextBoxItem(id, key, value),
     handleTextBoxDragEnd,
@@ -287,6 +300,7 @@ export function useProfilePageEditor() {
     isUserLoading,
     newLink,
     newTextBox,
+    pageEditorBlocks,
     previewImageSrc,
     previewInitials,
     profileForm,

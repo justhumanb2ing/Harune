@@ -43,6 +43,13 @@
       "when": 1776925212074,
       "tag": "0005_add_profile_social_platforms",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1776940372120,
+      "tag": "0006_even_dreaming_celestial",
+      "breakpoints": true
     }
   ]
 }

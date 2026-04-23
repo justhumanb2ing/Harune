@@ -84,14 +84,30 @@ const initialState = (): ProfilePageEditorState => ({
 });
 
 const createDraftId = () => `draft:${crypto.randomUUID()}`;
+export const LINK_BLOCK_ID = "block:links";
 
 const normalizeNullableText = (value: string | null | undefined) => value ?? "";
 const hasTextBoxDraftContent = (value: NewTextBoxDraft) => value.title.trim().length > 0;
+export const textBoxBlockId = (id: string) => `block:text:${id}`;
+
+export type PageEditorBlock =
+  | {
+      id: typeof LINK_BLOCK_ID;
+      position: number;
+      type: "links";
+    }
+  | {
+      id: string;
+      position: number;
+      textBoxId: string;
+      type: "textBox";
+    };
 
 export const createDraftData = (data: ProfilePageData): ProfilePageDraftData => ({
   page: {
     id: data.page.id,
     handle: data.page.handle,
+    linkBlockPosition: data.page.linkBlockPosition ?? 0,
     name: normalizeNullableText(data.page.name),
     bio: normalizeNullableText(data.page.bio),
     image: data.page.image,
@@ -114,11 +130,31 @@ export const createDraftData = (data: ProfilePageData): ProfilePageDraftData => 
     title: item.title,
     description: normalizeNullableText(item.description),
     position: index,
+    blockPosition: item.blockPosition ?? index + 1,
   })),
 });
 
+export const getPageEditorBlocks = (draftData: ProfilePageDraftData): PageEditorBlock[] => {
+  const linkBlock: PageEditorBlock = {
+    id: LINK_BLOCK_ID,
+    position: draftData.page.linkBlockPosition,
+    type: "links",
+  };
+
+  return [
+    linkBlock,
+    ...draftData.textBoxItems.map((item) => ({
+      id: textBoxBlockId(item.id),
+      position: item.blockPosition,
+      textBoxId: item.id,
+      type: "textBox" as const,
+    })),
+  ].sort((a, b) => a.position - b.position);
+};
+
 const toComparableProfile = (draftData: ProfilePageDraftData) => ({
   handle: draftData.page.handle,
+  linkBlockPosition: draftData.page.linkBlockPosition,
   name: draftData.page.name,
   bio: draftData.page.bio,
   image: draftData.page.image,
@@ -147,6 +183,7 @@ const toComparableTextBoxItems = (draftData: ProfilePageDraftData) =>
     title: item.title,
     description: item.description,
     position: item.position,
+    blockPosition: item.blockPosition,
   }));
 
 const recalculateDirtyState = (state: ProfilePageEditorState): ProfilePageEditorState => {
@@ -191,6 +228,7 @@ const rebuildPositions = <T extends { position: number }>(items: T[]) =>
 export const buildSyncPayload = (draftData: ProfilePageDraftData): ProfilePageSyncPayload => ({
   page: {
     handle: draftData.page.handle,
+    linkBlockPosition: draftData.page.linkBlockPosition,
     name: draftData.page.name,
     bio: draftData.page.bio,
     image: draftData.page.image,
@@ -213,8 +251,15 @@ export const buildSyncPayload = (draftData: ProfilePageDraftData): ProfilePageSy
     title: item.title,
     description: item.description,
     position: index,
+    blockPosition: item.blockPosition,
   })),
 });
+
+const getNextBlockPosition = (draftData: ProfilePageDraftData) =>
+  Math.max(
+    draftData.page.linkBlockPosition,
+    ...draftData.textBoxItems.map((item) => item.blockPosition)
+  ) + 1;
 
 const replaceSocialLink = (
   socialLinks: ProfilePageDraftData["socialLinks"],
@@ -373,6 +418,7 @@ export function createProfilePageEditorStore() {
               title: nextNewTextBox.title,
               description: nextNewTextBox.description,
               position: current.draftData.textBoxItems.length,
+              blockPosition: getNextBlockPosition(current.draftData),
             };
 
             return recalculateDirtyState({
@@ -514,6 +560,7 @@ export function createProfilePageEditorStore() {
             title: current.newTextBox.title,
             description: current.newTextBox.description,
             position: current.draftData.textBoxItems.length,
+            blockPosition: getNextBlockPosition(current.draftData),
           };
 
           return recalculateDirtyState({
@@ -529,7 +576,7 @@ export function createProfilePageEditorStore() {
       },
       updateTextBoxItem(
         id: string,
-        field: keyof Omit<DraftTextBoxItem, "id" | "position">,
+        field: keyof Omit<DraftTextBoxItem, "blockPosition" | "id" | "position">,
         value: string
       ) {
         setState((current) => {
@@ -580,6 +627,50 @@ export function createProfilePageEditorStore() {
             draftData: {
               ...current.draftData,
               textBoxItems: reorderItemsById(current.draftData.textBoxItems, activeId, overId),
+            },
+            syncError: null,
+          });
+        });
+      },
+      reorderPageBlocks(activeId: string, overId: string) {
+        setState((current) => {
+          if (!current.draftData) {
+            return current;
+          }
+
+          const blocks = getPageEditorBlocks(current.draftData);
+          const oldIndex = blocks.findIndex((block) => block.id === activeId);
+          const newIndex = blocks.findIndex((block) => block.id === overId);
+
+          if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) {
+            return current;
+          }
+
+          const nextBlocks = [...blocks];
+          const [movedBlock] = nextBlocks.splice(oldIndex, 1);
+
+          if (!movedBlock) {
+            return current;
+          }
+
+          nextBlocks.splice(newIndex, 0, movedBlock);
+
+          const blockPositions = new Map(nextBlocks.map((block, index) => [block.id, index]));
+          const linkBlockPosition =
+            blockPositions.get(LINK_BLOCK_ID) ?? current.draftData.page.linkBlockPosition;
+
+          return recalculateDirtyState({
+            ...current,
+            draftData: {
+              ...current.draftData,
+              page: {
+                ...current.draftData.page,
+                linkBlockPosition,
+              },
+              textBoxItems: current.draftData.textBoxItems.map((item) => ({
+                ...item,
+                blockPosition: blockPositions.get(textBoxBlockId(item.id)) ?? item.blockPosition,
+              })),
             },
             syncError: null,
           });

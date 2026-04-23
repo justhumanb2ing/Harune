@@ -32,6 +32,7 @@ const getProfilePageEditorDataByPageId = async (executor: DbTransaction, profile
     .select({
       id: profilePages.id,
       handle: profilePages.handle,
+      linkBlockPosition: profilePages.linkBlockPosition,
       name: profilePages.name,
       bio: profilePages.bio,
       image: profilePages.image,
@@ -74,6 +75,7 @@ const getProfilePageEditorDataByPageId = async (executor: DbTransaction, profile
         title: profileTextBoxItems.title,
         description: profileTextBoxItems.description,
         position: profileTextBoxItems.position,
+        blockPosition: profileTextBoxItems.blockPosition,
       })
       .from(profileTextBoxItems)
       .where(eq(profileTextBoxItems.profilePageId, profilePageId))
@@ -94,6 +96,7 @@ const getOwnedPageOrThrow = async (userId: string) => {
       id: profilePages.id,
       userId: profilePages.userId,
       handle: profilePages.handle,
+      linkBlockPosition: profilePages.linkBlockPosition,
       name: profilePages.name,
       bio: profilePages.bio,
       image: profilePages.image,
@@ -165,6 +168,7 @@ export const updateProfileMetadata = async ({
     .returning({
       id: profilePages.id,
       handle: profilePages.handle,
+      linkBlockPosition: profilePages.linkBlockPosition,
       name: profilePages.name,
       bio: profilePages.bio,
       image: profilePages.image,
@@ -561,12 +565,14 @@ export const createTextBoxItem = async ({
   const lastItem = await db
     .select({
       position: profileTextBoxItems.position,
+      blockPosition: profileTextBoxItems.blockPosition,
     })
     .from(profileTextBoxItems)
     .where(eq(profileTextBoxItems.profilePageId, ownedPage.id))
     .orderBy(desc(profileTextBoxItems.position))
     .limit(1)
     .then((rows) => rows[0] ?? null);
+  const lastBlockPosition = Math.max(ownedPage.linkBlockPosition, lastItem?.blockPosition ?? -1);
 
   return db
     .insert(profileTextBoxItems)
@@ -575,6 +581,7 @@ export const createTextBoxItem = async ({
       title: values.title,
       description: values.description,
       position: lastItem ? lastItem.position + 1 : 0,
+      blockPosition: lastBlockPosition + 1,
       updatedAt: new Date(),
     })
     .returning({
@@ -582,6 +589,7 @@ export const createTextBoxItem = async ({
       title: profileTextBoxItems.title,
       description: profileTextBoxItems.description,
       position: profileTextBoxItems.position,
+      blockPosition: profileTextBoxItems.blockPosition,
     })
     .then((rows) => rows[0]);
 };
@@ -614,6 +622,7 @@ export const updateTextBoxItem = async ({
       title: profileTextBoxItems.title,
       description: profileTextBoxItems.description,
       position: profileTextBoxItems.position,
+      blockPosition: profileTextBoxItems.blockPosition,
     })
     .then((rows) => rows[0] ?? null);
 
@@ -901,6 +910,7 @@ const syncTextBoxItems = async ({
           title: textBoxItem.title,
           description: textBoxItem.description || null,
           position: index,
+          blockPosition: textBoxItem.blockPosition,
           updatedAt: now,
         })
         .where(eq(profileTextBoxItems.id, textBoxItem.id));
@@ -912,6 +922,7 @@ const syncTextBoxItems = async ({
       title: textBoxItem.title,
       description: textBoxItem.description || null,
       position: index,
+      blockPosition: textBoxItem.blockPosition,
       updatedAt: now,
     });
   }
@@ -944,6 +955,7 @@ export const syncProfilePageDraft = async ({
       .update(profilePages)
       .set({
         handle: values.page.handle,
+        linkBlockPosition: values.page.linkBlockPosition,
         name: values.page.name,
         bio: values.page.bio || null,
         image: values.page.image,

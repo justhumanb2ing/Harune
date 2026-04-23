@@ -1,4 +1,4 @@
-import { ProfilePageRenderer } from "@/components/section/profile-page/profile-page-renderer";
+import { PublicProfilePage } from "@/components/section/profile-page/public-profile-page";
 import { getPublicProfilePage } from "@/lib/profile-page/queries";
 import { createPageMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
@@ -34,15 +34,18 @@ export default async function HandlePage({ params }: HandlePageProps) {
   }
 
   return (
-    <ProfilePageRenderer
-      handle={owner.handle}
-      name={owner.name}
-      bio={owner.bio}
-      image={owner.image}
-      linkItems={owner.linkItems}
-      socialLinks={owner.socialLinks}
-      textBoxItems={owner.textBoxItems}
-      userName={owner.userName}
-    />
+    <main className="max-w-md mx-auto h-full">
+      <PublicProfilePage
+        handle={owner.handle}
+        name={owner.name}
+        bio={owner.bio}
+        image={owner.image}
+        linkBlockPosition={owner.linkBlockPosition}
+        linkItems={owner.linkItems}
+        socialLinks={owner.socialLinks}
+        textBoxItems={owner.textBoxItems}
+        userName={owner.userName}
+      />
+    </main>
   );
 }

@@ -1,7 +1,7 @@
 import { render } from "@react-email/components";
-import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware } from "better-auth/api";
+import { betterAuth } from "better-auth/minimal";
 import { nextCookies } from "better-auth/next-js";
 import { magicLink } from "better-auth/plugins/magic-link";
 import { organization } from "better-auth/plugins/organization";
@@ -77,6 +77,12 @@ export const betterAuthServer = betterAuth({
       invitation: invitations,
     },
   }),
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60,
+    },
+  },
   user: {
     fields: {
       emailVerified: "emailVerifiedBool",
@@ -196,63 +202,6 @@ export const betterAuthServer = betterAuth({
   ],
 });
 
-const getOrCreateAppUser = async ({
-  email,
-  name,
-  emailVerified,
-}: {
-  email: string;
-  name?: string | null;
-  emailVerified?: boolean;
-}) => {
-  const existingUser = await db
-    .select({
-      id: users.id,
-      email: users.email,
-      name: users.name,
-      emailVerified: users.emailVerified,
-    })
-    .from(users)
-    .where(eq(users.email, email))
-    .limit(1)
-    .then((rows) => rows[0]);
-
-  if (existingUser) {
-    if (emailVerified && !existingUser.emailVerified) {
-      await db
-        .update(users)
-        .set({
-          emailVerified: new Date(),
-          emailVerifiedBool: true,
-          updatedAt: new Date(),
-        })
-        .where(eq(users.id, existingUser.id));
-    }
-
-    return existingUser;
-  }
-
-  const insertedUser = await db
-    .insert(users)
-    .values({
-      email,
-      name,
-      emailVerified: emailVerified ? new Date() : null,
-      emailVerifiedBool: !!emailVerified,
-      updatedAt: new Date(),
-    })
-    .returning({
-      id: users.id,
-      email: users.email,
-      name: users.name,
-      emailVerified: users.emailVerified,
-    })
-    .then((rows) => rows[0]);
-
-  await onUserCreate(insertedUser);
-  return insertedUser;
-};
-
 const readImpersonationSession = async (): Promise<AuthSession | null> => {
   const cookieStore = await cookies();
   const signedToken = cookieStore.get(IMPERSONATION_COOKIE_NAME)?.value;
@@ -299,16 +248,10 @@ export const auth = async (): Promise<AuthSession | null> => {
     return null;
   }
 
-  const appUser = await getOrCreateAppUser({
-    email: session.user.email,
-    name: session.user.name,
-    emailVerified: session.user.emailVerified,
-  });
-
   return {
     user: {
-      id: appUser.id,
-      email: appUser.email,
+      id: session.user.id,
+      email: session.user.email,
     },
     expires: session.session.expiresAt.toISOString(),
     activeOrganizationId: session.session.activeOrganizationId ?? null,

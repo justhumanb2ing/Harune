@@ -97,7 +97,7 @@ export function ProfilePageRenderer({
       <div className="w-full h-[700px] overflow-y-scroll scrollbar-hidden overflow-hidden rounded-2xl">
         <div className="rounded-2xl overflow-hidden bg-background h-full cursor-default">
           <div className="flex items-center justify-center pt-8 hover:bg-secondary py-4 px-4">
-            {image ? <img src={image} alt={name!} className="size-36 border object-cover" /> : null}
+            {image ? <img src={image} alt={name ?? ""} className="size-36 border object-cover" /> : null}
           </div>
           <div className="flex flex-col gap-6 sm:flex-row items-center justify-center px-4 mt-0 mb-2 hover:bg-secondary py-1">
             <div className="space-y-3">
@@ -142,9 +142,9 @@ export function ProfilePageRenderer({
                   return (
                     <div
                       key={item.id}
-                      className="block bg-background shadow-brand-small rounded-sm"
+                      className="bg-background shadow-brand-small rounded-sm p-2 flex flex-col gap-2"
                     >
-                      <div className="flex min-w-0 items-start gap-3 p-2">
+                      <div className="flex min-w-0 items-start gap-3">
                         <div className="size-8 shrink-0">
                           {faviconUrl ? (
                             <img
@@ -156,12 +156,15 @@ export function ProfilePageRenderer({
                             <div className="size-full" />
                           )}
                         </div>
-                        <div className="flex items-center self-stretch">
-                          <p className="min-w-0 flex-1 text-sm leading-snug break-words break-all">
+                        <div className="flex items-center self-stretch min-w-0">
+                          <p className="flex-1 text-sm leading-snug truncate line-clamp-1">
                             {item.title}
                           </p>
                         </div>
                       </div>
+                      {item.description && <div className="text-xs text-neutral-600">
+                        <p>{item.description}</p>
+                      </div>}
                     </div>
                   );
                 })}

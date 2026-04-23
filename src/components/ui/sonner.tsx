@@ -1,15 +1,12 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 
 const Toaster = ({ className, ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme();
-
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme="dark"
       className={cn("toaster group", className)}
       icons={{
         success: null,
@@ -20,9 +17,9 @@ const Toaster = ({ className, ...props }: ToasterProps) => {
       }}
       style={
         {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
+          "--normal-bg": "oklch(0.205 0 0)",
+          "--normal-text": "oklch(0.985 0 0)",
+          "--normal-border": "oklch(1 0 0 / 10%)",
           "--border-radius": "var(--radius)",
           "--width": "min(calc(100vw - 2rem), 28rem)",
           width: "min(calc(100vw - 2rem), 28rem)",

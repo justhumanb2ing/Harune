@@ -21,16 +21,18 @@ export default async function SectionLayout({ children }: { children: ReactNode 
   const queryClient = new QueryClient();
   const session = await auth();
   const userId = session?.user.id as string;
+  const profilePageQuery = profilePageServerQueryOptions(userId);
 
-  await queryClient.prefetchQuery(profilePageServerQueryOptions(userId));
+  await queryClient.prefetchQuery(profilePageQuery);
+  const initialProfilePageData = queryClient.getQueryData(profilePageQuery.queryKey) ?? null;
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <Suspense fallback={<SectionLayoutFallback />}>
-        <ProfilePageEditorProvider>
+        <ProfilePageEditorProvider initialData={initialProfilePageData}>
           <div className="flex h-full min-h-0 flex-row gap-4">
-            <section className="min-h-0 flex-1 overflow-auto">
-              <div className="container mx-auto max-w-md py-10">{children}</div>
+            <section className="min-h-0 flex-1 overflow-hidden">
+              <div className="container relative z-0 mx-auto h-full max-w-md">{children}</div>
             </section>
             <section className="min-h-0 flex-1 overflow-auto">
               <ProfilePagePreview />

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronLeftIcon } from "lucide-react";
 
 type ProfilePageSectionLayoutProps = {
@@ -20,17 +19,19 @@ export function ProfilePageSectionLayout({
   title,
 }: ProfilePageSectionLayoutProps) {
   return (
-    <main className="space-y-6">
-      <div className="space-y-3">
-        <Link
-          href="/section"
-          className="flex items-center gap-1 text-sm transition-colors hover:text-foreground"
-        >
-          <ChevronLeftIcon className="size-4"/>
-          <span>{title}</span>
-        </Link>
+    <main className="h-full px-4 py-10 sm:px-0">
+      <div className="space-y-6 pb-4">
+        <div className="space-y-3">
+          <Link
+            href="/section"
+            className="flex items-center gap-1 text-sm transition-colors hover:text-foreground"
+          >
+            <ChevronLeftIcon className="size-4" />
+            <span>{title}</span>
+          </Link>
+        </div>
+        {children}
       </div>
-      {children}
     </main>
   );
 }

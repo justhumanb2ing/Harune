@@ -20,10 +20,9 @@ function SectionLayoutFallback() {
 export default async function SectionLayout({ children }: { children: ReactNode }) {
   const queryClient = new QueryClient();
   const session = await auth();
+  const userId = session?.user.id as string;
 
-  if (session?.user.id) {
-    await queryClient.prefetchQuery(profilePageServerQueryOptions(session.user.id));
-  }
+  await queryClient.prefetchQuery(profilePageServerQueryOptions(userId));
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

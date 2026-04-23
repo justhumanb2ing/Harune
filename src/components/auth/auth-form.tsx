@@ -46,45 +46,6 @@ export function AuthForm({
     resolver: zodResolver(loginSchema),
   });
 
-  const handleImpersonation = React.useCallback(
-    async (token: string) => {
-      setIsLoading(true);
-      try {
-        const response = await fetch("/api/auth/impersonate", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            signedToken: token,
-            callbackUrl: resolvedCallbackUrl,
-          }),
-        });
-
-        const result = await response.json();
-
-        if (!response.ok || !result?.success) {
-          toast.error("Failed to impersonate user");
-        } else if (result?.url) {
-          router.push(result.url);
-        }
-      } catch (error) {
-        console.error("Impersonation error:", error);
-        toast.error("Failed to impersonate user");
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [resolvedCallbackUrl, router]
-  );
-
-  React.useEffect(() => {
-    const impersonateToken = searchParams?.get("impersonateToken");
-    if (impersonateToken) {
-      handleImpersonation(impersonateToken);
-    }
-  }, [searchParams, handleImpersonation]);
-
   const handleSocialSignIn = async (provider: "google" | "github", providerLabel: string) => {
     setIsLoading(true);
     try {

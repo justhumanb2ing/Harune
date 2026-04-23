@@ -44,9 +44,6 @@ export const mutationToasts = {
   couponExpired: {
     error: "Failed to expire coupon",
   },
-  impersonationCreated: {
-    error: "Failed to impersonate user",
-  },
   messageDeleted: {
     error: "Failed to delete message",
   },

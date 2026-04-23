@@ -7,7 +7,7 @@ import { magicLink } from "better-auth/plugins/magic-link";
 import { organization } from "better-auth/plugins/organization";
 import { adminAc, memberAc, ownerAc } from "better-auth/plugins/organization/access";
 import { and, eq, isNull } from "drizzle-orm";
-import { cookies, headers } from "next/headers";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { db } from "./db";
@@ -19,23 +19,12 @@ import { env } from "./env";
 import { hashPassword, verifyPassword } from "./lib/auth/password";
 import { appConfig } from "./lib/config";
 import sendMail from "./lib/email/sendMail";
-import { decryptJson } from "./lib/encryption/edge-jwt";
 import onUserCreate from "./lib/users/onUserCreate";
-
-const IMPERSONATION_COOKIE_NAME = "impersonation_token";
-
-interface ImpersonateToken {
-  impersonateIntoId: string;
-  impersonateIntoEmail: string;
-  impersonator: string;
-  expiry: string;
-}
 
 export interface AuthSession {
   user: {
     id: string;
     email: string;
-    impersonatedBy?: string;
   };
   expires: string;
   activeOrganizationId?: string | null;
@@ -202,43 +191,7 @@ export const betterAuthServer = betterAuth({
   ],
 });
 
-const readImpersonationSession = async (): Promise<AuthSession | null> => {
-  const cookieStore = await cookies();
-  const signedToken = cookieStore.get(IMPERSONATION_COOKIE_NAME)?.value;
-
-  if (!signedToken) {
-    return null;
-  }
-
-  try {
-    const tokenPayload = await decryptJson<ImpersonateToken>(signedToken);
-
-    if (new Date(tokenPayload.expiry) < new Date()) {
-      cookieStore.delete(IMPERSONATION_COOKIE_NAME);
-      return null;
-    }
-
-    return {
-      user: {
-        id: tokenPayload.impersonateIntoId,
-        email: tokenPayload.impersonateIntoEmail,
-        impersonatedBy: tokenPayload.impersonator,
-      },
-      expires: tokenPayload.expiry,
-    };
-  } catch {
-    cookieStore.delete(IMPERSONATION_COOKIE_NAME);
-    return null;
-  }
-};
-
 export const auth = async (): Promise<AuthSession | null> => {
-  const impersonatedSession = await readImpersonationSession();
-
-  if (impersonatedSession) {
-    return impersonatedSession;
-  }
-
   const requestHeaders = await headers();
   const session = await betterAuthServer.api.getSession({
     headers: requestHeaders,
@@ -267,26 +220,4 @@ export const signOut = async () => {
   await betterAuthServer.api.signOut({
     headers: await headers(),
   });
-};
-
-export const setImpersonationCookie = async (signedToken: string) => {
-  const tokenPayload = await decryptJson<ImpersonateToken>(signedToken);
-
-  if (new Date(tokenPayload.expiry) < new Date()) {
-    throw new Error("Impersonation token expired");
-  }
-
-  const cookieStore = await cookies();
-  cookieStore.set(IMPERSONATION_COOKIE_NAME, signedToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    expires: new Date(tokenPayload.expiry),
-  });
-};
-
-export const clearImpersonationCookie = async () => {
-  const cookieStore = await cookies();
-  cookieStore.delete(IMPERSONATION_COOKIE_NAME);
 };

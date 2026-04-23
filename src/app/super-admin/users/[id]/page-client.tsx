@@ -8,7 +8,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -30,17 +29,7 @@ import { apiFetch } from "@/lib/react-query/fetcher";
 import { mutationToasts } from "@/lib/react-query/query-client";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  AlertTriangle,
-  ArrowLeft,
-  Check,
-  Copy,
-  CreditCard,
-  Minus,
-  Plus,
-  Trash2,
-  User,
-} from "lucide-react";
+import { ArrowLeft, CreditCard, Minus, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -91,10 +80,6 @@ interface CreditData {
   };
 }
 
-interface ImpersonationResponse {
-  url: string;
-}
-
 interface CreditMutationResponse {
   message: string;
 }
@@ -115,9 +100,6 @@ export default function UserDetailsPage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [impersonationUrl, setImpersonationUrl] = useState("");
-  const [isCopied, setIsCopied] = useState(false);
 
   // Credit management state
   const [creditPage, setCreditPage] = useState(1);
@@ -152,47 +134,6 @@ export default function UserDetailsPage() {
       }),
     placeholderData: keepPreviousData,
   });
-
-  const impersonateMutation = useMutation({
-    mutationFn: () =>
-      apiFetch<ImpersonationResponse>(`/api/super-admin/users/${id}/impersonate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
-    onSuccess: ({ url }) => {
-      setImpersonationUrl(url);
-      setIsModalOpen(true);
-    },
-    meta: {
-      toast: mutationToasts.impersonationCreated,
-    },
-    onError: (error) => {
-      console.error("Impersonation error:", error);
-    },
-  });
-
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(impersonationUrl);
-      setIsCopied(true);
-      toast.success("Link copied to clipboard");
-
-      // Reset the copied state after 2 seconds
-      setTimeout(() => {
-        setIsCopied(false);
-      }, 2000);
-    } catch (error) {
-      toast.error("Failed to copy link");
-      console.error("Copy error:", error);
-    }
-  };
-
-  const handleDirectAccess = () => {
-    setIsModalOpen(false);
-    window.open(impersonationUrl, "_blank");
-  };
 
   const updatePlanMutation = useMutation({
     mutationFn: (planId: string) =>
@@ -304,10 +245,6 @@ export default function UserDetailsPage() {
               Manage Credits
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={() => impersonateMutation.mutate()}>
-            <User className="h-4 w-4 mr-2" />
-            Impersonate
-          </Button>
           <Button
             variant="destructive"
             size="sm"
@@ -318,64 +255,6 @@ export default function UserDetailsPage() {
           </Button>
         </div>
       </div>
-
-      {/* User Impersonation Link Modal */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Impersonation Link Generated</DialogTitle>
-            <DialogDescription>
-              Open this link in an incognito window to impersonate {user?.name || user?.email}.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="p-4 border rounded-md bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800 mb-4">
-            <div className="flex items-start gap-2">
-              <AlertTriangle className="h-5 w-5 mt-0.5 text-amber-600 dark:text-amber-400" />
-              <div>
-                <h4 className="text-sm font-semibold text-amber-800 dark:text-amber-300">
-                  Security Warning
-                </h4>
-                <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">
-                  This link grants temporary access to {user?.email}&apos;s account. Handle with
-                  care:
-                </p>
-                <ul className="list-disc list-inside text-xs text-amber-700 dark:text-amber-400 mt-1">
-                  <li>Only use in incognito/private browsing</li>
-                  <li>Do not share with unauthorized personnel</li>
-                  <li>The link expires in 30 minutes</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <div className="grid flex-1 gap-2">
-              <label htmlFor="impersonation-link" className="sr-only">
-                Impersonation Link
-              </label>
-              <Input
-                id="impersonation-link"
-                value={impersonationUrl}
-                readOnly
-                className="font-mono text-xs"
-              />
-            </div>
-            <Button type="button" size="sm" onClick={copyToClipboard}>
-              {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            </Button>
-          </div>
-
-          <DialogFooter className="sm:justify-between">
-            <Button variant="outline" size="sm" onClick={() => setIsModalOpen(false)}>
-              Close
-            </Button>
-            <Button type="button" size="sm" onClick={handleDirectAccess}>
-              Open Link
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Credit Management Modal */}
       <Dialog open={isCreditModalOpen} onOpenChange={setIsCreditModalOpen}>

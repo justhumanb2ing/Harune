@@ -159,19 +159,13 @@ export function PublicProfilePage({
   textBoxItems,
   userName,
 }: PublicProfilePageProps) {
-  const displayName = name || userName || handle;
+  const displayName = name;
   const contentBlocks = getContentBlocks({ linkBlockPosition, linkItems, textBoxItems });
-  const visibleSocialLinks = socialLinks
-    .map((socialLink) => ({
-      ...socialLink,
-      href: resolveSocialHref(socialLink),
-    }))
-    .filter((socialLink): socialLink is SocialLink & { href: string } => Boolean(socialLink.href));
 
   return (
     <section className="mx-auto flex h-full min-h-full w-full items-start">
       <ProfilePageAnalyticsTracker
-        displayName={displayName}
+        displayName={name ?? userName ?? ""}
         handle={handle}
         profilePageId={profilePageId}
       />
@@ -180,7 +174,7 @@ export function PublicProfilePage({
         <div className="flex items-center justify-center px-4 py-4 pt-8">
           <div className="size-36">
             {image ? (
-              <img src={image} alt={displayName} className="size-full object-cover" />
+              <img src={image} alt={name ?? userName ?? ""} className="size-full object-cover" />
             ) : (
               <div className="size-full bg-secondary" />
             )}
@@ -189,7 +183,7 @@ export function PublicProfilePage({
 
         <div className="flex flex-col items-center justify-center gap-6 px-4 py-1 sm:flex-row">
           <div className="space-y-3">
-            <h1 className="text-3xl font-semibold tracking-tight">{displayName}</h1>
+            <h1 className="text-3xl font-semibold tracking-tight">{name}</h1>
           </div>
         </div>
 
@@ -199,17 +193,17 @@ export function PublicProfilePage({
           </div>
         ) : null}
 
-        {visibleSocialLinks.length > 0 ? (
+        {socialLinks.length > 0 ? (
           <div className="mt-4 space-y-3 py-2">
             <div className="flex items-center justify-center gap-2">
-              {visibleSocialLinks.map((socialLink) => {
+              {socialLinks.map((socialLink) => {
                 const Icon = socialPlatformIcons[socialLink.platform];
                 const label = socialPlatformLabels[socialLink.platform];
 
                 return (
                   <TrackedProfilePageLink
                     key={socialLink.id}
-                    href={socialLink.href}
+                    href={socialLink.url}
                     aria-label={label}
                     className="inline-flex size-7 items-center justify-center rounded-full text-foreground"
                     itemId={socialLink.id}

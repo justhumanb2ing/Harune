@@ -317,11 +317,10 @@
   .scrollbar-hidden {
     -ms-overflow-style: none;
     scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
   }
 
   .scrollbar-hidden::-webkit-scrollbar {
     display: none;
-    width: 0;
-    height: 0;
   }
 }

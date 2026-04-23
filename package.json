@@ -8,14 +8,13 @@
     "dev": "next dev",
     "build": "NODE_ENV=production next build",
     "start": "next start",
-    "lint": "biome check src next.config.ts drizzle.config.ts source.config.ts",
-    "lint:fix": "biome check src next.config.ts drizzle.config.ts source.config.ts --write --unsafe",
+    "lint": "biome check src next.config.ts drizzle.config.ts",
+    "lint:fix": "biome check src next.config.ts drizzle.config.ts --write --unsafe",
     "format": "biome format --write .",
     "db:generate": "bun x drizzle-kit generate",
     "db:migrate": "bun x drizzle-kit migrate",
     "db:push": "bun x drizzle-kit push",
-    "script": "tsx --import './scripts/_bootstrap/index.ts'",
-    "postinstall": "fumadocs-mdx"
+    "script": "tsx --import './scripts/_bootstrap/index.ts'"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.980.0",
@@ -62,9 +61,6 @@
     "drizzle-orm": "^0.38.4",
     "embla-carousel-auto-scroll": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
-    "fumadocs-core": "^16.4.11",
-    "fumadocs-mdx": "^14.2.6",
-    "fumadocs-ui": "^16.4.11",
     "inngest": "^3.50.0",
     "input-otp": "^1.4.2",
     "iron-session": "^8.0.4",

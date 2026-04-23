@@ -1,3 +1,16 @@
+import {
+  AppleMusicIcon,
+  GithubIcon,
+  InstagramIcon,
+  LogoBehanceIcon,
+  LogoThreadsIcon,
+  MailIcon,
+  SoundcloudLogoSolidIcon,
+  SpotifyIcon,
+  TiktokIcon,
+  XTwitterIcon,
+} from "@/components/icon";
+import { Button } from "@/components/ui/button";
 import type {
   DraftLinkItem,
   DraftSocialLink,
@@ -6,6 +19,7 @@ import type {
   SocialLink,
   TextBoxItem,
 } from "@/lib/profile-page/types";
+import { FaLinkedinIn, FaYoutube } from "react-icons/fa6";
 
 type ProfilePageRendererProps = {
   bio: string | null;
@@ -34,6 +48,39 @@ const socialPlatformLabels: Record<SocialLink["platform"], string> = {
   apple_music: "Apple Music",
 };
 
+const socialPlatformIcons = {
+  x: XTwitterIcon,
+  instagram: InstagramIcon,
+  youtube: FaYoutube,
+  linkedin: FaLinkedinIn,
+  github: GithubIcon,
+  threads: LogoThreadsIcon,
+  soundcloud: SoundcloudLogoSolidIcon,
+  spotify: SpotifyIcon,
+  behance: LogoBehanceIcon,
+  tiktok: TiktokIcon,
+  mail: MailIcon,
+  apple_music: AppleMusicIcon,
+} as const;
+
+function resolveFaviconUrl(favicon: string | null | undefined, pageUrl: string) {
+  const value = favicon?.trim();
+
+  if (!value) {
+    return null;
+  }
+
+  if (value.startsWith("data:")) {
+    return value;
+  }
+
+  try {
+    return new URL(value, pageUrl).toString();
+  } catch {
+    return null;
+  }
+}
+
 export function ProfilePageRenderer({
   bio,
   handle,
@@ -49,96 +96,90 @@ export function ProfilePageRenderer({
   const visibleSocialLinks = socialLinks.filter((socialLink) => socialLink.url.trim().length > 0);
 
   return (
-    <section className="mx-auto flex min-h-full w-full max-w-3xl items-center">
-      <div className="w-full bg-background">
-        <div className="space-y-8">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-            <div className="space-y-3">
-              <h1 className="text-4xl font-semibold tracking-tight">{displayName}</h1>
-              <p className="text-lg text-foreground/65">@{handle}</p>
-            </div>
-
+    <section className="mx-auto flex min-h-full h-full w-full max-w-3xl items-center">
+      <div className="w-full h-[700px] overflow-y-scroll scrollbar-hidden overflow-hidden rounded-2xl">
+        <div className="rounded-2xl overflow-hidden bg-background h-full cursor-default">
+          <div className="flex items-center justify-center pt-8 hover:bg-secondary py-4 px-4">
             {image ? (
-              <img
-                src={image}
-                alt={displayName}
-                className="size-20 rounded-2xl border object-cover"
-              />
+              <img src={image} alt={displayName} className="size-36 border object-cover" />
             ) : null}
           </div>
-
-          <div className="rounded-[24px] bg-black px-6 py-5 text-white">
-            <p className="text-sm text-white/60">Leeve URL</p>
-            <p className="mt-2 text-2xl font-medium">leeve.li / {handle || "preview"}</p>
+          <div className="flex flex-col gap-6 sm:flex-row items-center justify-center px-4 mt-0 mb-2 hover:bg-secondary py-1">
+            <div className="space-y-3">
+              <h1 className="text-3xl font-semibold tracking-tight">{displayName}</h1>
+            </div>
           </div>
 
-          {bio ? (
-            <p className="max-w-2xl text-base leading-7 text-muted-foreground">{bio}</p>
-          ) : (
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-foreground/45">
-              Bio not added yet
-            </p>
+          {bio && (
+            <div className="hover:bg-secondary py-1 px-4">
+              <p className="text-sm leading-7 text-center text-neutral-800 break-all">{bio}</p>
+            </div>
           )}
 
           {visibleSocialLinks.length > 0 ? (
-            <div className="space-y-3">
-              <p className="text-sm font-medium text-foreground/55">Social links</p>
-              <div className="flex flex-wrap gap-2">
-                {visibleSocialLinks.map((socialLink) => (
-                  <a
-                    key={socialLink.platform}
-                    href={socialLink.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="rounded-full border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
-                  >
-                    {socialPlatformLabels[socialLink.platform]}
-                  </a>
-                ))}
+            <div className="space-y-3 mt-4 hover:bg-secondary py-2">
+              <div className="flex justify-center items-center gap-2">
+                {visibleSocialLinks.map((socialLink) => {
+                  const Icon = socialPlatformIcons[socialLink.platform];
+
+                  return (
+                    <Button
+                      key={socialLink.platform}
+                      type="button"
+                      variant={"ghost"}
+                      size={"icon-sm"}
+                      className={"rounded-full hover:bg-transparent cursor-default"}
+                    >
+                      <Icon className="size-5" aria-hidden="true" />
+                    </Button>
+                  );
+                })}
               </div>
             </div>
           ) : null}
 
           {linkItems.length > 0 ? (
-            <div className="space-y-3">
-              <p className="text-sm font-medium text-foreground/55">Links</p>
+            <div className="space-y-3 hover:bg-secondary px-4 py-4">
               <div className="space-y-3">
-                {linkItems.map((item) => (
-                  <a
-                    key={item.id}
-                    href={item.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block rounded-[24px] border bg-white/70 px-5 py-4 transition-colors hover:bg-white"
-                  >
-                    <div className="flex items-center gap-3">
-                      {item.favicon ? (
-                        <img
-                          src={item.favicon}
-                          alt=""
-                          className="size-5 rounded-sm object-contain"
-                        />
-                      ) : null}
-                      <p className="text-base font-medium">{item.title}</p>
+                {linkItems.map((item) => {
+                  const faviconUrl = resolveFaviconUrl(item.favicon, item.url);
+
+                  return (
+                    <div key={item.id} className="block bg-background shadow-brand-small rounded-sm">
+                      <div className="flex min-w-0 items-start gap-3 p-2">
+                        <div className="size-8 shrink-0">
+                          {faviconUrl ? (
+                            <img
+                              src={faviconUrl}
+                              alt={`${item.title || "Link"} favicon`}
+                              className="size-full rounded-sm object-contain"
+                            />
+                          ) : (
+                            <div className="size-full" />
+                          )}
+                        </div>
+                        <div className="flex items-center self-stretch">
+                          <p className="min-w-0 flex-1 text-sm leading-snug break-words break-all">
+                            {item.title}
+                          </p>
+                        </div>
+
+                      </div>
                     </div>
-                    {item.description ? (
-                      <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
-                    ) : null}
-                  </a>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ) : null}
 
           {textBoxItems.length > 0 ? (
-            <div className="space-y-3">
-              <p className="text-sm font-medium text-foreground/55">Text boxes</p>
+            <div className="space-y-3 hover:bg-secondary my-6">
               <div className="space-y-3">
                 {textBoxItems.map((item) => (
-                  <div key={item.id} className="rounded-[24px] border bg-white/60 px-5 py-4">
+                  <div key={item.id} className="px-5 py-4 flex flex-col items-center">
                     <p className="text-base font-medium">{item.title}</p>
                     {item.description ? (
-                      <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                      <p className="text-center mt-1 text-sm leading-6 text-neutral-800 break-all">
                         {item.description}
                       </p>
                     ) : null}

@@ -1,18 +1,9 @@
 import { env } from "@/env";
-import { isMarkdownPreferred, rewritePath } from "fumadocs-core/negotiation";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "./auth";
-const { rewrite: rewriteLLM } = rewritePath("/docs/*path", "/llms.mdx/*path");
 
 export async function proxy(req: NextRequest) {
-  if (isMarkdownPreferred(req)) {
-    const result = rewriteLLM(req.nextUrl.pathname);
-    if (result) {
-      return NextResponse.rewrite(new URL(result, req.nextUrl));
-    }
-  }
-
   const session = await auth();
   const isAuth = !!session?.user;
   const pathname = req.nextUrl.pathname;
@@ -102,7 +93,6 @@ export async function proxy(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/docs/:path*",
     "/api/app/:path*",
     "/app",
     "/app/:path*",

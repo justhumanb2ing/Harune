@@ -177,14 +177,14 @@ export function TextBoxesSectionEditor() {
           </DialogHeader>
 
           {selectedTextBox ? (
-            <div className="space-y-0 p-2">
+            <div className="min-w-0 space-y-0 p-2">
               <Input
                 value={selectedTextBox.title}
                 onChange={(event) =>
                   editor.handleTextBoxChange(selectedTextBox.id, "title", event.target.value)
                 }
                 placeholder="What do you want to write?"
-                className="border-0 focus-visible:ring-0 font-medium text-base! truncate"
+                className="w-full min-w-0 max-w-full border-0 font-medium !text-base focus-visible:ring-0"
               />
               <Textarea
                 value={selectedTextBox.description ?? ""}
@@ -192,7 +192,7 @@ export function TextBoxesSectionEditor() {
                   editor.handleTextBoxChange(selectedTextBox.id, "description", event.target.value)
                 }
                 placeholder="Add description for detail"
-                className="min-h-32 max-h-64 resize-none overflow-y-auto border-0 focus-visible:ring-0"
+                className="min-h-32 w-full min-w-0 max-h-64 max-w-full break-all resize-none overflow-x-hidden overflow-y-auto border-0 [field-sizing:fixed] [overflow-wrap:anywhere] focus-visible:ring-0"
               />
             </div>
           ) : null}

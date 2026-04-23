@@ -1,5 +1,4 @@
 import { withSentry } from "@/lib/sentry/init";
-import { createMDX } from "fumadocs-mdx/next";
 import type { NextConfig } from "next";
 import { env } from "./src/env";
 
@@ -53,14 +52,6 @@ const nextConfig: NextConfig = {
         : []),
     ],
   },
-  async rewrites() {
-    return [
-      {
-        source: "/docs/:path*.mdx",
-        destination: "/llms.mdx/:path*",
-      },
-    ];
-  },
   experimental: {
     authInterrupts: true,
   },
@@ -69,6 +60,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-const withMDX = createMDX();
-
-export default withSentry(withMDX(nextConfig));
+export default withSentry(nextConfig);

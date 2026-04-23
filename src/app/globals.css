@@ -51,6 +51,7 @@
   --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
   --shadow-brand: 0px 40px 60px 0px rgba(0, 0, 0, 0.06);
+  --shadow-brand-small: 0px 20px 30px 1px rgba(0, 0, 0, 0.06);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
   --shadow-color: oklch(0 0 0);
@@ -112,6 +113,7 @@
   --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
   --shadow-brand: 0px 40px 60px 0px rgba(0, 0, 0, 0.06);
+  --shadow-brand-small: 0px 20px 30px 1px rgba(0, 0, 0, 0.06);
   --shadow-color: oklch(0 0 0);
   --shadow-opacity: 0.1;
   --shadow-blur: 3px;
@@ -175,6 +177,7 @@
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
   --shadow-brand: var(--shadow-brand);
+  --shadow-brand-small: var(--shadow-brand-small);
   --radius: 0.5rem;
   --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
   --tracking-tight: calc(var(--tracking-normal) - 0.025em);
@@ -307,5 +310,18 @@
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hidden {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
   }
 }

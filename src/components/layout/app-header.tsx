@@ -1,6 +1,6 @@
 "use client";
 
-import { UserButton } from "@/components/layout/user-button";
+import { CurrentPageButton } from "@/components/layout/current-page-button";
 import { appConfig } from "@/lib/config";
 import Link from "next/link";
 
@@ -16,8 +16,7 @@ export function AppHeader() {
             </Link>
           </div>
 
-          {/* User Menu */}
-          <UserButton />
+          <CurrentPageButton />
         </div>
       </div>
     </header>

@@ -190,6 +190,7 @@ export function LinksSectionEditor() {
                     autoComplete="off"
                     className="text-sm"
                     value={editor.newLink.url}
+                    disabled={isCrawling}
                     onChange={(event) => {
                       editor.setNewLink((prev) => ({
                         ...prev,
@@ -336,7 +337,7 @@ export function LinksSectionEditor() {
                   editor.handleLinkItemChange(selectedLink.id, "description", event.target.value)
                 }
                 placeholder="Add description for detail"
-                className="min-h-32 resize-none border-0 focus-visible:ring-0"
+                className="min-h-32 resize-none border-0 focus-visible:ring-0 break-all"
               />
             </div>
           ) : null}

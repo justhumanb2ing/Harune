@@ -1,56 +1,19 @@
-import { LLMCopyButton, ViewOptions } from "@/components/page-actions";
-import { getPageImage, source } from "@/lib/docs/source";
-import { getMDXComponents } from "@/mdx-components";
-import { createRelativeLink } from "fumadocs-ui/mdx";
-import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/page";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 
-export default async function Page(props: {
-  params: Promise<{ slug: string[] }>;
-}) {
-  const params = await props.params;
-  const page = source.getPage(params.slug);
-  if (!page) notFound();
-
-  const MDX = page.data.body;
-
+export default function Page() {
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full}>
-      <DocsTitle>{page.data.title}</DocsTitle>
-      <div className="flex justify-start gap-2">
-        <LLMCopyButton markdownUrl={`${page.url}.mdx`} />
-        <ViewOptions markdownUrl={`${page.url}.mdx`} />
+    <main className="mx-auto flex min-h-[60vh] w-full max-w-3xl items-center justify-center px-6 py-16">
+      <div className="w-full rounded-xl border border-border bg-card p-8">
+        <h1 className="text-2xl font-semibold text-card-foreground">문서 준비 중</h1>
+        <p className="mt-3 text-muted-foreground">
+          기존 문서 시스템은 제거되었습니다. 필요한 내용은 추후 새로운 문서 페이지로 제공될
+          예정입니다.
+        </p>
       </div>
-      <DocsDescription>{page.data.description}</DocsDescription>
-      <DocsBody>
-        <MDX
-          components={getMDXComponents({
-            // this allows you to link to other pages with relative file paths
-            a: createRelativeLink(source, page),
-          })}
-        />
-      </DocsBody>
-    </DocsPage>
+    </main>
   );
 }
-
-export async function generateStaticParams() {
-  return source.generateParams();
-}
-
-export async function generateMetadata(props: {
-  params: Promise<{ slug: string[] }>;
-}): Promise<Metadata> {
-  const params = await props.params;
-  const page = source.getPage(params.slug);
-  if (!page) notFound();
-
-  return {
-    title: page.data.title,
-    description: page.data.description,
-    openGraph: {
-      images: getPageImage(page).url,
-    },
-  };
-}
+export const metadata: Metadata = {
+  title: "Docs",
+  description: "Documentation is under maintenance.",
+};

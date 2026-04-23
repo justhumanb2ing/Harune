@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 
 export const GET = withAuthRequired(async (req, context) => {
   try {
-    const timezone = normalizeAnalyticsTimezone(req.nextUrl.searchParams.get("timezone"));
+    const timezone = normalizeAnalyticsTimezone(req.headers.get("x-vercel-ip-timezone"));
     const profilePage = await getOwnedProfilePage(context.session.user.id);
     const response = await getProfileAnalyticsResponse({
       profilePageId: profilePage?.id ?? null,

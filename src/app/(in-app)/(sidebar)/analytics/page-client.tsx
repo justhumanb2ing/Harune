@@ -12,12 +12,8 @@ const analyticsTabs: Array<{ label: string; value: AnalyticsRangeKey }> = [
   { label: "30d", value: "30d" },
 ];
 
-type AnalyticsPageClientProps = {
-  timezone: string;
-};
-
-export function AnalyticsPageClient({ timezone }: AnalyticsPageClientProps) {
-  const analyticsQuery = useSuspenseQuery(profileAnalyticsQueryOptions(timezone));
+export function AnalyticsPageClient() {
+  const analyticsQuery = useSuspenseQuery(profileAnalyticsQueryOptions());
 
   return (
     <section className="max-w-md mx-auto container">

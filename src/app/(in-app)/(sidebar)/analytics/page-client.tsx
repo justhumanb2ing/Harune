@@ -4,7 +4,8 @@ import { ProfileAnalyticsSummary } from "@/components/analytics/profile-analytic
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { AnalyticsRangeKey } from "@/lib/analytics/analytics-ranges";
 import { profileAnalyticsQueryOptions } from "@/lib/analytics/query-options";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2Icon } from "lucide-react";
 
 const analyticsTabs: Array<{ label: string; value: AnalyticsRangeKey }> = [
   { label: "Today", value: "today" },
@@ -13,7 +14,19 @@ const analyticsTabs: Array<{ label: string; value: AnalyticsRangeKey }> = [
 ];
 
 export function AnalyticsPageClient() {
-  const analyticsQuery = useSuspenseQuery(profileAnalyticsQueryOptions());
+  const analyticsQuery = useQuery(profileAnalyticsQueryOptions());
+
+  if (analyticsQuery.isPending) {
+    return (
+      <section className="container mx-auto flex min-h-40 max-w-md flex-1 items-center justify-center">
+        <Loader2Icon className="size-5 animate-spin" />
+      </section>
+    );
+  }
+
+  if (!analyticsQuery.data) {
+    return null;
+  }
 
   return (
     <section className="max-w-md mx-auto container">

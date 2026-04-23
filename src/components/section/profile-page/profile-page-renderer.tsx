@@ -92,21 +92,16 @@ export function ProfilePageRenderer({
   textBoxItems,
   userName,
 }: ProfilePageRendererProps) {
-  const displayName = name || userName || handle;
-  const visibleSocialLinks = socialLinks.filter((socialLink) => socialLink.url.trim().length > 0);
-
   return (
     <section className="mx-auto flex min-h-full h-full w-full max-w-3xl items-center">
       <div className="w-full h-[700px] overflow-y-scroll scrollbar-hidden overflow-hidden rounded-2xl">
         <div className="rounded-2xl overflow-hidden bg-background h-full cursor-default">
           <div className="flex items-center justify-center pt-8 hover:bg-secondary py-4 px-4">
-            {image ? (
-              <img src={image} alt={displayName} className="size-36 border object-cover" />
-            ) : null}
+            {image ? <img src={image} alt={name!} className="size-36 border object-cover" /> : null}
           </div>
           <div className="flex flex-col gap-6 sm:flex-row items-center justify-center px-4 mt-0 mb-2 hover:bg-secondary py-1">
             <div className="space-y-3">
-              <h1 className="text-3xl font-semibold tracking-tight">{displayName}</h1>
+              <h1 className="text-3xl font-semibold tracking-tight">{name}</h1>
             </div>
           </div>
 
@@ -116,10 +111,10 @@ export function ProfilePageRenderer({
             </div>
           )}
 
-          {visibleSocialLinks.length > 0 ? (
+          {socialLinks.length > 0 ? (
             <div className="space-y-3 mt-4 hover:bg-secondary py-2">
               <div className="flex justify-center items-center gap-2">
-                {visibleSocialLinks.map((socialLink) => {
+                {socialLinks.map((socialLink) => {
                   const Icon = socialPlatformIcons[socialLink.platform];
 
                   return (
@@ -145,7 +140,10 @@ export function ProfilePageRenderer({
                   const faviconUrl = resolveFaviconUrl(item.favicon, item.url);
 
                   return (
-                    <div key={item.id} className="block bg-background shadow-brand-small rounded-sm">
+                    <div
+                      key={item.id}
+                      className="block bg-background shadow-brand-small rounded-sm"
+                    >
                       <div className="flex min-w-0 items-start gap-3 p-2">
                         <div className="size-8 shrink-0">
                           {faviconUrl ? (
@@ -163,7 +161,6 @@ export function ProfilePageRenderer({
                             {item.title}
                           </p>
                         </div>
-
                       </div>
                     </div>
                   );

@@ -3,20 +3,12 @@
 import { CurrentPageButton, useCurrentPageMeta } from "@/components/layout/current-page-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import { type Transition, AnimatePresence, LayoutGroup, MotionConfig, motion } from "motion/react";
-import {
-  BoxIcon,
-  ChartColumnBigIcon,
-  CheckIcon,
-  InfoIcon,
-  LogOutIcon,
-  PlusIcon,
-  ShieldIcon,
-  XIcon,
-} from "lucide-react";
+import { BoxIcon, ChartColumnBigIcon, DotIcon, LogOutIcon, PlusIcon, XIcon } from "lucide-react";
+import { AnimatePresence, LayoutGroup, MotionConfig, type Transition, motion } from "motion/react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 const navItems = [
@@ -34,11 +26,11 @@ const navItems = [
 
 const COLLAPSED_WIDTH = 60;
 const EXPANDED_WIDTH = 288;
-const COLLAPSED_RADIUS = 18;
+const COLLAPSED_RADIUS = 12;
 const EXPANDED_RADIUS = 12;
 
-const EMPHASIZED_EASE = [0.22, 1, 0.36, 1];
-const EXIT_EASE = [0.4, 0, 1, 1];
+const EMPHASIZED_EASE = [0.22, 1, 0.36, 1] as const;
+const EXIT_EASE = [0.4, 0, 1, 1] as const;
 
 const shellTransition: Transition = {
   type: "spring",
@@ -97,11 +89,37 @@ function isActiveRoute(pathname: string, href: string) {
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { pageHandleLabel, pageImage, pageInitial, pageName } = useCurrentPageMeta();
+  const router = useRouter();
+  const { pageHandleLabel, pageImage, pageName } = useCurrentPageMeta();
   const previousPathnameRef = useRef(pathname);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const handleSignOut = async () => {
+    if (isSigningOut) {
+      return;
+    }
+
+    setIsSigningOut(true);
+
+    try {
+      const result = await authClient.signOut();
+
+      if (result.error) {
+        console.error("Sign out failed:", result.error);
+        setIsSigningOut(false);
+        return;
+      }
+
+      setIsExpanded(false);
+      router.push("/sign-in");
+      router.refresh();
+    } catch (error) {
+      console.error("Sign out failed:", error);
+      setIsSigningOut(false);
+    }
+  };
 
   useEffect(() => {
     if (previousPathnameRef.current === pathname) {
@@ -294,7 +312,7 @@ export default function Sidebar() {
                     <div className="flex items-center gap-4 px-4">
                       <Avatar size="lg">
                         <AvatarImage src={pageImage} alt={pageName} />
-                        <AvatarFallback>{pageInitial}</AvatarFallback>
+                        <AvatarFallback />
                       </Avatar>
                       <div className="flex min-w-0 flex-col text-sm">
                         <span className="truncate font-medium uppercase text-foreground">
@@ -304,7 +322,7 @@ export default function Sidebar() {
                           {pageHandleLabel}
                         </span>
                       </div>
-                      <CheckIcon className="ml-auto size-3.5 text-foreground" />
+                      <DotIcon className="ml-auto size-4 stroke-8 text-green-500" />
                     </div>
                   </motion.div>
 
@@ -338,31 +356,19 @@ export default function Sidebar() {
                       transition: panelItemExitTransition(3),
                     }}
                     transition={panelItemTransition(3)}
-                    className="mb-3 text-sm"
+                    className="mb-3 text-sm px-2"
                   >
-                    <Link
-                      href="/terms"
-                      className="flex items-center gap-2 px-4 py-3 "
-                      onClick={() => setIsExpanded(false)}
-                    >
-                      <InfoIcon className="size-3.5 text-muted-foreground" />
-                      <span>Terms of Use</span>
-                    </Link>
-                    <Link
-                      href="/privacy"
-                      className="flex items-center gap-2 px-4 py-3"
-                      onClick={() => setIsExpanded(false)}
-                    >
-                      <ShieldIcon className="size-3.5 text-muted-foreground" />
-                      <span>Privacy Policy</span>
-                    </Link>
-                    <button
+                    <Button
                       type="button"
-                      className="flex w-full items-center gap-2 px-4 py-3 text-[#ff7a7a]"
+                      variant={"ghost"}
+                      disabled={isSigningOut}
+                      aria-busy={isSigningOut}
+                      className="flex w-full items-center justify-start gap-2 px-4 py-5 text-destructive hover:text-destructive/80"
+                      onClick={handleSignOut}
                     >
                       <LogOutIcon className="size-3.5" />
-                      <span>Log Out</span>
-                    </button>
+                      <span>{isSigningOut ? "Logging Out..." : "Log Out"}</span>
+                    </Button>
                   </motion.div>
                 </div>
               </motion.div>

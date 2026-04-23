@@ -57,7 +57,7 @@ export function CurrentPageButton({
   return (
     <Avatar className={className} size={size}>
       <AvatarImage src={pageImage} alt={pageName} />
-      <AvatarFallback>{pageInitial}</AvatarFallback>
+      <AvatarFallback />
     </Avatar>
   );
 }

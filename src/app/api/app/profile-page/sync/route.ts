@@ -1,6 +1,7 @@
 import withAuthRequired from "@/lib/auth/withAuthRequired";
 import { ProfilePageError, syncProfilePageDraft } from "@/lib/profile-page/mutations";
 import { profilePageSyncSchema } from "@/lib/validations/profile-page.schema";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 export const POST = withAuthRequired(async (req, context) => {
@@ -16,6 +17,8 @@ export const POST = withAuthRequired(async (req, context) => {
       userId: context.session.user.id,
       values: validation.data,
     });
+
+    revalidatePath(`/${data.page.handle}`);
 
     return NextResponse.json(data);
   } catch (error) {

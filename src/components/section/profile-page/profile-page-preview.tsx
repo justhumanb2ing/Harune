@@ -72,9 +72,7 @@ export function ProfilePagePreview() {
       <div
         className="absolute inset-0 scale-105 blur-xl"
         style={{
-          backgroundImage: editor.previewImageSrc
-            ? `url(${editor.previewImageSrc})`
-            : undefined,
+          backgroundImage: editor.previewImageSrc ? `url(${editor.previewImageSrc})` : undefined,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
@@ -85,9 +83,9 @@ export function ProfilePagePreview() {
           <div className="group/share flex items-center justify-center min-w-32 h-10 overflow-hidden rounded-md bg-foreground text-primary-foreground shadow-sm transition-all duration-300">
             <Link
               href={`/${editor.data.page.handle}`}
-              className="flex items-center gap-1 px-4 py-3 font-medium text-sm justify-center"
+              className="flex items-center gap-1 px-4 py-3 font-medium text-sm justify-center min-w-0"
             >
-              <span>leeve.li/{editor.data.page.handle}</span>
+              <p className="truncate line-clamp-1">leeve.li/{editor.data.page.handle}</p>
             </Link>
           </div>
           <Button

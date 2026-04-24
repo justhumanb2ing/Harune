@@ -19,7 +19,7 @@ import {
 import { ProfilePageSectionLayout } from "@/components/section/profile-page/section-layout";
 import { SortableShell } from "@/components/section/profile-page/sortable-shell";
 import { useProfilePageEditor } from "@/components/section/profile-page/use-profile-page-editor";
-import { Field, FieldLabel } from "@/components/ui/field";
+import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   InputGroup,
@@ -177,12 +177,6 @@ export function LinksSectionEditor() {
               }}
             >
               <Field className={fieldClassName}>
-                <FieldLabel
-                  htmlFor="profile-page-link-url"
-                  className="block px-4 font-medium text-xs text-foreground uppercase"
-                >
-                  URL
-                </FieldLabel>
                 <InputGroup className={inputGroupClassName}>
                   <InputGroupInput
                     id="profile-page-link-url"

@@ -224,7 +224,7 @@ export function PublicProfilePage({
 
         {socialLinks.length > 0 ? (
           <div className="mt-4 space-y-3 py-2">
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center justify-center gap-3">
               {socialLinks.map((socialLink) => {
                 const Icon = socialPlatformIcons[socialLink.platform];
                 const label = socialPlatformLabels[socialLink.platform];
@@ -234,14 +234,17 @@ export function PublicProfilePage({
                     key={socialLink.id}
                     href={socialLink.url}
                     aria-label={label}
-                    className="inline-flex size-7 items-center justify-center rounded-full text-foreground"
+                    className="inline-flex size-7 items-center justify-center rounded-full text-foreground group"
                     itemId={socialLink.id}
                     itemKind="social"
                     itemLabel={label}
                     platform={socialLink.platform}
                     profilePageId={profilePageId}
                   >
-                    <Icon className="size-5" aria-hidden="true" />
+                    <Icon
+                      className="size-full group-hover:scale-125 transition-transform"
+                      aria-hidden="true"
+                    />
                   </TrackedProfilePageLink>
                 );
               })}

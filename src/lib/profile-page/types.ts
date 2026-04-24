@@ -18,7 +18,9 @@ export type ProfilePage = {
   id: string;
   handle: string;
   linkBlockPosition: number;
+  location: string | null;
   name: string | null;
+  role: string | null;
   bio: string | null;
   image: string | null;
 };
@@ -58,7 +60,9 @@ export type DraftProfilePage = {
   id: string;
   handle: string;
   linkBlockPosition: number;
+  location: string;
   name: string;
+  role: string;
   bio: string;
   image: string | null;
 };
@@ -97,7 +101,9 @@ export type ProfilePageSyncPayload = {
   page: {
     handle: string;
     linkBlockPosition: number;
+    location: string;
     name: string;
+    role: string;
     bio: string;
     image: string | null;
   };

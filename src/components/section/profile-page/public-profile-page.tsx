@@ -23,8 +23,10 @@ type PublicProfilePageProps = {
   image: string | null;
   linkBlockPosition: number;
   linkItems: LinkItem[];
+  location: string | null;
   name: string | null;
   profilePageId: string;
+  role: string | null;
   socialLinks: SocialLink[];
   textBoxItems: TextBoxItem[];
   userName?: string | null;
@@ -153,8 +155,10 @@ export function PublicProfilePage({
   image,
   linkBlockPosition,
   linkItems,
+  location,
   name,
   profilePageId,
+  role,
   socialLinks,
   textBoxItems,
   userName,
@@ -182,8 +186,15 @@ export function PublicProfilePage({
         </div>
 
         <div className="flex flex-col items-center justify-center gap-6 px-4 py-1 sm:flex-row">
-          <div className="space-y-3">
+          <div className="space-y-2 text-center">
             <h1 className="text-3xl font-semibold tracking-tight">{name}</h1>
+            {role || location ? (
+              <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-neutral-600">
+                {role ? <span>{role}</span> : null}
+                {role && location ? <span aria-hidden="true">/</span> : null}
+                {location ? <span>{location}</span> : null}
+              </div>
+            ) : null}
           </div>
         </div>
 

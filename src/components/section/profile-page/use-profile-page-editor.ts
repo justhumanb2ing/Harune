@@ -110,7 +110,9 @@ export function useProfilePageEditor() {
   const profileForm = useMemo(
     () => ({
       handle: draftData?.page.handle ?? "",
+      location: draftData?.page.location ?? "",
       name: draftData?.page.name ?? "",
+      role: draftData?.page.role ?? "",
       bio: draftData?.page.bio ?? "",
       image: draftData?.page.image ?? null,
     }),
@@ -298,7 +300,7 @@ export function useProfilePageEditor() {
     selectedSocialLinkCount,
     setNewLink,
     setNewTextBox,
-    setProfileField: (field: "bio" | "handle" | "name", value: string) =>
+    setProfileField: (field: "bio" | "handle" | "location" | "name" | "role", value: string) =>
       store.actions.setProfileField(field, value),
     setSocialUrl,
     toggleSocialLink,

@@ -108,7 +108,9 @@ export const createDraftData = (data: ProfilePageData): ProfilePageDraftData => 
     id: data.page.id,
     handle: data.page.handle,
     linkBlockPosition: data.page.linkBlockPosition ?? 0,
+    location: normalizeNullableText(data.page.location),
     name: normalizeNullableText(data.page.name),
+    role: normalizeNullableText(data.page.role),
     bio: normalizeNullableText(data.page.bio),
     image: data.page.image,
   },
@@ -155,7 +157,9 @@ export const getPageEditorBlocks = (draftData: ProfilePageDraftData): PageEditor
 const toComparableProfile = (draftData: ProfilePageDraftData) => ({
   handle: draftData.page.handle,
   linkBlockPosition: draftData.page.linkBlockPosition,
+  location: draftData.page.location,
   name: draftData.page.name,
+  role: draftData.page.role,
   bio: draftData.page.bio,
   image: draftData.page.image,
 });
@@ -229,7 +233,9 @@ export const buildSyncPayload = (draftData: ProfilePageDraftData): ProfilePageSy
   page: {
     handle: draftData.page.handle,
     linkBlockPosition: draftData.page.linkBlockPosition,
+    location: draftData.page.location,
     name: draftData.page.name,
+    role: draftData.page.role,
     bio: draftData.page.bio,
     image: draftData.page.image,
   },
@@ -374,7 +380,7 @@ export function createProfilePageEditorStore(initialData?: ProfilePageData | nul
           });
         });
       },
-      setProfileField(field: "bio" | "handle" | "name", value: string) {
+      setProfileField(field: "bio" | "handle" | "location" | "name" | "role", value: string) {
         setState((current) => {
           if (!current.draftData) {
             return current;

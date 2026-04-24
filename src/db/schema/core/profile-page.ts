@@ -28,6 +28,8 @@ export const profilePages = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     handle: text("handle").notNull(),
     name: text("name"),
+    location: text("location"),
+    role: text("role"),
     bio: text("bio"),
     image: text("image"),
     linkBlockPosition: integer("linkBlockPosition").default(0).notNull(),

@@ -7,7 +7,9 @@ const validPayload = {
   page: {
     handle: "leeve",
     linkBlockPosition: 0,
+    location: "",
     name: "Leeve",
+    role: "",
     bio: "",
     image: null,
   },

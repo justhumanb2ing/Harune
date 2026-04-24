@@ -116,7 +116,9 @@ export function ProfilePagePreview() {
             image={editor.previewImageSrc ?? null}
             linkBlockPosition={editor.data.page.linkBlockPosition}
             linkItems={editor.data.linkItems}
+            location={editor.data.page.location || null}
             socialLinks={editor.data.socialLinks}
+            role={editor.data.page.role || null}
             textBoxItems={editor.data.textBoxItems}
             userName={user?.name ?? null}
           />

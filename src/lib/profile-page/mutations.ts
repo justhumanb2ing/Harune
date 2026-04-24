@@ -33,7 +33,9 @@ const getProfilePageEditorDataByPageId = async (executor: DbTransaction, profile
       id: profilePages.id,
       handle: profilePages.handle,
       linkBlockPosition: profilePages.linkBlockPosition,
+      location: profilePages.location,
       name: profilePages.name,
+      role: profilePages.role,
       bio: profilePages.bio,
       image: profilePages.image,
     })
@@ -97,7 +99,9 @@ const getOwnedPageOrThrow = async (userId: string) => {
       userId: profilePages.userId,
       handle: profilePages.handle,
       linkBlockPosition: profilePages.linkBlockPosition,
+      location: profilePages.location,
       name: profilePages.name,
+      role: profilePages.role,
       bio: profilePages.bio,
       image: profilePages.image,
     })
@@ -159,7 +163,9 @@ export const updateProfileMetadata = async ({
     .update(profilePages)
     .set({
       handle: values.handle,
+      location: values.location === undefined ? ownedPage.location : values.location,
       name: values.name,
+      role: values.role === undefined ? ownedPage.role : values.role,
       bio: values.bio,
       image: values.image,
       updatedAt: new Date(),
@@ -169,7 +175,9 @@ export const updateProfileMetadata = async ({
       id: profilePages.id,
       handle: profilePages.handle,
       linkBlockPosition: profilePages.linkBlockPosition,
+      location: profilePages.location,
       name: profilePages.name,
+      role: profilePages.role,
       bio: profilePages.bio,
       image: profilePages.image,
       updatedAt: profilePages.updatedAt,
@@ -956,7 +964,9 @@ export const syncProfilePageDraft = async ({
       .set({
         handle: values.page.handle,
         linkBlockPosition: values.page.linkBlockPosition,
+        location: values.page.location || null,
         name: values.page.name,
+        role: values.page.role || null,
         bio: values.page.bio || null,
         image: values.page.image,
         updatedAt: new Date(),

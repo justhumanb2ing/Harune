@@ -28,7 +28,9 @@ type ProfilePageRendererProps = {
   isPreview?: boolean;
   linkBlockPosition: number;
   linkItems: Array<LinkItem | DraftLinkItem>;
+  location: string | null;
   name: string | null;
+  role: string | null;
   socialLinks: Array<SocialLink | DraftSocialLink>;
   textBoxItems: Array<TextBoxItem | DraftTextBoxItem>;
   userName?: string | null;
@@ -118,7 +120,9 @@ export function ProfilePageRenderer({
   isPreview = false,
   linkBlockPosition,
   linkItems,
+  location,
   name,
+  role,
   socialLinks,
   textBoxItems,
   userName,
@@ -135,8 +139,15 @@ export function ProfilePageRenderer({
             ) : null}
           </div>
           <div className="flex flex-col gap-6 sm:flex-row items-center justify-center px-4 mt-0 mb-2 hover:bg-secondary py-1">
-            <div className="space-y-3">
+            <div className="space-y-2 text-center">
               <h1 className="text-3xl font-semibold tracking-tight">{name}</h1>
+              {role || location ? (
+                <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-neutral-600">
+                  {role ? <span>{role}</span> : null}
+                  {role && location ? <span aria-hidden="true">/</span> : null}
+                  {location ? <span>{location}</span> : null}
+                </div>
+              ) : null}
             </div>
           </div>
 

@@ -47,6 +47,8 @@ export const socialPlatformSchema = z.enum([
 export const profilePageUpdateSchema = z.object({
   handle: handleSchema,
   name: requiredText("Name", 100),
+  location: optionalNullableText(100).optional(),
+  role: optionalNullableText(100).optional(),
   bio: optionalNullableText(280),
   image: nullableUrl,
 });
@@ -103,6 +105,8 @@ export const profilePageSyncSchema = z
       handle: handleSchema,
       linkBlockPosition: z.number().int().nonnegative(),
       name: requiredText("Name", 100),
+      location: z.string().trim().max(100, "Must be 100 characters or fewer."),
+      role: z.string().trim().max(100, "Must be 100 characters or fewer."),
       bio: z.string().trim().max(280, "Must be 280 characters or fewer."),
       image: nullableUrl,
     }),

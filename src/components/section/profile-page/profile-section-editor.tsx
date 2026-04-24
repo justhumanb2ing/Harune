@@ -162,6 +162,7 @@ export function ProfileSectionEditor() {
                   />
                 </InputGroup>
               </Field>
+
               <Field className="relative rounded-lg bg-background outline-none py-4 shadow-brand">
                 <FieldLabel
                   htmlFor="profile-page-bio"
@@ -179,6 +180,46 @@ export function ProfileSectionEditor() {
                   />
                 </InputGroup>
               </Field>
+
+              <div className="flex flex-row items-center gap-4">
+                <Field className="flex-1 relative rounded-lg bg-background shadow-brand outline-none py-4">
+                  <FieldLabel
+                    htmlFor="profile-page-role"
+                    className="block px-4 font-medium text-xs text-foreground uppercase"
+                  >
+                    Role
+                  </FieldLabel>
+                  <InputGroup className="bg-background border-0 px-1.5 font-medium ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
+                    <InputGroupInput
+                      id="profile-page-role"
+                      placeholder="Product Designer"
+                      autoComplete="off"
+                      className="text-sm"
+                      value={editor.profileForm.role}
+                      onChange={(event) => editor.setProfileField("role", event.target.value)}
+                    />
+                  </InputGroup>
+                </Field>
+                <Field className="flex-1 relative rounded-lg bg-background shadow-brand outline-none py-4">
+                  <FieldLabel
+                    htmlFor="profile-page-location"
+                    className="block px-4 font-medium text-xs text-foreground uppercase"
+                  >
+                    Location
+                  </FieldLabel>
+                  <InputGroup className="bg-background border-0 px-1.5 font-medium ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
+                    <InputGroupInput
+                      id="profile-page-location"
+                      placeholder="Seoul, South Korea"
+                      autoComplete="off"
+                      className="text-sm"
+                      value={editor.profileForm.location}
+                      onChange={(event) => editor.setProfileField("location", event.target.value)}
+                    />
+                  </InputGroup>
+                </Field>
+              </div>
+
             </FieldGroup>
             <Dialog open={isHandleDialogOpen} onOpenChange={handleHandleDialogOpenChange}>
               <Field className="relative rounded-lg bg-background shadow-brand outline-none py-4">

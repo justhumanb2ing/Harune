@@ -35,7 +35,10 @@ const socialProviders = {
 
 export const betterAuthServer = betterAuth({
   appName: appConfig.projectName,
-  baseURL: env.BETTER_AUTH_URL ?? env.NEXT_PUBLIC_APP_URL,
+  baseURL: {
+    allowedHosts: ["localhost:3000", "*.vercel.app"],
+    protocol: process.env.NODE_ENV === "production" ? "https" : "http",
+  },
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {

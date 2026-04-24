@@ -11,6 +11,7 @@ import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { type ChangeEvent, useMemo, useRef } from "react";
 import { toast } from "sonner";
 
+import type { MeResponse } from "@/app/api/app/me/types";
 import {
   useProfilePageEditorStore,
   useProfilePageEditorStoreApi,
@@ -28,9 +29,11 @@ import {
   type DraftTextBoxItem,
   MAX_SOCIAL_LINKS,
   type ProfilePageData,
+  type ProfilePageDraftData,
   type SocialPlatform,
 } from "@/lib/profile-page/types";
 import { apiFetch } from "@/lib/react-query/fetcher";
+import { queryKeys } from "@/lib/react-query/query-keys";
 import { ClientS3Uploader } from "@/lib/s3/clientS3Uploader";
 import useUser from "@/lib/users/useUser";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
@@ -178,11 +181,13 @@ export function useProfilePageEditor() {
     store.actions.addSocialLink(platform);
   };
 
-  const handleSync = async () => {
+  const handleSync = async (draftDataOverride?: ProfilePageDraftData) => {
     const currentState = store.getState();
     const profilePageQueryKey = profilePageQueryOptions().queryKey;
 
-    if (!currentState.draftData || currentState.syncStatus === "syncing") {
+    const syncDraftData = draftDataOverride ?? currentState.draftData;
+
+    if (!syncDraftData || currentState.syncStatus === "syncing") {
       return null;
     }
 
@@ -193,7 +198,7 @@ export function useProfilePageEditor() {
       store.actions.setSyncStatus("syncing");
       await queryClient.cancelQueries({ queryKey: profilePageQueryKey });
 
-      let nextDraftData = currentState.draftData;
+      let nextDraftData = syncDraftData;
 
       if (currentState.pendingImageFile) {
         uploadedImageUrl = await uploader.uploadFile(currentState.pendingImageFile);
@@ -228,6 +233,21 @@ export function useProfilePageEditor() {
       });
 
       queryClient.setQueryData(profilePageQueryKey, response);
+      queryClient.setQueryData<MeResponse>(queryKeys.app.me(), (current) => {
+        if (!current?.profilePage) {
+          return current;
+        }
+
+        return {
+          ...current,
+          profilePage: {
+            ...current.profilePage,
+            handle: response.page.handle,
+            image: response.page.image,
+            name: response.page.name,
+          },
+        };
+      });
       store.actions.rebaseFromServer(response);
       await mutate();
       toast("Synced");

@@ -9,7 +9,7 @@ import {
   TrashIcon,
   XIcon,
 } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import {
@@ -49,9 +49,9 @@ function replaceHandleInPath(pathname: string, handle: string) {
 export function ProfileSectionEditor() {
   const editor = useProfilePageEditor();
   const pathname = usePathname();
-  const router = useRouter();
   const [isHandleDialogOpen, setIsHandleDialogOpen] = useState(false);
   const [handleDraft, setHandleDraft] = useState(editor.profileForm.handle);
+  const [isSavingHandle, setIsSavingHandle] = useState(false);
   const initialHandle = normalizeHandle(editor.profileForm.handle);
   const currentHandle = normalizeHandle(handleDraft);
   const hasChangedHandle = currentHandle !== initialHandle;
@@ -63,6 +63,7 @@ export function ProfileSectionEditor() {
     !!handleValidationError ||
     isCheckingAvailability ||
     !isHandleAvailable ||
+    isSavingHandle ||
     editor.isSyncing;
   const handleStatusMessage = handleValidationError
     ? handleValidationError
@@ -88,13 +89,27 @@ export function ProfileSectionEditor() {
       return;
     }
 
+    if (!editor.data) {
+      return;
+    }
+
+    const nextDraftData = {
+      ...editor.data,
+      page: {
+        ...editor.data.page,
+        handle: currentHandle,
+      },
+    };
     editor.setProfileField("handle", currentHandle);
     const nextPath = replaceHandleInPath(pathname, currentHandle);
-    setIsHandleDialogOpen(false);
-    const syncedData = await editor.handleSync();
+    setIsSavingHandle(true);
+    const syncedData = await editor.handleSync(nextDraftData).finally(() => {
+      setIsSavingHandle(false);
+    });
 
     if (syncedData?.page.handle === currentHandle) {
-      router.replace(nextPath);
+      window.history.replaceState(window.history.state, "", nextPath);
+      setIsHandleDialogOpen(false);
     }
   };
 
@@ -328,15 +343,14 @@ export function ProfileSectionEditor() {
                     <DialogTitle className="justify-self-center text-sm font-semibold">
                       Edit
                     </DialogTitle>
-                    <DialogClose
+                    <button
+                      type="button"
                       disabled={isHandleSaveDisabled}
                       onClick={() => void handleSaveHandle()}
-                      className={
-                        "w-fit justify-self-end text-right uppercase text-xs font-medium disabled:text-muted-foreground"
-                      }
+                      className="w-fit justify-self-end text-right text-xs font-medium uppercase disabled:text-muted-foreground"
                     >
                       Save
-                    </DialogClose>
+                    </button>
                   </div>
                 </DialogHeader>
 

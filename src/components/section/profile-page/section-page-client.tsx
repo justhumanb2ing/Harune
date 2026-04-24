@@ -115,7 +115,7 @@ export function SectionPageClient() {
           <h1 className="text-3xl">My Page</h1>
         </header>
         <section className="space-y-3">
-          <p className="text-sm text-muted-foreground">Page editor</p>
+          <p className="text-xs text-muted-foreground uppercase">Page editor</p>
 
           <div className="flex flex-col gap-2">
             {pageEditorSections.map((section) => (
@@ -247,7 +247,7 @@ export function SectionPageClient() {
         </section>
 
         <section className="mt-12 space-y-3">
-          <p className="text-sm text-muted-foreground">Other Block</p>
+          <p className="text-xs text-muted-foreground uppercase">Other Block</p>
           <div className="flex flex-col gap-2">
             {otherBlockSections.map((section) => (
               <SectionLinkItem

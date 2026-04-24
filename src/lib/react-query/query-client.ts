@@ -73,10 +73,6 @@ export const mutationToasts = {
     success: "Plan updated successfully",
     error: "Failed to update plan",
   },
-  waitlistEntryDeleted: {
-    success: "Entry deleted successfully",
-    error: "Failed to delete entry",
-  },
 } satisfies Record<string, MutationToastConfig>;
 
 const makeQueryClient = () =>

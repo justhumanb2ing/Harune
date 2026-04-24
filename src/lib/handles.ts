@@ -15,7 +15,6 @@ const reservedHandles = new Set([
   "sign-in",
   "sign-up",
   "subscribe",
-  "super-admin",
   "terms",
 ]);
 

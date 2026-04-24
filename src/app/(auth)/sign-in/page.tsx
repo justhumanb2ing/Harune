@@ -17,8 +17,6 @@ type SignInPageProps = {
 };
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
-  const enableGoogleSignIn = true;
-  const enableGithubSignIn = Boolean(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET);
   const { callbackUrl, handle } = await searchParams;
   const redirectTarget = new URLSearchParams();
 
@@ -38,14 +36,14 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
     <>
       <div className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight mb-2">Welcome back</h1>
-        <p className="text-sm text-muted-foreground">Sign in to your account to continue</p>
+        <p className="text-sm text-muted-foreground">Google OAuth로만 로그인할 수 있습니다</p>
       </div>
 
-      <AuthForm
-        callbackUrl={resolvedCallbackUrl}
-        enableGoogleSignIn={enableGoogleSignIn}
-        enableGithubSignIn={enableGithubSignIn}
-      />
+      {env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? (
+        <AuthForm callbackUrl={resolvedCallbackUrl} />
+      ) : (
+        <p className="text-sm text-destructive">Google OAuth 환경 변수가 설정되지 않았습니다.</p>
+      )}
 
       <div className="mt-6 text-center">
         <p className="text-center text-xs text-muted-foreground">

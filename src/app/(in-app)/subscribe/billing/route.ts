@@ -9,7 +9,7 @@ import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 
-export const GET = withAuthRequired(async (req, context) => {
+export const GET = withAuthRequired(async (_req, context) => {
   const user = await db
     .select()
     .from(users)
@@ -29,21 +29,21 @@ export const GET = withAuthRequired(async (req, context) => {
     if (portalSession.urls?.general?.overview) {
       return redirect(portalSession.urls.general.overview);
     }
+
     return NextResponse.json({
       message: "Unable to create Paddle customer portal session.",
     });
   }
 
   const stripeCustomerId = user.stripeCustomerId;
-
   if (stripeCustomerId) {
-    // create customer portal link
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,
       return_url: `${env.NEXT_PUBLIC_APP_URL}/section`,
     });
     return redirect(portalSession.url);
   }
+
   const lemonSqueezyCustomerId = user.lemonSqueezyCustomerId;
   if (lemonSqueezyCustomerId) {
     // TODO: Get lemonSqueezy customer and redirect to lemonSqueezy customer portal

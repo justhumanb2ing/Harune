@@ -160,7 +160,7 @@ flowchart LR
 
 **Patterns to follow:**
 - `src/db/schema/core/credits.ts`
-- `src/db/schema/extensions/organization.ts`
+- `src/db/schema/core/user.ts`
 - `drizzle/0001_profile_page_details.sql`
 
 **Test scenarios:**
@@ -381,7 +381,7 @@ flowchart LR
 - **State lifecycle risks:** 재정렬/삭제 시 `position` 재색인 누락이 생기면 공개 페이지와 편집기의 순서가 틀어질 수 있다. 컬렉션 mutation은 항상 서버에서 dense ordering을 재보장해야 한다.
 - **API surface parity:** 온보딩과 편집기가 동일한 핸들/URL 검증 규칙을 공유해야 하므로 validation schema를 분산 복제하면 안 된다.
 - **Integration coverage:** 공개 페이지 렌더링은 단위 테스트만으로 충분하지 않다. “편집 저장 -> `me` 갱신 -> 공개 페이지 반영” 흐름을 확인하는 통합 검증이 필요하다.
-- **Unchanged invariants:** 사용자 인증, 결제, organization, super-admin 영역은 이번 작업 범위에서 변경하지 않는다. `app_user`는 계정 식별자와 인증 컨텍스트를 위한 테이블로 유지된다.
+- **Unchanged invariants:** 사용자 인증과 결제 영역은 이번 작업 범위에서 변경하지 않는다. `app_user`는 계정 식별자와 인증 컨텍스트를 위한 테이블로 유지된다.
 
 ## Risks & Dependencies
 

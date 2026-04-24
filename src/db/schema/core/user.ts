@@ -81,7 +81,6 @@ export const authSessions = pgTable(
     expiresAt: timestamp("expiresAt", { mode: "date" }).notNull(),
     ipAddress: text("ipAddress"),
     userAgent: text("userAgent"),
-    activeOrganizationId: text("activeOrganizationId"),
     createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
   },

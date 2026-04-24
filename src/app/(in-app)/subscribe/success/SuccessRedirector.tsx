@@ -48,7 +48,7 @@ export default function SuccessRedirector() {
               <Link href="/section">Go to Dashboard</Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link href="/billing">View Billing</Link>
+              <Link href="/subscribe/billing">View Billing</Link>
             </Button>
           </div>
         </div>

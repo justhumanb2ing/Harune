@@ -284,7 +284,7 @@ flowchart LR
 - 데이터 없음과 설정 안 됨 상태를 같은 "0" 카드만 보여주고 끝내지 말고, 왜 비어 있는지 설명하는 짧은 안내 문구를 포함한다.
 
 **Patterns to follow:**
-- `src/app/super-admin/page-client.tsx`
+- `src/app/(in-app)/(sidebar)/analytics/page-client.tsx`
 - `src/components/ui/card.tsx`
 
 **Test scenarios:**

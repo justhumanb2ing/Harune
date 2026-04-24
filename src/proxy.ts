@@ -1,4 +1,3 @@
-import { env } from "@/env";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "./auth";
@@ -10,8 +9,6 @@ export async function proxy(req: NextRequest) {
 
   const isAPI = pathname.startsWith("/api/app");
   const isInAppRoute =
-    pathname === "/billing" ||
-    pathname.startsWith("/billing/") ||
     pathname === "/section" ||
     pathname.startsWith("/section/") ||
     pathname === "/profile" ||
@@ -78,16 +75,6 @@ export async function proxy(req: NextRequest) {
     );
   }
 
-  if (req.nextUrl.pathname.startsWith("/super-admin")) {
-    const adminEmails = env.SUPER_ADMIN_EMAILS?.split(",");
-    const currentUserEmail = session?.user?.email;
-    if (!currentUserEmail || !adminEmails?.includes(currentUserEmail)) {
-      return NextResponse.redirect(new URL("/sign-in?error=unauthorized", req.url));
-    }
-    // Allow access to super admin pages
-    return NextResponse.next();
-  }
-
   return NextResponse.next();
 }
 
@@ -96,7 +83,6 @@ export const config = {
     "/api/app/:path*",
     "/app",
     "/app/:path*",
-    "/billing/:path*",
     "/plan",
     "/plan/:path*",
     "/section",
@@ -107,6 +93,5 @@ export const config = {
     "/post-sign-in",
     "/sign-in",
     "/sign-up",
-    "/super-admin/:path*",
   ],
 };

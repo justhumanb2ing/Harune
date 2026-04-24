@@ -15,7 +15,6 @@ import {
 import stripe from "@/lib/stripe";
 import { eq } from "drizzle-orm";
 import { notFound, redirect } from "next/navigation";
-import React from "react";
 import { z } from "zod";
 
 async function SubscribePage({
@@ -104,7 +103,7 @@ async function SubscribePage({
           );
         }
         // If this is monthly or yearly plan then redirect to billing page
-        return redirect(`${env.NEXT_PUBLIC_APP_URL}/billing`);
+        return redirect(`${env.NEXT_PUBLIC_APP_URL}/subscribe/billing`);
       }
 
       //  Create checkout session
@@ -178,7 +177,7 @@ async function SubscribePage({
           );
         }
         // If this is monthly or yearly plan then redirect to billing page
-        return redirect(`${env.NEXT_PUBLIC_APP_URL}/billing`);
+        return redirect(`${env.NEXT_PUBLIC_APP_URL}/subscribe/billing`);
       }
 
       const checkoutSession = await createCheckoutSession({
@@ -218,7 +217,7 @@ async function SubscribePage({
           );
         }
         // If this is monthly or yearly plan then redirect to billing page
-        return redirect(`${env.NEXT_PUBLIC_APP_URL}/billing`);
+        return redirect(`${env.NEXT_PUBLIC_APP_URL}/subscribe/billing`);
       }
       const {
         billing_country,
@@ -320,7 +319,7 @@ async function SubscribePage({
           );
         }
         // If this is monthly or yearly plan then redirect to billing page
-        return redirect(`${env.NEXT_PUBLIC_APP_URL}/billing`);
+        return redirect(`${env.NEXT_PUBLIC_APP_URL}/subscribe/billing`);
       }
 
       const paddleCheckout = await createPaddleCheckout({

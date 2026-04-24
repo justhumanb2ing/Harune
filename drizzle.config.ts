@@ -24,7 +24,6 @@ const schema = [
   "./src/db/schema/core/credits.ts",
   ...(modules.has("coupons") ? ["./src/db/schema/extensions/coupons.ts"] : []),
   ...(modules.has("contact") ? ["./src/db/schema/extensions/contact.ts"] : []),
-  ...(modules.has("organization") ? ["./src/db/schema/extensions/organization.ts"] : []),
   ...(modules.has("paypal") ? ["./src/db/schema/extensions/paypal.ts"] : []),
   ...(modules.has("waitlist") ? ["./src/db/schema/extensions/waitlist.ts"] : []),
 ];

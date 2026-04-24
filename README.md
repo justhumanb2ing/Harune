@@ -45,8 +45,6 @@ The default command targets the following tables:
   - Creates: `coupon`
 - `contact`
   - Creates: `contact`
-- `organization`
-  - Creates: `organization`, `member`, `invitation`
 - `paypal`
   - Creates: `paypal_access_tokens`, `paypal_context`
 - `waitlist`
@@ -78,19 +76,6 @@ Created tables:
 - `contact`
 - `waitlist`
 
-Add organization-related modules:
-
-```bash
-DB_MODULES=organization bun run db:push
-```
-
-Created tables:
-
-- All core schema tables
-- `organization`
-- `member`
-- `invitation`
-
 Add only PayPal-related modules:
 
 ```bash
@@ -117,7 +102,7 @@ Created tables:
 Include all extensions:
 
 ```bash
-DB_MODULES=coupons,contact,organization,paypal,waitlist bun run db:push
+DB_MODULES=coupons,contact,paypal,waitlist bun run db:push
 ```
 
 Created tables:
@@ -125,9 +110,6 @@ Created tables:
 - All core schema tables
 - `coupon`
 - `contact`
-- `organization`
-- `member`
-- `invitation`
 - `paypal_access_tokens`
 - `paypal_context`
 - `waitlist`
@@ -145,7 +127,7 @@ bun run db:generate
 Generate SQL with all extensions included:
 
 ```bash
-DB_MODULES=coupons,contact,organization,paypal,waitlist bun run db:generate
+DB_MODULES=coupons,contact,paypal,waitlist bun run db:generate
 ```
 
 Apply generated SQL:
@@ -167,7 +149,6 @@ Available values:
 
 - `coupons`
 - `contact`
-- `organization`
 - `paypal`
 - `waitlist`
 
@@ -185,7 +166,6 @@ Minimum required variables:
 - `DATABASE_URL`
 - `AUTH_SECRET`
 - `BETTER_AUTH_URL`
-- `SUPER_ADMIN_EMAILS`
 
 For additional payment, email, S3, and Sentry settings, see `.env.example`.
 

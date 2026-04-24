@@ -50,7 +50,7 @@ export default async function SubscribeErrorPage({
                 If you want to cancel your current subscription, please go to your billing page.
               </p>
               <Button asChild>
-                <Link href="/billing">Go to Billing</Link>
+                <Link href="/subscribe/billing">Go to Billing</Link>
               </Button>
             </div>
           )}
@@ -60,7 +60,7 @@ export default async function SubscribeErrorPage({
                 If you want to cancel your current subscription, please go to your billing page.
               </p>
               <Button asChild>
-                <Link href="/billing">Go to Billing</Link>
+                <Link href="/subscribe/billing">Go to Billing</Link>
               </Button>
             </div>
           )}
@@ -70,7 +70,7 @@ export default async function SubscribeErrorPage({
                 If you want to cancel your current subscription, please go to your billing page.
               </p>
               <Button asChild>
-                <Link href="/billing">Go to Billing</Link>
+                <Link href="/subscribe/billing">Go to Billing</Link>
               </Button>
             </div>
           )}

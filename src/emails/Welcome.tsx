@@ -3,7 +3,6 @@ import { Button } from "@react-email/button";
 import { Container } from "@react-email/container";
 import { Html } from "@react-email/html";
 import { Text } from "@react-email/text";
-import * as React from "react";
 import Layout from "./components/Layout";
 
 interface WelcomeEmailProps {

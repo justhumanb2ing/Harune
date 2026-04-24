@@ -1,27 +1,23 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 import { Dialog as SheetPrimitive } from "@base-ui/react/dialog";
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { XIcon } from "lucide-react";
 import type React from "react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const Sheet: typeof SheetPrimitive.Root = SheetPrimitive.Root;
 
 export const SheetPortal: typeof SheetPrimitive.Portal = SheetPrimitive.Portal;
 
-export function SheetTrigger(
-  props: SheetPrimitive.Trigger.Props,
-): React.ReactElement {
+export function SheetTrigger(props: SheetPrimitive.Trigger.Props): React.ReactElement {
   return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />;
 }
 
-export function SheetClose(
-  props: SheetPrimitive.Close.Props,
-): React.ReactElement {
+export function SheetClose(props: SheetPrimitive.Close.Props): React.ReactElement {
   return <SheetPrimitive.Close data-slot="sheet-close" {...props} />;
 }
 
@@ -33,7 +29,7 @@ export function SheetBackdrop({
     <SheetPrimitive.Backdrop
       className={cn(
         "fixed inset-0 z-50 bg-black/32 backdrop-blur-xs transition-all duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0",
-        className,
+        className
       )}
       data-slot="sheet-backdrop"
       {...props}
@@ -59,7 +55,7 @@ export function SheetViewport({
         side === "left" && "flex justify-start",
         side === "right" && "flex justify-end",
         variant === "inset" && "sm:p-4",
-        className,
+        className
       )}
       data-slot="sheet-viewport"
       {...props}
@@ -100,7 +96,7 @@ export function SheetPopup({
               "col-start-2 w-[calc(100%-(--spacing(12)))] max-w-md border-s data-ending-style:translate-x-8 data-starting-style:translate-x-8",
             variant === "inset" &&
               "before:hidden sm:rounded-2xl sm:border sm:before:rounded-[calc(var(--radius-2xl)-1px)] sm:**:data-[slot=sheet-footer]:rounded-b-[calc(var(--radius-2xl)-1px)]",
-            className,
+            className
           )}
           data-slot="sheet-popup"
           {...props}
@@ -130,7 +126,7 @@ export function SheetHeader({
   const defaultProps = {
     className: cn(
       "flex flex-col gap-2 p-6 in-[[data-slot=sheet-popup]:has([data-slot=sheet-panel])]:pb-3 max-sm:pb-4",
-      className,
+      className
     ),
     "data-slot": "sheet-header",
   };
@@ -156,7 +152,7 @@ export function SheetFooter({
       variant === "default" && "border-t bg-muted/72 py-4",
       variant === "bare" &&
         "in-[[data-slot=sheet-popup]:has([data-slot=sheet-panel])]:pt-3 pt-4 pb-6",
-      className,
+      className
     ),
     "data-slot": "sheet-footer",
   };
@@ -174,10 +170,7 @@ export function SheetTitle({
 }: SheetPrimitive.Title.Props): React.ReactElement {
   return (
     <SheetPrimitive.Title
-      className={cn(
-        "font-heading font-semibold text-xl leading-none",
-        className,
-      )}
+      className={cn("font-heading font-semibold text-xl leading-none", className)}
       data-slot="sheet-title"
       {...props}
     />
@@ -208,7 +201,7 @@ export function SheetPanel({
   const defaultProps = {
     className: cn(
       "p-6 in-[[data-slot=sheet-popup]:has([data-slot=sheet-header])]:pt-1 in-[[data-slot=sheet-popup]:has([data-slot=sheet-footer]:not(.border-t))]:pb-1",
-      className,
+      className
     ),
     "data-slot": "sheet-panel",
   };
@@ -224,8 +217,4 @@ export function SheetPanel({
   );
 }
 
-export {
-  SheetPrimitive,
-  SheetBackdrop as SheetOverlay,
-  SheetPopup as SheetContent,
-};
+export { SheetPrimitive, SheetBackdrop as SheetOverlay, SheetPopup as SheetContent };

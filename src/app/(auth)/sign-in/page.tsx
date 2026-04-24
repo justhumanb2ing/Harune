@@ -36,7 +36,6 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
     <>
       <div className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight mb-2">Welcome back</h1>
-        
       </div>
 
       {env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? (

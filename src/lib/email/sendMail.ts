@@ -3,14 +3,7 @@ import { appConfig } from "../config";
 
 const sendMail = async (to: string, subject: string, html: string) => {
   if (process.env.NODE_ENV !== "production") {
-    console.log(
-      "Sending email to",
-      to,
-      "with subject",
-      subject,
-      "and html",
-      html
-    );
+    console.log("Sending email to", to, "with subject", subject, "and html", html);
     return;
   }
 

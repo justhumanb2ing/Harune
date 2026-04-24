@@ -15,7 +15,7 @@ import {
 import { ClientS3Uploader } from "@/lib/s3/clientS3Uploader";
 import { cn } from "@/lib/utils";
 import { AlertCircle, Check, Loader2, Upload, X } from "lucide-react";
-import React, { useCallback, useState, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export interface S3UploaderProps {

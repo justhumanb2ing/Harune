@@ -1,4 +1,3 @@
-import { BuiltWithIndieKit } from "@/components/built-with-indiekit";
 import { appConfig } from "@/lib/config";
 import Link from "next/link";
 

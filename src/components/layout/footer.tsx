@@ -14,7 +14,6 @@ export function Footer() {
             <p className="mt-2 text-sm text-muted-foreground">{appConfig.description}</p>
           </div>
 
-
           {/* Legal Links */}
           <div className="flex-1">
             <h3 className="text-sm font-semibold">Legal</h3>

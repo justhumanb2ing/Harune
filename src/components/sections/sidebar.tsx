@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import { BoxIcon, ChartColumnBigIcon, DotIcon, LogOutIcon, PlusIcon, XIcon } from "lucide-react";
+import { BoxIcon, ChartColumnBigIcon, DotIcon, LogOutIcon, XIcon } from "lucide-react";
 import { AnimatePresence, LayoutGroup, MotionConfig, type Transition, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -324,24 +324,6 @@ export default function Sidebar() {
                       </div>
                       <DotIcon className="ml-auto size-4 stroke-8 text-green-500" />
                     </div>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    exit={{
-                      opacity: 0,
-                      y: 8,
-                      filter: "blur(6px)",
-                      transition: panelItemExitTransition(2),
-                    }}
-                    transition={panelItemTransition(2)}
-                    className="px-4 border-b border-border/60 py-6"
-                  >
-                    <button type="button" className="flex w-full items-center text-xs">
-                      <span>Create New Page</span>
-                      <PlusIcon className="ml-auto size-3.5" />
-                    </button>
                   </motion.div>
 
                   <div className="flex-1" />

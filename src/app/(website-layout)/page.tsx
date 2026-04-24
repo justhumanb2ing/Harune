@@ -1,7 +1,3 @@
 export default function WebsiteHomepage() {
-  return (
-    <>
-      Page
-    </>
-  );
+  return <>Page</>;
 }

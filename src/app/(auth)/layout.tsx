@@ -11,20 +11,18 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <div className="min-h-lvh flex flex-col bg-background py-4 px-4">
       <header>
-        <Link href={'/'}>
+        <Link href={"/"}>
           <Image
-              src="/assets/logo.jpeg"
-              alt={appConfig.projectName}
-              width={48}
-              height={48}
-              className="mb-4 rounded-xl"
+            src="/assets/logo.jpeg"
+            alt={appConfig.projectName}
+            width={48}
+            height={48}
+            className="mb-4 rounded-xl"
           />
         </Link>
       </header>
       <div className="w-full space-y-8 flex-1 max-w-md justify-center flex flex-col mx-auto">
-        <div className="bg-background py-8 px-4">
-          {children}
-        </div>
+        <div className="bg-background py-8 px-4">{children}</div>
 
         {/* <p className="text-center text-xs text-muted-foreground">
           By continuing, you agree to our{" "}

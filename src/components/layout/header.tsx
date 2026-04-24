@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { env } from "@/env";
 import { appConfig } from "@/lib/config";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 
 const signInEnabled = env.NEXT_PUBLIC_SIGNIN_ENABLED === "true";
 
@@ -36,20 +36,19 @@ export function Header() {
         <div
           className={cn(
             "flex h-16 items-center justify-between bg-background px-4 transition-all duration-300 ease-out sm:px-6",
-            isScrolled &&
-              "h-16 rounded-full bg-background"
+            isScrolled && "h-16 rounded-full bg-background"
           )}
         >
           <div className="flex items-center transition-all duration-300 ease-out">
-            <Link href={'/'} className="flex items-center justify-center">
-          <Image
-              src="/assets/logo.jpeg"
-              alt={appConfig.projectName}
-              width={40}
-              height={40}
-              className="rounded-xl"
-          />
-        </Link>
+            <Link href={"/"} className="flex items-center justify-center">
+              <Image
+                src="/assets/logo.jpeg"
+                alt={appConfig.projectName}
+                width={40}
+                height={40}
+                className="rounded-xl"
+              />
+            </Link>
           </div>
 
           <div className="flex items-center gap-2 transition-all duration-300 ease-out">

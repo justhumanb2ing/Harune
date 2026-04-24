@@ -1,4 +1,6 @@
 import AuthLayoutTransition from "@/components/animation/auth-layout-transition";
+import { XIcon } from "lucide-react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 interface AuthLayoutProps {
@@ -9,7 +11,16 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <AuthLayoutTransition>
       <main className="relative h-lvh flex flex-row bg-background">
-        <div className="relative h-full flex-1 overflow-hidden">{children}</div>
+        <div className="relative h-full flex-1 overflow-hidden">
+          {/* Replace with Logo */}
+          <aside className="absolute top-3 left-3">
+            <Link href={"/"}>
+              <XIcon className="stroke-1 size-10" />
+            </Link>
+          </aside>
+
+          {children}
+        </div>
         <section className="h-full flex-1 hidden lg:block">
           <div className="h-full">
             <img

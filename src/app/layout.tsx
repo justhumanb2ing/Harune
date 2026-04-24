@@ -64,9 +64,9 @@ export default function RootLayout({
         <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE_HERE" />
         <AnalyticsScript />
       </head>
-      <body className={`${inter.variable} antialiased bg-background`}>
+      <body className={`${inter.variable} h-full antialiased bg-background`}>
         <Providers>
-          <div className="relative min-h-lvh">{children}</div>
+          <div className="relative h-full min-h-lvh">{children}</div>
         </Providers>
       </body>
     </html>

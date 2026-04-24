@@ -1,4 +1,18 @@
 export { AppleMusicIcon } from "./apple-music-icon";
+export {
+  ColorAppleMusicIcon,
+  ColorBehanceIcon,
+  ColorGithubIcon,
+  ColorInstagramIcon,
+  ColorLinkedInIcon,
+  ColorMailIcon,
+  ColorSoundcloudIcon,
+  ColorSpotifyIcon,
+  ColorThreadsIcon,
+  ColorTiktokIcon,
+  ColorXTwitterIcon,
+  ColorYoutubeIcon,
+} from "./colored-social-icons";
 export { GithubIcon } from "./github-icon";
 export { InstagramIcon } from "./instagram-icon";
 export { LogoBehanceIcon } from "./logo-behance-icon";

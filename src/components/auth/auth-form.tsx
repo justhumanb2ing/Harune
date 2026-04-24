@@ -138,7 +138,7 @@ export function AuthForm({
           type="submit"
           form={formId}
           disabled={isLoading}
-          className="h-12 py-6 w-full font-semibold"
+          className="h-12 py-6 w-full font-semibold shadow-lg border-foreground"
         >
           {pendingAction === mode ? <FaSpinner className="mr-2 h-4 w-4 animate-spin" /> : null}
           {mode === "sign-up" ? "Create account" : "Log in"}
@@ -149,7 +149,7 @@ export function AuthForm({
           type="button"
           disabled={isLoading}
           onClick={handleGoogleSignIn}
-          className="w-full py-6 font-semibold shadow-xs border-indigo-400 bg-indigo-400 hover:bg-indigo-500 text-white!"
+          className="h-12 w-full py-6 font-semibold shadow-lg border-indigo-400 bg-indigo-400 hover:bg-indigo-500 text-white!"
         >
           {pendingAction === "google" ? (
             <FaSpinner className="mr-2 h-4 w-4 animate-spin" />

@@ -2,8 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
-import { CheckIcon, CopyIcon } from "lucide-react";
-import Image from "next/image";
+import { ArrowRightIcon, CheckIcon } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
 
@@ -34,10 +33,10 @@ export function OnboardingSuccess({ handle }: OnboardingSuccessProps) {
   };
 
   return (
-    <div className="mx-auto flex h-full max-w-5xl flex-col gap-4 py-6 items-center justify-center">
-      <div className="w-full flex-1 px-4 pb-8">
+    <div className="flex h-full flex-col gap-4 py-6 items-center justify-center bg-background">
+      <div className="max-w-md mx-auto w-full flex-1 px-4 pb-8">
         <div className="flex flex-col min-h-full gap-32 pt-20 lg:flex-row">
-          <div className="flex-4 w-full min-h-full h-full rounded-xl overflow-hidden">
+          {/* <div className="flex-4 w-full min-h-full h-full rounded-xl overflow-hidden">
             <Image
               src={"/images/onboarding_sample.jpeg"}
               alt="onboarding_success"
@@ -45,30 +44,38 @@ export function OnboardingSuccess({ handle }: OnboardingSuccessProps) {
               height={400}
               className="w-full h-[44rem] lg:h-full rounded-xl object-cover"
             />
-          </div>
+          </div> */}
 
-          <div className="flex flex-col justify-center gap-6 max-w-full flex-3">
-            <h1 className="text-3xl font-medium tracking-tight">Your page is ready!</h1>
+          <div className="flex flex-col justify-center gap-12 max-w-full flex-3">
+            <header className="flex flex-col gap-2">
+              <h1 className="text-3xl font-semibold tracking-tight">Congratulation 🎉</h1>
+              <h2>You’re all set — your page is live.</h2>
+            </header>
 
             <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between rounded-lg bg-background px-5 py-3 pr-2">
+              <div className="flex items-center justify-between rounded-lg bg-secondary px-5 py-2 pr-2">
                 <span className="text-lg font-medium">{`${appConfig.url}/${handle}`.slice(8)}</span>
                 <Button
                   type="button"
                   variant="ghost"
-                  size="icon-lg"
                   onClick={() => void handleCopyPageUrl()}
+                  className={"bg-background hover:bg-background shadow-xs min-w-14 font-semibold"}
                   aria-label={isCopied ? "Copied page URL" : "Copy page URL"}
                 >
-                  {isCopied ? <CheckIcon className="size-5" /> : <CopyIcon className="size-5" />}
+                  {isCopied ? <CheckIcon className="size-5" /> : <span>Copy</span>}
                 </Button>
               </div>
 
               <Button
                 nativeButton={false}
                 size="lg"
-                className="h-12 rounded-lg font-medium px-5 text-sm uppercase"
-                render={<Link href={`/${handle}/section`}>Go to page</Link>}
+                className="h-12 rounded-lg font-bold text-base! bg-indigo-400 hover:bg-indigo-500! border-indigo-400 shadow-lg group"
+                render={
+                  <Link href={`/${handle}/section`} className="flex items-center">
+                    <span>Go to your page</span>
+                    <ArrowRightIcon className="mt-0.5 size-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 stroke-3 transition-all" />
+                  </Link>
+                }
               />
             </div>
           </div>

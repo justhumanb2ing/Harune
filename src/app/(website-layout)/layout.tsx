@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 function WebsiteLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative flex min-h-screen flex-col">
+    <div className="relative flex min-h-screen flex-col bg-background">
       <main className="flex-1 h-full">
         <div className="h-full">{children}</div>
       </main>

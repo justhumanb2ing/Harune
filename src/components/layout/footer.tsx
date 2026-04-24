@@ -13,7 +13,7 @@ export function Footer() {
 
           {/* Legal Links */}
           <div className="flex-1">
-            <ul className="flex flex-row gap-10 text-sm font-medium text-muted-foreground">
+            <ul className="flex flex-col items-center md:flex-row gap-10 text-sm font-medium text-muted-foreground">
               <li>
                 <Link href="/sign-in" className="inline-block hover:text-primary">
                   Log In

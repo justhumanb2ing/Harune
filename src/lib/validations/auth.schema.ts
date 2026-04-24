@@ -49,6 +49,7 @@ export const onboardingSchema = z
       .max(100, "Name must be 100 characters or fewer."),
     bio: optionalTextSchema,
     image: optionalUrlSchema,
+    backgroundImage: optionalUrlSchema,
     socialLinks: z
       .object({
         x: optionalSocialValueSchema,

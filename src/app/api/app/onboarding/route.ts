@@ -48,7 +48,7 @@ export const POST = withAuthRequired(async (req, context) => {
     );
   }
 
-  const { bio, handle, image, name, socialLinks } = validation.data;
+  const { backgroundImage, bio, handle, image, name, socialLinks } = validation.data;
   const existingOwner = await db
     .select({
       id: profilePages.id,
@@ -79,6 +79,7 @@ export const POST = withAuthRequired(async (req, context) => {
         name,
         bio: bio ?? null,
         image: image ?? null,
+        backgroundImage: backgroundImage ?? null,
         handle,
         updatedAt: new Date(),
       })

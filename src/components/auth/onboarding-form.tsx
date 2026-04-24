@@ -2,6 +2,18 @@
 
 import {
   AppleMusicIcon,
+  ColorAppleMusicIcon,
+  ColorBehanceIcon,
+  ColorGithubIcon,
+  ColorInstagramIcon,
+  ColorLinkedInIcon,
+  ColorMailIcon,
+  ColorSoundcloudIcon,
+  ColorSpotifyIcon,
+  ColorThreadsIcon,
+  ColorTiktokIcon,
+  ColorXTwitterIcon,
+  ColorYoutubeIcon,
   GithubIcon,
   InstagramIcon,
   LogoBehanceIcon,
@@ -18,7 +30,6 @@ import { Input } from "@/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
-  InputGroupButton,
   InputGroupInput,
   InputGroupText,
 } from "@/components/ui/input-group";
@@ -32,14 +43,9 @@ import { normalizeHandle, validateHandle } from "@/lib/handles";
 import { PROFILE_IMAGE_ACCEPT } from "@/lib/profile-page/image-upload";
 import { type ApiError, apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
+import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  ArrowRightIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  CircleFadingArrowUpIcon,
-  Loader2Icon,
-} from "lucide-react";
+import { BubblesIcon, CircleFadingArrowUpIcon, DotIcon, Loader2Icon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 import { FaLinkedinIn, FaYoutube } from "react-icons/fa6";
@@ -76,20 +82,20 @@ const steps: Array<{
   {
     key: "handle",
     label: "Handle",
-    title: "Choose your handle",
-    description: "Choose the handle for your public page first.",
+    title: "Claim your handle",
+    description: "Pick a unique handle people can use to find you.",
   },
   {
     key: "profile",
     label: "Profile",
-    title: "Add your profile",
-    description: "Name is required. Bio and image are optional.",
+    title: "Fill out your profile",
+    description: "Add your name, avatar, background, and a short bio.",
   },
   {
     key: "socials",
     label: "Links",
-    title: "Add social links",
-    description: "Optionally add links to the platforms you use.",
+    title: "Connect your socials",
+    description: "Add the links you want to share on your page.",
   },
 ];
 
@@ -98,63 +104,91 @@ const socialPlatforms: Array<{
   label: string;
   placeholder: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  colorIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 }> = [
-  { key: "x", label: "X", placeholder: "https://x.com/yourname", icon: XTwitterIcon },
+  {
+    key: "x",
+    label: "X",
+    placeholder: "https://x.com/yourname",
+    icon: XTwitterIcon,
+    colorIcon: ColorXTwitterIcon,
+  },
   {
     key: "instagram",
     label: "Instagram",
     placeholder: "https://instagram.com/yourname",
     icon: InstagramIcon,
+    colorIcon: ColorInstagramIcon,
   },
   {
     key: "youtube",
     label: "YouTube",
     placeholder: "https://youtube.com/@yourname",
     icon: FaYoutube,
+    colorIcon: ColorYoutubeIcon,
   },
   {
     key: "linkedin",
     label: "LinkedIn",
     placeholder: "https://linkedin.com/in/yourname",
     icon: FaLinkedinIn,
+    colorIcon: ColorLinkedInIcon,
   },
-  { key: "github", label: "GitHub", placeholder: "https://github.com/yourname", icon: GithubIcon },
+  {
+    key: "github",
+    label: "GitHub",
+    placeholder: "https://github.com/yourname",
+    icon: GithubIcon,
+    colorIcon: ColorGithubIcon,
+  },
   {
     key: "threads",
     label: "Threads",
     placeholder: "https://www.threads.net/@yourname",
     icon: LogoThreadsIcon,
+    colorIcon: ColorThreadsIcon,
   },
   {
     key: "soundcloud",
     label: "SoundCloud",
     placeholder: "https://soundcloud.com/yourname",
     icon: SoundcloudLogoSolidIcon,
+    colorIcon: ColorSoundcloudIcon,
   },
   {
     key: "spotify",
     label: "Spotify",
     placeholder: "https://open.spotify.com/artist/yourid",
     icon: SpotifyIcon,
+    colorIcon: ColorSpotifyIcon,
   },
   {
     key: "behance",
     label: "Behance",
     placeholder: "https://www.behance.net/yourname",
     icon: LogoBehanceIcon,
+    colorIcon: ColorBehanceIcon,
   },
   {
     key: "tiktok",
     label: "TikTok",
     placeholder: "https://www.tiktok.com/@yourname",
     icon: TiktokIcon,
+    colorIcon: ColorTiktokIcon,
   },
-  { key: "mail", label: "Email", placeholder: "example@domain.com", icon: MailIcon },
+  {
+    key: "mail",
+    label: "Email",
+    placeholder: "example@domain.com",
+    icon: MailIcon,
+    colorIcon: ColorMailIcon,
+  },
   {
     key: "apple_music",
     label: "Apple Music",
     placeholder: "https://music.apple.com/profile/yourname",
     icon: AppleMusicIcon,
+    colorIcon: ColorAppleMusicIcon,
   },
 ];
 
@@ -212,7 +246,9 @@ export function OnboardingForm({ handle, next }: OnboardingFormProps) {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const backgroundImageInputRef = React.useRef<HTMLInputElement | null>(null);
   const profileImageUpload = useProfileImageUpload();
+  const backgroundImageUpload = useProfileImageUpload();
   const [currentStep, setCurrentStep] = React.useState(0);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -239,7 +275,20 @@ export function OnboardingForm({ handle, next }: OnboardingFormProps) {
           ? "This handle is already taken."
           : null
     : null;
-  const showAvailableMessage = hasHandleInput && !handleErrorMessage && isHandleAvailable && !error;
+  const canTakeHandle =
+    hasHandleInput &&
+    !validationError &&
+    !availabilityError &&
+    !isCheckingAvailability &&
+    !isHandleTaken &&
+    isHandleAvailable;
+  const showHandleStatus =
+    hasHandleInput &&
+    !validationError &&
+    !availabilityError &&
+    !isCheckingAvailability &&
+    (isHandleAvailable || isHandleTaken);
+  const handleStepErrorMessage = currentStep === 0 ? error || handleErrorMessage : null;
   const hasDraftableInput =
     !!pageHandle ||
     !!trimmedName ||
@@ -312,6 +361,22 @@ export function OnboardingForm({ handle, next }: OnboardingFormProps) {
     }
   };
 
+  const handleSelectBackgroundImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      setError(null);
+      backgroundImageUpload.selectFile(file);
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : "Failed to select image.");
+    }
+  };
+
   const submitOnboarding = async () => {
     if (!trimmedName) {
       setCurrentStep(1);
@@ -335,13 +400,29 @@ export function OnboardingForm({ handle, next }: OnboardingFormProps) {
       return;
     }
 
+    if (backgroundImageUpload.error) {
+      setCurrentStep(1);
+      setError(backgroundImageUpload.error);
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
     let uploadedImageUrl: string | null = null;
+    let uploadedBackgroundImageUrl: string | null = null;
 
     try {
       uploadedImageUrl = await profileImageUpload.uploadSelectedFile();
+      uploadedBackgroundImageUrl = await backgroundImageUpload.uploadSelectedFile();
     } catch (uploadError) {
+      if (uploadedImageUrl) {
+        try {
+          await deleteUploadedProfileImage(uploadedImageUrl);
+        } catch (rollbackError) {
+          console.error("Failed to rollback uploaded onboarding profile image:", rollbackError);
+        }
+      }
+
       setCurrentStep(1);
       setError(uploadError instanceof Error ? uploadError.message : "Failed to upload image.");
       setIsSubmitting(false);
@@ -357,6 +438,7 @@ export function OnboardingForm({ handle, next }: OnboardingFormProps) {
         body: JSON.stringify({
           handle: pageHandle,
           image: uploadedImageUrl || undefined,
+          backgroundImage: uploadedBackgroundImageUrl || undefined,
           name: trimmedName,
           bio,
           socialLinks,
@@ -378,6 +460,14 @@ export function OnboardingForm({ handle, next }: OnboardingFormProps) {
           await deleteUploadedProfileImage(uploadedImageUrl);
         } catch (rollbackError) {
           console.error("Failed to rollback uploaded onboarding profile image:", rollbackError);
+        }
+      }
+
+      if (uploadedBackgroundImageUrl) {
+        try {
+          await deleteUploadedProfileImage(uploadedBackgroundImageUrl);
+        } catch (rollbackError) {
+          console.error("Failed to rollback uploaded onboarding background image:", rollbackError);
         }
       }
 
@@ -491,256 +581,315 @@ export function OnboardingForm({ handle, next }: OnboardingFormProps) {
   }, [hasDraftableInput, isSubmitting]);
 
   return (
-    <div className="relative h-full min-h-full w-full bg-background">
-      {currentStep > 0 ? (
-        <Button
-          type="button"
-          variant="default"
-          size="lg"
-          className="absolute top-3 left-3 rounded-full uppercase"
-          onClick={goToPreviousStep}
-        >
-          <ChevronLeftIcon className="size-5" />
-          <span>Prev</span>
-        </Button>
-      ) : null}
-      <div className="mx-auto flex h-full max-w-md flex-col gap-4 py-6">
-        <header>
-          <h2 className="text-sm uppercase text-center font-medium">{currentStepMeta.label}</h2>
-        </header>
+    <div className="relative flex h-full min-h-full w-full flex-row bg-background">
+      <div className="relative h-full flex-1 overflow-hidden">
+        <div className="mx-auto flex h-full max-w-md flex-col gap-4">
+          <div className="min-h-0 flex-1 px-8 pb-6">
+            <form onSubmit={handleComplete} className="flex h-full min-h-0 flex-col gap-4">
+              <div className="flex min-h-0 flex-1 flex-col gap-4">
+                <header className="shrink-0 space-y-2 pt-12">
+                  <h1 className="text-3xl font-semibold tracking-tight">{currentStepMeta.title}</h1>
+                  <p className="text-sm text-muted-foreground">{currentStepMeta.description}</p>
+                </header>
 
-        <div className="flex-1 px-8 pb-8">
-          <form onSubmit={handleComplete} className="flex h-full flex-col gap-6">
-            <div className="grow space-y-6">
-              {currentStep === 0 ? (
-                <div className="space-y-4 h-full flex flex-col justify-center">
-                  <div className="space-y-2">
-                    <InputGroup className="h-16 rounded-xl has-[[data-slot=input-group-control]:focus-visible]:border-input bg-input! transition-all border-0">
-                      <InputGroupAddon className="pl-5">
-                        <InputGroupText className="text-lg">leeve.li /</InputGroupText>
-                      </InputGroupAddon>
-                      <InputGroupInput
-                        id="handle"
-                        autoComplete="off"
-                        value={pageHandle}
-                        onChange={(event) => {
-                          setPageHandle(normalizeHandle(event.target.value));
-                          if (error) {
-                            setError(null);
-                          }
-                        }}
-                        onBlur={() => {
-                          if (error) {
-                            setError(null);
-                          }
-                        }}
-                        aria-invalid={
-                          (hasHandleInput && !!validationError) ||
-                          !!availabilityError ||
-                          isHandleTaken ||
-                          !!error
-                        }
-                        aria-label="Handle"
-                        className="h-full px-0 text-lg!"
-                        placeholder="your_handle"
-                        autoFocus
-                      />
-                      <InputGroupAddon align="inline-end" className="pr-3">
-                        <InputGroupButton
-                          type="submit"
-                          variant="default"
-                          size="icon-sm"
-                          className="size-12 rounded-full"
-                          disabled={
-                            !pageHandle ||
-                            !!validationError ||
-                            !!availabilityError ||
-                            isCheckingAvailability ||
-                            isHandleTaken ||
-                            !isHandleAvailable
-                          }
-                          aria-label="Continue"
-                        >
-                          {isCheckingAvailability ? (
-                            <Loader2Icon className="size-6 animate-spin" />
-                          ) : (
-                            <ChevronRightIcon className="size-6" />
-                          )}
-                        </InputGroupButton>
-                      </InputGroupAddon>
-                    </InputGroup>
-                  </div>
-                </div>
-              ) : null}
-
-              {currentStep === 1 ? (
-                <div className="relative mt-20 min-h-[52rem] overflow-hidden rounded-t-[3rem] p-4 pt-10">
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 scale-105 bg-[linear-gradient(to_bottom,white_0%,white_72%,color-mix(in_oklab,var(--secondary)_55%,white)_100%)] blur-2xl"
-                  />
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute inset-0 bg-white/35"
-                  />
-
-                  <div className="relative z-10 space-y-5">
-                    <div className="flex items-center justify-center">
-                      <div className="space-y-3">
-                        <button
-                          type="button"
-                          className="relative flex size-40 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-secondary transition-colors hover:bg-input disabled:cursor-not-allowed disabled:opacity-70"
-                          onClick={() => fileInputRef.current?.click()}
-                          disabled={profileImageUpload.isUploading || isSubmitting}
-                        >
-                          {profileImageUpload.previewUrl ? (
-                            <Avatar className="size-full">
-                              <AvatarImage
-                                src={profileImageUpload.previewUrl}
-                                alt={
-                                  profileImageUpload.selectedFileName ?? "Selected profile image"
-                                }
-                                className="object-cover"
-                              />
-                              <AvatarFallback>{getInitials()}</AvatarFallback>
-                            </Avatar>
-                          ) : (
-                            <span className="flex size-10 items-center justify-center">
-                              <CircleFadingArrowUpIcon className="size-6 text-muted-foreground" />
-                            </span>
-                          )}
-                          {profileImageUpload.isUploading ? (
-                            <span className="absolute inset-0 flex items-center justify-center bg-black/35">
-                              <Loader2Icon className="size-6 animate-spin text-white" />
-                            </span>
-                          ) : null}
-                        </button>
-                        <input
-                          ref={fileInputRef}
-                          id="image-upload"
-                          type="file"
-                          accept={PROFILE_IMAGE_ACCEPT}
-                          className="sr-only"
-                          onChange={handleSelectImage}
-                          disabled={profileImageUpload.isUploading || isSubmitting}
-                        />
-                        {profileImageUpload.error ? (
-                          <p className="max-w-48 text-center text-destructive text-sm">
-                            {profileImageUpload.error}
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
-
+                {currentStep === 0 ? (
+                  <div className="flex min-h-0 flex-1 flex-col justify-center space-y-4">
                     <div className="space-y-2">
-                      <Input
-                        id="name"
-                        value={name}
-                        onChange={(event) => {
-                          setName(event.target.value);
-                          if (error) {
-                            setError(null);
-                          }
-                        }}
-                        placeholder="Name"
-                        aria-label="Name"
-                        aria-invalid={!!error && !trimmedName}
-                        autoComplete="off"
-                        className="h-16 border-0 bg-secondary text-center hover:bg-input"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Textarea
-                        id="bio"
-                        value={bio}
-                        onChange={(event) => setBio(event.target.value)}
-                        placeholder="Bio"
-                        aria-label="Bio"
-                        className="h-40 resize-none border-0 bg-secondary p-4 hover:bg-input"
-                      />
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-
-              {currentStep === 2 ? (
-                <div className="space-y-3 mt-20">
-                  {socialPlatforms.map((platform) => (
-                    <div key={platform.key} className="space-y-2">
-                      <InputGroup className="h-16 rounded-xl border-0 bg-background transition-all">
+                      <p
+                        className={cn(
+                          "min-h-5 text-sm text-destructive transition-opacity",
+                          handleStepErrorMessage ? "opacity-100" : "opacity-0"
+                        )}
+                        aria-live="polite"
+                      >
+                        {handleStepErrorMessage || "\u00a0"}
+                      </p>
+                      <InputGroup className="h-12 rounded-xl has-[[data-slot=input-group-control]:focus-visible]:border-secondary bg-secondary! transition-all border-0">
                         <InputGroupAddon className="pl-5">
-                          <InputGroupText>
-                            <platform.icon className="size-6 text-black" aria-hidden="true" />
-                          </InputGroupText>
+                          <InputGroupText className="">leeve.li/</InputGroupText>
                         </InputGroupAddon>
                         <InputGroupInput
-                          id={platform.key}
-                          value={socialLinks[platform.key]}
+                          id="handle"
+                          autoComplete="off"
+                          value={pageHandle}
                           onChange={(event) => {
-                            setSocialLinks((prev) => ({
-                              ...prev,
-                              [platform.key]: event.target.value,
-                            }));
+                            setPageHandle(normalizeHandle(event.target.value));
+                            if (error) {
+                              setError(null);
+                            }
                           }}
-                          placeholder={"Add handle or URL"}
-                          aria-label={platform.label}
-                          className="h-full px-0 pl-4!"
+                          onBlur={() => {
+                            if (error) {
+                              setError(null);
+                            }
+                          }}
+                          aria-invalid={
+                            (hasHandleInput && !!validationError) ||
+                            !!availabilityError ||
+                            isHandleTaken ||
+                            !!error
+                          }
+                          aria-label="Handle"
+                          className="h-full pl-0.5!"
+                          placeholder="your_handle"
+                          autoFocus
                         />
+                        <InputGroupAddon align="inline-end" className="pr-3">
+                          {isCheckingAvailability ? (
+                            <Loader2Icon className="size-5 animate-spin" aria-label="Checking" />
+                          ) : showHandleStatus ? (
+                            <DotIcon
+                              className={
+                                isHandleTaken
+                                  ? "size-5 stroke-5 text-red-500"
+                                  : "size-5 stroke-5 text-green-500"
+                              }
+                              aria-label={isHandleTaken ? "Handle unavailable" : "Handle available"}
+                            />
+                          ) : null}
+                        </InputGroupAddon>
                       </InputGroup>
+                      <Button
+                        type="submit"
+                        size="lg"
+                        className={cn(
+                          "h-12 w-full border-indigo-400 bg-indigo-400 text-base font-bold opacity-100 shadow-lg transition-opacity hover:bg-indigo-500",
+                          canTakeHandle
+                            ? "pointer-events-auto opacity-100"
+                            : "pointer-events-none opacity-0"
+                        )}
+                      >
+                        Take this handle
+                      </Button>
                     </div>
-                  ))}
-                </div>
-              ) : null}
+                  </div>
+                ) : null}
 
-              {handleErrorMessage ? (
-                <p className="text-destructive text-center">{handleErrorMessage}</p>
-              ) : null}
+                {currentStep === 1 ? (
+                  <div className="relative flex min-h-0 flex-1 flex-col justify-center rounded-t-[2rem] bg-background">
+                    <div className="relative z-10 flex min-h-[46rem] flex-col rounded-t-[2rem] bg-background">
+                      <div className="flex flex-col gap-2 rounded-t-[3rem] bg-background shadow-brand-small">
+                        <div className="relative mb-16">
+                          <button
+                            type="button"
+                            className="relative flex h-52 w-full cursor-pointer items-center justify-center overflow-hidden rounded-t-[2rem] border-b border-border bg-secondary transition-colors hover:bg-input disabled:cursor-not-allowed disabled:opacity-70"
+                            onClick={() => backgroundImageInputRef.current?.click()}
+                            disabled={backgroundImageUpload.isUploading || isSubmitting}
+                            aria-label="Upload background image"
+                          >
+                            {backgroundImageUpload.previewUrl ? (
+                              <img
+                                src={backgroundImageUpload.previewUrl}
+                                alt=""
+                                className="size-full object-cover"
+                              />
+                            ) : null}
+                            {backgroundImageUpload.isUploading ? (
+                              <span className="absolute inset-0 flex items-center justify-center bg-black/35">
+                                <Loader2Icon className="size-6 animate-spin text-white" />
+                              </span>
+                            ) : null}
+                          </button>
+                          <input
+                            ref={backgroundImageInputRef}
+                            id="background-image-upload"
+                            type="file"
+                            accept={PROFILE_IMAGE_ACCEPT}
+                            className="sr-only"
+                            onChange={handleSelectBackgroundImage}
+                            disabled={backgroundImageUpload.isUploading || isSubmitting}
+                          />
+                          <div className="absolute left-1/2 bottom-0 z-10 -translate-x-1/2 translate-y-1/2">
+                            <button
+                              type="button"
+                              className="relative flex size-32 cursor-pointer items-center justify-center overflow-hidden rounded-full border bg-secondary transition-colors hover:bg-input disabled:cursor-not-allowed disabled:opacity-70"
+                              onClick={() => fileInputRef.current?.click()}
+                              disabled={profileImageUpload.isUploading || isSubmitting}
+                              aria-label="Upload profile image"
+                            >
+                              {profileImageUpload.previewUrl ? (
+                                <Avatar className="size-full">
+                                  <AvatarImage
+                                    src={profileImageUpload.previewUrl}
+                                    alt={
+                                      profileImageUpload.selectedFileName ??
+                                      "Selected profile image"
+                                    }
+                                    className="object-cover"
+                                  />
+                                  <AvatarFallback />
+                                </Avatar>
+                              ) : (
+                                <span className="flex min-w-24 flex-col items-center justify-center gap-2 text-muted-foreground">
+                                  <CircleFadingArrowUpIcon className="size-6 text-muted-foreground" />
+                                  <span className="text-xs font-semibold">Avatar</span>
+                                </span>
+                              )}
+                              {profileImageUpload.isUploading ? (
+                                <span className="absolute inset-0 flex items-center justify-center bg-black/35">
+                                  <Loader2Icon className="size-6 animate-spin text-white" />
+                                </span>
+                              ) : null}
+                            </button>
+                          </div>
+                          <input
+                            ref={fileInputRef}
+                            id="image-upload"
+                            type="file"
+                            accept={PROFILE_IMAGE_ACCEPT}
+                            className="sr-only"
+                            onChange={handleSelectImage}
+                            disabled={profileImageUpload.isUploading || isSubmitting}
+                          />
+                        </div>
+                        {profileImageUpload.error || backgroundImageUpload.error ? (
+                          <p className="text-center text-destructive text-sm">
+                            {profileImageUpload.error || backgroundImageUpload.error}
+                          </p>
+                        ) : null}
 
-              {error ? <p className="text-destructive text-center">{error}</p> : null}
-            </div>
+                        <div className="flex flex-col gap-2 p-4">
+                          <div>
+                            <Input
+                              id="name"
+                              value={name}
+                              onChange={(event) => {
+                                setName(event.target.value);
+                                if (error) {
+                                  setError(null);
+                                }
+                              }}
+                              placeholder="Name"
+                              aria-label="Name"
+                              aria-invalid={!!error && !trimmedName}
+                              autoComplete="off"
+                              className="h-12 border-0 bg-secondary text-center hover:bg-input"
+                            />
+                          </div>
 
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex w-full items-center justify-center gap-2">
-                {currentStep === 0 ? null : currentStep < steps.length - 1 ? (
-                  <Button
-                    type="button"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      goToNextStep();
-                    }}
-                    size="icon-lg"
-                    className="size-11 rounded-full"
-                    disabled={!trimmedName || profileImageUpload.isUploading}
-                  >
-                    <ChevronRightIcon className="size-6" />
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    size="lg"
-                    className="px-8 py-6 text-base"
-                    onClick={() => void submitOnboarding()}
-                    disabled={isSubmitting || profileImageUpload.isUploading}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2Icon className="size-4 animate-spin" />
-                        Creating...
-                      </>
-                    ) : (
-                      <>
-                        Create page
-                        <ArrowRightIcon className="size-4" />
-                      </>
-                    )}
-                  </Button>
-                )}
+                          <div>
+                            <Textarea
+                              id="bio"
+                              value={bio}
+                              onChange={(event) => setBio(event.target.value)}
+                              placeholder="Bio"
+                              aria-label="Bio"
+                              className="h-24 resize-none border-0 bg-secondary p-4 hover:bg-input"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex-1 bg-background" />
+                    </div>
+                  </div>
+                ) : null}
+
+                {currentStep === 2 ? (
+                  <div className="relative flex min-h-0 flex-1 flex-col justify-center rounded-t-[2rem] bg-background">
+                    <div className="relative z-10 flex min-h-[46rem] flex-col rounded-t-[2rem] bg-background">
+                      <div className="flex flex-col gap-3 rounded-t-[3rem] bg-background p-4 pt-18 shadow-brand-small">
+                        {socialPlatforms.map((platform) => (
+                          <div key={platform.key} className="flex items-center gap-3">
+                            <platform.colorIcon className="size-10 shrink-0" aria-hidden="true" />
+                            <InputGroup className="h-11 flex-1 rounded-md border-0 bg-secondary">
+                              <InputGroupInput
+                                id={platform.key}
+                                value={socialLinks[platform.key]}
+                                onChange={(event) => {
+                                  setSocialLinks((prev) => ({
+                                    ...prev,
+                                    [platform.key]: event.target.value,
+                                  }));
+                                }}
+                                placeholder={
+                                  platform.key === "mail" ? platform.placeholder : "Add URL"
+                                }
+                                aria-label={platform.label}
+                                className="h-full px-4!"
+                              />
+                            </InputGroup>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="relative z-10 -mt-3 min-h-20 flex-1 bg-background" />
+                    </div>
+                  </div>
+                ) : null}
+
+                {currentStep !== 0 && handleErrorMessage ? (
+                  <p className="text-destructive text-center">{handleErrorMessage}</p>
+                ) : null}
+
+                {currentStep !== 0 && error ? (
+                  <p className="text-destructive text-center">{error}</p>
+                ) : null}
               </div>
-            </div>
-          </form>
+
+              <div className="flex shrink-0 flex-col items-center justify-between gap-2">
+                <div className="flex w-full items-center justify-center gap-2">
+                  {currentStep === 0 ? null : currentStep < steps.length - 1 ? (
+                    <Button
+                      type="button"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        goToNextStep();
+                      }}
+                      className={cn(
+                        "h-12 w-full bg-indigo-400 border-indigo-400 text-base font-bold opacity-100 shadow-lg transition-opacity hover:bg-indigo-500",
+                        trimmedName && !profileImageUpload.isUploading
+                          ? "pointer-events-auto opacity-100"
+                          : "pointer-events-none opacity-0"
+                      )}
+                    >
+                      Next
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      size="lg"
+                      className="h-12 text-base w-full bg-indigo-400 border-indigo-400 font-bold hover:bg-indigo-500 shadow-lg"
+                      onClick={() => void submitOnboarding()}
+                      disabled={isSubmitting || profileImageUpload.isUploading}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2Icon className="size-4 animate-spin" />
+                          Creating...
+                        </>
+                      ) : (
+                        <>
+                          <span>Create your page</span>
+                          <BubblesIcon className="stroke-3" />
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+                {currentStep > 0 ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="lg"
+                    className="font-bold w-full h-12 text-muted-foreground"
+                    onClick={goToPreviousStep}
+                  >
+                    <span>Back</span>
+                  </Button>
+                ) : null}
+              </div>
+            </form>
+          </div>
         </div>
       </div>
+      <section className="hidden h-full flex-1 lg:block">
+        <div className="h-full">
+          <img
+            src="https://images.unsplash.com/photo-1713508298272-7d0db139dc54?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            alt="img"
+            className="h-full w-full object-cover"
+          />
+        </div>
+      </section>
     </div>
   );
 }

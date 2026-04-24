@@ -1,7 +1,3 @@
-"use client";
-
-import { useEffect, useState } from "react";
-
 import { Button } from "@/components/ui/button";
 import { env } from "@/env";
 import { appConfig } from "@/lib/config";
@@ -12,31 +8,12 @@ import Link from "next/link";
 const signInEnabled = env.NEXT_PUBLIC_SIGNIN_ENABLED === "true";
 
 export function Header() {
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 24);
-    };
-
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
-    <header className="sticky top-0 z-50 w-full transition-all duration-300 ease-out">
-      <div
-        className={cn(
-          "mx-auto w-full max-w-(--breakpoint-xl) px-4 transition-all duration-300 ease-out sm:px-6 lg:px-8",
-          isScrolled && "mt-6 max-w-5xl"
-        )}
-      >
+    <header className="sticky top-0 z-50 w-full transition-all duration-300 ease-out bg-background">
+      <div className={cn("mx-auto w-full px-4 transition-all duration-300 ease-out p-10 pb-0")}>
         <div
           className={cn(
-            "flex h-16 items-center justify-between bg-background px-4 transition-all duration-300 ease-out sm:px-6",
-            isScrolled && "h-16 rounded-full bg-background"
+            "flex items-center justify-between bg-background transition-all duration-300 ease-out"
           )}
         >
           <div className="flex items-center transition-all duration-300 ease-out">
@@ -61,7 +38,7 @@ export function Header() {
                 render={
                   <Link
                     href="/sign-in"
-                    className="text-sm font-medium uppercase transition-all duration-300 ease-out hover:bg-primary hover:text-white"
+                    className="text-sm font-medium uppercase transition-all duration-300 ease-out hover:bg-primary hover:text-white px-5 py-5"
                   >
                     Log In
                   </Link>
@@ -76,7 +53,7 @@ export function Header() {
               render={
                 <Link
                   href="/sign-up"
-                  className="text-sm font-medium transition-all duration-300 ease-out hover:bg-primary hover:text-white"
+                  className="text-sm font-medium transition-all duration-300 ease-out hover:bg-primary hover:text-white px-5 py-5"
                 >
                   <span className="uppercase sm:hidden">Sign up</span>
                   <span className="hidden uppercase sm:inline">Sign Up For Free</span>

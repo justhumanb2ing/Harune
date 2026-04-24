@@ -9,8 +9,8 @@ import { inngest } from "../client";
 export const expireCredits = inngest.createFunction(
   {
     id: "expire-credits",
+    triggers: { cron: "0 2 * * *" },
   },
-  { cron: "0 2 * * *" },
   async ({ step, logger }) => {
     // Step 1: Check if credits system is enabled
     if (!enableCredits) {
@@ -142,7 +142,7 @@ export const expireCredits = inngest.createFunction(
             batchNumber,
           };
 
-          settledResults.forEach((result) => {
+          for (const result of settledResults) {
             if (result.status === "fulfilled") {
               const { status } = result.value;
               if (status === "processed") batchResults.processed++;
@@ -151,7 +151,7 @@ export const expireCredits = inngest.createFunction(
             } else {
               batchResults.errors++;
             }
-          });
+          }
 
           logger.info(
             `Batch ${batchNumber} completed: ${batchResults.processed} processed, ${batchResults.skipped} skipped, ${batchResults.errors} errors`

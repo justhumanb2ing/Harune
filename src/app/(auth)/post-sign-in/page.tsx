@@ -19,6 +19,18 @@ function getSafeRedirectPath(value?: string) {
   return value;
 }
 
+function resolveSectionRedirectPath(path: string, handle: string) {
+  if (path === "/section") {
+    return `/${handle}/section`;
+  }
+
+  if (path.startsWith("/section/")) {
+    return `/${handle}${path}`;
+  }
+
+  return path;
+}
+
 export default async function PostSignInPage({ searchParams }: PostSignInPageProps) {
   const session = await auth();
 
@@ -31,6 +43,7 @@ export default async function PostSignInPage({ searchParams }: PostSignInPagePro
   const ownedPage = await db
     .select({
       id: profilePages.id,
+      handle: profilePages.handle,
     })
     .from(profilePages)
     .where(eq(profilePages.userId, session.user.id))
@@ -55,5 +68,5 @@ export default async function PostSignInPage({ searchParams }: PostSignInPagePro
     redirect(onboardingUrl);
   }
 
-  redirect(nextPath);
+  redirect(resolveSectionRedirectPath(nextPath, ownedPage.handle));
 }

@@ -22,6 +22,7 @@ export default async function OnboardingPage({ searchParams }: OnboardingPagePro
   const ownedPage = await db
     .select({
       id: profilePages.id,
+      handle: profilePages.handle,
     })
     .from(profilePages)
     .where(eq(profilePages.userId, session.user.id))
@@ -31,7 +32,7 @@ export default async function OnboardingPage({ searchParams }: OnboardingPagePro
   const { handle, next } = await searchParams;
 
   if (ownedPage) {
-    redirect("/section");
+    redirect(`/${ownedPage.handle}/section`);
   }
 
   return <OnboardingForm handle={handle} next={next} />;

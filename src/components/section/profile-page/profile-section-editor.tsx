@@ -9,6 +9,7 @@ import {
   TrashIcon,
   XIcon,
 } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
 import {
@@ -35,8 +36,20 @@ import { normalizeHandle, validateHandle } from "@/lib/handles";
 import { PROFILE_IMAGE_ACCEPT } from "@/lib/profile-page/image-upload";
 import { cn } from "@/lib/utils";
 
+function replaceHandleInPath(pathname: string, handle: string) {
+  const segments = pathname.split("/").filter(Boolean);
+
+  if (segments.length === 0) {
+    return `/${handle}/section`;
+  }
+
+  return `/${[handle, ...segments.slice(1)].join("/")}`;
+}
+
 export function ProfileSectionEditor() {
   const editor = useProfilePageEditor();
+  const pathname = usePathname();
+  const router = useRouter();
   const [isHandleDialogOpen, setIsHandleDialogOpen] = useState(false);
   const [handleDraft, setHandleDraft] = useState(editor.profileForm.handle);
   const initialHandle = normalizeHandle(editor.profileForm.handle);
@@ -76,8 +89,13 @@ export function ProfileSectionEditor() {
     }
 
     editor.setProfileField("handle", currentHandle);
+    const nextPath = replaceHandleInPath(pathname, currentHandle);
     setIsHandleDialogOpen(false);
-    await editor.handleSync();
+    const syncedData = await editor.handleSync();
+
+    if (syncedData?.page.handle === currentHandle) {
+      router.replace(nextPath);
+    }
   };
 
   return (

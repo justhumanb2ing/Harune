@@ -183,7 +183,7 @@ export function useProfilePageEditor() {
     const profilePageQueryKey = profilePageQueryOptions().queryKey;
 
     if (!currentState.draftData || currentState.syncStatus === "syncing") {
-      return;
+      return null;
     }
 
     let uploadedImageUrl: string | null = null;
@@ -231,6 +231,7 @@ export function useProfilePageEditor() {
       store.actions.rebaseFromServer(response);
       await mutate();
       toast("Synced");
+      return response;
     } catch (error) {
       if (uploadedImageUrl) {
         try {
@@ -250,6 +251,7 @@ export function useProfilePageEditor() {
 
       const message = error instanceof Error ? error.message : "Failed to sync";
       store.actions.setSyncError(message);
+      return null;
     }
   };
 

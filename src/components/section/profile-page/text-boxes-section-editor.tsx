@@ -35,9 +35,9 @@ export function TextBoxesSectionEditor() {
                 htmlFor="new-text-box-title"
                 className="block px-4 font-medium text-xs text-foreground uppercase"
               >
-                Title
+                Title <span className="text-destructive">*</span>
               </FieldLabel>
-              <InputGroup className="border-0 bg-background px-1.5 font-medium ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
+              <InputGroup className="border-0 bg-background px-1.5 ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
                 <InputGroupInput
                   id="new-text-box-title"
                   value={editor.newTextBox.title}

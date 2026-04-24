@@ -3,16 +3,16 @@
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { XCircleIcon } from "@phosphor-icons/react";
 import {
-  CheckIcon,
-  ChevronRightIcon,
-  GripVertical,
-  Loader2Icon,
-  SparkleIcon,
-  XIcon,
-} from "lucide-react";
+  LinkSimpleIcon,
+  NetworkIcon,
+  TextAaIcon,
+  UserIcon,
+  XCircleIcon,
+} from "@phosphor-icons/react";
+import { CheckIcon, ChevronRightIcon, GripVertical, Loader2Icon, XIcon } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import {
@@ -31,23 +31,47 @@ import { Textarea } from "@/components/ui/textarea";
 
 const pageEditorSections = [
   {
-    href: "/section/profile",
+    path: "profile",
     title: "Profile",
+    Icon: UserIcon,
   },
   {
-    href: "/section/social",
+    path: "social",
     title: "Social",
+    Icon: NetworkIcon,
   },
 ] as const;
 
 const otherBlockSections = [
   {
-    href: "/section/text-box",
+    path: "text-box",
     title: "Text",
+    Icon: TextAaIcon,
   },
 ] as const;
 
-function SectionLinkItem({ count, href, title }: { count?: number; href: string; title: string }) {
+function getSectionBasePath(pathname: string) {
+  const segments = pathname.split("/").filter(Boolean);
+  const sectionIndex = segments.indexOf("section");
+
+  if (sectionIndex === -1) {
+    return "/section";
+  }
+
+  return `/${segments.slice(0, sectionIndex + 1).join("/")}`;
+}
+
+function SectionLinkItem({
+  count,
+  href,
+  Icon,
+  title,
+}: {
+  count?: number;
+  href: string;
+  Icon: typeof UserIcon;
+  title: string;
+}) {
   return (
     <Item
       variant="default"
@@ -57,7 +81,7 @@ function SectionLinkItem({ count, href, title }: { count?: number; href: string;
           className="rounded-2xl bg-background py-3.5 shadow-brand transition-colors hover:bg-background!"
         >
           <ItemMedia>
-            <SparkleIcon />
+            <Icon className="size-5" />
           </ItemMedia>
           <ItemContent>
             <ItemTitle>{title}</ItemTitle>
@@ -78,6 +102,8 @@ function SectionLinkItem({ count, href, title }: { count?: number; href: string;
 
 export function SectionPageClient() {
   const editor = useProfilePageEditor();
+  const pathname = usePathname();
+  const sectionBasePath = getSectionBasePath(pathname);
   const [selectedTextBoxId, setSelectedTextBoxId] = useState<string | null>(null);
   const selectedTextBox =
     editor.data?.textBoxItems.find((item) => item.id === selectedTextBoxId) ?? null;
@@ -94,8 +120,9 @@ export function SectionPageClient() {
           <div className="flex flex-col gap-2">
             {pageEditorSections.map((section) => (
               <SectionLinkItem
-                key={section.href}
-                href={section.href}
+                key={section.path}
+                href={`${sectionBasePath}/${section.path}`}
+                Icon={section.Icon}
                 title={section.title}
                 count={section.title === "Social" ? editor.data?.socialLinks.length : undefined}
               />
@@ -128,13 +155,13 @@ export function SectionPageClient() {
                                   variant="default"
                                   render={
                                     <Link
-                                      href="/section/link"
+                                      href={`${sectionBasePath}/link`}
                                       className="rounded-2xl bg-background py-3.5 shadow-brand transition-colors hover:bg-background!"
                                     />
                                   }
                                 >
                                   <ItemMedia>
-                                    <SparkleIcon />
+                                    <LinkSimpleIcon className="size-5" />
                                   </ItemMedia>
                                   <ItemContent>
                                     <ItemTitle>Link</ItemTitle>
@@ -192,7 +219,7 @@ export function SectionPageClient() {
                                 onClick={() => setSelectedTextBoxId(item.id)}
                               >
                                 <ItemMedia>
-                                  <SparkleIcon />
+                                  <TextAaIcon className="size-5" />
                                 </ItemMedia>
                                 <ItemContent>
                                   <ItemTitle>{title}</ItemTitle>
@@ -223,7 +250,12 @@ export function SectionPageClient() {
           <p className="text-sm text-muted-foreground">Other Block</p>
           <div className="flex flex-col gap-2">
             {otherBlockSections.map((section) => (
-              <SectionLinkItem key={section.href} href={section.href} title={section.title} />
+              <SectionLinkItem
+                key={section.path}
+                href={`${sectionBasePath}/${section.path}`}
+                Icon={section.Icon}
+                title={section.title}
+              />
             ))}
           </div>
         </section>

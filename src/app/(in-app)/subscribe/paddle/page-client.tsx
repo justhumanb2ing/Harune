@@ -14,7 +14,8 @@ export default function PaddleCheckoutPage() {
   const [paddle, setPaddle] = useState<Paddle | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [showRetry, setShowRetry] = useState(false);
-  const { user } = useUser();
+  const { profilePage, user } = useUser();
+  const sectionHref = profilePage?.handle ? `/${profilePage.handle}/section` : "/post-sign-in";
   useEffect(() => {
     // Show retry button after 3 seconds
     const timer = setTimeout(() => {
@@ -123,7 +124,11 @@ export default function PaddleCheckoutPage() {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-4">
         <p className="text-destructive">{error}</p>
-        <button type="button" onClick={() => router.push("/section")} className="text-sm underline">
+        <button
+          type="button"
+          onClick={() => router.push(sectionHref)}
+          className="text-sm underline"
+        >
           Go back
         </button>
       </div>

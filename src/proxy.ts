@@ -3,16 +3,15 @@ import type { NextRequest } from "next/server";
 import { auth } from "./auth";
 
 const APP_API_PREFIX = "/api/app";
-const SECTION_PATH = "/section";
+const APP_ENTRY_PATH = "/post-sign-in";
 const SIGN_IN_PATH = "/sign-in";
 
 const AUTH_PAGE_PREFIXES = [SIGN_IN_PATH, "/sign-up"] as const;
 const AUTH_REQUIRED_PAGE_PREFIXES = [
-  SECTION_PATH,
   "/profile",
   "/subscribe",
   "/onboarding",
-  "/post-sign-in",
+  APP_ENTRY_PATH,
 ] as const;
 
 export async function proxy(req: NextRequest) {
@@ -29,7 +28,7 @@ export async function proxy(req: NextRequest) {
 
   if (isAuthPage(pathname)) {
     if (isAuth) {
-      return NextResponse.redirect(new URL(SECTION_PATH, req.url));
+      return NextResponse.redirect(new URL(APP_ENTRY_PATH, req.url));
     }
     return NextResponse.next();
   }
@@ -50,15 +49,15 @@ export async function proxy(req: NextRequest) {
 
 function getLegacyRedirectPath(pathname: string) {
   if (pathname === "/app" || pathname === "/plan") {
-    return SECTION_PATH;
+    return APP_ENTRY_PATH;
   }
 
   if (pathname.startsWith("/app/")) {
-    return pathname.slice("/app".length) || SECTION_PATH;
+    return APP_ENTRY_PATH;
   }
 
   if (pathname.startsWith("/plan/")) {
-    return `${SECTION_PATH}${pathname.slice("/plan".length)}`;
+    return APP_ENTRY_PATH;
   }
 
   return null;
@@ -73,11 +72,20 @@ function isAuthPage(pathname: string) {
 }
 
 function isAuthRequiredPage(pathname: string) {
-  return AUTH_REQUIRED_PAGE_PREFIXES.some((prefix) => hasPathPrefix(pathname, prefix));
+  return (
+    AUTH_REQUIRED_PAGE_PREFIXES.some((prefix) => hasPathPrefix(pathname, prefix)) ||
+    isHandleAppPath(pathname)
+  );
 }
 
 function hasPathPrefix(pathname: string, prefix: string) {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
+function isHandleAppPath(pathname: string) {
+  const [, handle, area] = pathname.split("/");
+
+  return Boolean(handle) && (area === "section" || area === "analytics");
 }
 
 function createSignInUrl(req: NextRequest) {
@@ -92,8 +100,10 @@ export const config = {
     "/app/:path*",
     "/plan",
     "/plan/:path*",
-    "/section",
-    "/section/:path*",
+    "/:handle/section",
+    "/:handle/section/:path*",
+    "/:handle/analytics",
+    "/:handle/analytics/:path*",
     "/profile/:path*",
     "/subscribe/:path*",
     "/onboarding",

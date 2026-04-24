@@ -83,13 +83,13 @@ function getContentBlocks({
   return [
     ...(linkItems.length > 0
       ? [
-        {
-          id: "links",
-          linkItems,
-          position: linkBlockPosition,
-          type: "links" as const,
-        },
-      ]
+          {
+            id: "links",
+            linkItems,
+            position: linkBlockPosition,
+            type: "links" as const,
+          },
+        ]
       : []),
     ...textBoxItems.map((item) => ({
       id: item.id,
@@ -124,7 +124,7 @@ export function ProfilePageRenderer({
           <div className="relative z-10">
             <div
               className={cn(
-                "group relative flex h-48 items-center justify-center px-4 hover:bg-black/5",
+                "group relative flex h-60 items-center justify-center px-4 hover:bg-black/5",
                 backgroundImage && "mb-20 h-48"
               )}
             >

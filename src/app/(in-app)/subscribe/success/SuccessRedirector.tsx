@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import useUser from "@/lib/users/useUser";
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,6 +10,8 @@ import { useEffect, useState } from "react";
 
 export default function SuccessRedirector() {
   const router = useRouter();
+  const { profilePage } = useUser();
+  const sectionHref = profilePage?.handle ? `/${profilePage.handle}/section` : "/post-sign-in";
   const [countdown, setCountdown] = useState(10);
 
   useEffect(() => {
@@ -16,7 +19,7 @@ export default function SuccessRedirector() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(countdownInterval);
-          router.push("/section");
+          router.push(sectionHref);
           return 0;
         }
         return prev - 1;
@@ -26,7 +29,7 @@ export default function SuccessRedirector() {
     return () => {
       clearInterval(countdownInterval);
     };
-  }, [router]);
+  }, [router, sectionHref]);
 
   return (
     <div className="container max-w-lg mx-auto py-12">
@@ -45,7 +48,7 @@ export default function SuccessRedirector() {
 
           <div className="flex flex-row gap-2 items-center">
             <Button asChild>
-              <Link href="/section">Go to Dashboard</Link>
+              <Link href={sectionHref}>Go to Dashboard</Link>
             </Button>
             <Button variant="outline" asChild>
               <Link href="/subscribe/billing">View Billing</Link>

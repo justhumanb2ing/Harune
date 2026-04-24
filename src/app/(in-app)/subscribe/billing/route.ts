@@ -39,7 +39,7 @@ export const GET = withAuthRequired(async (_req, context) => {
   if (stripeCustomerId) {
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,
-      return_url: `${env.NEXT_PUBLIC_APP_URL}/section`,
+      return_url: `${env.NEXT_PUBLIC_APP_URL}/post-sign-in`,
     });
     return redirect(portalSession.url);
   }

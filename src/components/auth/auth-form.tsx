@@ -15,7 +15,7 @@ interface AuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
 export function AuthForm({ className, callbackUrl, ...props }: AuthFormProps) {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const searchParams = useSearchParams();
-  const resolvedCallbackUrl = callbackUrl || searchParams?.get("callbackUrl") || "/section";
+  const resolvedCallbackUrl = callbackUrl || searchParams?.get("callbackUrl") || "/post-sign-in";
   const errorCallbackParams = new URLSearchParams();
   const callbackUrlParam = searchParams?.get("callbackUrl");
   const handleParam = searchParams?.get("handle");

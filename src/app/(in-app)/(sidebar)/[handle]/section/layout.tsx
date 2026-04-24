@@ -3,6 +3,7 @@ import { ProfilePageEditorProvider } from "@/components/section/profile-page/pro
 import { ProfilePagePreview } from "@/components/section/profile-page/profile-page-preview";
 import { profilePageServerQueryOptions } from "@/lib/profile-page/server-query-options";
 import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query";
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { Suspense } from "react";
 
@@ -17,14 +18,30 @@ function SectionLayoutFallback() {
   );
 }
 
-export default async function SectionLayout({ children }: { children: ReactNode }) {
+type SectionLayoutProps = {
+  children: ReactNode;
+  params: Promise<{
+    handle: string;
+  }>;
+};
+
+export default async function SectionLayout({ children, params }: SectionLayoutProps) {
   const queryClient = new QueryClient();
   const session = await auth();
   const userId = session?.user.id as string;
+  const { handle } = await params;
   const profilePageQuery = profilePageServerQueryOptions(userId);
 
   await queryClient.prefetchQuery(profilePageQuery);
   const initialProfilePageData = queryClient.getQueryData(profilePageQuery.queryKey) ?? null;
+
+  if (!initialProfilePageData?.page.handle) {
+    redirect("/onboarding");
+  }
+
+  if (initialProfilePageData.page.handle !== handle) {
+    redirect(`/${initialProfilePageData.page.handle}/section`);
+  }
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

@@ -4,6 +4,7 @@ import { CurrentPageButton, useCurrentPageMeta } from "@/components/layout/curre
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
+import useUser from "@/lib/users/useUser";
 import { cn } from "@/lib/utils";
 import { BoxIcon, ChartColumnBigIcon, DotIcon, LogOutIcon, XIcon } from "lucide-react";
 import { AnimatePresence, LayoutGroup, MotionConfig, type Transition, motion } from "motion/react";
@@ -13,12 +14,12 @@ import { useEffect, useRef, useState } from "react";
 
 const navItems = [
   {
-    href: "/section",
+    getHref: (handle?: string) => (handle ? `/${handle}/section` : "/post-sign-in"),
     label: "Section",
     icon: BoxIcon,
   },
   {
-    href: "/analytics",
+    getHref: (handle?: string) => (handle ? `/${handle}/analytics` : "/post-sign-in"),
     label: "Analytics",
     icon: ChartColumnBigIcon,
   },
@@ -91,6 +92,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { pageHandleLabel, pageImage, pageName } = useCurrentPageMeta();
+  const { profilePage } = useUser();
   const previousPathnameRef = useRef(pathname);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -213,12 +215,13 @@ export default function Sidebar() {
 
                 <LayoutGroup id="sidebar-nav">
                   <nav aria-label="Sidebar" className="relative flex w-full flex-col gap-2">
-                    {navItems.map(({ href, label, icon: Icon }) => {
+                    {navItems.map(({ getHref, label, icon: Icon }) => {
+                      const href = getHref(profilePage?.handle);
                       const isActive = isActiveRoute(pathname, href);
 
                       return (
                         <Button
-                          key={href}
+                          key={label}
                           nativeButton={false}
                           variant="ghost"
                           size="icon-lg"

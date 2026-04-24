@@ -68,7 +68,7 @@ export function OnboardingSuccess({ handle }: OnboardingSuccessProps) {
                 nativeButton={false}
                 size="lg"
                 className="h-12 rounded-lg font-medium px-5 text-sm uppercase"
-                render={<Link href="/section">Go to page</Link>}
+                render={<Link href={`/${handle}/section`}>Go to page</Link>}
               />
             </div>
           </div>

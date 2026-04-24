@@ -491,7 +491,7 @@ export function OnboardingForm({ handle, next }: OnboardingFormProps) {
   }, [hasDraftableInput, isSubmitting]);
 
   return (
-    <div className="relative h-full min-h-full w-full">
+    <div className="relative h-full min-h-full w-full bg-background">
       {currentStep > 0 ? (
         <Button
           type="button"

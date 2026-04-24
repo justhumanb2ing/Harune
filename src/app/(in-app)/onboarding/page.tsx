@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 type OnboardingPageProps = {
   searchParams: Promise<{
     handle?: string;
+    next?: string;
   }>;
 };
 
@@ -27,11 +28,11 @@ export default async function OnboardingPage({ searchParams }: OnboardingPagePro
     .limit(1)
     .then((rows) => rows[0]);
 
-  const { handle } = await searchParams;
+  const { handle, next } = await searchParams;
 
   if (ownedPage) {
     redirect("/section");
   }
 
-  return <OnboardingForm handle={handle} />;
+  return <OnboardingForm handle={handle} next={next} />;
 }

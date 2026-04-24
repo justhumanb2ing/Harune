@@ -5,9 +5,10 @@ import Link from "next/link";
 
 type OnboardingFailProps = {
   handle?: string;
+  message?: string;
 };
 
-export function OnboardingFail({ handle }: OnboardingFailProps) {
+export function OnboardingFail({ handle, message }: OnboardingFailProps) {
   const retryHref = handle ? `/onboarding?handle=${encodeURIComponent(handle)}` : "/onboarding";
 
   return (
@@ -23,7 +24,7 @@ export function OnboardingFail({ handle }: OnboardingFailProps) {
           <div className="flex flex-col justify-center gap-6">
             <h1 className="text-4xl font-semibold tracking-tight">Failed to create your page</h1>
             <p className="text-muted-foreground text-base">
-              Something went wrong while creating your page. Please try again.
+              {message || "Something went wrong while creating your page. Please try again."}
             </p>
 
             <Button asChild size="lg" className="h-12 rounded-xl px-5 text-sm uppercase">

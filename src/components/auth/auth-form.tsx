@@ -16,6 +16,20 @@ export function AuthForm({ className, callbackUrl, ...props }: AuthFormProps) {
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const searchParams = useSearchParams();
   const resolvedCallbackUrl = callbackUrl || searchParams?.get("callbackUrl") || "/section";
+  const errorCallbackParams = new URLSearchParams();
+  const callbackUrlParam = searchParams?.get("callbackUrl");
+  const handleParam = searchParams?.get("handle");
+
+  if (callbackUrlParam) {
+    errorCallbackParams.set("callbackUrl", callbackUrlParam);
+  }
+
+  if (handleParam) {
+    errorCallbackParams.set("handle", handleParam);
+  }
+
+  errorCallbackParams.set("oauth", "failed");
+  const errorCallbackUrl = `/sign-in?${errorCallbackParams.toString()}`;
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
@@ -24,6 +38,7 @@ export function AuthForm({ className, callbackUrl, ...props }: AuthFormProps) {
       const result = await authClient.signIn.social({
         provider: "google",
         callbackURL: resolvedCallbackUrl,
+        errorCallbackURL: errorCallbackUrl,
       });
 
       if (result.error) {

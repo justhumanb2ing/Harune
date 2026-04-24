@@ -12,12 +12,15 @@ export const metadata: Metadata = {
 type SignInPageProps = {
   searchParams: Promise<{
     callbackUrl?: string;
+    error?: string;
+    error_description?: string;
     handle?: string;
+    oauth?: string;
   }>;
 };
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
-  const { callbackUrl, handle } = await searchParams;
+  const { callbackUrl, error, error_description, handle, oauth } = await searchParams;
   const redirectTarget = new URLSearchParams();
 
   if (callbackUrl) {
@@ -31,12 +34,22 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   const resolvedCallbackUrl = `/post-sign-in${
     redirectTarget.toString() ? `?${redirectTarget.toString()}` : ""
   }`;
+  const oauthErrorMessage =
+    oauth === "failed" || error
+      ? error_description || "Google 로그인이 취소되었거나 완료되지 않았습니다. 다시 시도해 주세요."
+      : null;
 
   return (
     <>
       <div className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight mb-2">Welcome back</h1>
       </div>
+
+      {oauthErrorMessage ? (
+        <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {oauthErrorMessage}
+        </div>
+      ) : null}
 
       {env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? (
         <AuthForm callbackUrl={resolvedCallbackUrl} />

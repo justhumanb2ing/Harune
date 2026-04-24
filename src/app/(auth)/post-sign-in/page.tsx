@@ -7,8 +7,17 @@ import { redirect } from "next/navigation";
 type PostSignInPageProps = {
   searchParams: Promise<{
     handle?: string;
+    next?: string;
   }>;
 };
+
+function getSafeRedirectPath(value?: string) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return "/section";
+  }
+
+  return value;
+}
 
 export default async function PostSignInPage({ searchParams }: PostSignInPageProps) {
   const session = await auth();
@@ -17,7 +26,8 @@ export default async function PostSignInPage({ searchParams }: PostSignInPagePro
     redirect("/sign-in");
   }
 
-  const { handle } = await searchParams;
+  const { handle, next } = await searchParams;
+  const nextPath = getSafeRedirectPath(next);
   const ownedPage = await db
     .select({
       id: profilePages.id,
@@ -34,6 +44,10 @@ export default async function PostSignInPage({ searchParams }: PostSignInPagePro
       onboardingParams.set("handle", handle);
     }
 
+    if (nextPath !== "/section") {
+      onboardingParams.set("next", nextPath);
+    }
+
     const onboardingUrl = `/onboarding${
       onboardingParams.toString() ? `?${onboardingParams.toString()}` : ""
     }`;
@@ -41,5 +55,5 @@ export default async function PostSignInPage({ searchParams }: PostSignInPagePro
     redirect(onboardingUrl);
   }
 
-  redirect("/section");
+  redirect(nextPath);
 }

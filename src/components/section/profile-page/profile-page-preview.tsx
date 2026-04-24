@@ -3,14 +3,56 @@
 import { ProfilePageRenderer } from "@/components/section/profile-page/profile-page-renderer";
 import { useProfilePageEditor } from "@/components/section/profile-page/use-profile-page-editor";
 import { Button } from "@/components/ui/button";
+import { appConfig } from "@/lib/config";
 import useUser from "@/lib/users/useUser";
-import { ArrowUpRightIcon, Loader2 } from "lucide-react";
+import { CheckIcon, CopyIcon, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 
 export function ProfilePagePreview() {
   const editor = useProfilePageEditor();
   const { user } = useUser();
+  const [isCopied, setIsCopied] = useState(false);
+  const pageUrl = useMemo(() => {
+    if (!editor.data?.page.handle) {
+      return "";
+    }
+
+    return `${appConfig.url}/${editor.data.page.handle}`;
+  }, [editor.data?.page.handle]);
+
+  useEffect(() => {
+    if (!isCopied) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setIsCopied(false);
+    }, 1800);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [isCopied]);
+
+  const handleCopyPageUrl = async () => {
+    if (!pageUrl) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(pageUrl);
+    setIsCopied(true);
+  };
+
+  const handlePrimaryAction = async () => {
+    if (editor.hasUnsyncedChanges) {
+      await editor.handleSync();
+      return;
+    }
+
+    await handleCopyPageUrl();
+  };
 
   if (!editor.data) {
     return null;
@@ -38,24 +80,30 @@ export function ProfilePagePreview() {
       />
       <div className="relative z-10 flex flex-col h-full">
         <div className="flex items-center justify-between px-5 py-4">
-          <div className="">
+          <div className="group/share flex items-center justify-center min-w-32 h-10 overflow-hidden rounded-md bg-foreground text-primary-foreground shadow-sm transition-all duration-300">
             <Link
               href={`/${editor.data.page.handle}`}
-              className="flex items-center gap-1 rounded-xl bg-foreground text-primary-foreground py-2 px-6 font-medium text-sm group"
+              className="flex items-center gap-1 px-4 py-3 font-medium text-sm justify-center"
             >
               <span>leeve.li/{editor.data.page.handle}</span>
-              <ArrowUpRightIcon className="size-4 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform" />
             </Link>
           </div>
           <Button
             type="button"
             size={"lg"}
-            onClick={() => void editor.handleSync()}
-            disabled={!editor.hasUnsyncedChanges || editor.isSyncing}
-            className={"px-6 rounded-md uppercase text-xs"}
+            onClick={() => void handlePrimaryAction()}
+            disabled={editor.isSyncing}
+            className={"px-6 h-10 rounded-md uppercase text-xs min-w-30"}
           >
             {editor.isSyncing && <Loader2 className="size-4 animate-spin" />}
-            {!editor.hasUnsyncedChanges ? <span>Up to date</span> : <span>Sync</span>}
+            {editor.hasUnsyncedChanges ? (
+              <span>Sync</span>
+            ) : (
+              <>
+                {isCopied ? <CheckIcon className="size-4" /> : <CopyIcon className="size-4" />}
+                <span>{isCopied ? "Copied" : "Share"}</span>
+              </>
+            )}
           </Button>
         </div>
 

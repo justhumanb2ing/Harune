@@ -30,7 +30,7 @@ import {
 } from "@/hooks/use-profile-image-upload";
 import { normalizeHandle, validateHandle } from "@/lib/handles";
 import { PROFILE_IMAGE_ACCEPT } from "@/lib/profile-page/image-upload";
-import { apiFetch } from "@/lib/react-query/fetcher";
+import { type ApiError, apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -46,6 +46,7 @@ import { FaLinkedinIn, FaYoutube } from "react-icons/fa6";
 
 type OnboardingFormProps = {
   handle?: string;
+  next?: string;
 };
 
 type StepKey = "handle" | "profile" | "socials";
@@ -172,7 +173,41 @@ const createInitialSocialLinks = (): SocialLinksState => ({
   apple_music: "",
 });
 
-export function OnboardingForm({ handle }: OnboardingFormProps) {
+const ONBOARDING_DRAFT_KEY = "leeve:onboarding-draft";
+
+type OnboardingDraft = {
+  bio: string;
+  currentStep: number;
+  name: string;
+  pageHandle: string;
+  socialLinks: SocialLinksState;
+};
+
+const isValidDraft = (value: unknown): value is OnboardingDraft => {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const draft = value as Partial<OnboardingDraft>;
+  return (
+    typeof draft.bio === "string" &&
+    typeof draft.currentStep === "number" &&
+    typeof draft.name === "string" &&
+    typeof draft.pageHandle === "string" &&
+    !!draft.socialLinks &&
+    typeof draft.socialLinks === "object"
+  );
+};
+
+const getSafeNextPath = (value?: string) => {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return "/section";
+  }
+
+  return value;
+};
+
+export function OnboardingForm({ handle, next }: OnboardingFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -187,6 +222,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
   const [name, setName] = React.useState("");
   const [bio, setBio] = React.useState("");
   const [socialLinks, setSocialLinks] = React.useState<SocialLinksState>(createInitialSocialLinks);
+  const [hasLoadedDraft, setHasLoadedDraft] = React.useState(false);
 
   const currentStepMeta = steps[currentStep];
   const hasHandleInput = !!pageHandle;
@@ -204,6 +240,11 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
           : null
     : null;
   const showAvailableMessage = hasHandleInput && !handleErrorMessage && isHandleAvailable && !error;
+  const hasDraftableInput =
+    !!pageHandle ||
+    !!trimmedName ||
+    !!bio.trim() ||
+    Object.values(socialLinks).some((value) => value.trim().length > 0);
 
   const getInitials = React.useCallback(() => {
     if (!trimmedName) {
@@ -321,8 +362,16 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
           socialLinks,
         }),
       });
+      window.localStorage.removeItem(ONBOARDING_DRAFT_KEY);
       await queryClient.invalidateQueries({ queryKey: queryKeys.app.me() });
-      router.push(`/onboarding/success?handle=${encodeURIComponent(pageHandle)}`);
+      const successParams = new URLSearchParams({ handle: pageHandle });
+      const nextPath = getSafeNextPath(next);
+
+      if (nextPath !== "/section") {
+        successParams.set("next", nextPath);
+      }
+
+      router.push(`/onboarding/success?${successParams.toString()}`);
     } catch (submitError) {
       if (uploadedImageUrl) {
         try {
@@ -333,7 +382,22 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
       }
 
       console.error("Failed to complete onboarding:", submitError);
-      router.push(`/onboarding/fail?handle=${encodeURIComponent(pageHandle)}`);
+      const apiError = submitError as ApiError;
+      if (apiError.status === 409) {
+        setCurrentStep(0);
+        setError(apiError.message || "This handle is already taken.");
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.handles.availability(pageHandle),
+        });
+        return;
+      }
+
+      const failParams = new URLSearchParams({ handle: pageHandle });
+      if (apiError.message) {
+        failParams.set("message", apiError.message);
+      }
+
+      router.push(`/onboarding/fail?${failParams.toString()}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -349,6 +413,82 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
 
     await submitOnboarding();
   };
+
+  React.useEffect(() => {
+    if (hasLoadedDraft) {
+      return;
+    }
+
+    setHasLoadedDraft(true);
+
+    try {
+      const rawDraft = window.localStorage.getItem(ONBOARDING_DRAFT_KEY);
+      if (!rawDraft) {
+        return;
+      }
+
+      const parsedDraft: unknown = JSON.parse(rawDraft);
+      if (!isValidDraft(parsedDraft)) {
+        window.localStorage.removeItem(ONBOARDING_DRAFT_KEY);
+        return;
+      }
+
+      const normalizedHandle = normalizeHandle(handle || parsedDraft.pageHandle);
+      setPageHandle(normalizedHandle);
+      setName(parsedDraft.name);
+      setBio(parsedDraft.bio);
+      setSocialLinks({ ...createInitialSocialLinks(), ...parsedDraft.socialLinks });
+      setCurrentStep(Math.min(Math.max(parsedDraft.currentStep, 0), steps.length - 1));
+    } catch {
+      window.localStorage.removeItem(ONBOARDING_DRAFT_KEY);
+    }
+  }, [handle, hasLoadedDraft]);
+
+  React.useEffect(() => {
+    if (!hasLoadedDraft || isSubmitting) {
+      return;
+    }
+
+    if (!hasDraftableInput) {
+      window.localStorage.removeItem(ONBOARDING_DRAFT_KEY);
+      return;
+    }
+
+    const draft: OnboardingDraft = {
+      bio,
+      currentStep,
+      name,
+      pageHandle,
+      socialLinks,
+    };
+
+    window.localStorage.setItem(ONBOARDING_DRAFT_KEY, JSON.stringify(draft));
+  }, [
+    bio,
+    currentStep,
+    hasDraftableInput,
+    hasLoadedDraft,
+    isSubmitting,
+    name,
+    pageHandle,
+    socialLinks,
+  ]);
+
+  React.useEffect(() => {
+    if (!hasDraftableInput || isSubmitting) {
+      return;
+    }
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [hasDraftableInput, isSubmitting]);
 
   return (
     <div className="relative h-full min-h-full w-full">

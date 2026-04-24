@@ -1,8 +1,9 @@
 import { AuthForm } from "@/components/auth/auth-form";
+import PolicyBox from "@/components/auth/policy-box";
 import { env } from "@/env";
 import { appConfig } from "@/lib/config";
+import { SsgoiTransition } from "@ssgoi/react";
 import type { Metadata } from "next";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Sign In",
@@ -40,41 +41,30 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
       : null;
 
   return (
-    <>
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight mb-2">Welcome back</h1>
-      </div>
+    <SsgoiTransition id="/sign-in" className="block h-full">
+      <section className="h-full flex flex-col justify-between px-6 py-6">
+        <div className="flex min-h-0 flex-1 items-center justify-center">
+          <article className="w-full max-w-lg flex flex-col gap-8">
+            <div className="mb-16">
+              <h1 className="text-4xl font-semibold tracking-tight mb-2">Leeve</h1>
+              <h2>We have been waiting for you!</h2>
+            </div>
 
-      {oauthErrorMessage ? (
-        <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {oauthErrorMessage}
+            <AuthForm
+              mode="sign-in"
+              callbackUrl={resolvedCallbackUrl}
+              enableGoogle={!!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET)}
+            />
+
+            {oauthErrorMessage ? (
+              <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                {oauthErrorMessage}
+              </div>
+            ) : null}
+          </article>
         </div>
-      ) : null}
-
-      {env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? (
-        <AuthForm callbackUrl={resolvedCallbackUrl} />
-      ) : (
-        <p className="text-sm text-destructive">Google OAuth 환경 변수가 설정되지 않았습니다.</p>
-      )}
-
-      <div className="mt-6 text-center">
-        <p className="text-center text-xs text-muted-foreground">
-          By continuing, you agree to our{" "}
-          <Link
-            href="/terms"
-            className="font-medium text-primary hover:text-primary/90 underline underline-offset-4"
-          >
-            Terms of Service
-          </Link>{" "}
-          and{" "}
-          <Link
-            href="/privacy"
-            className="font-medium text-primary hover:text-primary/90 underline underline-offset-4"
-          >
-            Privacy Policy
-          </Link>
-        </p>
-      </div>
-    </>
+        <PolicyBox />
+      </section>
+    </SsgoiTransition>
   );
 }

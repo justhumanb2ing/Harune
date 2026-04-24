@@ -1,6 +1,4 @@
-import { appConfig } from "@/lib/config";
-import Image from "next/image";
-import Link from "next/link";
+import AuthLayoutTransition from "@/components/animation/auth-layout-transition";
 import type { ReactNode } from "react";
 
 interface AuthLayoutProps {
@@ -9,38 +7,21 @@ interface AuthLayoutProps {
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div className="min-h-lvh flex flex-col bg-background py-4 px-4">
-      <header>
-        <Link href={"/"}>
-          <Image
-            src="/assets/logo.jpeg"
-            alt={appConfig.projectName}
-            width={48}
-            height={48}
-            className="mb-4 rounded-xl"
-          />
-        </Link>
-      </header>
-      <div className="w-full space-y-8 flex-1 max-w-md justify-center flex flex-col mx-auto">
-        <div className="bg-background py-8 px-4">{children}</div>
-
-        {/* <p className="text-center text-xs text-muted-foreground">
-          By continuing, you agree to our{" "}
-          <Link
-            href="/terms"
-            className="font-medium text-primary hover:text-primary/90 underline underline-offset-4"
-          >
-            Terms of Service
-          </Link>{" "}
-          and{" "}
-          <Link
-            href="/privacy"
-            className="font-medium text-primary hover:text-primary/90 underline underline-offset-4"
-          >
-            Privacy Policy
-          </Link>
-        </p> */}
-      </div>
-    </div>
+    <AuthLayoutTransition>
+      <main className="relative h-lvh flex flex-row bg-background">
+        <div className="relative h-full flex-1 overflow-hidden">{children}</div>
+        <section className="h-full flex-1 hidden lg:block">
+          <div className="h-full">
+            <img
+              src={
+                "https://images.unsplash.com/photo-1713508298272-7d0db139dc54?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              }
+              alt="img"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </section>
+      </main>
+    </AuthLayoutTransition>
   );
 }

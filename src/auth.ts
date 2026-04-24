@@ -62,8 +62,12 @@ export const betterAuthServer = betterAuth({
   account: {
     accountLinking: {
       enabled: true,
-      trustedProviders: ["google"],
+      trustedProviders: ["google", "email-password"],
     },
+  },
+  emailAndPassword: {
+    enabled: true,
+    minPasswordLength: 8,
   },
   socialProviders: Object.keys(socialProviders).length > 0 ? socialProviders : undefined,
   hooks: {

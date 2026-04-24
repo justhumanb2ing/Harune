@@ -51,6 +51,7 @@ export const profilePageUpdateSchema = z.object({
   role: optionalNullableText(100).optional(),
   bio: optionalNullableText(280),
   image: nullableUrl,
+  backgroundImage: nullableUrl.optional(),
 });
 
 export const socialLinkInputSchema = z.object({
@@ -109,6 +110,7 @@ export const profilePageSyncSchema = z
       role: z.string().trim().max(100, "Must be 100 characters or fewer."),
       bio: z.string().trim().max(280, "Must be 280 characters or fewer."),
       image: nullableUrl,
+      backgroundImage: nullableUrl,
     }),
     socialLinks: z
       .array(profilePageSyncSocialLinkSchema)

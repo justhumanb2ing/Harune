@@ -19,6 +19,7 @@ const createProfilePageData = (): ProfilePageData => ({
     role: "Builder",
     bio: "hello",
     image: "https://cdn.example.com/profile.png",
+    backgroundImage: "https://cdn.example.com/background.png",
   },
   socialLinks: [
     {

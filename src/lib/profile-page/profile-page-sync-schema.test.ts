@@ -12,6 +12,7 @@ const validPayload = {
     role: "",
     bio: "",
     image: null,
+    backgroundImage: null,
   },
   socialLinks: [
     {

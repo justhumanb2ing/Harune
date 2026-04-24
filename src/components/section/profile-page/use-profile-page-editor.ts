@@ -75,6 +75,9 @@ export function useProfilePageEditor() {
   const newLink = useProfilePageEditorStore((state) => state.newLink);
   const newTextBox = useProfilePageEditorStore((state) => state.newTextBox);
   const previewImageUrl = useProfilePageEditorStore((state) => state.previewImageUrl);
+  const previewBackgroundImageUrl = useProfilePageEditorStore(
+    (state) => state.previewBackgroundImageUrl
+  );
   const syncStatus = useProfilePageEditorStore((state) => state.syncStatus);
   const syncError = useProfilePageEditorStore((state) => state.syncError);
   const hasUnsyncedChanges = useProfilePageEditorStore((state) => state.hasUnsyncedChanges);
@@ -86,6 +89,7 @@ export function useProfilePageEditor() {
     (state) => state.draftData?.socialLinks.length ?? 0
   );
   const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const backgroundImageInputRef = useRef<HTMLInputElement | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -99,6 +103,8 @@ export function useProfilePageEditor() {
 
   const fallbackName = draftData?.page.name || user?.name || "Profile";
   const previewImageSrc = previewImageUrl ?? draftData?.page.image ?? undefined;
+  const previewBackgroundImageSrc =
+    previewBackgroundImageUrl ?? draftData?.page.backgroundImage ?? undefined;
   const previewInitials =
     fallbackName
       .split(/\s+/)
@@ -115,6 +121,7 @@ export function useProfilePageEditor() {
       role: draftData?.page.role ?? "",
       bio: draftData?.page.bio ?? "",
       image: draftData?.page.image ?? null,
+      backgroundImage: draftData?.page.backgroundImage ?? null,
     }),
     [draftData]
   );
@@ -129,6 +136,21 @@ export function useProfilePageEditor() {
 
     try {
       store.actions.selectImage(file);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to select image.");
+    }
+  };
+
+  const handleBackgroundImageChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      store.actions.selectBackgroundImage(file);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to select image.");
     }
@@ -165,6 +187,7 @@ export function useProfilePageEditor() {
     }
 
     let uploadedImageUrl: string | null = null;
+    let uploadedBackgroundImageUrl: string | null = null;
 
     try {
       store.actions.setSyncStatus("syncing");
@@ -175,10 +198,23 @@ export function useProfilePageEditor() {
       if (currentState.pendingImageFile) {
         uploadedImageUrl = await uploader.uploadFile(currentState.pendingImageFile);
         nextDraftData = {
-          ...currentState.draftData,
+          ...nextDraftData,
           page: {
-            ...currentState.draftData.page,
+            ...nextDraftData.page,
             image: uploadedImageUrl,
+          },
+        };
+      }
+
+      if (currentState.pendingBackgroundImageFile) {
+        uploadedBackgroundImageUrl = await uploader.uploadFile(
+          currentState.pendingBackgroundImageFile
+        );
+        nextDraftData = {
+          ...nextDraftData,
+          page: {
+            ...nextDraftData.page,
+            backgroundImage: uploadedBackgroundImageUrl,
           },
         };
       }
@@ -201,6 +237,14 @@ export function useProfilePageEditor() {
           await deleteUploadedProfileImage(uploadedImageUrl);
         } catch (rollbackError) {
           console.error("Failed to rollback uploaded profile image:", rollbackError);
+        }
+      }
+
+      if (uploadedBackgroundImageUrl) {
+        try {
+          await deleteUploadedProfileImage(uploadedBackgroundImageUrl);
+        } catch (rollbackError) {
+          console.error("Failed to rollback uploaded profile background image:", rollbackError);
         }
       }
 
@@ -276,6 +320,7 @@ export function useProfilePageEditor() {
     ) => store.actions.updateLinkItem(id, key, value),
     handleNewTextBoxComposerBlur: () => store.actions.resetNewTextBoxComposer(),
     handlePageBlockDragEnd,
+    handleBackgroundImageChange,
     handleProfileImageChange,
     handleSocialLinkDragEnd,
     handleSync,
@@ -286,6 +331,7 @@ export function useProfilePageEditor() {
     ) => store.actions.updateTextBoxItem(id, key, value),
     handleTextBoxDragEnd,
     hasUnsyncedChanges,
+    backgroundImageInputRef,
     imageInputRef,
     isBooting: false,
     isSyncing: syncStatus === "syncing",
@@ -293,9 +339,11 @@ export function useProfilePageEditor() {
     newLink,
     newTextBox,
     pageEditorBlocks,
+    previewBackgroundImageSrc,
     previewImageSrc,
     previewInitials,
     profileForm,
+    removeBackgroundImage: () => store.actions.removeBackgroundImage(),
     removeProfileImage: () => store.actions.removeImage(),
     selectedSocialLinkCount,
     setNewLink,

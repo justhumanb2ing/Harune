@@ -72,7 +72,9 @@ export function ProfilePagePreview() {
       <div
         className="absolute inset-0 scale-105 blur-xl"
         style={{
-          backgroundImage: editor.previewImageSrc ? `url(${editor.previewImageSrc})` : undefined,
+          backgroundImage: editor.previewImageSrc
+            ? `url(${editor.previewImageSrc})`
+            : undefined,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
@@ -110,6 +112,7 @@ export function ProfilePagePreview() {
         <div className="min-h-0 flex-1 max-w-[375px] mx-auto">
           <ProfilePageRenderer
             isPreview
+            backgroundImage={editor.previewBackgroundImageSrc ?? null}
             handle={editor.data.page.handle || "preview"}
             name={editor.data.page.name || null}
             bio={editor.data.page.bio || null}

@@ -21,6 +21,7 @@ export const getOwnedProfilePage = async (userId: string) => {
       role: profilePages.role,
       bio: profilePages.bio,
       image: profilePages.image,
+      backgroundImage: profilePages.backgroundImage,
       createdAt: profilePages.createdAt,
       updatedAt: profilePages.updatedAt,
     })
@@ -92,6 +93,7 @@ export const getPublicProfilePage = cache(async (handle: string) => {
       role: profilePages.role,
       bio: profilePages.bio,
       image: profilePages.image,
+      backgroundImage: profilePages.backgroundImage,
       userName: users.name,
     })
     .from(profilePages)

@@ -32,6 +32,7 @@ export const profilePages = pgTable(
     role: text("role"),
     bio: text("bio"),
     image: text("image"),
+    backgroundImage: text("backgroundImage"),
     linkBlockPosition: integer("linkBlockPosition").default(0).notNull(),
     createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),

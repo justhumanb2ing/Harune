@@ -34,7 +34,7 @@ export default async function SectionLayout({ children }: { children: ReactNode 
             <section className="min-h-0 flex-1 overflow-hidden">
               <div className="container relative z-0 mx-auto h-full max-w-md">{children}</div>
             </section>
-            <section className="min-h-0 flex-1 overflow-auto">
+            <section className="min-h-0 flex-1 overflow-hidden">
               <ProfilePagePreview />
             </section>
           </div>

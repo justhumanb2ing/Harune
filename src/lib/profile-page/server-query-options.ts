@@ -24,6 +24,7 @@ const getSerializableProfilePageEditorData = async (
       role: data.page.role,
       bio: data.page.bio,
       image: data.page.image,
+      backgroundImage: data.page.backgroundImage,
     },
     socialLinks: data.socialLinks,
     linkItems: data.linkItems,

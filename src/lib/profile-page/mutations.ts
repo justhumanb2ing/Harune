@@ -38,6 +38,7 @@ const getProfilePageEditorDataByPageId = async (executor: DbTransaction, profile
       role: profilePages.role,
       bio: profilePages.bio,
       image: profilePages.image,
+      backgroundImage: profilePages.backgroundImage,
     })
     .from(profilePages)
     .where(eq(profilePages.id, profilePageId))
@@ -104,6 +105,7 @@ const getOwnedPageOrThrow = async (userId: string) => {
       role: profilePages.role,
       bio: profilePages.bio,
       image: profilePages.image,
+      backgroundImage: profilePages.backgroundImage,
     })
     .from(profilePages)
     .where(eq(profilePages.userId, userId))
@@ -168,6 +170,8 @@ export const updateProfileMetadata = async ({
       role: values.role === undefined ? ownedPage.role : values.role,
       bio: values.bio,
       image: values.image,
+      backgroundImage:
+        values.backgroundImage === undefined ? ownedPage.backgroundImage : values.backgroundImage,
       updatedAt: new Date(),
     })
     .where(eq(profilePages.id, ownedPage.id))
@@ -180,6 +184,7 @@ export const updateProfileMetadata = async ({
       role: profilePages.role,
       bio: profilePages.bio,
       image: profilePages.image,
+      backgroundImage: profilePages.backgroundImage,
       updatedAt: profilePages.updatedAt,
     })
     .then((rows) => rows[0] ?? null);
@@ -195,6 +200,21 @@ export const updateProfileMetadata = async ({
       console.error("Failed to delete profile image from storage:", {
         error,
         imageUrl: ownedPage.image,
+        userId,
+      });
+    }
+  }
+
+  const nextBackgroundImage =
+    values.backgroundImage === undefined ? ownedPage.backgroundImage : values.backgroundImage;
+
+  if (ownedPage.backgroundImage && ownedPage.backgroundImage !== nextBackgroundImage) {
+    try {
+      await deletePublicS3Object(ownedPage.backgroundImage);
+    } catch (error) {
+      console.error("Failed to delete profile background image from storage:", {
+        error,
+        imageUrl: ownedPage.backgroundImage,
         userId,
       });
     }
@@ -969,6 +989,7 @@ export const syncProfilePageDraft = async ({
         role: values.page.role || null,
         bio: values.page.bio || null,
         image: values.page.image,
+        backgroundImage: values.page.backgroundImage,
         updatedAt: new Date(),
       })
       .where(eq(profilePages.id, ownedPage.id));
@@ -999,6 +1020,18 @@ export const syncProfilePageDraft = async ({
       console.error("Failed to delete profile image from storage after sync:", {
         error,
         imageUrl: ownedPage.image,
+        userId,
+      });
+    }
+  }
+
+  if (ownedPage.backgroundImage && ownedPage.backgroundImage !== values.page.backgroundImage) {
+    try {
+      await deletePublicS3Object(ownedPage.backgroundImage);
+    } catch (error) {
+      console.error("Failed to delete profile background image from storage after sync:", {
+        error,
+        imageUrl: ownedPage.backgroundImage,
         userId,
       });
     }

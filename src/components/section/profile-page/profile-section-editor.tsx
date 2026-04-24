@@ -90,8 +90,8 @@ export function ProfileSectionEditor() {
       {editor.data ? (
         <div>
           <div className="space-y-5">
-            <div className="flex flex-col gap-4">
-              <div className="group relative w-fit">
+            <div className="flex flex-row items-center gap-4">
+              <div className="group relative w-fit flex-1">
                 <input
                   ref={editor.imageInputRef}
                   type="file"
@@ -136,6 +136,56 @@ export function ProfileSectionEditor() {
                       editor.removeProfileImage();
                     }}
                     aria-label="Remove profile image"
+                  >
+                    <TrashIcon className="size-4" />
+                  </Button>
+                ) : null}
+              </div>
+              <div className="group relative w-fit flex-3">
+                <input
+                  ref={editor.backgroundImageInputRef}
+                  type="file"
+                  accept={PROFILE_IMAGE_ACCEPT}
+                  className="sr-only"
+                  onChange={editor.handleBackgroundImageChange}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="relative h-28 w-full overflow-hidden rounded-xl p-0 shadow-brand bg-background hover:bg-background"
+                  onClick={() => editor.backgroundImageInputRef.current?.click()}
+                  disabled={editor.isSyncing}
+                  aria-label="Upload background image"
+                >
+                  {editor.previewBackgroundImageSrc ? (
+                    <img
+                      src={editor.previewBackgroundImageSrc}
+                      alt=""
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex size-full flex-col items-center justify-center gap-2 bg-background text-muted-foreground">
+                      {editor.isSyncing ? (
+                        <Loader2 className="size-5 animate-spin" />
+                      ) : (
+                        <CircleFadingArrowUpIcon className="size-5" />
+                      )}
+                      <span className="text-sm font-semibold tracking-tight">Background Image</span>
+                    </div>
+                  )}
+                </Button>
+                {editor.previewBackgroundImageSrc ? (
+                  <Button
+                    type="button"
+                    size="icon-lg"
+                    className="absolute -top-2 -right-2 z-10 rounded-full opacity-0 shadow-sm transition-all group-hover:scale-100 group-hover:opacity-100 bg-background hover:bg-secondary text-black"
+                    disabled={editor.isSyncing}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      editor.removeBackgroundImage();
+                    }}
+                    aria-label="Remove background image"
                   >
                     <TrashIcon className="size-4" />
                   </Button>
@@ -219,8 +269,8 @@ export function ProfileSectionEditor() {
                   </InputGroup>
                 </Field>
               </div>
-
             </FieldGroup>
+
             <Dialog open={isHandleDialogOpen} onOpenChange={handleHandleDialogOpenChange}>
               <Field className="relative rounded-lg bg-background shadow-brand outline-none py-4">
                 <FieldLabel className="block px-4 font-medium text-xs text-foreground uppercase">

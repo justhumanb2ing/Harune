@@ -15,9 +15,11 @@ import {
   XTwitterIcon,
 } from "@/components/icon";
 import type { LinkItem, SocialLink, SocialPlatform, TextBoxItem } from "@/lib/profile-page/types";
+import { cn } from "@/lib/utils";
 import { FaLinkedinIn, FaYoutube } from "react-icons/fa6";
 
 type PublicProfilePageProps = {
+  backgroundImage: string | null;
   bio: string | null;
   handle: string;
   image: string | null;
@@ -150,6 +152,7 @@ function getContentBlocks({
 }
 
 export function PublicProfilePage({
+  backgroundImage,
   bio,
   handle,
   image,
@@ -175,14 +178,29 @@ export function PublicProfilePage({
       />
 
       <div className="h-full w-full rounded-2xl bg-background flex flex-col">
-        <div className="flex items-center justify-center px-4 py-4 pt-8">
-          <div className="size-36">
-            {image ? (
-              <img src={image} alt={name ?? userName ?? ""} className="size-full object-cover" />
-            ) : (
-              <div className="size-full bg-secondary" />
-            )}
-          </div>
+        <div
+          className={cn(
+            "group relative flex h-60 items-center justify-center px-4",
+            backgroundImage && "mb-20 h-60"
+          )}
+        >
+          {backgroundImage ? (
+            <img
+              src={backgroundImage}
+              alt=""
+              className="pointer-events-none absolute inset-0 z-0 size-full object-cover"
+            />
+          ) : null}
+          {image ? (
+            <img
+              src={image}
+              alt={name ?? userName ?? ""}
+              className={cn(
+                "relative z-10 size-32 object-cover shadow-brand-small",
+                backgroundImage && "translate-y-28"
+              )}
+            />
+          ) : null}
         </div>
 
         <div className="flex flex-col items-center justify-center gap-6 px-4 py-1 sm:flex-row">

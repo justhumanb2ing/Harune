@@ -23,6 +23,7 @@ export type ProfilePage = {
   role: string | null;
   bio: string | null;
   image: string | null;
+  backgroundImage: string | null;
 };
 
 export type SocialLink = {
@@ -65,6 +66,7 @@ export type DraftProfilePage = {
   role: string;
   bio: string;
   image: string | null;
+  backgroundImage: string | null;
 };
 
 export type DraftSocialLink = {
@@ -106,6 +108,7 @@ export type ProfilePageSyncPayload = {
     role: string;
     bio: string;
     image: string | null;
+    backgroundImage: string | null;
   };
   socialLinks: Array<{
     platform: SocialPlatform;

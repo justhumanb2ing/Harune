@@ -1,0 +1,1 @@
+ALTER TABLE "profile_page" ADD COLUMN "backgroundImage" text;

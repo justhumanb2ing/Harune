@@ -12,6 +12,7 @@ import type {
 } from "@/lib/profile-page/types";
 
 type DirtyState = {
+  backgroundImage: boolean;
   image: boolean;
   linkItems: boolean;
   profile: boolean;
@@ -41,7 +42,9 @@ export type ProfilePageEditorState = {
   newLink: NewLinkDraft;
   newTextBox: NewTextBoxDraft;
   newTextBoxId: string | null;
+  pendingBackgroundImageFile: File | null;
   pendingImageFile: File | null;
+  previewBackgroundImageUrl: string | null;
   previewImageUrl: string | null;
   syncError: string | null;
   syncStatus: SyncStatus;
@@ -66,6 +69,7 @@ const initialDirtyState = (): DirtyState => ({
   socialLinks: false,
   linkItems: false,
   textBoxItems: false,
+  backgroundImage: false,
   image: false,
 });
 
@@ -77,7 +81,9 @@ const initialState = (): ProfilePageEditorState => ({
   newLink: initialNewLink(),
   newTextBox: initialNewTextBox(),
   newTextBoxId: null,
+  pendingBackgroundImageFile: null,
   pendingImageFile: null,
+  previewBackgroundImageUrl: null,
   previewImageUrl: null,
   syncError: null,
   syncStatus: "idle",
@@ -113,6 +119,7 @@ export const createDraftData = (data: ProfilePageData): ProfilePageDraftData => 
     role: normalizeNullableText(data.page.role),
     bio: normalizeNullableText(data.page.bio),
     image: data.page.image,
+    backgroundImage: data.page.backgroundImage,
   },
   socialLinks: data.socialLinks.map((item, index) => ({
     platform: item.platform,
@@ -162,6 +169,7 @@ const toComparableProfile = (draftData: ProfilePageDraftData) => ({
   role: draftData.page.role,
   bio: draftData.page.bio,
   image: draftData.page.image,
+  backgroundImage: draftData.page.backgroundImage,
 });
 
 const toComparableSocialLinks = (draftData: ProfilePageDraftData) =>
@@ -195,7 +203,7 @@ const recalculateDirtyState = (state: ProfilePageEditorState): ProfilePageEditor
     return {
       ...state,
       dirty: initialDirtyState(),
-      hasUnsyncedChanges: Boolean(state.pendingImageFile),
+      hasUnsyncedChanges: Boolean(state.pendingImageFile || state.pendingBackgroundImageFile),
     };
   }
 
@@ -213,6 +221,9 @@ const recalculateDirtyState = (state: ProfilePageEditorState): ProfilePageEditor
     textBoxItems:
       JSON.stringify(toComparableTextBoxItems(baseDraft)) !==
       JSON.stringify(toComparableTextBoxItems(state.draftData)),
+    backgroundImage:
+      state.pendingBackgroundImageFile !== null ||
+      baseDraft.page.backgroundImage !== state.draftData.page.backgroundImage,
     image: state.pendingImageFile !== null || baseDraft.page.image !== state.draftData.page.image,
   };
 
@@ -238,6 +249,7 @@ export const buildSyncPayload = (draftData: ProfilePageDraftData): ProfilePageSy
     role: draftData.page.role,
     bio: draftData.page.bio,
     image: draftData.page.image,
+    backgroundImage: draftData.page.backgroundImage,
   },
   socialLinks: draftData.socialLinks.map((item, index) => ({
     platform: item.platform,
@@ -349,7 +361,9 @@ export function createProfilePageEditorStore(initialData?: ProfilePageData | nul
     newTextBox: initialNewTextBox(),
     newTextBoxId: null,
     pendingImageFile: null,
+    pendingBackgroundImageFile: null,
     previewImageUrl: null,
+    previewBackgroundImageUrl: null,
     syncError: null,
     syncStatus: "idle" as const,
   });
@@ -362,12 +376,14 @@ export function createProfilePageEditorStore(initialData?: ProfilePageData | nul
     },
     destroy: () => {
       revokePreviewUrl(state.previewImageUrl);
+      revokePreviewUrl(state.previewBackgroundImageUrl);
       listeners.clear();
     },
     actions: {
       rebaseFromServer(data: ProfilePageData | null) {
         setState((current) => {
           revokePreviewUrl(current.previewImageUrl);
+          revokePreviewUrl(current.previewBackgroundImageUrl);
 
           if (!data) {
             return initialState();
@@ -832,6 +848,48 @@ export function createProfilePageEditorStore(initialData?: ProfilePageData | nul
             },
             pendingImageFile: null,
             previewImageUrl: null,
+            syncError: null,
+          });
+        });
+      },
+      selectBackgroundImage(file: File) {
+        const validationError = getProfileImageFileError(file);
+
+        if (validationError) {
+          throw new Error(validationError);
+        }
+
+        setState((current) => {
+          revokePreviewUrl(current.previewBackgroundImageUrl);
+          const previewBackgroundImageUrl = URL.createObjectURL(file);
+
+          return recalculateDirtyState({
+            ...current,
+            pendingBackgroundImageFile: file,
+            previewBackgroundImageUrl,
+            syncError: null,
+          });
+        });
+      },
+      removeBackgroundImage() {
+        setState((current) => {
+          if (!current.draftData) {
+            return current;
+          }
+
+          revokePreviewUrl(current.previewBackgroundImageUrl);
+
+          return recalculateDirtyState({
+            ...current,
+            draftData: {
+              ...current.draftData,
+              page: {
+                ...current.draftData.page,
+                backgroundImage: null,
+              },
+            },
+            pendingBackgroundImageFile: null,
+            previewBackgroundImageUrl: null,
             syncError: null,
           });
         });

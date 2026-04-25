@@ -15,12 +15,18 @@ export function Footer() {
           <div className="flex-1">
             <ul className="flex flex-col items-center md:flex-row gap-10 text-sm font-medium text-muted-foreground">
               <li>
-                <Link href="/sign-in" className="inline-block hover:text-primary">
+                <Link
+                  href="/sign-in"
+                  className="inline-block hover:text-primary"
+                >
                   Log In
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="inline-block hover:text-primary">
+                <Link
+                  href="/privacy"
+                  className="inline-block hover:text-primary"
+                >
                   Privacy Policy
                 </Link>
               </li>
@@ -28,6 +34,16 @@ export function Footer() {
                 <Link href="/terms" className="hover:text-primary">
                   Terms of Service
                 </Link>
+              </li>
+              <li>
+                <a
+                  href="https://buymeacoffee.com/justhumanb2ing"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-primary"
+                >
+                  Fuel this Service
+                </a>
               </li>
             </ul>
           </div>

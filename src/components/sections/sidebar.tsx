@@ -1,6 +1,9 @@
 "use client";
 
-import { CurrentPageButton, useCurrentPageMeta } from "@/components/layout/current-page-button";
+import {
+  CurrentPageButton,
+  useCurrentPageMeta,
+} from "@/components/layout/current-page-button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,7 +30,13 @@ import {
   Trash2Icon,
   XIcon,
 } from "lucide-react";
-import { AnimatePresence, LayoutGroup, MotionConfig, type Transition, motion } from "motion/react";
+import {
+  AnimatePresence,
+  LayoutGroup,
+  MotionConfig,
+  type Transition,
+  motion,
+} from "motion/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -35,12 +44,14 @@ import { toast } from "sonner";
 
 const navItems = [
   {
-    getHref: (handle?: string) => (handle ? `/${handle}/section` : "/post-sign-in"),
+    getHref: (handle?: string) =>
+      handle ? `/${handle}/section` : "/post-sign-in",
     label: "Section",
     icon: BoxIcon,
   },
   {
-    getHref: (handle?: string) => (handle ? `/${handle}/analytics` : "/post-sign-in"),
+    getHref: (handle?: string) =>
+      handle ? `/${handle}/analytics` : "/post-sign-in",
     label: "Analytics",
     icon: ChartColumnBigIcon,
   },
@@ -279,7 +290,10 @@ export default function Sidebar() {
                 </div>
 
                 <LayoutGroup id="sidebar-nav">
-                  <nav aria-label="Sidebar" className="relative flex w-full flex-col gap-2">
+                  <nav
+                    aria-label="Sidebar"
+                    className="relative flex w-full flex-col gap-2"
+                  >
                     {navItems.map(({ getHref, label, icon: Icon }) => {
                       const href = getHref(profilePage?.handle);
                       const isActive = isActiveRoute(pathname, href);
@@ -294,7 +308,7 @@ export default function Sidebar() {
                             "relative h-12 w-full overflow-visible transition-colors hover:bg-transparent",
                             isActive
                               ? "text-black hover:text-black"
-                              : "text-muted-foreground hover:text-muted-foreground"
+                              : "text-muted-foreground hover:text-muted-foreground",
                           )}
                           render={
                             <Link
@@ -412,35 +426,43 @@ export default function Sidebar() {
                       open={isDeleteDialogOpen}
                       onOpenChange={handleDeleteDialogOpenChange}
                     >
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          disabled={isDeletingAccount}
-                          className="flex w-full items-center justify-start gap-2 px-4 py-5 text-destructive hover:text-destructive/80"
-                        >
-                          <Trash2Icon className="size-3.5" />
-                          <span>Delete Account</span>
-                        </Button>
-                      </AlertDialogTrigger>
+                      <AlertDialogTrigger
+                        render={
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            disabled={isDeletingAccount}
+                            className="flex w-full items-center justify-start gap-2 px-4 py-5 text-destructive hover:text-destructive/80"
+                          >
+                            <Trash2Icon className="size-3.5" />
+                            <span>Delete Account</span>
+                          </Button>
+                        }
+                      />
                       <AlertDialogContent size="default">
                         <AlertDialogHeader>
                           <AlertDialogMedia className="bg-destructive/10 text-destructive">
                             <AlertTriangleIcon className="size-5" />
                           </AlertDialogMedia>
-                          <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                          <AlertDialogTitle>
+                            Delete your account?
+                          </AlertDialogTitle>
                           <AlertDialogDescription>
-                            This permanently deletes your account, profile page, links, analytics
-                            credits, and active sessions. This action cannot be undone.
+                            This permanently deletes your account, profile page,
+                            links, analytics credits, and active sessions. This
+                            action cannot be undone.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
 
                         <p className="text-sm text-muted-foreground">
-                          You may need to sign in again before deleting your account.
+                          You may need to sign in again before deleting your
+                          account.
                         </p>
 
                         <AlertDialogFooter>
-                          <AlertDialogCancel disabled={isDeletingAccount}>Cancel</AlertDialogCancel>
+                          <AlertDialogCancel disabled={isDeletingAccount}>
+                            Cancel
+                          </AlertDialogCancel>
                           <AlertDialogAction
                             type="button"
                             variant="destructive"
@@ -448,7 +470,9 @@ export default function Sidebar() {
                             aria-busy={isDeletingAccount}
                             onClick={handleDeleteAccount}
                           >
-                            {isDeletingAccount ? "Deleting..." : "Delete Account"}
+                            {isDeletingAccount
+                              ? "Deleting..."
+                              : "Delete Account"}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>

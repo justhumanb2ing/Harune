@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 import { db } from "./db";
 import { authAccounts, authSessions, authVerifications, users } from "./db/schema/user";
 import { env } from "./env";
+import { passwordHashing } from "./lib/auth/password";
 import { appConfig } from "./lib/config";
 import onUserCreate from "./lib/users/onUserCreate";
 
@@ -68,6 +69,7 @@ export const betterAuthServer = betterAuth({
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
+    password: passwordHashing,
   },
   socialProviders: Object.keys(socialProviders).length > 0 ? socialProviders : undefined,
   hooks: {

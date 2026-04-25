@@ -67,7 +67,7 @@ export function ProfilePagePreview() {
         duration: 0.8,
         ease: "easeInOut",
       }}
-      className="relative flex h-full min-h-0 flex-1 flex-col gap-4 p-10"
+      className="relative flex h-full min-h-0 flex-1 flex-col gap-4 p-10 bg-input"
     >
       <div
         className="absolute inset-0 scale-105 blur-xl"

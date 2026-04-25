@@ -29,6 +29,7 @@ import {
   deleteUploadedProfileImage,
   useProfileImageUpload,
 } from "@/hooks/use-profile-image-upload";
+import { authClient } from "@/lib/auth-client";
 import { normalizeHandle, validateHandle } from "@/lib/handles";
 import { PROFILE_IMAGE_ACCEPT } from "@/lib/profile-page/image-upload";
 import { type ApiError, apiFetch } from "@/lib/react-query/fetcher";
@@ -200,6 +201,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
   const backgroundImageUpload = useProfileImageUpload();
   const [currentStep, setCurrentStep] = React.useState(0);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isSigningOut, setIsSigningOut] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [pageHandle, setPageHandle] = React.useState(
     normalizeHandle(handle || searchParams.get("handle") || "")
@@ -451,6 +453,33 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
     await submitOnboarding();
   };
 
+  const handleSignOut = async () => {
+    if (isSigningOut) {
+      return;
+    }
+
+    setIsSigningOut(true);
+    setError(null);
+
+    try {
+      const result = await authClient.signOut();
+
+      if (result.error) {
+        console.error("Sign out failed:", result.error);
+        setError("Failed to log out. Please try again.");
+        setIsSigningOut(false);
+        return;
+      }
+
+      router.push("/sign-in");
+      router.refresh();
+    } catch (signOutError) {
+      console.error("Sign out failed:", signOutError);
+      setError("Failed to log out. Please try again.");
+      setIsSigningOut(false);
+    }
+  };
+
   return (
     <div className="relative flex h-full min-h-full w-full flex-row bg-background">
       <div className="relative h-full flex-1 overflow-hidden">
@@ -469,15 +498,18 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                   {currentStep === 0 ? (
                     <div className="flex min-h-0 flex-1 flex-col justify-center space-y-4">
                       <div className="space-y-2">
-                        <p
-                          className={cn(
-                            "min-h-5 text-sm text-destructive transition-opacity",
-                            handleStepErrorMessage ? "opacity-100" : "opacity-0"
-                          )}
-                          aria-live="polite"
-                        >
-                          {handleStepErrorMessage || "\u00a0"}
-                        </p>
+                        <div className="flex justify-end text-muted-foreground">
+                          <Button
+                            type="button"
+                            variant="link"
+                            size="xs"
+                            onClick={handleSignOut}
+                            disabled={isSigningOut}
+                          >
+                            {isSigningOut ? "logging out..." : "or log out"}
+                          </Button>
+                        </div>
+
                         <InputGroup className="h-12 rounded-xl has-[[data-slot=input-group-control]:focus-visible]:border-secondary bg-secondary! transition-all border-0">
                           <InputGroupAddon className="pl-5">
                             <InputGroupText className="text-primary">leeve.li/</InputGroupText>
@@ -525,6 +557,15 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                             ) : null}
                           </InputGroupAddon>
                         </InputGroup>
+                        <p
+                          className={cn(
+                            "min-h-5 text-sm text-destructive transition-opacity",
+                            handleStepErrorMessage ? "opacity-100" : "opacity-0"
+                          )}
+                          aria-live="polite"
+                        >
+                          {handleStepErrorMessage || "\u00a0"}
+                        </p>
                         <Button
                           type="submit"
                           size="lg"

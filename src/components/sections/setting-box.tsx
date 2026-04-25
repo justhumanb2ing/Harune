@@ -63,6 +63,7 @@ export default function SettingBox() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   const handleSignOut = async () => {
@@ -98,7 +99,10 @@ export default function SettingBox() {
     setIsDeletingAccount(true);
 
     try {
-      const result = await authClient.deleteUser();
+      const password = deletePassword.trim();
+      const result = await authClient.deleteUser({
+        ...(password ? { password } : {}),
+      });
 
       if (result.error) {
         const message =
@@ -112,6 +116,7 @@ export default function SettingBox() {
       toast.success("Account deleted.");
       setIsDeleteDialogOpen(false);
       setIsExpanded(false);
+      setDeletePassword("");
       router.replace("/");
       router.refresh();
     } catch (error) {
@@ -127,6 +132,10 @@ export default function SettingBox() {
     }
 
     setIsDeleteDialogOpen(open);
+
+    if (!open) {
+      setDeletePassword("");
+    }
   };
 
   useEffect(() => {
@@ -257,6 +266,8 @@ export default function SettingBox() {
                 <DeleteAccountDialog
                   open={isDeleteDialogOpen}
                   onOpenChange={handleDeleteDialogOpenChange}
+                  password={deletePassword}
+                  onPasswordChange={setDeletePassword}
                   isDeleting={isDeletingAccount}
                   onConfirm={handleDeleteAccount}
                 />

@@ -296,6 +296,94 @@
   }
 }
 
+@keyframes onboarding-slide-out-left {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(-100%, 0, 0);
+  }
+}
+
+@keyframes onboarding-slide-in-left {
+  from {
+    opacity: 0;
+    transform: translate3d(100%, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes onboarding-slide-out-right {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(100%, 0, 0);
+  }
+}
+
+@keyframes onboarding-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translate3d(-100%, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+::view-transition-group(onboarding-step) {
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  clip-path: inset(0);
+  overflow: clip;
+}
+
+::view-transition-image-pair(onboarding-step) {
+  clip-path: inset(0);
+  overflow: clip;
+}
+
+::view-transition-old(onboarding-step),
+::view-transition-new(onboarding-step) {
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  animation-fill-mode: both;
+  backface-visibility: hidden;
+}
+
+html[data-onboarding-step-transition="forward"]::view-transition-old(onboarding-step) {
+  animation-name: onboarding-slide-out-left;
+}
+
+html[data-onboarding-step-transition="forward"]::view-transition-new(onboarding-step) {
+  animation-name: onboarding-slide-in-left;
+}
+
+html[data-onboarding-step-transition="back"]::view-transition-old(onboarding-step) {
+  animation-name: onboarding-slide-out-right;
+}
+
+html[data-onboarding-step-transition="back"]::view-transition-new(onboarding-step) {
+  animation-name: onboarding-slide-in-right;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(onboarding-step),
+  ::view-transition-old(onboarding-step),
+  ::view-transition-new(onboarding-step) {
+    animation-duration: 1ms;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

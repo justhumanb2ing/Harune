@@ -2,13 +2,13 @@ import { auth } from "@/auth";
 import { OnboardingForm } from "@/components/auth/onboarding-form";
 import { db } from "@/db";
 import { profilePages } from "@/db/schema/profile-page";
+import { SsgoiTransition } from "@ssgoi/react";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 
 type OnboardingPageProps = {
   searchParams: Promise<{
     handle?: string;
-    next?: string;
   }>;
 };
 
@@ -29,11 +29,15 @@ export default async function OnboardingPage({ searchParams }: OnboardingPagePro
     .limit(1)
     .then((rows) => rows[0]);
 
-  const { handle, next } = await searchParams;
+  const { handle } = await searchParams;
 
   if (ownedPage) {
     redirect(`/${ownedPage.handle}/section`);
   }
 
-  return <OnboardingForm handle={handle} next={next} />;
+  return (
+    <SsgoiTransition id="/onboarding" className="block h-full">
+      <OnboardingForm handle={handle} />
+    </SsgoiTransition>
+  );
 }

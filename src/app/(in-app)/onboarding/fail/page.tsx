@@ -1,5 +1,11 @@
+import { auth } from "@/auth";
 import { OnboardingFail } from "@/components/auth/onboarding-fail";
+import { db } from "@/db";
+import { profilePages } from "@/db/schema/profile-page";
 import { normalizeHandle } from "@/lib/handles";
+import { SsgoiTransition } from "@ssgoi/react";
+import { eq } from "drizzle-orm";
+import { redirect } from "next/navigation";
 
 type OnboardingFailPageProps = {
   searchParams: Promise<{
@@ -9,8 +15,31 @@ type OnboardingFailPageProps = {
 };
 
 export default async function OnboardingFailPage({ searchParams }: OnboardingFailPageProps) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    redirect("/sign-in");
+  }
+
+  const ownedPage = await db
+    .select({
+      handle: profilePages.handle,
+    })
+    .from(profilePages)
+    .where(eq(profilePages.userId, session.user.id))
+    .limit(1)
+    .then((rows) => rows[0]);
+
+  if (ownedPage?.handle) {
+    redirect(`/${ownedPage.handle}/section`);
+  }
+
   const { handle: rawHandle, message } = await searchParams;
   const handle = normalizeHandle(rawHandle ?? "");
 
-  return <OnboardingFail handle={handle || undefined} message={message} />;
+  return (
+    <SsgoiTransition id="/onboarding/fail" className="block h-full">
+      <OnboardingFail handle={handle || undefined} message={message} />
+    </SsgoiTransition>
+  );
 }

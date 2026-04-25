@@ -54,6 +54,7 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     authInterrupts: true,
+    viewTransition: true,
   },
   turbopack: {
     root: process.cwd(),

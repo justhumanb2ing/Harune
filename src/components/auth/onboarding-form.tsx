@@ -35,12 +35,7 @@ import { type ApiError, apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  BubblesIcon,
-  CircleFadingArrowUpIcon,
-  DotIcon,
-  Loader2Icon,
-} from "lucide-react";
+import { BubblesIcon, CircleFadingArrowUpIcon, DotIcon, Loader2Icon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 import { ViewTransition, startTransition } from "react";
@@ -188,10 +183,7 @@ const createInitialSocialLinks = (): SocialLinksState => ({
   apple_music: "",
 });
 
-const runOnboardingStepTransition = (
-  direction: "forward" | "back",
-  updateStep: () => void,
-) => {
+const runOnboardingStepTransition = (direction: "forward" | "back", updateStep: () => void) => {
   document.documentElement.dataset.onboardingStepTransition = direction;
   startTransition(() => {
     updateStep();
@@ -210,24 +202,18 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [pageHandle, setPageHandle] = React.useState(
-    normalizeHandle(handle || searchParams.get("handle") || ""),
+    normalizeHandle(handle || searchParams.get("handle") || "")
   );
   const [name, setName] = React.useState("");
   const [bio, setBio] = React.useState("");
-  const [socialLinks, setSocialLinks] = React.useState<SocialLinksState>(
-    createInitialSocialLinks,
-  );
+  const [socialLinks, setSocialLinks] = React.useState<SocialLinksState>(createInitialSocialLinks);
 
   const currentStepMeta = steps[currentStep];
   const hasHandleInput = !!pageHandle;
   const trimmedName = name.trim();
   const validationError = validateHandle(pageHandle);
-  const {
-    availabilityError,
-    isCheckingAvailability,
-    isHandleAvailable,
-    isHandleTaken,
-  } = useHandleAvailability(pageHandle);
+  const { availabilityError, isCheckingAvailability, isHandleAvailable, isHandleTaken } =
+    useHandleAvailability(pageHandle);
   const handleErrorMessage = hasHandleInput
     ? validationError
       ? validationError
@@ -250,8 +236,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
     !availabilityError &&
     !isCheckingAvailability &&
     (isHandleAvailable || isHandleTaken);
-  const handleStepErrorMessage =
-    currentStep === 0 ? error || handleErrorMessage : null;
+  const handleStepErrorMessage = currentStep === 0 ? error || handleErrorMessage : null;
   const getInitials = React.useCallback(() => {
     if (!trimmedName) {
       return "N";
@@ -274,15 +259,12 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
         return;
       }
 
-      runOnboardingStepTransition(
-        boundedNextStep > currentStep ? "forward" : "back",
-        () => {
-          beforeStepChange?.();
-          setCurrentStep(boundedNextStep);
-        },
-      );
+      runOnboardingStepTransition(boundedNextStep > currentStep ? "forward" : "back", () => {
+        beforeStepChange?.();
+        setCurrentStep(boundedNextStep);
+      });
     },
-    [currentStep],
+    [currentStep]
   );
 
   const goToPreviousStep = () => {
@@ -320,9 +302,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
     transitionToStep(currentStep + 1, () => setError(null));
   };
 
-  const handleSelectImage = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleSelectImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
 
@@ -334,17 +314,11 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
       setError(null);
       profileImageUpload.selectFile(file);
     } catch (uploadError) {
-      setError(
-        uploadError instanceof Error
-          ? uploadError.message
-          : "Failed to select image.",
-      );
+      setError(uploadError instanceof Error ? uploadError.message : "Failed to select image.");
     }
   };
 
-  const handleSelectBackgroundImage = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleSelectBackgroundImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
 
@@ -356,11 +330,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
       setError(null);
       backgroundImageUpload.selectFile(file);
     } catch (uploadError) {
-      setError(
-        uploadError instanceof Error
-          ? uploadError.message
-          : "Failed to select image.",
-      );
+      setError(uploadError instanceof Error ? uploadError.message : "Failed to select image.");
     }
   };
 
@@ -370,20 +340,13 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
       return;
     }
 
-    if (
-      validationError ||
-      availabilityError ||
-      isHandleTaken ||
-      !isHandleAvailable
-    ) {
+    if (validationError || availabilityError || isHandleTaken || !isHandleAvailable) {
       transitionToStep(0, () =>
         setError(
           validationError ||
             availabilityError ||
-            (isHandleTaken
-              ? "This handle is already taken."
-              : "Please confirm your handle first."),
-        ),
+            (isHandleTaken ? "This handle is already taken." : "Please confirm your handle first.")
+        )
       );
       return;
     }
@@ -404,27 +367,19 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
     let uploadedBackgroundImageUrl: string | null = null;
 
     try {
-      uploadedImageUrl = await profileImageUpload.uploadSelectedFile();
-      uploadedBackgroundImageUrl =
-        await backgroundImageUpload.uploadSelectedFile();
+      uploadedImageUrl = await profileImageUpload.uploadSelectedFile("profile");
+      uploadedBackgroundImageUrl = await backgroundImageUpload.uploadSelectedFile("background");
     } catch (uploadError) {
       if (uploadedImageUrl) {
         try {
           await deleteUploadedProfileImage(uploadedImageUrl);
         } catch (rollbackError) {
-          console.error(
-            "Failed to rollback uploaded onboarding profile image:",
-            rollbackError,
-          );
+          console.error("Failed to rollback uploaded onboarding profile image:", rollbackError);
         }
       }
 
       transitionToStep(1, () => {
-        setError(
-          uploadError instanceof Error
-            ? uploadError.message
-            : "Failed to upload image.",
-        );
+        setError(uploadError instanceof Error ? uploadError.message : "Failed to upload image.");
         setIsSubmitting(false);
       });
       return;
@@ -452,10 +407,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
         try {
           await deleteUploadedProfileImage(uploadedImageUrl);
         } catch (rollbackError) {
-          console.error(
-            "Failed to rollback uploaded onboarding profile image:",
-            rollbackError,
-          );
+          console.error("Failed to rollback uploaded onboarding profile image:", rollbackError);
         }
       }
 
@@ -463,19 +415,14 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
         try {
           await deleteUploadedProfileImage(uploadedBackgroundImageUrl);
         } catch (rollbackError) {
-          console.error(
-            "Failed to rollback uploaded onboarding background image:",
-            rollbackError,
-          );
+          console.error("Failed to rollback uploaded onboarding background image:", rollbackError);
         }
       }
 
       console.error("Failed to complete onboarding:", submitError);
       const apiError = submitError as ApiError;
       if (apiError.status === 409) {
-        transitionToStep(0, () =>
-          setError(apiError.message || "This handle is already taken."),
-        );
+        transitionToStep(0, () => setError(apiError.message || "This handle is already taken."));
         await queryClient.invalidateQueries({
           queryKey: queryKeys.handles.availability(pageHandle),
         });
@@ -507,21 +454,16 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
   return (
     <div className="relative flex h-full min-h-full w-full flex-row bg-background">
       <div className="relative h-full flex-1 overflow-hidden">
-        <div className="mx-auto flex h-full max-w-md flex-col gap-4">
-          <div className="min-h-0 flex-1 px-8 pb-6">
-            <form
-              onSubmit={handleComplete}
-              className="flex h-full min-h-0 flex-col gap-4"
-            >
-              <ViewTransition name="onboarding-step">
+        <form onSubmit={handleComplete} className="flex h-full min-h-0 w-full flex-col gap-4">
+          <ViewTransition name="onboarding-step">
+            <div className="min-h-0 flex-1 w-full">
+              <div className="mx-auto flex h-full max-w-md flex-col gap-4 px-8 pb-6">
                 <div className="flex min-h-0 flex-1 flex-col gap-4">
                   <header className="shrink-0 space-y-2 pt-12">
                     <h1 className="text-3xl font-semibold tracking-tight">
                       {currentStepMeta.title}
                     </h1>
-                    <p className="text-sm text-muted-foreground">
-                      {currentStepMeta.description}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{currentStepMeta.description}</p>
                   </header>
 
                   {currentStep === 0 ? (
@@ -530,9 +472,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                         <p
                           className={cn(
                             "min-h-5 text-sm text-destructive transition-opacity",
-                            handleStepErrorMessage
-                              ? "opacity-100"
-                              : "opacity-0",
+                            handleStepErrorMessage ? "opacity-100" : "opacity-0"
                           )}
                           aria-live="polite"
                         >
@@ -540,18 +480,14 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                         </p>
                         <InputGroup className="h-12 rounded-xl has-[[data-slot=input-group-control]:focus-visible]:border-secondary bg-secondary! transition-all border-0">
                           <InputGroupAddon className="pl-5">
-                            <InputGroupText className="text-primary">
-                              leeve.li/
-                            </InputGroupText>
+                            <InputGroupText className="text-primary">leeve.li/</InputGroupText>
                           </InputGroupAddon>
                           <InputGroupInput
                             id="handle"
                             autoComplete="off"
                             value={pageHandle}
                             onChange={(event) => {
-                              setPageHandle(
-                                normalizeHandle(event.target.value),
-                              );
+                              setPageHandle(normalizeHandle(event.target.value));
                               if (error) {
                                 setError(null);
                               }
@@ -574,10 +510,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                           />
                           <InputGroupAddon align="inline-end" className="pr-3">
                             {isCheckingAvailability ? (
-                              <Loader2Icon
-                                className="size-5 animate-spin"
-                                aria-label="Checking"
-                              />
+                              <Loader2Icon className="size-5 animate-spin" aria-label="Checking" />
                             ) : showHandleStatus ? (
                               <DotIcon
                                 className={
@@ -586,9 +519,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                                     : "size-5 stroke-5 text-green-500"
                                 }
                                 aria-label={
-                                  isHandleTaken
-                                    ? "Handle unavailable"
-                                    : "Handle available"
+                                  isHandleTaken ? "Handle unavailable" : "Handle available"
                                 }
                               />
                             ) : null}
@@ -601,7 +532,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                             "h-12 w-full border-indigo-400 bg-indigo-400 text-base font-bold opacity-100 shadow-lg transition-opacity hover:bg-indigo-500",
                             canTakeHandle
                               ? "pointer-events-auto opacity-100"
-                              : "pointer-events-none opacity-0",
+                              : "pointer-events-none opacity-0"
                           )}
                         >
                           Take this handle
@@ -618,13 +549,8 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                             <button
                               type="button"
                               className="relative flex h-52 w-full cursor-pointer items-center justify-center overflow-hidden rounded-t-[2rem] border-b border-border bg-secondary transition-colors hover:bg-input disabled:cursor-not-allowed disabled:opacity-70"
-                              onClick={() =>
-                                backgroundImageInputRef.current?.click()
-                              }
-                              disabled={
-                                backgroundImageUpload.isUploading ||
-                                isSubmitting
-                              }
+                              onClick={() => backgroundImageInputRef.current?.click()}
+                              disabled={backgroundImageUpload.isUploading || isSubmitting}
                               aria-label="Upload background image"
                             >
                               {backgroundImageUpload.previewUrl ? (
@@ -647,19 +573,14 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                               accept={PROFILE_IMAGE_ACCEPT}
                               className="sr-only"
                               onChange={handleSelectBackgroundImage}
-                              disabled={
-                                backgroundImageUpload.isUploading ||
-                                isSubmitting
-                              }
+                              disabled={backgroundImageUpload.isUploading || isSubmitting}
                             />
                             <div className="absolute left-1/2 bottom-0 z-10 -translate-x-1/2 translate-y-1/2">
                               <button
                                 type="button"
                                 className="relative flex size-32 cursor-pointer items-center justify-center overflow-hidden rounded-full border bg-secondary transition-colors hover:bg-input disabled:cursor-not-allowed disabled:opacity-70"
                                 onClick={() => fileInputRef.current?.click()}
-                                disabled={
-                                  profileImageUpload.isUploading || isSubmitting
-                                }
+                                disabled={profileImageUpload.isUploading || isSubmitting}
                                 aria-label="Upload profile image"
                               >
                                 {profileImageUpload.previewUrl ? (
@@ -677,9 +598,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                                 ) : (
                                   <span className="flex min-w-24 flex-col items-center justify-center gap-2 text-muted-foreground">
                                     <CircleFadingArrowUpIcon className="size-6 text-muted-foreground" />
-                                    <span className="text-xs font-semibold">
-                                      Avatar
-                                    </span>
+                                    <span className="text-xs font-semibold">Avatar</span>
                                   </span>
                                 )}
                                 {profileImageUpload.isUploading ? (
@@ -696,16 +615,12 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                               accept={PROFILE_IMAGE_ACCEPT}
                               className="sr-only"
                               onChange={handleSelectImage}
-                              disabled={
-                                profileImageUpload.isUploading || isSubmitting
-                              }
+                              disabled={profileImageUpload.isUploading || isSubmitting}
                             />
                           </div>
-                          {profileImageUpload.error ||
-                          backgroundImageUpload.error ? (
+                          {profileImageUpload.error || backgroundImageUpload.error ? (
                             <p className="text-center text-destructive text-sm">
-                              {profileImageUpload.error ||
-                                backgroundImageUpload.error}
+                              {profileImageUpload.error || backgroundImageUpload.error}
                             </p>
                           ) : null}
 
@@ -750,14 +665,8 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                       <div className="relative z-10 flex min-h-[46rem] flex-col rounded-t-[2rem] bg-background">
                         <div className="flex flex-col gap-3 rounded-t-[3rem] bg-background p-4 pt-18 shadow-brand-small">
                           {socialPlatforms.map((platform) => (
-                            <div
-                              key={platform.key}
-                              className="flex items-center gap-3"
-                            >
-                              <platform.colorIcon
-                                className="size-10 shrink-0"
-                                aria-hidden="true"
-                              />
+                            <div key={platform.key} className="flex items-center gap-3">
+                              <platform.colorIcon className="size-10 shrink-0" aria-hidden="true" />
                               <InputGroup className="h-11 flex-1 rounded-md border-0 bg-secondary">
                                 <InputGroupInput
                                   id={platform.key}
@@ -769,9 +678,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                                     }));
                                   }}
                                   placeholder={
-                                    platform.key === "mail"
-                                      ? platform.placeholder
-                                      : "Add URL"
+                                    platform.key === "mail" ? platform.placeholder : "Add URL"
                                   }
                                   aria-label={platform.label}
                                   className="h-full px-4!"
@@ -786,72 +693,70 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                   ) : null}
 
                   {currentStep !== 0 && handleErrorMessage ? (
-                    <p className="text-destructive text-center">
-                      {handleErrorMessage}
-                    </p>
+                    <p className="text-destructive text-center">{handleErrorMessage}</p>
                   ) : null}
 
                   {currentStep !== 0 && error ? (
                     <p className="text-destructive text-center">{error}</p>
                   ) : null}
                 </div>
-              </ViewTransition>
-
-              <div className="flex shrink-0 flex-col items-center justify-between gap-2">
-                <div className="flex w-full items-center justify-center gap-2">
-                  {currentStep === 0 ? null : currentStep < steps.length - 1 ? (
-                    <Button
-                      type="button"
-                      onClick={(event) => {
-                        event.preventDefault();
-                        goToNextStep();
-                      }}
-                      className={cn(
-                        "h-12 w-full bg-indigo-400 border-indigo-400 text-base font-bold opacity-100 shadow-lg transition-opacity hover:bg-indigo-500",
-                        trimmedName && !profileImageUpload.isUploading
-                          ? "pointer-events-auto opacity-100"
-                          : "pointer-events-none opacity-0",
-                      )}
-                    >
-                      Next
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      size="lg"
-                      className="h-12 text-base w-full bg-indigo-400 border-indigo-400 font-bold hover:bg-indigo-500 shadow-lg"
-                      onClick={() => void submitOnboarding()}
-                      disabled={isSubmitting || profileImageUpload.isUploading}
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2Icon className="size-4 animate-spin" />
-                          Creating...
-                        </>
-                      ) : (
-                        <>
-                          <span>Create your page</span>
-                          <BubblesIcon className="stroke-3" />
-                        </>
-                      )}
-                    </Button>
-                  )}
-                </div>
-                {currentStep > 0 ? (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="lg"
-                    className="font-bold w-full h-12 text-muted-foreground"
-                    onClick={goToPreviousStep}
-                  >
-                    <span>Back</span>
-                  </Button>
-                ) : null}
               </div>
-            </form>
+            </div>
+          </ViewTransition>
+
+          <div className="mx-auto flex w-full max-w-md shrink-0 flex-col items-center justify-between gap-2 px-8 pb-6">
+            <div className="flex w-full items-center justify-center gap-2">
+              {currentStep === 0 ? null : currentStep < steps.length - 1 ? (
+                <Button
+                  type="button"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    goToNextStep();
+                  }}
+                  className={cn(
+                    "h-12 w-full bg-indigo-400 border-indigo-400 text-base font-bold opacity-100 shadow-lg transition-opacity hover:bg-indigo-500",
+                    trimmedName && !profileImageUpload.isUploading
+                      ? "pointer-events-auto opacity-100"
+                      : "pointer-events-none opacity-0"
+                  )}
+                >
+                  Next
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  size="lg"
+                  className="h-12 text-base w-full bg-indigo-400 border-indigo-400 font-bold hover:bg-indigo-500 shadow-lg"
+                  onClick={() => void submitOnboarding()}
+                  disabled={isSubmitting || profileImageUpload.isUploading}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2Icon className="size-4 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <span>Create your page</span>
+                      <BubblesIcon className="stroke-3" />
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+            {currentStep > 0 ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="lg"
+                className="font-bold w-full h-12 text-muted-foreground"
+                onClick={goToPreviousStep}
+              >
+                <span>Back</span>
+              </Button>
+            ) : null}
           </div>
-        </div>
+        </form>
       </div>
       <section className="hidden h-full flex-1 lg:block">
         <div className="h-full">

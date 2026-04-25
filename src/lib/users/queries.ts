@@ -8,5 +8,9 @@ import { queryOptions } from "@tanstack/react-query";
 export const meQueryOptions = () =>
   queryOptions({
     queryKey: queryKeys.app.me(),
-    queryFn: ({ signal }) => apiFetch<MeResponse>("/api/app/me", { signal }),
+    queryFn: ({ signal }) =>
+      apiFetch<MeResponse>("/api/app/me", {
+        cache: "no-store",
+        signal,
+      }),
   });

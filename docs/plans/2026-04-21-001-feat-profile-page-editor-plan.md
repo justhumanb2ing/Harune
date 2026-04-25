@@ -312,7 +312,7 @@ flowchart LR
 
 **Approach:**
 - 현재 placeholder인 `/section/page.tsx`를 메인 편집 화면으로 사용한다.
-- 프로필 이미지 업로드는 기존 `S3Uploader`를 재사용하되 저장 대상 route를 `/api/app/profile-page/upload-image`로 분리한다.
+- 프로필/배경 이미지 업로드는 저장 대상 route를 `/api/app/profile-page/upload-image`로 분리하고, 사용자별 고정 object key(`profile-page/profile`, `profile-page/background`)와 DB finalize 단계로 `profile_page.image` / `profile_page.backgroundImage` 저장을 보장한다.
 - 컬렉션 편집은 “추가 버튼 + inline form + 저장/삭제 + dnd-kit drag-and-drop” 구조로 시작한다.
 - React Query 캐시는 `me`와 별도 `profile-page` query key를 사용해, 편집기와 사이드바 갱신 범위를 제어한다.
 - 현재 `/section/profile`는 새 편집기의 세부 진입점으로 재사용하거나 `/section`으로 정리한다.
@@ -322,7 +322,7 @@ flowchart LR
 - `src/components/ui/s3-uploader/s3-uploader.tsx`
 
 **Test scenarios:**
-- Happy path: 사용자가 프로필 이름/바이오/이미지를 수정해 저장하면 새 값이 폼과 미리보기에 반영된다.
+- Happy path: 사용자가 프로필 이름/바이오/이미지를 수정해 저장하면 새 값이 `profile_page` 컬럼, 폼, 미리보기에 반영된다.
 - Happy path: 링크/텍스트 박스를 추가한 뒤 drag-and-drop으로 순서를 바꾸면 화면 순서가 즉시 바뀌고 저장 후에도 유지된다.
 - Edge case: 이미지 삭제와 바이오 삭제를 수행하면 대응 필드가 빈 상태 UI로 돌아가고, 이름을 비워 저장하려 하면 검증 오류가 난다.
 - Edge case: 현재 핸들을 다시 입력하면 중복 오류 없이 저장 가능 상태를 유지한다.
@@ -391,12 +391,13 @@ flowchart LR
 | 공개 페이지의 `app_user` 폴백과 `profile_page` 저장 상태가 어긋날 위험 | 렌더링 계층에서 어떤 필드가 폴백 가능한지(`name`, `image`)를 명시적으로 구분하고, 저장은 항상 `profile_page`로 통일한다. |
 | reorder/delete 이후 `position` 중복 또는 공백 발생 | reorder와 delete mutation에 서버 측 재색인 로직을 공통화한다. |
 | 편집기 범위가 커져 `/section` UX가 산만해질 위험 | 프로필/소셜/링크/텍스트 박스를 카드 또는 아코디언으로 구획하고 저장 단위를 분리한다. |
-| 업로드된 이전 이미지 파일이 S3에 남는 문제 | 초기 범위에서는 DB 참조만 교체하고, orphan cleanup은 후속 작업으로 분리한다. |
+| 업로드된 이전 이미지 파일이 S3에 남는 문제 | 프로필/배경 이미지는 사용자별 고정 object key 2개만 사용하고, 같은 파일은 hash 비교로 업로드를 건너뛰어 신규 orphan 생성을 막는다. |
 
 ## Documentation / Operational Notes
 
 - `docs/plans/` 외 별도 운영 문서 업데이트는 필수는 아니지만, 공개 페이지 편집 책임은 `profile_page`에 두고 렌더링 폴백만 `app_user`를 사용할 수 있다는 점은 구현 PR 설명에 명시하는 편이 좋다.
 - QA 체크리스트에는 “프로필 필드 삭제 후 공개 페이지 반영”, “링크/텍스트 박스 reorder 후 새로고침 유지”, “핸들 변경 후 새 URL 접근”이 포함돼야 한다.
+- 이미지 업로드 관련 회귀 방지 지식은 `docs/solutions/logic-errors/profile-page-image-url-persistence-regression-2026-04-25.md`에 기록되어 있다.
 
 ## Priority Order
 

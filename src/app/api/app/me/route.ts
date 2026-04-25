@@ -7,6 +7,8 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import type { MeResponse } from "./types";
 
+export const dynamic = "force-dynamic";
+
 export const GET = withAuthRequired(async (req, context) => {
   const { getCurrentPlan, getUser } = context;
 

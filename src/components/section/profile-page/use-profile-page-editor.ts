@@ -21,8 +21,7 @@ import {
   buildSyncPayload,
   getPageEditorBlocks,
 } from "@/components/section/profile-page/profile-page-editor-store";
-import { deleteUploadedProfileImage } from "@/hooks/use-profile-image-upload";
-import { PROFILE_IMAGE_UPLOAD_ROUTE } from "@/lib/profile-page/image-upload";
+import { uploadProfileImageIfChanged } from "@/lib/profile-page/client-image-upload";
 import { profilePageQueryOptions } from "@/lib/profile-page/query-options";
 import {
   type DraftLinkItem,
@@ -34,7 +33,6 @@ import {
 } from "@/lib/profile-page/types";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
-import { ClientS3Uploader } from "@/lib/s3/clientS3Uploader";
 import useUser from "@/lib/users/useUser";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 
@@ -56,8 +54,6 @@ export const socialPlatforms: Array<{ key: SocialPlatform; label: string; placeh
     placeholder: "https://music.apple.com/profile/yourname",
   },
 ];
-
-const uploader = new ClientS3Uploader({ presignedRouteProvider: PROFILE_IMAGE_UPLOAD_ROUTE });
 
 const selectSocialDrafts = (state: ProfilePageEditorState) =>
   socialPlatforms.reduce<Record<SocialPlatform, string>>(
@@ -191,9 +187,6 @@ export function useProfilePageEditor() {
       return null;
     }
 
-    let uploadedImageUrl: string | null = null;
-    let uploadedBackgroundImageUrl: string | null = null;
-
     try {
       store.actions.setSyncStatus("syncing");
       await queryClient.cancelQueries({ queryKey: profilePageQueryKey });
@@ -201,7 +194,11 @@ export function useProfilePageEditor() {
       let nextDraftData = syncDraftData;
 
       if (currentState.pendingImageFile) {
-        uploadedImageUrl = await uploader.uploadFile(currentState.pendingImageFile);
+        const uploadedImageUrl = await uploadProfileImageIfChanged({
+          currentUrl: syncDraftData.page.image,
+          file: currentState.pendingImageFile,
+          kind: "profile",
+        });
         nextDraftData = {
           ...nextDraftData,
           page: {
@@ -212,9 +209,11 @@ export function useProfilePageEditor() {
       }
 
       if (currentState.pendingBackgroundImageFile) {
-        uploadedBackgroundImageUrl = await uploader.uploadFile(
-          currentState.pendingBackgroundImageFile
-        );
+        const uploadedBackgroundImageUrl = await uploadProfileImageIfChanged({
+          currentUrl: syncDraftData.page.backgroundImage,
+          file: currentState.pendingBackgroundImageFile,
+          kind: "background",
+        });
         nextDraftData = {
           ...nextDraftData,
           page: {
@@ -253,22 +252,6 @@ export function useProfilePageEditor() {
       toast("Synced");
       return response;
     } catch (error) {
-      if (uploadedImageUrl) {
-        try {
-          await deleteUploadedProfileImage(uploadedImageUrl);
-        } catch (rollbackError) {
-          console.error("Failed to rollback uploaded profile image:", rollbackError);
-        }
-      }
-
-      if (uploadedBackgroundImageUrl) {
-        try {
-          await deleteUploadedProfileImage(uploadedBackgroundImageUrl);
-        } catch (rollbackError) {
-          console.error("Failed to rollback uploaded profile background image:", rollbackError);
-        }
-      }
-
       const message = error instanceof Error ? error.message : "Failed to sync";
       store.actions.setSyncError(message);
       return null;

@@ -7,6 +7,8 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { Suspense } from "react";
 
+export const dynamic = "force-dynamic";
+
 function SectionLayoutFallback() {
   return (
     <div className="flex h-full min-h-0 flex-row gap-4">

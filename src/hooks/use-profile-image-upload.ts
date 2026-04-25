@@ -1,11 +1,12 @@
 "use client";
 
+import { uploadProfileImageIfChanged } from "@/lib/profile-page/client-image-upload";
 import {
   PROFILE_IMAGE_UPLOAD_ROUTE,
+  type ProfileImageKind,
   getProfileImageFileError,
 } from "@/lib/profile-page/image-upload";
 import { apiFetch } from "@/lib/react-query/fetcher";
-import { ClientS3Uploader } from "@/lib/s3/clientS3Uploader";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type ProfileImageUploadState = {
@@ -15,8 +16,6 @@ type ProfileImageUploadState = {
   selectedFile: File | null;
   selectedFileName: string | null;
 };
-
-const uploader = new ClientS3Uploader({ presignedRouteProvider: PROFILE_IMAGE_UPLOAD_ROUTE });
 
 const initialState: ProfileImageUploadState = {
   error: null,
@@ -82,39 +81,51 @@ export function useProfileImageUpload() {
     [revokePreviewUrl]
   );
 
-  const uploadSelectedFile = useCallback(async () => {
-    if (!state.selectedFile) {
-      return null;
-    }
-
-    setState((prev) => ({
-      ...prev,
-      error: null,
-      isUploading: true,
-    }));
-
-    try {
-      const uploadedUrl = await uploader.uploadFile(state.selectedFile);
+  const uploadSelectedFile = useCallback(
+    async (
+      kind: ProfileImageKind,
+      currentUrl: string | null = null,
+      options: { persist?: boolean } = {}
+    ) => {
+      if (!state.selectedFile) {
+        return null;
+      }
 
       setState((prev) => ({
         ...prev,
         error: null,
-        isUploading: false,
+        isUploading: true,
       }));
 
-      return uploadedUrl;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to upload image.";
+      try {
+        const uploadedUrl = await uploadProfileImageIfChanged({
+          currentUrl,
+          file: state.selectedFile,
+          kind,
+          persist: options.persist ?? false,
+        });
 
-      setState((prev) => ({
-        ...prev,
-        error: errorMessage,
-        isUploading: false,
-      }));
+        setState((prev) => ({
+          ...prev,
+          error: null,
+          isUploading: false,
+        }));
 
-      throw error;
-    }
-  }, [state.selectedFile]);
+        return uploadedUrl;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to upload image.";
+
+        setState((prev) => ({
+          ...prev,
+          error: errorMessage,
+          isUploading: false,
+        }));
+
+        throw error;
+      }
+    },
+    [state.selectedFile]
+  );
 
   useEffect(() => revokePreviewUrl, [revokePreviewUrl]);
 

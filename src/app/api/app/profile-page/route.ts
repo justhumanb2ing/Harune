@@ -4,6 +4,8 @@ import { getProfilePageEditorData } from "@/lib/profile-page/queries";
 import { profilePageUpdateSchema } from "@/lib/validations/profile-page.schema";
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export const GET = withAuthRequired(async (_req, context) => {
   const data = await getProfilePageEditorData(context.session.user.id);
 

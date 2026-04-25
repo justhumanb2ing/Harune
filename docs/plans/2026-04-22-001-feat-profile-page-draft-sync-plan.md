@@ -90,8 +90,8 @@ date: 2026-04-22
 - preview는 public page와 최대한 같은 표시 컴포넌트를 재사용한다.
   `src/app/(public-profile)/[handle]/page.tsx`의 presentational markup을 컴포넌트로 추출해 public page와 editor preview가 같은 렌더링 규칙을 따르도록 맞춘다.
 
-- 이미지 업로드/삭제는 Sync 시점으로 미룬다.
-  선택 직후에는 object URL만 preview에 반영하고, `Sync` 시에만 업로드 또는 삭제를 수행해 "DB는 Sync 전까지 바뀌지 않는다"는 규칙과 흐름을 맞춘다.
+- 이미지 선택은 로컬 draft로 유지하되, 업로드 성공 후에는 이미지 컬럼을 즉시 finalize한다.
+  선택 직후에는 object URL만 preview에 반영한다. 사용자가 `Sync`를 누르면 필요한 이미지를 사용자별 고정 object key(`profile-page/profile`, `profile-page/background`)로 업로드하고, 업로드 성공 직후 `PATCH /api/app/profile-page/upload-image`가 `profile_page.image` 또는 `profile_page.backgroundImage`를 저장한다. 이후 full draft sync는 같은 URL을 포함해 전체 편집 상태를 다시 정합화한다.
 
 ## Open Questions
 
@@ -127,13 +127,15 @@ flowchart LR
   C --> F["Links section"]
   C --> G["Text section"]
   C --> H["Preview panel + Sync button"]
-  H --> I["POST /api/app/profile-page/sync"]
-  I --> J["DB transaction"]
-  I --> K["Upload/Delete image if needed"]
-  I --> L["canonical snapshot response"]
-  L --> C
-  L --> B
-  L --> M["invalidate app/me"]
+  H --> I["Upload image if needed"]
+  I --> J["PATCH /api/app/profile-page/upload-image"]
+  J --> K["image/backgroundImage finalize"]
+  K --> L["POST /api/app/profile-page/sync"]
+  L --> M["DB transaction"]
+  L --> N["canonical snapshot response"]
+  N --> C
+  N --> B
+  N --> O["invalidate app/me"]
 ```
 
 ## Implementation Units
@@ -160,7 +162,7 @@ flowchart LR
 - metadata 수정, social upsert/delete/reorder, link upsert/delete/reorder, text upsert/delete/reorder를 한 transaction에서 처리한다.
 - 기존 DB row는 id로 매칭하고, `draft:` 같은 temp id는 신규 row로 생성한다.
 - 클라이언트 배열 순서를 canonical ordering으로 간주하고 서버는 `position`을 dense ordering으로 재계산한다.
-- 이미지 교체/삭제는 sync 파이프라인에 포함하되, 업로드 성공 후 DB 반영이 실패하면 orphan cleanup을 시도한다.
+- 이미지 교체는 sync 직전 업로드하되, 업로드 성공 직후 전용 finalize route가 `profile_page.image` / `profile_page.backgroundImage`를 먼저 저장한다. sync route는 같은 URL을 포함한 full draft를 transaction으로 반영해 최종 canonical snapshot을 반환한다.
 
 **Patterns to follow:**
 - `src/app/api/app/profile-page/route.ts`
@@ -174,7 +176,7 @@ flowchart LR
 - Edge case: 변경 없는 snapshot을 Sync하면 결과가 동일하고 dirty reset용 canonical payload가 반환된다.
 - Error path: handle 중복, invalid URL, 잘못된 temp id payload는 4xx로 거부되고 기존 DB 상태는 보존된다.
 - Error path: sync 중간에 일부 write가 실패하면 transaction rollback으로 partial write가 남지 않는다.
-- Integration: image replace 또는 remove를 포함한 Sync가 성공하면 page.image와 storage side effect가 일치한다.
+- Integration: image replace 또는 remove를 포함한 Sync가 성공하면 `page.image` / `page.backgroundImage`, fixed storage object key, preview canonical URL이 일치한다.
 
 **Verification:**
 - profile page 편집의 모든 서버 write가 단일 sync 진입점으로 수렴한다.
@@ -244,7 +246,7 @@ flowchart LR
 - 새 link/text item은 즉시 draft 배열에 temp id로 들어가고, 사용자는 Sync 전에도 수정/정렬/삭제할 수 있어야 한다.
 - 링크 OG crawl은 계속 허용하되, 결과는 draft 폼 값만 채우고 DB write는 하지 않는다.
 - 핸들 availability 훅은 현재 draft handle을 기준으로 계속 debounced read를 수행한다.
-- `useProfileImageUpload`는 "선택 즉시 업로드"가 아니라 "선택 즉시 object URL 생성, 업로드는 Sync 시점"에 맞게 store 중심으로 재배치한다.
+- `useProfileImageUpload`는 "선택 즉시 object URL 생성, 업로드는 Sync 시점"에 맞게 store 중심으로 재배치한다. 단, 업로드가 실제로 발생한 뒤에는 DB 컬럼 누락을 막기 위해 finalize PATCH를 즉시 수행한다.
 
 **Patterns to follow:**
 - `src/components/section/profile-page/section-layout.tsx`
@@ -283,7 +285,7 @@ flowchart LR
 - preview는 store의 draft와 `previewImageUrl`을 읽어 public page에 가까운 표시를 즉시 반영한다.
 - public profile route는 presentational 부분을 `profile-page-renderer.tsx` 같은 공유 컴포넌트로 추출해 preview와 중복을 줄인다.
 - `Sync` 버튼은 `hasUnsyncedChanges === false` 또는 `syncStatus === "syncing"`일 때 disabled 처리한다.
-- Sync 클릭 시 필요한 경우 이미지 업로드를 먼저 수행하고, 그 결과를 포함한 full draft를 sync route에 보낸다.
+- Sync 클릭 시 필요한 경우 이미지 업로드를 먼저 수행하고, 업로드 결과를 `PATCH /api/app/profile-page/upload-image`로 finalize한 뒤 그 URL을 포함한 full draft를 sync route에 보낸다.
 - 성공 시 canonical snapshot으로 store를 rebase하고 `queryKeys.app.profilePage()`를 갱신하며 `queryKeys.app.me()`를 invalidate한다.
 - 같은 `(sidebar)` 레이아웃 안에서 쓰는 `components/sections/sidebar.tsx`는 provider가 있으면 draft name/handle/image를 우선 사용해 내부 UI 정합성을 맞춘다.
 
@@ -296,7 +298,7 @@ flowchart LR
 - Happy path: draft가 바뀌면 preview가 즉시 갱신되고 `Sync` 버튼이 활성화된다.
 - Happy path: 변경 없이 진입했을 때 `Sync` 버튼은 비활성화 상태다.
 - Edge case: Sync 성공 후 `Sync` 버튼이 다시 비활성화되고 preview/base snapshot이 동일해진다.
-- Edge case: 이미지 교체 draft가 있을 때 preview는 object URL을 보여주고, Sync 후 canonical URL로 재기준화된다.
+- Edge case: 이미지 교체 draft가 있을 때 preview는 object URL을 보여주고, Sync 중 업로드/finalize 후 canonical `?v={hash}` URL로 재기준화된다.
 - Error path: Sync 실패 시 draft는 유지되고 버튼은 다시 활성화되며 오류 메시지가 표시된다.
 - Integration: sidebar summary, section editor, preview가 모두 같은 draft 값을 바라본다.
 
@@ -319,13 +321,14 @@ flowchart LR
 |------|------------|
 | draft와 base를 같은 객체로 다뤄 dirty 판정이 깨질 수 있음 | store에서 base/draft를 분리하고 rebase 전용 action을 둔다 |
 | temp id와 서버 id 전환이 꼬이면 reorder나 update가 깨질 수 있음 | Sync 응답은 항상 canonical snapshot 전체를 반환하고, 성공 후 store를 부분 패치하지 않고 전체 rebase한다 |
-| 이미지 업로드만 성공하고 DB Sync가 실패하면 orphan 파일이 생길 수 있음 | 업로드는 Sync 직전 수행하고, 실패 시 delete rollback을 시도한다 |
+| 이미지 업로드만 성공하고 DB Sync가 실패하면 storage와 DB가 어긋날 수 있음 | 업로드 object key를 사용자별 `profile`/`background`로 고정하고, 업로드 성공 직후 finalize PATCH로 이미지 컬럼을 저장한다. 같은 파일은 SHA-256 hash 비교로 업로드 자체를 건너뛴다 |
 | Context 기반 전역 state로 넓은 리렌더가 발생할 수 있음 | `useSyncExternalStore` + selector 기반 외부 store를 사용한다 |
 
 ## Documentation / Operational Notes
 
 - 이 계획은 `docs/plans/2026-04-21-001-feat-profile-page-editor-plan.md`의 "즉시 저장" 전제를 대체한다.
 - 구현 후에는 profile page editor 저장 모델이 "manual sync"라는 점이 코드와 테스트 이름에 드러나도록 정리하는 편이 좋다.
+- 이미지 업로드/DB finalize 회귀 방지 지식은 `docs/solutions/logic-errors/profile-page-image-url-persistence-regression-2026-04-25.md`에 기록되어 있다.
 
 ## Sources & References
 

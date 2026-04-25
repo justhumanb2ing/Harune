@@ -8,5 +8,9 @@ import { queryOptions } from "@tanstack/react-query";
 export const profilePageQueryOptions = () =>
   queryOptions({
     queryKey: queryKeys.app.profilePage(),
-    queryFn: ({ signal }) => apiFetch<ProfilePageData | null>("/api/app/profile-page", { signal }),
+    queryFn: ({ signal }) =>
+      apiFetch<ProfilePageData | null>("/api/app/profile-page", {
+        cache: "no-store",
+        signal,
+      }),
   });

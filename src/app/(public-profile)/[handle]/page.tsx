@@ -10,6 +10,8 @@ type HandlePageProps = {
   }>;
 };
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: HandlePageProps): Promise<Metadata> {
   const { handle } = await params;
   const owner = await getPublicProfilePage(handle);

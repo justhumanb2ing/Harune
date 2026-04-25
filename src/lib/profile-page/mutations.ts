@@ -5,6 +5,7 @@ import {
   profileSocialLinks,
   profileTextBoxItems,
 } from "@/db/schema/profile-page";
+import { getS3ObjectKeyFromPublicUrl } from "@/lib/s3/config";
 import { deletePublicS3Object } from "@/lib/s3/deleteObject";
 import type {
   LinkItemInput,
@@ -26,6 +27,17 @@ export class ProfilePageError extends Error {
 }
 
 type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+const shouldDeleteReplacedProfileImage = (previousUrl: string | null, nextUrl: string | null) => {
+  if (!previousUrl || previousUrl === nextUrl) {
+    return false;
+  }
+
+  const previousKey = getS3ObjectKeyFromPublicUrl(previousUrl);
+  const nextKey = nextUrl ? getS3ObjectKeyFromPublicUrl(nextUrl) : null;
+
+  return !previousKey || previousKey !== nextKey;
+};
 
 const getProfilePageEditorDataByPageId = async (executor: DbTransaction, profilePageId: string) => {
   const page = await executor
@@ -193,7 +205,7 @@ export const updateProfileMetadata = async ({
     throw new ProfilePageError("Failed to update profile page.", 500);
   }
 
-  if (ownedPage.image && ownedPage.image !== values.image) {
+  if (ownedPage.image && shouldDeleteReplacedProfileImage(ownedPage.image, values.image)) {
     try {
       await deletePublicS3Object(ownedPage.image);
     } catch (error) {
@@ -208,7 +220,10 @@ export const updateProfileMetadata = async ({
   const nextBackgroundImage =
     values.backgroundImage === undefined ? ownedPage.backgroundImage : values.backgroundImage;
 
-  if (ownedPage.backgroundImage && ownedPage.backgroundImage !== nextBackgroundImage) {
+  if (
+    ownedPage.backgroundImage &&
+    shouldDeleteReplacedProfileImage(ownedPage.backgroundImage, nextBackgroundImage)
+  ) {
     try {
       await deletePublicS3Object(ownedPage.backgroundImage);
     } catch (error) {
@@ -1013,7 +1028,7 @@ export const syncProfilePageDraft = async ({
     return getProfilePageEditorDataByPageId(tx, ownedPage.id);
   });
 
-  if (ownedPage.image && ownedPage.image !== values.page.image) {
+  if (ownedPage.image && shouldDeleteReplacedProfileImage(ownedPage.image, values.page.image)) {
     try {
       await deletePublicS3Object(ownedPage.image);
     } catch (error) {
@@ -1025,7 +1040,10 @@ export const syncProfilePageDraft = async ({
     }
   }
 
-  if (ownedPage.backgroundImage && ownedPage.backgroundImage !== values.page.backgroundImage) {
+  if (
+    ownedPage.backgroundImage &&
+    shouldDeleteReplacedProfileImage(ownedPage.backgroundImage, values.page.backgroundImage)
+  ) {
     try {
       await deletePublicS3Object(ownedPage.backgroundImage);
     } catch (error) {

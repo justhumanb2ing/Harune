@@ -1,16 +1,37 @@
 "use client";
 
 import { CurrentPageButton, useCurrentPageMeta } from "@/components/layout/current-page-button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import useUser from "@/lib/users/useUser";
 import { cn } from "@/lib/utils";
-import { BoxIcon, ChartColumnBigIcon, DotIcon, LogOutIcon, XIcon } from "lucide-react";
+import {
+  AlertTriangleIcon,
+  BoxIcon,
+  ChartColumnBigIcon,
+  DotIcon,
+  LogOutIcon,
+  Trash2Icon,
+  XIcon,
+} from "lucide-react";
 import { AnimatePresence, LayoutGroup, MotionConfig, type Transition, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 const navItems = [
   {
@@ -97,6 +118,8 @@ export default function Sidebar() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   const handleSignOut = async () => {
     if (isSigningOut) {
@@ -121,6 +144,48 @@ export default function Sidebar() {
       console.error("Sign out failed:", error);
       setIsSigningOut(false);
     }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (isDeletingAccount) {
+      return;
+    }
+
+    setIsDeletingAccount(true);
+
+    try {
+      const result = await authClient.deleteUser({
+        callbackURL: "/sign-in",
+      });
+
+      if (result.error) {
+        const message =
+          result.error.message ||
+          "Your session is no longer fresh. Please sign in again and retry.";
+
+        toast.error(message);
+        setIsDeletingAccount(false);
+        return;
+      }
+
+      toast.success("Account deleted.");
+      setIsDeleteDialogOpen(false);
+      setIsExpanded(false);
+      router.replace("/sign-in");
+      router.refresh();
+    } catch (error) {
+      console.error("Account deletion failed:", error);
+      toast.error("Account deletion failed. Please try again.");
+      setIsDeletingAccount(false);
+    }
+  };
+
+  const handleDeleteDialogOpenChange = (open: boolean) => {
+    if (isDeletingAccount) {
+      return;
+    }
+
+    setIsDeleteDialogOpen(open);
   };
 
   useEffect(() => {
@@ -341,8 +406,53 @@ export default function Sidebar() {
                       transition: panelItemExitTransition(3),
                     }}
                     transition={panelItemTransition(3)}
-                    className="mb-3 text-sm px-2"
+                    className="mb-3 space-y-1 px-2 text-sm"
                   >
+                    <AlertDialog
+                      open={isDeleteDialogOpen}
+                      onOpenChange={handleDeleteDialogOpenChange}
+                    >
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          disabled={isDeletingAccount}
+                          className="flex w-full items-center justify-start gap-2 px-4 py-5 text-destructive hover:text-destructive/80"
+                        >
+                          <Trash2Icon className="size-3.5" />
+                          <span>Delete Account</span>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent size="default">
+                        <AlertDialogHeader>
+                          <AlertDialogMedia className="bg-destructive/10 text-destructive">
+                            <AlertTriangleIcon className="size-5" />
+                          </AlertDialogMedia>
+                          <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This permanently deletes your account, profile page, links, analytics
+                            credits, and active sessions. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+
+                        <p className="text-sm text-muted-foreground">
+                          You may need to sign in again before deleting your account.
+                        </p>
+
+                        <AlertDialogFooter>
+                          <AlertDialogCancel disabled={isDeletingAccount}>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            type="button"
+                            variant="destructive"
+                            disabled={isDeletingAccount}
+                            aria-busy={isDeletingAccount}
+                            onClick={handleDeleteAccount}
+                          >
+                            {isDeletingAccount ? "Deleting..." : "Delete Account"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                     <Button
                       type="button"
                       variant={"ghost"}

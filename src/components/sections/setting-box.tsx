@@ -4,13 +4,14 @@ import { CurrentPageButton, useCurrentPageMeta } from "@/components/layout/curre
 import { DeleteAccountDialog } from "@/components/sections/delete-account-dialog";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
+import { ChevronRightIcon } from "lucide-react";
 import { AnimatePresence, MotionConfig, type Transition, motion } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 
-const BOX_WIDTH = 288;
+const BOX_WIDTH = 240;
 const COLLAPSED_HEIGHT = 56;
 const EXPANDED_HEIGHT = 360;
 const BOX_OFFSET = 24;
@@ -63,7 +64,6 @@ export default function SettingBox() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [deletePassword, setDeletePassword] = useState("");
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   const handleSignOut = async () => {
@@ -74,17 +74,21 @@ export default function SettingBox() {
     setIsSigningOut(true);
 
     try {
-      const result = await authClient.signOut();
+      const result = await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            setIsExpanded(false);
+            router.push("/sign-in");
+            router.refresh();
+          },
+        },
+      });
 
       if (result.error) {
         console.error("Sign out failed:", result.error);
         setIsSigningOut(false);
         return;
       }
-
-      setIsExpanded(false);
-      router.push("/sign-in");
-      router.refresh();
     } catch (error) {
       console.error("Sign out failed:", error);
       setIsSigningOut(false);
@@ -99,14 +103,14 @@ export default function SettingBox() {
     setIsDeletingAccount(true);
 
     try {
-      const password = deletePassword.trim();
       const result = await authClient.deleteUser({
-        ...(password ? { password } : {}),
+        callbackURL: "/sign-in",
       });
 
       if (result.error) {
         const message =
-          result.error.message || "Account deletion failed. Please sign in again and retry.";
+          result.error.message ||
+          "Your session is no longer fresh. Please sign in again and retry.";
 
         toast.error(message);
         setIsDeletingAccount(false);
@@ -116,8 +120,7 @@ export default function SettingBox() {
       toast.success("Account deleted.");
       setIsDeleteDialogOpen(false);
       setIsExpanded(false);
-      setDeletePassword("");
-      router.replace("/");
+      router.replace("/sign-in");
       router.refresh();
     } catch (error) {
       console.error("Account deletion failed:", error);
@@ -132,10 +135,6 @@ export default function SettingBox() {
     }
 
     setIsDeleteDialogOpen(open);
-
-    if (!open) {
-      setDeletePassword("");
-    }
   };
 
   useEffect(() => {
@@ -212,7 +211,7 @@ export default function SettingBox() {
           className={`flex h-14 w-full flex-row items-center gap-3 px-3 text-left outline-none transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring/50 ${
             isExpanded ? "border-b border-border/60" : ""
           }`}
-          onClick={() => setIsExpanded(true)}
+          onClick={() => setIsExpanded((prev) => !prev)}
         >
           <CurrentPageButton size="lg" />
           <div className="flex min-w-0 flex-col">
@@ -239,8 +238,6 @@ export default function SettingBox() {
               transition={panelTransition}
               className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background"
             >
-              <div className="flex-1" />
-
               <motion.div
                 initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -251,26 +248,35 @@ export default function SettingBox() {
                   transition: panelItemExitTransition(3),
                 }}
                 transition={panelItemTransition(3)}
-                className="mb-3 space-y-0 px-2 text-sm flex flex-col"
+                className="space-y-0 px-2 py-2 text-sm flex flex-col justify-between flex-1"
               >
                 <Button
                   type="button"
-                  variant="ghost"
-                  disabled={isSigningOut}
-                  aria-busy={isSigningOut}
-                  className="flex w-full items-center justify-start gap-2 px-4 py-6 font-normal"
-                  onClick={handleSignOut}
+                  variant={"ghost"}
+                  className={"w-full py-6 font-normal justify-between px-4"}
                 >
-                  <span>{isSigningOut ? "Logging Out..." : "Log Out"}</span>
+                  <span>Create new page</span>
+                  <ChevronRightIcon className="size-4" />
                 </Button>
-                <DeleteAccountDialog
-                  open={isDeleteDialogOpen}
-                  onOpenChange={handleDeleteDialogOpenChange}
-                  password={deletePassword}
-                  onPasswordChange={setDeletePassword}
-                  isDeleting={isDeletingAccount}
-                  onConfirm={handleDeleteAccount}
-                />
+
+                <aside>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={isSigningOut}
+                    aria-busy={isSigningOut}
+                    className="flex w-full items-center justify-start gap-2 px-4 py-6 font-normal"
+                    onClick={handleSignOut}
+                  >
+                    <span>{isSigningOut ? "Logging Out..." : "Log Out"}</span>
+                  </Button>
+                  <DeleteAccountDialog
+                    open={isDeleteDialogOpen}
+                    onOpenChange={handleDeleteDialogOpenChange}
+                    isDeleting={isDeletingAccount}
+                    onConfirm={handleDeleteAccount}
+                  />
+                </aside>
               </motion.div>
             </motion.div>
           ) : null}

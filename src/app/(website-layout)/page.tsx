@@ -12,9 +12,7 @@ export default function WebsiteHomepage() {
           <Button
             nativeButton={false}
             size="lg"
-            className={
-              "h-12 w-68 max-w-68 bg-indigo-400 font-bold! hover:bg-indigo-500! shadow-sm border-indigo-400 text-base py-7"
-            }
+            className={"h-12 w-68 max-w-68 font-bold! brand-button  text-base py-7"}
             render={
               <Link href="/sign-up" className="inline-block uppercase">
                 <span className="uppercase sm:hidden">Sign up</span>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useOptionalProfilePageEditorStore } from "@/components/section/profile-page/profile-page-editor-provider";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { appConfig } from "@/lib/config";
 import useUser from "@/lib/users/useUser";
 import { usePathname } from "next/navigation";
@@ -52,12 +52,13 @@ export function CurrentPageButton({
   className?: string;
   size?: "default" | "sm" | "lg";
 }) {
-  const { pageImage, pageInitial, pageName } = useCurrentPageMeta();
+  const { pageImage, pageName } = useCurrentPageMeta();
 
   return (
     <Avatar className={className} size={size}>
       <AvatarImage src={pageImage} alt={pageName} />
       <AvatarFallback />
+      <AvatarBadge className="bg-green-400 dark:bg-green-800" />
     </Avatar>
   );
 }

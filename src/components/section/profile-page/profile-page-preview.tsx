@@ -107,7 +107,7 @@ export function ProfilePagePreview() {
           </Button>
         </div>
 
-        <div className="min-h-0 flex-1 max-w-[375px] mx-auto">
+        <div className="mx-auto min-h-0 w-[375px] flex-1">
           <ProfilePageRenderer
             isPreview
             backgroundImage={editor.previewBackgroundImageSrc ?? null}

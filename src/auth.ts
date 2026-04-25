@@ -7,6 +7,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { db } from "./db";
+import { coupons } from "./db/schema/coupons";
 import { authAccounts, authSessions, authVerifications, users } from "./db/schema/user";
 import { env } from "./env";
 import { passwordHashing } from "./lib/auth/password";
@@ -50,6 +51,7 @@ export const betterAuthServer = betterAuth({
     },
   }),
   session: {
+    freshAge: 60 * 60 * 24 * 7, // 7일
     cookieCache: {
       enabled: true,
       maxAge: 5 * 60,
@@ -58,6 +60,13 @@ export const betterAuthServer = betterAuth({
   user: {
     fields: {
       emailVerified: "emailVerifiedBool",
+    },
+    deleteUser: {
+      enabled: true,
+      beforeDelete: async (user) => {
+        await db.delete(authSessions).where(eq(authSessions.userId, user.id));
+        await db.update(coupons).set({ userId: null }).where(eq(coupons.userId, user.id));
+      },
     },
   },
   account: {

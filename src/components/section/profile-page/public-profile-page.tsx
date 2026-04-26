@@ -111,7 +111,7 @@ function resolveSocialHref(socialLink: SocialLink) {
   }
 
   if (socialLink.platform === "mail") {
-    return hasExplicitUrlScheme(value) ? value : `mailto:${value}`;
+    return value.toLowerCase().startsWith("mailto:") ? value : `mailto:${value}`;
   }
 
   if (hasExplicitUrlScheme(value)) {
@@ -246,11 +246,16 @@ export function PublicProfilePage({
               {orderedSocialLinks.map((socialLink) => {
                 const Icon = socialPlatformIcons[socialLink.platform];
                 const label = socialPlatformLabels[socialLink.platform];
+                const href = resolveSocialHref(socialLink);
+
+                if (!href) {
+                  return null;
+                }
 
                 return (
                   <TrackedProfilePageLink
                     key={socialLink.id}
-                    href={socialLink.url}
+                    href={href}
                     aria-label={label}
                     className="inline-flex size-7 items-center justify-center rounded-full text-foreground group"
                     itemId={socialLink.id}

@@ -226,7 +226,9 @@ export function PublicProfilePage({
 
         {bio ? (
           <div className="px-4 py-1">
-            <p className="break-words text-center text-sm leading-7 text-neutral-800">{bio}</p>
+            <p className="whitespace-pre-line break-words text-center text-sm leading-7 text-neutral-800">
+              {bio}
+            </p>
           </div>
         ) : null}
 

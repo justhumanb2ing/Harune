@@ -22,7 +22,7 @@ export function ProfilePageSectionLayout({
   description,
   hasData,
   isLoading,
-  padded = true,
+  padded = false,
   title,
 }: ProfilePageSectionLayoutProps) {
   const pathname = usePathname();

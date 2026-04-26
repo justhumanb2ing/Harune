@@ -1,10 +1,10 @@
 import { SectionPageClient } from "@/components/section/profile-page/section-page-client";
-import { SsgoiTransition } from "@ssgoi/react";
+import { SectionRouteTransition } from "@/components/section/profile-page/section-route-transition";
 
 export default function SectionPage() {
   return (
-    <SsgoiTransition id="/app" className="block h-full">
+    <SectionRouteTransition id="/app">
       <SectionPageClient />
-    </SsgoiTransition>
+    </SectionRouteTransition>
   );
 }

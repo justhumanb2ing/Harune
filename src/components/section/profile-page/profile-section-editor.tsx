@@ -148,7 +148,7 @@ export function ProfileSectionEditor() {
                   }
                   placeholder="Bio"
                   aria-label="Bio"
-                  className="h-24 resize-none border-0 bg-secondary p-4 hover:bg-input"
+                  className="h-48 resize-none border-0 bg-secondary p-4 hover:bg-input"
                 />
 
                 <div className="grid grid-cols-2 gap-2">

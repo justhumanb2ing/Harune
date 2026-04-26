@@ -1,10 +1,10 @@
+import { SectionRouteTransition } from "@/components/section/profile-page/section-route-transition";
 import { SocialLinksSectionEditor } from "@/components/section/profile-page/social-links-section-editor";
-import { SsgoiTransition } from "@ssgoi/react";
 
 export default function SocialSectionPage() {
   return (
-    <SsgoiTransition id="/app/social" className="block h-full">
+    <SectionRouteTransition id="/app/social">
       <SocialLinksSectionEditor />
-    </SsgoiTransition>
+    </SectionRouteTransition>
   );
 }

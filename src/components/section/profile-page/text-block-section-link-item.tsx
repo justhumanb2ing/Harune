@@ -185,14 +185,14 @@ export function TextBlockSectionLinkItem({
                   <Input
                     value={title}
                     onChange={(event) => setTitle(event.target.value)}
-                    placeholder="What do you want to write?"
+                    placeholder="What’s on your mind?"
                     className="h-11 w-full min-w-0 max-w-full border-0 text-lg! font-medium focus-visible:ring-0"
                   />
                   <Textarea
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
-                    placeholder="Add description for detail"
-                    className="max-h-64 min-h-32 w-full min-w-0 max-w-full resize-none overflow-x-hidden overflow-y-auto break-all border-0 text-base! [field-sizing:fixed] [overflow-wrap:anywhere] focus-visible:ring-0"
+                    placeholder="Add more about this"
+                    className="max-h-64 min-h-32 w-full py-0 min-w-0 max-w-full resize-none overflow-x-hidden overflow-y-auto break-all border-0 text-base! [field-sizing:fixed] [overflow-wrap:anywhere] focus-visible:ring-0"
                   />
                 </div>
               </motion.div>

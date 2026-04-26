@@ -1,10 +1,10 @@
 import { ProfileSectionEditor } from "@/components/section/profile-page/profile-section-editor";
-import { SsgoiTransition } from "@ssgoi/react";
+import { SectionRouteTransition } from "@/components/section/profile-page/section-route-transition";
 
 export default function ProfilePage() {
   return (
-    <SsgoiTransition id="/app/profile" className="block h-full">
+    <SectionRouteTransition id="/app/profile">
       <ProfileSectionEditor />
-    </SsgoiTransition>
+    </SectionRouteTransition>
   );
 }

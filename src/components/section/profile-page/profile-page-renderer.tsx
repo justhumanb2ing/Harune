@@ -179,7 +179,9 @@ export function ProfilePageRenderer({
 
             {bio && (
               <div className="hover:bg-black/5 py-1 px-4">
-                <p className="text-sm leading-7 text-center text-neutral-800 break-all">{bio}</p>
+                <p className="whitespace-pre-line text-sm leading-7 text-center text-neutral-800 break-all">
+                  {bio}
+                </p>
               </div>
             )}
 

@@ -1,5 +1,10 @@
 "use client";
 
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { GripVertical } from "lucide-react";
+
 import {
   ColorAppleMusicIcon,
   ColorBehanceIcon,
@@ -16,6 +21,7 @@ import {
 } from "@/components/icon";
 
 import { ProfilePageSectionLayout } from "@/components/section/profile-page/section-layout";
+import { SortableShell } from "@/components/section/profile-page/sortable-shell";
 import {
   socialPlatforms,
   useProfilePageEditor,
@@ -38,9 +44,48 @@ const socialPlatformIcons = {
   apple_music: ColorAppleMusicIcon,
 } as const;
 
+type SocialPlatformOption = (typeof socialPlatforms)[number];
+
 export function SocialLinksSectionEditor() {
   const editor = useProfilePageEditor();
   const registeredSocialLinkCount = editor.selectedSocialLinkCount;
+  const orderedSocialPlatforms: SocialPlatformOption[] = editor.data
+    ? [
+        ...editor.data.socialLinks
+          .map((socialLink) =>
+            socialPlatforms.find((platform) => platform.key === socialLink.platform)
+          )
+          .filter((platform): platform is SocialPlatformOption => platform !== undefined),
+        ...socialPlatforms.filter(
+          (platform) =>
+            !editor.data?.socialLinks.some((socialLink) => socialLink.platform === platform.key)
+        ),
+      ]
+    : socialPlatforms;
+
+  const renderSocialLinkFields = (
+    platform: SocialPlatformOption,
+    isRegistrationDisabled: boolean
+  ) => {
+    const Icon = socialPlatformIcons[platform.key];
+
+    return (
+      <div className="flex items-center gap-3">
+        <Icon className="size-10 shrink-0" aria-hidden="true" />
+        <InputGroup className="h-11 flex-1 rounded-md border-0 bg-secondary">
+          <InputGroupInput
+            value={editor.socialDrafts[platform.key]}
+            onChange={(event) => editor.setSocialUrl(platform.key, event.target.value)}
+            placeholder={platform.key === "mail" ? platform.placeholder : "Add URL"}
+            autoComplete="off"
+            aria-label={platform.label}
+            disabled={isRegistrationDisabled}
+            className="h-full px-4!"
+          />
+        </InputGroup>
+      </div>
+    );
+  };
 
   return (
     <ProfilePageSectionLayout
@@ -62,31 +107,57 @@ export function SocialLinksSectionEditor() {
                   </span>
                 </p>
 
-                {socialPlatforms.map((platform) => {
-                  const Icon = socialPlatformIcons[platform.key];
-                  const isRegistered = editor.socialDrafts[platform.key].trim().length > 0;
-                  const isRegistrationDisabled =
-                    !isRegistered && registeredSocialLinkCount >= MAX_SOCIAL_LINKS;
+                <DndContext
+                  id="section-social-links"
+                  sensors={editor.sensors}
+                  collisionDetection={closestCenter}
+                  modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+                  onDragEnd={(event) => void editor.handleSocialLinkDragEnd(event)}
+                >
+                  <SortableContext
+                    items={editor.data.socialLinks.map((item) => item.platform)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="flex flex-col gap-3">
+                      {orderedSocialPlatforms.map((platform) => {
+                        const isRegistered = editor.socialDrafts[platform.key].trim().length > 0;
+                        const isRegistrationDisabled =
+                          !isRegistered && registeredSocialLinkCount >= MAX_SOCIAL_LINKS;
 
-                  return (
-                    <div key={platform.key} className="flex items-center gap-3">
-                      <Icon className="size-10 shrink-0" aria-hidden="true" />
-                      <InputGroup className="h-11 flex-1 rounded-md border-0 bg-secondary">
-                        <InputGroupInput
-                          value={editor.socialDrafts[platform.key]}
-                          onChange={(event) =>
-                            editor.setSocialUrl(platform.key, event.target.value)
-                          }
-                          placeholder={platform.key === "mail" ? platform.placeholder : "Add URL"}
-                          autoComplete="off"
-                          aria-label={platform.label}
-                          disabled={isRegistrationDisabled}
-                          className="h-full px-4!"
-                        />
-                      </InputGroup>
+                        if (!isRegistered) {
+                          return (
+                            <div key={platform.key}>
+                              {renderSocialLinkFields(platform, isRegistrationDisabled)}
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <SortableShell
+                            key={platform.key}
+                            id={platform.key}
+                            className="shadow-none"
+                          >
+                            {({ attributes, listeners }) => (
+                              <div className="group/item relative before:pointer-events-none before:absolute before:-inset-y-2 before:-left-9 before:-right-9 before:content-['']">
+                                {renderSocialLinkFields(platform, isRegistrationDisabled)}
+                                <button
+                                  type="button"
+                                  className="size-7 absolute top-1/2 -right-8 z-10 inline-flex -translate-y-1/2 cursor-grab items-center justify-center opacity-0 transition-opacity group-hover/item:opacity-100 bg-primary rounded-full shadow-sm border border-border/30"
+                                  aria-label={`Reorder ${platform.label}`}
+                                  {...attributes}
+                                  {...listeners}
+                                >
+                                  <GripVertical className="text-primary-foreground size-4 stroke-3" />
+                                </button>
+                              </div>
+                            )}
+                          </SortableShell>
+                        );
+                      })}
                     </div>
-                  );
-                })}
+                  </SortableContext>
+                </DndContext>
               </div>
               <div className="relative z-10 -mt-3 hidden min-h-20 flex-1 bg-background lg:block" />
             </div>

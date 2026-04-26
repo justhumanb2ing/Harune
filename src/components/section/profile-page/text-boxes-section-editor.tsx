@@ -5,7 +5,11 @@ import { type FocusEvent, useRef } from "react";
 import { ProfilePageSectionLayout } from "@/components/section/profile-page/section-layout";
 import { useProfilePageEditor } from "@/components/section/profile-page/use-profile-page-editor";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { InputGroup, InputGroupInput, InputGroupTextarea } from "@/components/ui/input-group";
+import {
+  InputGroup,
+  InputGroupInput,
+  InputGroupTextarea,
+} from "@/components/ui/input-group";
 
 export function TextBoxesSectionEditor() {
   const editor = useProfilePageEditor();
@@ -13,7 +17,10 @@ export function TextBoxesSectionEditor() {
   const handleComposerBlur = (event: FocusEvent<HTMLDivElement>) => {
     const nextFocusedNode = event.relatedTarget;
 
-    if (nextFocusedNode instanceof Node && composerRef.current?.contains(nextFocusedNode)) {
+    if (
+      nextFocusedNode instanceof Node &&
+      composerRef.current?.contains(nextFocusedNode)
+    ) {
       return;
     }
 
@@ -28,7 +35,11 @@ export function TextBoxesSectionEditor() {
       hasData={Boolean(editor.data)}
     >
       {editor.data ? (
-        <div ref={composerRef} className="space-y-3" onBlur={handleComposerBlur}>
+        <div
+          ref={composerRef}
+          className="space-y-3"
+          onBlur={handleComposerBlur}
+        >
           <FieldGroup className="gap-3">
             <Field className="relative rounded-lg bg-background py-4 shadow-brand outline-none">
               <FieldLabel
@@ -47,7 +58,7 @@ export function TextBoxesSectionEditor() {
                       title: event.target.value,
                     }))
                   }
-                  placeholder="What do you want to write?"
+                  placeholder="What’s on your mind?"
                   className="text-sm"
                 />
               </InputGroup>
@@ -69,7 +80,7 @@ export function TextBoxesSectionEditor() {
                       description: event.target.value,
                     }))
                   }
-                  placeholder="Add description for detail"
+                  placeholder="Add more about this"
                   className="min-h-12 text-sm"
                 />
               </InputGroup>

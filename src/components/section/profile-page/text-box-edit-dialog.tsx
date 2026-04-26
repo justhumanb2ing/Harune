@@ -8,7 +8,12 @@ import {
   DialogTitle,
 } from "@/components/animate-ui/components/base/dialog";
 import { Button } from "@/components/ui/button";
-import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useIsBelowLg } from "@/hooks/use-mobile";
@@ -19,7 +24,7 @@ type TextBoxEditDialogProps = {
   onTextBoxChange: (
     id: string,
     key: keyof Omit<DraftTextBoxItem, "blockPosition" | "id" | "position">,
-    value: string
+    value: string,
   ) => void;
   textBox: DraftTextBoxItem | null;
 };
@@ -35,14 +40,18 @@ export function TextBoxEditDialog({
     <div className="min-w-0 space-y-0 p-2">
       <Input
         value={textBox.title}
-        onChange={(event) => onTextBoxChange(textBox.id, "title", event.target.value)}
-        placeholder="What do you want to write?"
+        onChange={(event) =>
+          onTextBoxChange(textBox.id, "title", event.target.value)
+        }
+        placeholder="What’s on your mind?"
         className="w-full min-w-0 max-w-full border-0 font-medium text-lg! focus-visible:ring-0 truncate"
       />
       <Textarea
         value={textBox.description ?? ""}
-        onChange={(event) => onTextBoxChange(textBox.id, "description", event.target.value)}
-        placeholder="Add description for detail"
+        onChange={(event) =>
+          onTextBoxChange(textBox.id, "description", event.target.value)
+        }
+        placeholder="Add more about this"
         className="min-h-32 w-full min-w-0 max-h-64 max-w-full text-base! break-all resize-none overflow-x-hidden overflow-y-auto border-0 [field-sizing:fixed] [overflow-wrap:anywhere] focus-visible:ring-0"
       />
     </div>
@@ -51,7 +60,10 @@ export function TextBoxEditDialog({
   if (isBelowLg) {
     return (
       <Drawer open={Boolean(textBox)} onOpenChange={onOpenChange}>
-        <DrawerContent aria-label="Edit text" className="max-h-[85vh] gap-0 rounded-t-2xl p-0 pt-1">
+        <DrawerContent
+          aria-label="Edit text"
+          className="max-h-[85vh] gap-0 rounded-t-2xl p-0 pt-1"
+        >
           <DrawerTitle className="sr-only">Edit text</DrawerTitle>
           <div className="grid grid-cols-3 items-center px-3 py-2">
             <DrawerClose asChild>
@@ -100,7 +112,9 @@ export function TextBoxEditDialog({
                 </Button>
               }
             />
-            <DialogTitle className="justify-self-center text-xl">Edit</DialogTitle>
+            <DialogTitle className="justify-self-center text-xl">
+              Edit
+            </DialogTitle>
             <DialogClose
               className="justify-self-end"
               render={

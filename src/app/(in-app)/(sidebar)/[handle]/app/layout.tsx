@@ -50,9 +50,9 @@ export default async function SectionLayout({ children, params }: SectionLayoutP
     <HydrationBoundary state={dehydrate(queryClient)}>
       <Suspense fallback={<SectionLayoutFallback />}>
         <ProfilePageEditorProvider initialData={initialProfilePageData}>
-          <div className="flex h-full min-h-0 flex-row gap-4 relative">
-            <section className="min-h-0 flex-1 overflow-hidden overflow-y-auto">
-              <div className="relative z-0 mx-auto min-h-full max-w-full px-6 pb-24 sm:max-w-sm lg:pb-8">
+          <div className="relative flex h-full min-h-0 flex-row gap-4">
+            <section className="relative min-h-0 flex-1 overflow-hidden overflow-y-auto">
+              <div className="relative z-0 mx-auto min-h-full w-full max-w-full pb-24 sm:max-w-sm lg:pb-8">
                 {children}
               </div>
             </section>

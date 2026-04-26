@@ -333,7 +333,7 @@ export function PublicProfilePage({
             className={"text-neutral-500"}
             render={
               <Link href={"/sign-in"} className="">
-                Build your page
+                Create your page
               </Link>
             }
           />

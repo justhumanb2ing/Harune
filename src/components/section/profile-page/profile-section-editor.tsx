@@ -22,7 +22,7 @@ export function ProfileSectionEditor() {
       {editor.data ? (
         <div className="relative flex min-h-0 flex-1 flex-col justify-center rounded-t-[2rem] bg-background">
           <div className="relative z-10 flex min-h-[46rem] flex-col rounded-t-[2rem] bg-background">
-            <div className="flex flex-col gap-2 rounded-t-[3rem] bg-background shadow-brand-small">
+            <div className="mt-4 flex flex-col gap-2 rounded-t-[3rem] bg-background shadow-brand-small ring-1 ring-border/20 border-b-0 overflow-hidden">
               <div className="group/background-image relative mb-16">
                 <button
                   type="button"

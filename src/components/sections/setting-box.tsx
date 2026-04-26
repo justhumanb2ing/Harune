@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 
-const BOX_WIDTH = 240;
+const BOX_WIDTH = 220;
 const COLLAPSED_HEIGHT = 56;
 const EXPANDED_HEIGHT = 360;
 const BOX_OFFSET = 24;

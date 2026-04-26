@@ -447,6 +447,6 @@ html[data-onboarding-step-transition="back"]::view-transition-new(onboarding-ste
     @apply bg-red-400! border-red-400! hover:bg-red-500! shadow-lg;
   }
   .brand-success-button {
-    @apply bg-green-400! border-green-400! hover:bg-green-500!;
+    @apply bg-green-400! border-green-400! hover:bg-green-500! shadow-lg;
   }
 }

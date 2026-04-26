@@ -123,7 +123,7 @@ export function ProfilePageRenderer({
 
   return (
     <section className="mx-auto flex min-h-full h-full w-full items-center">
-      <div className="w-full h-[700px] overflow-x-hidden overflow-y-auto scrollbar-hidden rounded-2xl shadow-brand">
+      <div className="w-full h-[700px] overflow-x-hidden overflow-y-auto scrollbar-hidden rounded-[2rem] shadow-brand border border-border/60">
         <div className="min-h-full rounded-2xl overflow-hidden bg-background bg-cover bg-center cursor-default relative">
           <div className="relative z-10">
             <div

@@ -257,7 +257,8 @@ export default function SettingBox() {
           y: isExpanded ? [0, -3, 0] : 0,
         }}
         transition={isExpanded ? shellExpandTransition : shellCollapseTransition}
-        className="fixed left-6 z-50 flex flex-col overflow-hidden border border-border/80 bg-background shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
+        className="fixed left-6 z-50 flex flex-col overflow-hidden bg-background shadow-float"
+        // border border-border/80 shadow-[0_10px_45px_0px_rgba(15,23,42,0.12)]
         style={{
           bottom: BOX_OFFSET,
           width: BOX_WIDTH,

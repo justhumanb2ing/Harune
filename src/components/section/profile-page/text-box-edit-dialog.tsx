@@ -1,7 +1,5 @@
 "use client";
 
-import { CheckIcon, XIcon } from "lucide-react";
-
 import {
   Dialog,
   DialogClose,
@@ -9,17 +7,17 @@ import {
   DialogPopup,
   DialogTitle,
 } from "@/components/animate-ui/components/base/dialog";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { DraftTextBoxItem } from "@/lib/profile-page/types";
-import { Button } from "@/components/ui/button";
 
 type TextBoxEditDialogProps = {
   onOpenChange: (open: boolean) => void;
   onTextBoxChange: (
     id: string,
     key: keyof Omit<DraftTextBoxItem, "blockPosition" | "id" | "position">,
-    value: string,
+    value: string
   ) => void;
   textBox: DraftTextBoxItem | null;
 };
@@ -49,16 +47,14 @@ export function TextBoxEditDialog({
                 </Button>
               }
             />
-            <DialogTitle className="justify-self-center text-xl">
-              Edit
-            </DialogTitle>
+            <DialogTitle className="justify-self-center text-xl">Edit</DialogTitle>
             <DialogClose
               className="justify-self-end"
               render={
                 <Button
                   size={"lg"}
                   variant={"outline"}
-                  className="h-10 shadow-sm font-semibold px-6 rounded-md text-base border bg-green-400 border-green-400 hover:bg-green-500 text-primary-foreground hover:text-primary-foreground"
+                  className="brand-success-button h-10 shadow-sm font-semibold px-6 rounded-md text-base border text-primary-foreground hover:text-primary-foreground"
                 >
                   Save
                 </Button>
@@ -71,17 +67,13 @@ export function TextBoxEditDialog({
           <div className="min-w-0 space-y-0 p-2">
             <Input
               value={textBox.title}
-              onChange={(event) =>
-                onTextBoxChange(textBox.id, "title", event.target.value)
-              }
+              onChange={(event) => onTextBoxChange(textBox.id, "title", event.target.value)}
               placeholder="What do you want to write?"
               className="w-full min-w-0 max-w-full border-0 font-medium text-lg! focus-visible:ring-0"
             />
             <Textarea
               value={textBox.description ?? ""}
-              onChange={(event) =>
-                onTextBoxChange(textBox.id, "description", event.target.value)
-              }
+              onChange={(event) => onTextBoxChange(textBox.id, "description", event.target.value)}
               placeholder="Add description for detail"
               className="min-h-32 w-full min-w-0 max-h-64 max-w-full text-base! break-all resize-none overflow-x-hidden overflow-y-auto border-0 [field-sizing:fixed] [overflow-wrap:anywhere] focus-visible:ring-0"
             />

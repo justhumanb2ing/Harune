@@ -50,7 +50,7 @@ export function LinkEditDialog({ link, onLinkItemChange, onOpenChange }: LinkEdi
                 <Button
                   size="lg"
                   variant="outline"
-                  className="h-10 rounded-md border border-green-400 bg-green-400 px-6 font-semibold text-base text-primary-foreground shadow-sm hover:bg-green-500 hover:text-primary-foreground"
+                  className="brand-success-button h-10 rounded-md border px-6 font-semibold text-base text-primary-foreground shadow-sm hover:text-primary-foreground"
                 >
                   Save
                 </Button>

@@ -72,9 +72,7 @@ export function ProfilePagePreview() {
       <div
         className="absolute inset-0 scale-105 blur-xl"
         style={{
-          backgroundImage: editor.previewImageSrc
-            ? `url(${editor.previewImageSrc})`
-            : undefined,
+          backgroundImage: editor.previewImageSrc ? `url(${editor.previewImageSrc})` : undefined,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
@@ -87,12 +85,9 @@ export function ProfilePagePreview() {
               nativeButton={false}
               className={"px-4 py-3 font-bold text-base"}
               render={
-                <Link
-                  href={`/${editor.data.page.handle}`}
-                  className="min-w-0"
-                >
+                <Link href={`/${editor.data.page.handle}`} className="min-w-0">
                   <p className="truncate line-clamp-1">Preview</p>
-                  <ChevronRightIcon className="stroke-3 size-4"/>
+                  <ChevronRightIcon className="stroke-3 size-4" />
                 </Link>
               }
             />
@@ -102,9 +97,7 @@ export function ProfilePagePreview() {
             size={"lg"}
             onClick={() => void handlePrimaryAction()}
             disabled={editor.isSyncing}
-            className={
-              "px-6 h-10 rounded-md font-bold text-base min-w-32 bg-green-400 border-green-400 hover:bg-green-500"
-            }
+            className={"brand-success-button px-6 h-10 rounded-md font-bold text-base min-w-32"}
           >
             {editor.isSyncing && <Loader2 className="size-4 animate-spin" />}
             {editor.hasUnsyncedChanges ? (

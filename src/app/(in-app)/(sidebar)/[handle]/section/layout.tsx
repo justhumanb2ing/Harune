@@ -51,7 +51,7 @@ export default async function SectionLayout({ children, params }: SectionLayoutP
         <ProfilePageEditorProvider initialData={initialProfilePageData}>
           <div className="flex h-full min-h-0 flex-row gap-4">
             <section className="min-h-0 flex-1 overflow-hidden">
-              <div className="container relative z-0 mx-auto h-full max-w-md">{children}</div>
+              <div className="container relative z-0 mx-auto h-full max-w-sm">{children}</div>
             </section>
             <section className="min-h-0 flex-1 overflow-hidden">
               <ProfilePagePreview />

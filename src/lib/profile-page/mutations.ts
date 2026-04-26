@@ -27,6 +27,7 @@ export class ProfilePageError extends Error {
 }
 
 type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+type DbExecutor = typeof db | DbTransaction;
 
 const shouldDeleteReplacedProfileImage = (previousUrl: string | null, nextUrl: string | null) => {
   if (!previousUrl || previousUrl === nextUrl) {
@@ -39,7 +40,7 @@ const shouldDeleteReplacedProfileImage = (previousUrl: string | null, nextUrl: s
   return !previousKey || previousKey !== nextKey;
 };
 
-const getProfilePageEditorDataByPageId = async (executor: DbTransaction, profilePageId: string) => {
+const getProfilePageEditorDataByPageId = async (executor: DbExecutor, profilePageId: string) => {
   const page = await executor
     .select({
       id: profilePages.id,
@@ -789,7 +790,7 @@ const syncSocialLinks = async ({
   profilePageId,
   values,
 }: {
-  tx: DbTransaction;
+  tx: DbExecutor;
   profilePageId: string;
   values: ProfilePageSyncValues["socialLinks"];
 }) => {
@@ -822,7 +823,7 @@ const syncSocialLinks = async ({
     }
   }
 
-  for (const [index, socialLink] of values.entries()) {
+  for (const socialLink of values) {
     const existingId = existingIdsByPlatform.get(socialLink.platform);
 
     if (existingId) {
@@ -830,7 +831,7 @@ const syncSocialLinks = async ({
         .update(profileSocialLinks)
         .set({
           url: socialLink.url,
-          position: index,
+          position: socialLink.position,
           updatedAt: now,
         })
         .where(eq(profileSocialLinks.id, existingId));
@@ -841,7 +842,7 @@ const syncSocialLinks = async ({
       profilePageId,
       platform: socialLink.platform,
       url: socialLink.url,
-      position: index,
+      position: socialLink.position,
       updatedAt: now,
     });
   }
@@ -852,7 +853,7 @@ const syncLinkItems = async ({
   profilePageId,
   values,
 }: {
-  tx: DbTransaction;
+  tx: DbExecutor;
   profilePageId: string;
   values: ProfilePageSyncValues["linkItems"];
 }) => {
@@ -882,7 +883,7 @@ const syncLinkItems = async ({
     }
   }
 
-  for (const [index, linkItem] of values.entries()) {
+  for (const linkItem of values) {
     if (existingIds.has(linkItem.id)) {
       await tx
         .update(profileLinkItems)
@@ -891,7 +892,7 @@ const syncLinkItems = async ({
           description: linkItem.description || null,
           favicon: linkItem.favicon || null,
           url: linkItem.url,
-          position: index,
+          position: linkItem.position,
           updatedAt: now,
         })
         .where(eq(profileLinkItems.id, linkItem.id));
@@ -904,7 +905,7 @@ const syncLinkItems = async ({
       description: linkItem.description || null,
       favicon: linkItem.favicon || null,
       url: linkItem.url,
-      position: index,
+      position: linkItem.position,
       updatedAt: now,
     });
   }
@@ -915,7 +916,7 @@ const syncTextBoxItems = async ({
   profilePageId,
   values,
 }: {
-  tx: DbTransaction;
+  tx: DbExecutor;
   profilePageId: string;
   values: ProfilePageSyncValues["textBoxItems"];
 }) => {
@@ -945,14 +946,14 @@ const syncTextBoxItems = async ({
     }
   }
 
-  for (const [index, textBoxItem] of values.entries()) {
+  for (const textBoxItem of values) {
     if (existingIds.has(textBoxItem.id)) {
       await tx
         .update(profileTextBoxItems)
         .set({
           title: textBoxItem.title,
           description: textBoxItem.description || null,
-          position: index,
+          position: textBoxItem.position,
           blockPosition: textBoxItem.blockPosition,
           updatedAt: now,
         })
@@ -964,7 +965,7 @@ const syncTextBoxItems = async ({
       profilePageId,
       title: textBoxItem.title,
       description: textBoxItem.description || null,
-      position: index,
+      position: textBoxItem.position,
       blockPosition: textBoxItem.blockPosition,
       updatedAt: now,
     });
@@ -993,40 +994,38 @@ export const syncProfilePageDraft = async ({
     throw new ProfilePageError("This handle is already taken.", 409);
   }
 
-  const nextData = await db.transaction(async (tx) => {
-    await tx
-      .update(profilePages)
-      .set({
-        handle: values.page.handle,
-        linkBlockPosition: values.page.linkBlockPosition,
-        location: values.page.location || null,
-        name: values.page.name,
-        role: values.page.role || null,
-        bio: values.page.bio || null,
-        image: values.page.image,
-        backgroundImage: values.page.backgroundImage,
-        updatedAt: new Date(),
-      })
-      .where(eq(profilePages.id, ownedPage.id));
+  await db
+    .update(profilePages)
+    .set({
+      handle: values.page.handle,
+      linkBlockPosition: values.page.linkBlockPosition,
+      location: values.page.location || null,
+      name: values.page.name,
+      role: values.page.role || null,
+      bio: values.page.bio || null,
+      image: values.page.image,
+      backgroundImage: values.page.backgroundImage,
+      updatedAt: new Date(),
+    })
+    .where(eq(profilePages.id, ownedPage.id));
 
-    await syncSocialLinks({
-      tx,
-      profilePageId: ownedPage.id,
-      values: values.socialLinks,
-    });
-    await syncLinkItems({
-      tx,
-      profilePageId: ownedPage.id,
-      values: values.linkItems,
-    });
-    await syncTextBoxItems({
-      tx,
-      profilePageId: ownedPage.id,
-      values: values.textBoxItems,
-    });
-
-    return getProfilePageEditorDataByPageId(tx, ownedPage.id);
+  await syncSocialLinks({
+    tx: db,
+    profilePageId: ownedPage.id,
+    values: values.socialLinks,
   });
+  await syncLinkItems({
+    tx: db,
+    profilePageId: ownedPage.id,
+    values: values.linkItems,
+  });
+  await syncTextBoxItems({
+    tx: db,
+    profilePageId: ownedPage.id,
+    values: values.textBoxItems,
+  });
+
+  const nextData = await getProfilePageEditorDataByPageId(db, ownedPage.id);
 
   if (ownedPage.image && shouldDeleteReplacedProfileImage(ownedPage.image, values.page.image)) {
     try {

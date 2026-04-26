@@ -79,6 +79,8 @@ const socialHandleBaseUrls: Partial<Record<SocialPlatform, string>> = {
   tiktok: "https://www.tiktok.com/@",
 };
 
+const byPosition = <T extends { position: number }>(a: T, b: T) => a.position - b.position;
+
 function resolveFaviconUrl(favicon: string | null | undefined, pageUrl: string) {
   const value = favicon?.trim();
 
@@ -172,12 +174,13 @@ export function PublicProfilePage({
   const displayName = name;
   const contentBlocks = getContentBlocks({
     linkBlockPosition,
-    linkItems,
-    textBoxItems,
+    linkItems: [...linkItems].sort(byPosition),
+    textBoxItems: [...textBoxItems].sort(byPosition),
   });
+  const orderedSocialLinks = [...socialLinks].sort(byPosition);
 
   return (
-    <section className="mx-auto flex h-full min-h-full w-full items-start py-8">
+    <section className="mx-auto flex h-full min-h-full w-full items-start pb-8">
       <ProfilePageAnalyticsTracker
         displayName={name ?? userName ?? ""}
         handle={handle}
@@ -205,7 +208,7 @@ export function PublicProfilePage({
               alt={name ?? userName ?? ""}
               className={cn(
                 "relative z-10 size-36 object-cover rounded-full",
-                backgroundImage && "translate-y-28"
+                backgroundImage && "translate-y-18 sm:translate-y-28"
               )}
             />
           ) : null}
@@ -232,10 +235,10 @@ export function PublicProfilePage({
           </div>
         ) : null}
 
-        {socialLinks.length > 0 ? (
+        {orderedSocialLinks.length > 0 ? (
           <div className="mt-4 space-y-3 py-2 mb-6">
             <div className="flex items-center justify-center gap-3">
-              {socialLinks.map((socialLink) => {
+              {orderedSocialLinks.map((socialLink) => {
                 const Icon = socialPlatformIcons[socialLink.platform];
                 const label = socialPlatformLabels[socialLink.platform];
 
@@ -281,8 +284,8 @@ export function PublicProfilePage({
                           itemLabel={item.title}
                           profilePageId={profilePageId}
                         >
-                          <div className="flex min-w-0 items-start gap-3">
-                            <div className="size-8 shrink-0">
+                          <div className="flex min-w-0 items-start gap-3 h-12">
+                            <div className="h-full shrink-0">
                               {faviconUrl ? (
                                 <img
                                   src={faviconUrl}
@@ -294,7 +297,7 @@ export function PublicProfilePage({
                               )}
                             </div>
                             <div className="flex min-w-0 items-center self-stretch">
-                              <p className="flex-1 text-sm leading-snug truncate line-clamp-1 font-medium">
+                              <p className="flex-1 text-base leading-snug truncate line-clamp-1 font-medium">
                                 {item.title}
                               </p>
                             </div>

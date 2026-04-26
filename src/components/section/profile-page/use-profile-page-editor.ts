@@ -227,12 +227,24 @@ export function useProfilePageEditor() {
         };
       }
 
+      const latestDraftData = draftDataOverride ?? store.getState().draftData ?? nextDraftData;
+      const requestDraftData: ProfilePageDraftData = {
+        ...latestDraftData,
+        page: {
+          ...latestDraftData.page,
+          image: nextDraftData.page.image,
+          backgroundImage: nextDraftData.page.backgroundImage,
+        },
+      };
+
       const response = await apiFetch<ProfilePageData>("/api/app/profile-page/sync", {
         method: "POST",
+        cache: "no-store",
         headers: {
           "Content-Type": "application/json",
+          "Cache-Control": "no-store",
         },
-        body: JSON.stringify(buildSyncPayload(nextDraftData)),
+        body: JSON.stringify(buildSyncPayload(requestDraftData)),
       });
 
       queryClient.setQueryData(profilePageQueryKey, response);

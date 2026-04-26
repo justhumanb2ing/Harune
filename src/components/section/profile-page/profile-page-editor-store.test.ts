@@ -3,6 +3,7 @@ import { describe, expect, test } from "bun:test";
 import {
   LINK_BLOCK_ID,
   buildSyncPayload,
+  createDraftData,
   createProfilePageEditorStore,
   getPageEditorBlocks,
   textBoxBlockId,
@@ -391,6 +392,64 @@ describe("profile page editor store", () => {
       ["text-2", 0],
       ["text-1", 1],
     ]);
+  });
+
+  test("server data is drafted in persisted position order", () => {
+    const draftData = createDraftData({
+      ...createProfilePageData(),
+      socialLinks: [
+        {
+          id: "social-1",
+          platform: "mail",
+          url: "hello@example.com",
+          position: 2,
+        },
+        {
+          id: "social-2",
+          platform: "x",
+          url: "https://x.com/leeve",
+          position: 1,
+        },
+      ],
+      linkItems: [
+        {
+          id: "link-1",
+          title: "Second",
+          description: null,
+          favicon: null,
+          url: "https://example.com/second",
+          position: 1,
+        },
+        {
+          id: "link-2",
+          title: "First",
+          description: null,
+          favicon: null,
+          url: "https://example.com/first",
+          position: 0,
+        },
+      ],
+      textBoxItems: [
+        {
+          id: "text-1",
+          title: "Second",
+          description: null,
+          position: 1,
+          blockPosition: 2,
+        },
+        {
+          id: "text-2",
+          title: "First",
+          description: null,
+          position: 0,
+          blockPosition: 1,
+        },
+      ],
+    });
+
+    expect(draftData.socialLinks.map((item) => item.platform)).toEqual(["x", "mail"]);
+    expect(draftData.linkItems.map((item) => item.id)).toEqual(["link-2", "link-1"]);
+    expect(draftData.textBoxItems.map((item) => item.id)).toEqual(["text-2", "text-1"]);
   });
 
   test("reordering text box items stays dirty and serializes positions", () => {

@@ -6,14 +6,21 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+const noStoreHeaders = {
+  "Cache-Control": "no-store",
+};
+
 export const GET = withAuthRequired(async (_req, context) => {
   const data = await getProfilePageEditorData(context.session.user.id);
 
   if (!data) {
-    return NextResponse.json({ error: "Profile page not found." }, { status: 404 });
+    return NextResponse.json(
+      { error: "Profile page not found." },
+      { headers: noStoreHeaders, status: 404 }
+    );
   }
 
-  return NextResponse.json(data);
+  return NextResponse.json(data, { headers: noStoreHeaders });
 });
 
 export const PATCH = withAuthRequired(async (req, context) => {

@@ -88,6 +88,7 @@ export function ChangeHandleButton() {
 
     const syncedData = await apiFetch<ProfilePageData>("/api/app/profile-page/sync", {
       method: "POST",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
       },

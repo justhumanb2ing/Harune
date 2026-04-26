@@ -96,6 +96,8 @@ const normalizeNullableText = (value: string | null | undefined) => value ?? "";
 const hasTextBoxDraftContent = (value: NewTextBoxDraft) => value.title.trim().length > 0;
 export const textBoxBlockId = (id: string) => `block:text:${id}`;
 
+const byPosition = <T extends { position: number }>(a: T, b: T) => a.position - b.position;
+
 export type PageEditorBlock =
   | {
       id: typeof LINK_BLOCK_ID;
@@ -121,14 +123,15 @@ export const createDraftData = (data: ProfilePageData): ProfilePageDraftData => 
     image: data.page.image,
     backgroundImage: data.page.backgroundImage,
   },
-  socialLinks: data.socialLinks
+  socialLinks: [...data.socialLinks]
+    .sort(byPosition)
     .filter((item) => item.url.trim().length > 0)
     .map((item, index) => ({
       platform: item.platform,
       url: item.url,
       position: index,
     })),
-  linkItems: data.linkItems.map((item, index) => ({
+  linkItems: [...data.linkItems].sort(byPosition).map((item, index) => ({
     id: item.id,
     title: item.title,
     description: normalizeNullableText(item.description),
@@ -136,7 +139,7 @@ export const createDraftData = (data: ProfilePageData): ProfilePageDraftData => 
     url: item.url,
     position: index,
   })),
-  textBoxItems: data.textBoxItems.map((item, index) => ({
+  textBoxItems: [...data.textBoxItems].sort(byPosition).map((item, index) => ({
     id: item.id,
     title: item.title,
     description: normalizeNullableText(item.description),

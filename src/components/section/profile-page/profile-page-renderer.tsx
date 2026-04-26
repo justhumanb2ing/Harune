@@ -54,6 +54,8 @@ const socialPlatformIcons = {
   apple_music: AppleMusicIcon,
 } as const;
 
+const byPosition = <T extends { position: number }>(a: T, b: T) => a.position - b.position;
+
 function resolveFaviconUrl(favicon: string | null | undefined, pageUrl: string) {
   const value = favicon?.trim();
 
@@ -119,9 +121,10 @@ export function ProfilePageRenderer({
 }: ProfilePageRendererProps) {
   const contentBlocks = getContentBlocks({
     linkBlockPosition,
-    linkItems,
-    textBoxItems,
+    linkItems: [...linkItems].sort(byPosition),
+    textBoxItems: [...textBoxItems].sort(byPosition),
   });
+  const orderedSocialLinks = [...socialLinks].sort(byPosition);
 
   return (
     <section className="mx-auto flex min-h-full h-full w-full items-center">
@@ -185,10 +188,10 @@ export function ProfilePageRenderer({
               </div>
             )}
 
-            {socialLinks.length > 0 ? (
+            {orderedSocialLinks.length > 0 ? (
               <div className="space-y-3 mt-4 hover:bg-black/5 py-2">
                 <div className="flex justify-center items-center gap-2">
-                  {socialLinks.map((socialLink) => {
+                  {orderedSocialLinks.map((socialLink) => {
                     const Icon = socialPlatformIcons[socialLink.platform];
 
                     return (

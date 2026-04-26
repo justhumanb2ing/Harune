@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { ProfilePageEditorProvider } from "@/components/section/profile-page/profile-page-editor-provider";
 import { ProfilePagePreview } from "@/components/section/profile-page/profile-page-preview";
+import ProfilePreviewMobileDrawer from "@/components/section/profile-page/profile-preview-mobile-drawer";
 import { profilePageServerQueryOptions } from "@/lib/profile-page/server-query-options";
 import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query";
 import { redirect } from "next/navigation";
@@ -49,13 +50,18 @@ export default async function SectionLayout({ children, params }: SectionLayoutP
     <HydrationBoundary state={dehydrate(queryClient)}>
       <Suspense fallback={<SectionLayoutFallback />}>
         <ProfilePageEditorProvider initialData={initialProfilePageData}>
-          <div className="flex h-full min-h-0 flex-row gap-4">
-            <section className="min-h-0 flex-1 overflow-hidden">
-              <div className="container relative z-0 mx-auto h-full max-w-sm">{children}</div>
+          <div className="flex h-full min-h-0 flex-row gap-4 relative">
+            <section className="min-h-0 flex-1 overflow-hidden overflow-y-auto">
+              <div className="relative z-0 mx-auto min-h-full max-w-full px-6 pb-24 sm:max-w-sm lg:pb-8">
+                {children}
+              </div>
             </section>
-            <section className="min-h-0 flex-1 overflow-hidden">
+            <section className="hidden lg:block min-h-0 flex-1 overflow-hidden">
               <ProfilePagePreview />
             </section>
+            <aside className="fixed inset-x-0 bottom-0 block bg-background p-2 lg:hidden">
+              <ProfilePreviewMobileDrawer />
+            </aside>
           </div>
         </ProfilePageEditorProvider>
       </Suspense>

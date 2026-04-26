@@ -25,6 +25,7 @@ import { FaLinkedinIn, FaYoutube } from "react-icons/fa6";
 type ProfilePageRendererProps = {
   backgroundImage: string | null;
   bio: string | null;
+  framed?: boolean;
   handle: string;
   image: string | null;
   isPreview?: boolean;
@@ -103,6 +104,7 @@ function getContentBlocks({
 export function ProfilePageRenderer({
   backgroundImage,
   bio,
+  framed = true,
   handle,
   image,
   isPreview = false,
@@ -123,8 +125,19 @@ export function ProfilePageRenderer({
 
   return (
     <section className="mx-auto flex min-h-full h-full w-full items-center">
-      <div className="w-full h-[700px] overflow-x-hidden overflow-y-auto scrollbar-hidden rounded-[2rem] shadow-brand border border-border/60">
-        <div className="min-h-full rounded-2xl overflow-hidden bg-background bg-cover bg-center cursor-default relative">
+      <div
+        className={cn(
+          "w-full overflow-x-hidden scrollbar-hidden",
+          framed ? "h-[700px] overflow-y-auto" : "h-auto overflow-y-visible",
+          framed && "rounded-[2rem] border border-border/60 shadow-brand"
+        )}
+      >
+        <div
+          className={cn(
+            "min-h-full overflow-hidden bg-background bg-cover bg-center cursor-default relative",
+            framed && "rounded-2xl"
+          )}
+        >
           <div className="relative z-10">
             <div
               className={cn(

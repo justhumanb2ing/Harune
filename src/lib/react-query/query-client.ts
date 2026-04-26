@@ -86,7 +86,7 @@ const makeQueryClient = () =>
         });
 
         if (message) {
-          toast.error(message);
+          toast.error(message.replace(/\./g, ""));
         }
       },
       onSuccess: (data, variables, _context, mutation) => {
@@ -97,7 +97,7 @@ const makeQueryClient = () =>
         });
 
         if (message) {
-          toast.success(message);
+          toast.success(message.replace(/\./g, ""));
         }
       },
     }),

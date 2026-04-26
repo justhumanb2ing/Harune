@@ -6,27 +6,27 @@ import type {
 
 const metricDefinitions = [
   {
-    description: "고정된 page id 기준 조회 이벤트 수",
+    description: "View events by stable page id",
     key: "pageViews",
     label: "Views",
   },
   {
-    description: "소셜 + 링크 아이템 클릭 합계",
+    description: "Total social and link item clicks",
     key: "itemClicks",
     label: "Clicks",
   },
   {
-    description: "아이템 클릭 수 / 페이지 뷰",
+    description: "Item clicks divided by page views",
     key: "ctr",
     label: "CTR",
   },
   {
-    description: "소셜 링크 클릭 이벤트 수",
+    description: "Social link click events",
     key: "socialClicks",
     label: "Social Clicks",
   },
   {
-    description: "일반 링크 카드 클릭 이벤트 수",
+    description: "Standard link card click events",
     key: "linkClicks",
     label: "Link Clicks",
   },

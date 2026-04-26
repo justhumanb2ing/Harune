@@ -171,22 +171,21 @@ export default function Sidebar() {
 
       if (result.error) {
         const message =
-          result.error.message ||
-          "Your session is no longer fresh. Please sign in again and retry.";
+          result.error.message || "Your session is no longer fresh Please sign in again and retry";
 
-        toast.error(message);
+        toast.error(message.replace(/\./g, ""));
         setIsDeletingAccount(false);
         return;
       }
 
-      toast.success("Account deleted.");
+      toast.success("Account deleted");
       setIsDeleteDialogOpen(false);
       setIsExpanded(false);
       router.replace("/sign-in");
       router.refresh();
     } catch (error) {
       console.error("Account deletion failed:", error);
-      toast.error("Account deletion failed. Please try again.");
+      toast.error("Account deletion failed Please try again");
       setIsDeletingAccount(false);
     }
   };

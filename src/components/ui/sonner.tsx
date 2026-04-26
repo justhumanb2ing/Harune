@@ -27,9 +27,10 @@ const Toaster = ({ className, ...props }: ToasterProps) => {
       }
       toastOptions={{
         classNames: {
-          content: "min-w-0 text-center",
+          content: "min-w-0 text-center text-base",
+          description: "text-base",
           icon: "hidden",
-          title: "whitespace-normal break-words text-center",
+          title: "whitespace-normal break-words text-center text-base",
           toast:
             "cn-toast !right-0 !left-0 mx-auto !w-fit !max-w-[calc(100vw-2rem)] justify-center whitespace-normal break-words text-center sm:!max-w-md",
         },

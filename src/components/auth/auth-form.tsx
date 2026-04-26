@@ -61,11 +61,11 @@ export function AuthForm({
       });
 
       if (result.error) {
-        setErrorMessage(result.error.message || "Google 로그인을 시작하지 못했습니다.");
+        setErrorMessage(result.error.message || "Could not start Google sign-in.");
       }
     } catch (error) {
       console.error("Authentication error:", error);
-      setErrorMessage("Google 로그인을 시작하지 못했습니다.");
+      setErrorMessage("Could not start Google sign-in.");
     } finally {
       setPendingAction(null);
     }
@@ -97,7 +97,7 @@ export function AuthForm({
             });
 
       if (result.error) {
-        setErrorMessage(result.error.message || "이메일 인증을 완료하지 못했습니다.");
+        setErrorMessage(result.error.message || "Could not complete email authentication.");
         return;
       }
 
@@ -105,7 +105,7 @@ export function AuthForm({
       router.refresh();
     } catch (error) {
       console.error("Authentication error:", error);
-      setErrorMessage("이메일 인증을 완료하지 못했습니다.");
+      setErrorMessage("Could not complete email authentication.");
     } finally {
       setPendingAction(null);
     }

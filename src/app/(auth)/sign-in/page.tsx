@@ -37,7 +37,8 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   }`;
   const oauthErrorMessage =
     oauth === "failed" || error
-      ? error_description || "Google 로그인이 취소되었거나 완료되지 않았습니다. 다시 시도해 주세요."
+      ? error_description ||
+        "Google sign-in was canceled or could not be completed. Please try again."
       : null;
 
   return (

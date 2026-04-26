@@ -99,11 +99,11 @@ describe("profile page editor store", () => {
     ]);
   });
 
-  test("selecting a social platform without a value keeps it in the sync payload", () => {
+  test("empty social inputs are not registered", () => {
     const store = createProfilePageEditorStore();
 
     store.actions.rebaseFromServer(createProfilePageData());
-    store.actions.addSocialLink("spotify");
+    store.actions.setSocialUrl("spotify", "");
 
     const draftData = store.getState().draftData;
 
@@ -111,22 +111,17 @@ describe("profile page editor store", () => {
       throw new Error("Expected draft data to exist");
     }
 
-    expect(store.getState().hasUnsyncedChanges).toBe(true);
+    expect(store.getState().hasUnsyncedChanges).toBe(false);
     expect(buildSyncPayload(draftData).socialLinks).toEqual([
       {
         platform: "github",
         position: 0,
         url: "https://github.com/leeve",
       },
-      {
-        platform: "spotify",
-        position: 1,
-        url: "",
-      },
     ]);
   });
 
-  test("clearing a selected social link input does not unregister it", () => {
+  test("clearing a social link input unregisters it", () => {
     const store = createProfilePageEditorStore();
 
     store.actions.rebaseFromServer(createProfilePageData());
@@ -138,40 +133,71 @@ describe("profile page editor store", () => {
       throw new Error("Expected draft data to exist");
     }
 
-    expect(draftData.socialLinks).toEqual([
-      {
-        platform: "github",
-        position: 0,
-        url: "",
-      },
-    ]);
-    expect(buildSyncPayload(draftData).socialLinks).toEqual([
-      {
-        platform: "github",
-        position: 0,
-        url: "",
-      },
-    ]);
+    expect(draftData.socialLinks).toEqual([]);
+    expect(buildSyncPayload(draftData).socialLinks).toEqual([]);
   });
 
-  test("cannot select more than the maximum social links", () => {
+  test("adding a social platform without a value does not register it", () => {
+    const store = createProfilePageEditorStore();
+
+    store.actions.rebaseFromServer(createProfilePageData());
+
+    store.actions.addSocialLink("behance");
+
+    expect(store.getState().hasUnsyncedChanges).toBe(false);
+    expect(
+      store.getState().draftData?.socialLinks.some((item) => item.platform === "behance")
+    ).toBe(false);
+  });
+
+  test("cannot register more than the maximum social links from input values", () => {
     const store = createProfilePageEditorStore();
 
     store.actions.rebaseFromServer({
       ...createProfilePageData(),
       socialLinks: [
-        { id: "social-1", platform: "x", url: "", position: 0 },
-        { id: "social-2", platform: "instagram", url: "", position: 1 },
-        { id: "social-3", platform: "youtube", url: "", position: 2 },
-        { id: "social-4", platform: "linkedin", url: "", position: 3 },
-        { id: "social-5", platform: "github", url: "", position: 4 },
-        { id: "social-6", platform: "threads", url: "", position: 5 },
-        { id: "social-7", platform: "soundcloud", url: "", position: 6 },
-        { id: "social-8", platform: "spotify", url: "", position: 7 },
+        { id: "social-1", platform: "x", url: "https://x.com/leeve", position: 0 },
+        {
+          id: "social-2",
+          platform: "instagram",
+          url: "https://instagram.com/leeve",
+          position: 1,
+        },
+        {
+          id: "social-3",
+          platform: "youtube",
+          url: "https://youtube.com/@leeve",
+          position: 2,
+        },
+        {
+          id: "social-4",
+          platform: "linkedin",
+          url: "https://linkedin.com/in/leeve",
+          position: 3,
+        },
+        { id: "social-5", platform: "github", url: "https://github.com/leeve", position: 4 },
+        {
+          id: "social-6",
+          platform: "threads",
+          url: "https://www.threads.net/@leeve",
+          position: 5,
+        },
+        {
+          id: "social-7",
+          platform: "soundcloud",
+          url: "https://soundcloud.com/leeve",
+          position: 6,
+        },
+        {
+          id: "social-8",
+          platform: "spotify",
+          url: "https://open.spotify.com/artist/leeve",
+          position: 7,
+        },
       ],
     });
 
-    store.actions.addSocialLink("behance");
+    store.actions.setSocialUrl("behance", "https://behance.net/leeve");
 
     expect(store.getState().draftData?.socialLinks).toHaveLength(MAX_SOCIAL_LINKS);
     expect(
@@ -492,5 +518,29 @@ describe("profile page editor store", () => {
     });
     expect(store.getState().draftData?.textBoxItems).toHaveLength(0);
     expect(store.getState().hasUnsyncedChanges).toBe(false);
+  });
+
+  test("new text box draft can be added explicitly", () => {
+    const store = createProfilePageEditorStore();
+
+    store.actions.rebaseFromServer(createProfilePageData());
+    store.actions.addNewTextBoxFromDraft({
+      title: "",
+      description: "Description without a title",
+    });
+
+    expect(store.getState().draftData?.textBoxItems).toHaveLength(0);
+    expect(store.getState().hasUnsyncedChanges).toBe(false);
+
+    store.actions.addNewTextBoxFromDraft({
+      title: "  Memo  ",
+      description: "Keep this local until sync",
+    });
+
+    expect(store.getState().draftData?.textBoxItems[0]?.title).toBe("Memo");
+    expect(store.getState().draftData?.textBoxItems[0]?.description).toBe(
+      "Keep this local until sync"
+    );
+    expect(store.getState().hasUnsyncedChanges).toBe(true);
   });
 });

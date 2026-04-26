@@ -317,7 +317,14 @@ export function useProfilePageEditor() {
     data: draftData,
     fallbackName,
     handleCreateLink: () => store.actions.addNewLink(),
-    handleCreateTextBox: () => store.actions.addNewTextBox(),
+    handleCreateTextBox: (draft?: { description: string; title: string }) => {
+      if (draft) {
+        store.actions.addNewTextBoxFromDraft(draft);
+        return;
+      }
+
+      store.actions.addNewTextBox();
+    },
     handleDeleteLink: (id: string) => store.actions.removeLinkItem(id),
     handleDeleteSocialLink: (platform: SocialPlatform) => store.actions.removeSocialLink(platform),
     handleDeleteTextBox: (id: string) => store.actions.removeTextBoxItem(id),

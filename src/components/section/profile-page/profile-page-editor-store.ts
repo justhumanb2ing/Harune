@@ -121,11 +121,13 @@ export const createDraftData = (data: ProfilePageData): ProfilePageDraftData => 
     image: data.page.image,
     backgroundImage: data.page.backgroundImage,
   },
-  socialLinks: data.socialLinks.map((item, index) => ({
-    platform: item.platform,
-    url: item.url,
-    position: index,
-  })),
+  socialLinks: data.socialLinks
+    .filter((item) => item.url.trim().length > 0)
+    .map((item, index) => ({
+      platform: item.platform,
+      url: item.url,
+      position: index,
+    })),
   linkItems: data.linkItems.map((item, index) => ({
     id: item.id,
     title: item.title,
@@ -251,11 +253,13 @@ export const buildSyncPayload = (draftData: ProfilePageDraftData): ProfilePageSy
     image: draftData.page.image,
     backgroundImage: draftData.page.backgroundImage,
   },
-  socialLinks: draftData.socialLinks.map((item, index) => ({
-    platform: item.platform,
-    position: index,
-    url: item.url.trim(),
-  })),
+  socialLinks: draftData.socialLinks
+    .filter((item) => item.url.trim().length > 0)
+    .map((item, index) => ({
+      platform: item.platform,
+      position: index,
+      url: item.url.trim(),
+    })),
   linkItems: draftData.linkItems.map((item, index) => ({
     id: item.id,
     title: item.title,
@@ -602,6 +606,30 @@ export function createProfilePageEditorStore(initialData?: ProfilePageData | nul
           });
         });
       },
+      addNewTextBoxFromDraft(draft: NewTextBoxDraft) {
+        setState((current) => {
+          if (!current.draftData || draft.title.trim().length === 0) {
+            return current;
+          }
+
+          const nextTextBoxItem: DraftTextBoxItem = {
+            id: createDraftId(),
+            title: draft.title.trim(),
+            description: draft.description,
+            position: current.draftData.textBoxItems.length,
+            blockPosition: getNextBlockPosition(current.draftData),
+          };
+
+          return recalculateDirtyState({
+            ...current,
+            draftData: {
+              ...current.draftData,
+              textBoxItems: [...current.draftData.textBoxItems, nextTextBoxItem],
+            },
+            syncError: null,
+          });
+        });
+      },
       updateTextBoxItem(
         id: string,
         field: keyof Omit<DraftTextBoxItem, "blockPosition" | "id" | "position">,
@@ -724,38 +752,39 @@ export function createProfilePageEditorStore(initialData?: ProfilePageData | nul
             return current;
           }
 
+          const hasExistingSocialLink = current.draftData.socialLinks.some(
+            (item) => item.platform === platform
+          );
+
+          if (
+            url.trim() &&
+            !hasExistingSocialLink &&
+            current.draftData.socialLinks.length >= MAX_SOCIAL_LINKS
+          ) {
+            return current;
+          }
+
+          const nextSocialLinks = url.trim()
+            ? replaceSocialLink(current.draftData.socialLinks, platform, url)
+            : removeSocialLink(current.draftData.socialLinks, platform);
+
           return recalculateDirtyState({
             ...current,
             draftData: {
               ...current.draftData,
-              socialLinks: replaceSocialLink(current.draftData.socialLinks, platform, url),
+              socialLinks: nextSocialLinks,
             },
             syncError: null,
           });
         });
       },
-      addSocialLink(platform: SocialPlatform) {
+      addSocialLink(_platform: SocialPlatform) {
         setState((current) => {
           if (!current.draftData) {
             return current;
           }
 
-          if (current.draftData.socialLinks.some((item) => item.platform === platform)) {
-            return current;
-          }
-
-          if (current.draftData.socialLinks.length >= MAX_SOCIAL_LINKS) {
-            return current;
-          }
-
-          return recalculateDirtyState({
-            ...current,
-            draftData: {
-              ...current.draftData,
-              socialLinks: replaceSocialLink(current.draftData.socialLinks, platform, ""),
-            },
-            syncError: null,
-          });
+          return current;
         });
       },
       removeSocialLink(platform: SocialPlatform) {

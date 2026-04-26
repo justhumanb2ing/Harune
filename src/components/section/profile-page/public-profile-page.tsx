@@ -188,7 +188,11 @@ export function PublicProfilePage({
       />
 
       <div className="relative flex min-h-lvh w-full flex-col rounded-2xl bg-background">
-        <PublicProfileShareButton />
+        <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 mx-auto max-w-lg px-4">
+          <div className="flex justify-end">
+            <PublicProfileShareButton />
+          </div>
+        </div>
 
         <div
           className={cn(

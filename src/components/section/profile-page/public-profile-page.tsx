@@ -180,15 +180,16 @@ export function PublicProfilePage({
   const orderedSocialLinks = [...socialLinks].sort(byPosition);
 
   return (
-    <section className="relative mx-auto flex h-full min-h-full w-full items-start pb-8">
+    <section className="mx-auto flex min-h-lvh w-full items-start pb-8">
       <ProfilePageAnalyticsTracker
         displayName={name ?? userName ?? ""}
         handle={handle}
         profilePageId={profilePageId}
       />
-      <PublicProfileShareButton />
 
-      <div className="h-full w-full rounded-2xl bg-background flex flex-col">
+      <div className="relative flex min-h-lvh w-full flex-col rounded-2xl bg-background">
+        <PublicProfileShareButton />
+
         <div
           className={cn(
             "group relative flex h-60 items-center justify-center px-4",
@@ -208,7 +209,7 @@ export function PublicProfilePage({
               alt={name ?? userName ?? ""}
               className={cn(
                 "relative z-10 size-36 object-cover rounded-full",
-                backgroundImage && "translate-y-18 sm:translate-y-28"
+                backgroundImage && "absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2"
               )}
             />
           ) : null}
@@ -285,7 +286,7 @@ export function PublicProfilePage({
                           profilePageId={profilePageId}
                         >
                           <div className="flex min-w-0 items-start gap-3 h-12">
-                            <div className="h-full shrink-0">
+                            <div className="size-12 shrink-0">
                               {faviconUrl ? (
                                 <img
                                   src={faviconUrl}

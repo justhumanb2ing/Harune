@@ -36,7 +36,7 @@ export default async function HandlePage({ params }: HandlePageProps) {
   }
 
   return (
-    <main className="max-w-lg mx-auto h-full">
+    <main className="mx-auto min-h-lvh max-w-lg">
       <PublicProfilePage
         profilePageId={owner.id}
         backgroundImage={owner.backgroundImage}

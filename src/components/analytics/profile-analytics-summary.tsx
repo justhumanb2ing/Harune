@@ -56,7 +56,7 @@ export function ProfileAnalyticsSummary({ range, response }: ProfileAnalyticsSum
       {metricDefinitions.map((metric) => (
         <div
           key={metric.key}
-          className="flex flex-col gap-0 rounded-lg bg-background p-4 px-5 shadow-brand-small"
+          className="flex flex-col gap-0 rounded-lg bg-background p-4 px-5 shadow-float"
         >
           <div className="text-sm capitalize">{metric.label}</div>
           <div className="text-base font-bold tracking-tight">

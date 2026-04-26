@@ -115,7 +115,11 @@ export function ProfilePageRenderer({
   textBoxItems,
   userName,
 }: ProfilePageRendererProps) {
-  const contentBlocks = getContentBlocks({ linkBlockPosition, linkItems, textBoxItems });
+  const contentBlocks = getContentBlocks({
+    linkBlockPosition,
+    linkItems,
+    textBoxItems,
+  });
 
   return (
     <section className="mx-auto flex min-h-full h-full w-full items-center">
@@ -140,7 +144,7 @@ export function ProfilePageRenderer({
                   src={image}
                   alt={name ?? ""}
                   className={cn(
-                    "relative z-10 size-32 object-cover shadow-brand-small",
+                    "relative z-10 size-32 object-cover rounded-full",
                     backgroundImage && "translate-y-24"
                   )}
                 />
@@ -199,7 +203,7 @@ export function ProfilePageRenderer({
                         return (
                           <div
                             key={item.id}
-                            className="bg-background shadow-brand-small rounded-sm p-2 flex flex-col gap-2"
+                            className="bg-background shadow-float rounded-md p-2 flex flex-col gap-2"
                           >
                             <div className="flex min-w-0 items-start gap-3">
                               <div className="size-8 shrink-0">
@@ -214,16 +218,16 @@ export function ProfilePageRenderer({
                                 )}
                               </div>
                               <div className="flex items-center self-stretch min-w-0">
-                                <p className="flex-1 text-sm leading-snug truncate line-clamp-1">
+                                <p className="flex-1 text-sm leading-snug truncate line-clamp-1 font-medium">
                                   {item.title}
                                 </p>
                               </div>
                             </div>
-                            {item.description && (
-                              <div className="text-xs text-neutral-600">
-                                <p>{item.description}</p>
+                            {/*{item.description && (
+                              <div className="text-xs text-neutral-600 break-all">
+                                <p>{item.description}asdfmlasdkmflaksdmflkasmdflkmasklfmlkasdflkasmdklfmaslkdmflkasmfl</p>
                               </div>
-                            )}
+                            )}*/}
                           </div>
                         );
                       })}
@@ -235,7 +239,9 @@ export function ProfilePageRenderer({
               return (
                 <div key={block.item.id} className="space-y-3 hover:bg-black/5 my-4">
                   <div className="px-5 py-4 flex flex-col items-center">
-                    <p className="text-base font-medium">{block.item.title}</p>
+                    <p className="text-base font-medium break-all text-center">
+                      {block.item.title}
+                    </p>
                     {block.item.description ? (
                       <p className="text-center mt-1 text-sm leading-6 text-neutral-800 break-all">
                         {block.item.description}
@@ -246,9 +252,7 @@ export function ProfilePageRenderer({
               );
             })}
 
-            <div className="p-12 text-xs flex items-center justify-center text-primary uppercase">
-              <div className="px-5 py-2 rounded-full border border-primary">Build your page</div>
-            </div>
+            <div className="p-12 text-xs flex items-center justify-center text-primary uppercase" />
           </div>
         </div>
       </div>

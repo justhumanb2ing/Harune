@@ -14,8 +14,10 @@ import {
   TiktokIcon,
   XTwitterIcon,
 } from "@/components/icon";
+import { Button } from "@/components/ui/button";
 import type { LinkItem, SocialLink, SocialPlatform, TextBoxItem } from "@/lib/profile-page/types";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 import { FaLinkedinIn, FaYoutube } from "react-icons/fa6";
 
 type PublicProfilePageProps = {
@@ -167,10 +169,14 @@ export function PublicProfilePage({
   userName,
 }: PublicProfilePageProps) {
   const displayName = name;
-  const contentBlocks = getContentBlocks({ linkBlockPosition, linkItems, textBoxItems });
+  const contentBlocks = getContentBlocks({
+    linkBlockPosition,
+    linkItems,
+    textBoxItems,
+  });
 
   return (
-    <section className="mx-auto flex h-full min-h-full w-full items-start">
+    <section className="mx-auto flex h-full min-h-full w-full items-start py-8">
       <ProfilePageAnalyticsTracker
         displayName={name ?? userName ?? ""}
         handle={handle}
@@ -196,7 +202,7 @@ export function PublicProfilePage({
               src={image}
               alt={name ?? userName ?? ""}
               className={cn(
-                "relative z-10 size-32 object-cover shadow-brand-small",
+                "relative z-10 size-36 object-cover rounded-full",
                 backgroundImage && "translate-y-28"
               )}
             />
@@ -223,7 +229,7 @@ export function PublicProfilePage({
         ) : null}
 
         {socialLinks.length > 0 ? (
-          <div className="mt-4 space-y-3 py-2">
+          <div className="mt-4 space-y-3 py-2 mb-6">
             <div className="flex items-center justify-center gap-3">
               {socialLinks.map((socialLink) => {
                 const Icon = socialPlatformIcons[socialLink.platform];
@@ -265,7 +271,7 @@ export function PublicProfilePage({
                         <TrackedProfilePageLink
                           key={item.id}
                           href={item.url}
-                          className="flex flex-col gap-2 rounded-sm bg-background p-3 shadow-brand-small"
+                          className="flex flex-col gap-2 rounded-md bg-background p-3 shadow-float"
                           itemId={item.id}
                           itemKind="link"
                           itemLabel={item.title}
@@ -284,16 +290,16 @@ export function PublicProfilePage({
                               )}
                             </div>
                             <div className="flex min-w-0 items-center self-stretch">
-                              <p className="flex-1 break-words text-sm leading-snug">
+                              <p className="flex-1 text-sm leading-snug truncate line-clamp-1 font-medium">
                                 {item.title}
                               </p>
                             </div>
                           </div>
-                          {item.description ? (
+                          {/*{item.description ? (
                             <div className="text-xs text-neutral-600">
                               <p className="break-words">{item.description}</p>
                             </div>
-                          ) : null}
+                          ) : null}*/}
                         </TrackedProfilePageLink>
                       );
                     })}
@@ -305,9 +311,9 @@ export function PublicProfilePage({
             return (
               <div key={block.item.id} className="my-6 space-y-3">
                 <div className="flex flex-col items-center px-5 py-4">
-                  <p className="text-base font-medium">{block.item.title}</p>
+                  <p className="text-lg font-medium break-all text-center">{block.item.title}</p>
                   {block.item.description ? (
-                    <p className="mt-1 break-words text-center text-sm leading-6 text-neutral-800">
+                    <p className="mt-1 break-all text-center text-base leading-6 text-neutral-800">
                       {block.item.description}
                     </p>
                   ) : null}
@@ -317,8 +323,18 @@ export function PublicProfilePage({
           })}
         </div>
 
-        <div className="p-12 text-xs flex items-center justify-center text-primary uppercase">
-          <div className="px-5 py-2 rounded-full border border-primary">Build your page</div>
+        <div className="p-12 text-xs flex items-center justify-center uppercase">
+          <Button
+            nativeButton={false}
+            size={"sm"}
+            variant={"link"}
+            className={"text-neutral-500"}
+            render={
+              <Link href={"/sign-in"} className="">
+                Build your page
+              </Link>
+            }
+          />
         </div>
       </div>
     </section>

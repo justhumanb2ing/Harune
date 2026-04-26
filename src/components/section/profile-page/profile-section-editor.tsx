@@ -5,12 +5,8 @@ import { CircleFadingArrowUpIcon, Loader2, TrashIcon } from "lucide-react";
 import { ProfilePageSectionLayout } from "@/components/section/profile-page/section-layout";
 import { useProfilePageEditor } from "@/components/section/profile-page/use-profile-page-editor";
 import { Button } from "@/components/ui/button";
-import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
-import {
-  InputGroup,
-  InputGroupInput,
-  InputGroupTextarea,
-} from "@/components/ui/input-group";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { PROFILE_IMAGE_ACCEPT } from "@/lib/profile-page/image-upload";
 
 export function ProfileSectionEditor() {
@@ -24,73 +20,13 @@ export function ProfileSectionEditor() {
       hasData={Boolean(editor.data)}
     >
       {editor.data ? (
-        <div>
-          <div className="space-y-5">
-            <div className="flex flex-row items-center gap-2">
-              <div className="group relative w-fit flex-1">
-                <input
-                  ref={editor.imageInputRef}
-                  type="file"
-                  accept={PROFILE_IMAGE_ACCEPT}
-                  className="sr-only"
-                  onChange={editor.handleProfileImageChange}
-                />
-                <Button
+        <div className="relative flex min-h-0 flex-1 flex-col justify-center rounded-t-[2rem] bg-background">
+          <div className="relative z-10 flex min-h-[46rem] flex-col rounded-t-[2rem] bg-background">
+            <div className="flex flex-col gap-2 rounded-t-[3rem] bg-background shadow-brand-small">
+              <div className="relative mb-16">
+                <button
                   type="button"
-                  variant="ghost"
-                  className="relative size-28 overflow-hidden rounded-xl p-0 shadow-brand bg-background hover:bg-background"
-                  onClick={() => editor.imageInputRef.current?.click()}
-                  disabled={editor.isSyncing}
-                  aria-label="Upload profile image"
-                >
-                  {editor.previewImageSrc ? (
-                    <img
-                      src={editor.previewImageSrc}
-                      alt={editor.fallbackName}
-                      className="size-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex size-full flex-col items-center justify-center gap-2 bg-background text-muted-foreground">
-                      {editor.isSyncing ? (
-                        <Loader2 className="size-5 animate-spin" />
-                      ) : (
-                        <CircleFadingArrowUpIcon className="size-5" />
-                      )}
-                      <span className="text-sm font-semibold tracking-tight">
-                        Upload
-                      </span>
-                    </div>
-                  )}
-                </Button>
-                {editor.previewImageSrc ? (
-                  <Button
-                    type="button"
-                    size="icon-lg"
-                    className="absolute -top-2 -right-2 z-10 rounded-full opacity-0 shadow-sm transition-all group-hover:scale-100 group-hover:opacity-100 bg-background hover:bg-secondary text-black"
-                    disabled={editor.isSyncing}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                      editor.removeProfileImage();
-                    }}
-                    aria-label="Remove profile image"
-                  >
-                    <TrashIcon className="size-4" />
-                  </Button>
-                ) : null}
-              </div>
-              <div className="group relative w-fit flex-3">
-                <input
-                  ref={editor.backgroundImageInputRef}
-                  type="file"
-                  accept={PROFILE_IMAGE_ACCEPT}
-                  className="sr-only"
-                  onChange={editor.handleBackgroundImageChange}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="relative h-28 w-full overflow-hidden rounded-xl p-0 shadow-brand bg-background hover:bg-background"
+                  className="relative flex h-52 w-full cursor-pointer items-center justify-center overflow-hidden rounded-t-[2rem] bg-secondary transition-colors hover:bg-input disabled:cursor-not-allowed disabled:opacity-70"
                   onClick={() =>
                     editor.backgroundImageInputRef.current?.click()
                   }
@@ -104,23 +40,29 @@ export function ProfileSectionEditor() {
                       className="size-full object-cover"
                     />
                   ) : (
-                    <div className="flex size-full flex-col items-center justify-center gap-2 bg-background text-muted-foreground">
+                    <span className="flex min-w-24 flex-col items-center justify-center gap-2 text-muted-foreground">
                       {editor.isSyncing ? (
-                        <Loader2 className="size-5 animate-spin" />
+                        <Loader2 className="size-6 animate-spin" />
                       ) : (
-                        <CircleFadingArrowUpIcon className="size-5" />
+                        <CircleFadingArrowUpIcon className="size-6" />
                       )}
-                      <span className="text-sm font-semibold tracking-tight">
-                        Background Image
-                      </span>
-                    </div>
+                      <span className="text-sm font-semibold">Background</span>
+                    </span>
                   )}
-                </Button>
+                </button>
+                <input
+                  ref={editor.backgroundImageInputRef}
+                  type="file"
+                  accept={PROFILE_IMAGE_ACCEPT}
+                  className="sr-only"
+                  onChange={editor.handleBackgroundImageChange}
+                  disabled={editor.isSyncing}
+                />
                 {editor.previewBackgroundImageSrc ? (
                   <Button
                     type="button"
                     size="icon-lg"
-                    className="absolute -top-2 -right-2 z-10 rounded-full opacity-0 shadow-sm transition-all group-hover:scale-100 group-hover:opacity-100 bg-background hover:bg-secondary text-black"
+                    className="absolute top-3 right-3 z-10 rounded-full bg-background text-black shadow-sm hover:bg-secondary border-[0.5px] border-border"
                     disabled={editor.isSyncing}
                     onClick={(event) => {
                       event.preventDefault();
@@ -129,107 +71,113 @@ export function ProfileSectionEditor() {
                     }}
                     aria-label="Remove background image"
                   >
-                    <TrashIcon className="size-4" />
+                    <TrashIcon className="size-4 stroke-3" />
                   </Button>
                 ) : null}
+
+                <div className="absolute bottom-0 left-1/2 z-10 -translate-x-1/2 translate-y-1/2">
+                  <button
+                    type="button"
+                    className="relative flex size-32 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-secondary transition-colors hover:bg-input disabled:cursor-not-allowed disabled:opacity-70"
+                    onClick={() => editor.imageInputRef.current?.click()}
+                    disabled={editor.isSyncing}
+                    aria-label="Upload profile image"
+                  >
+                    {editor.previewImageSrc ? (
+                      <img
+                        src={editor.previewImageSrc}
+                        alt={editor.fallbackName}
+                        className="size-full object-cover"
+                      />
+                    ) : (
+                      <span className="flex size-full flex-col items-center justify-center gap-2 text-muted-foreground rounded-full border-2 border-dashed">
+                        {editor.isSyncing ? (
+                          <Loader2 className="size-6 animate-spin" />
+                        ) : (
+                          <CircleFadingArrowUpIcon className="size-6" />
+                        )}
+                        <span className="text-sm font-semibold">Avatar</span>
+                      </span>
+                    )}
+                  </button>
+                  {editor.previewImageSrc ? (
+                    <Button
+                      type="button"
+                      size="icon-lg"
+                      className="absolute -top-1 -right-1 z-10 rounded-full bg-background text-black shadow-sm hover:bg-secondary border-[0.5px] border-border"
+                      disabled={editor.isSyncing}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        editor.removeProfileImage();
+                      }}
+                      aria-label="Remove profile image"
+                    >
+                      <TrashIcon className="size-4 stroke-3" />
+                    </Button>
+                  ) : null}
+                </div>
+                <input
+                  ref={editor.imageInputRef}
+                  type="file"
+                  accept={PROFILE_IMAGE_ACCEPT}
+                  className="sr-only"
+                  onChange={editor.handleProfileImageChange}
+                  disabled={editor.isSyncing}
+                />
+              </div>
+
+              <div className="flex flex-col gap-2 p-4">
+                <Input
+                  id="profile-page-name"
+                  value={editor.profileForm.name}
+                  onChange={(event) =>
+                    editor.setProfileField("name", event.target.value)
+                  }
+                  placeholder="Name"
+                  aria-label="Name"
+                  autoComplete="off"
+                  className="h-12 border-0 bg-secondary text-center hover:bg-input"
+                />
+
+                <Textarea
+                  id="profile-page-bio"
+                  value={editor.profileForm.bio}
+                  onChange={(event) =>
+                    editor.setProfileField("bio", event.target.value)
+                  }
+                  placeholder="Bio"
+                  aria-label="Bio"
+                  className="h-24 resize-none border-0 bg-secondary p-4 hover:bg-input"
+                />
+
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    id="profile-page-role"
+                    value={editor.profileForm.role}
+                    onChange={(event) =>
+                      editor.setProfileField("role", event.target.value)
+                    }
+                    placeholder="Role"
+                    aria-label="Role"
+                    autoComplete="off"
+                    className="h-12 border-0 bg-secondary text-center hover:bg-input"
+                  />
+                  <Input
+                    id="profile-page-location"
+                    value={editor.profileForm.location}
+                    onChange={(event) =>
+                      editor.setProfileField("location", event.target.value)
+                    }
+                    placeholder="Location"
+                    aria-label="Location"
+                    autoComplete="off"
+                    className="h-12 border-0 bg-secondary text-center hover:bg-input"
+                  />
+                </div>
               </div>
             </div>
-
-            <FieldGroup className="gap-8">
-              <FieldSet className="gap-2">
-                <FieldLabel className="uppercase text-xs text-muted-foreground">
-                  About
-                </FieldLabel>
-                <Field className="relative rounded-lg bg-background shadow-brand outline-none py-4">
-                  <FieldLabel
-                    htmlFor="profile-page-name"
-                    className="block px-4 font-medium text-xs text-foreground uppercase"
-                  >
-                    Name
-                  </FieldLabel>
-                  <InputGroup className="bg-background border-0 px-1.5 font-medium ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
-                    <InputGroupInput
-                      id="profile-page-name"
-                      placeholder="My Name"
-                      autoComplete="off"
-                      className="text-sm"
-                      value={editor.profileForm.name}
-                      onChange={(event) =>
-                        editor.setProfileField("name", event.target.value)
-                      }
-                    />
-                  </InputGroup>
-                </Field>
-
-                <Field className="relative rounded-lg bg-background outline-none py-4 shadow-brand">
-                  <FieldLabel
-                    htmlFor="profile-page-bio"
-                    className="block px-4 font-medium text-xs text-foreground uppercase"
-                  >
-                    bio
-                  </FieldLabel>
-                  <InputGroup className="bg-background border-0 px-1.5 ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
-                    <InputGroupTextarea
-                      id="profile-page-bio"
-                      value={editor.profileForm.bio}
-                      onChange={(event) =>
-                        editor.setProfileField("bio", event.target.value)
-                      }
-                      placeholder="Say something short about yourself."
-                      className="min-h-12 resize-none text-sm"
-                    />
-                  </InputGroup>
-                </Field>
-              </FieldSet>
-
-              <FieldSet className="gap-2">
-                <FieldLabel className="uppercase text-xs text-muted-foreground">
-                  Additional
-                </FieldLabel>
-                <FieldGroup className="flex-row gap-2 items-center">
-                  <Field className="flex-1 relative rounded-lg bg-background shadow-brand outline-none py-4">
-                    <FieldLabel
-                      htmlFor="profile-page-role"
-                      className="block px-4 font-medium text-xs text-foreground uppercase"
-                    >
-                      Role
-                    </FieldLabel>
-                    <InputGroup className="bg-background border-0 px-1.5 font-medium ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
-                      <InputGroupInput
-                        id="profile-page-role"
-                        placeholder="Product Designer"
-                        autoComplete="off"
-                        className="text-sm"
-                        value={editor.profileForm.role}
-                        onChange={(event) =>
-                          editor.setProfileField("role", event.target.value)
-                        }
-                      />
-                    </InputGroup>
-                  </Field>
-                  <Field className="flex-1 relative rounded-lg bg-background shadow-brand outline-none py-4">
-                    <FieldLabel
-                      htmlFor="profile-page-location"
-                      className="block px-4 font-medium text-xs text-foreground uppercase"
-                    >
-                      Location
-                    </FieldLabel>
-                    <InputGroup className="bg-background border-0 px-1.5 font-medium ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
-                      <InputGroupInput
-                        id="profile-page-location"
-                        placeholder="Seoul, South Korea"
-                        autoComplete="off"
-                        className="text-sm"
-                        value={editor.profileForm.location}
-                        onChange={(event) =>
-                          editor.setProfileField("location", event.target.value)
-                        }
-                      />
-                    </InputGroup>
-                  </Field>
-                </FieldGroup>
-              </FieldSet>
-            </FieldGroup>
+            <div className="flex-1 bg-background" />
           </div>
         </div>
       ) : null}

@@ -27,7 +27,7 @@ export function LinkEditDialog({ link, onLinkItemChange, onOpenChange }: LinkEdi
     <Dialog open={Boolean(link)} onOpenChange={onOpenChange}>
       <DialogPopup
         showCloseButton={false}
-        className="z-50 max-w-md gap-0 rounded-2xl border-0 p-0 pt-1 sm:max-w-md"
+        className="z-50 max-w-sm gap-0 rounded-2xl border-0 p-0 pt-1 sm:max-w-sm"
       >
         <DialogHeader className="px-3 py-2">
           <div className="grid grid-cols-3 items-center">
@@ -65,13 +65,13 @@ export function LinkEditDialog({ link, onLinkItemChange, onOpenChange }: LinkEdi
               value={link.title}
               onChange={(event) => onLinkItemChange(link.id, "title", event.target.value)}
               placeholder="What do you want to show?"
-              className="border-0 font-medium text-base! focus-visible:ring-0"
+              className="border-0 font-medium text-lg! focus-visible:ring-0 truncate "
             />
             <Textarea
               value={link.description ?? ""}
               onChange={(event) => onLinkItemChange(link.id, "description", event.target.value)}
               placeholder="Add description for detail"
-              className="min-h-32 resize-none break-all border-0 focus-visible:ring-0"
+              className="min-h-32 resize-none break-all border-0 focus-visible:ring-0 text-base!"
             />
           </div>
         ) : null}

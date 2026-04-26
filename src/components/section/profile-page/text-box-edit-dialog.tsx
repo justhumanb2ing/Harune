@@ -69,7 +69,7 @@ export function TextBoxEditDialog({
               value={textBox.title}
               onChange={(event) => onTextBoxChange(textBox.id, "title", event.target.value)}
               placeholder="What do you want to write?"
-              className="w-full min-w-0 max-w-full border-0 font-medium text-lg! focus-visible:ring-0"
+              className="w-full min-w-0 max-w-full border-0 font-medium text-lg! focus-visible:ring-0 truncate"
             />
             <Textarea
               value={textBox.description ?? ""}

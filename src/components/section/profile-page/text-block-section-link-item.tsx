@@ -1,12 +1,18 @@
 "use client";
 
-import { AnimatePresence, MotionConfig, type Transition, motion } from "motion/react";
+import {
+  AnimatePresence,
+  MotionConfig,
+  type Transition,
+  motion,
+} from "motion/react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { TextAaIcon } from "@phosphor-icons/react/dist/ssr";
 
 const sectionLinkClassName =
   "group/item flex w-full flex-wrap gap-2.5 rounded-2xl bg-background px-4 py-3 text-sm transition-colors outline-none hover:bg-background! focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 hover:bg-secondary/30!";
@@ -81,7 +87,9 @@ type TextBlockSectionLinkItemProps = {
   onAdd: (textBox: { description: string; title: string }) => void;
 };
 
-export function TextBlockSectionLinkItem({ onAdd }: TextBlockSectionLinkItemProps) {
+export function TextBlockSectionLinkItem({
+  onAdd,
+}: TextBlockSectionLinkItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -116,7 +124,9 @@ export function TextBlockSectionLinkItem({ onAdd }: TextBlockSectionLinkItemProp
           scale: isExpanded ? [1, 1.018, 1] : 1,
           y: isExpanded ? [0, -3, 0] : 0,
         }}
-        transition={isExpanded ? shellExpandTransition : shellCollapseTransition}
+        transition={
+          isExpanded ? shellExpandTransition : shellCollapseTransition
+        }
         className="w-full overflow-hidden bg-background shadow-float"
       >
         <AnimatePresence initial={false} mode="sync">
@@ -144,7 +154,9 @@ export function TextBlockSectionLinkItem({ onAdd }: TextBlockSectionLinkItemProp
                 >
                   Cancel
                 </Button>
-                <p className="justify-self-center text-xl font-medium">Add Text</p>
+                <p className="justify-self-center text-xl font-semibold">
+                  Text
+                </p>
                 <Button
                   type="button"
                   size="lg"
@@ -203,14 +215,17 @@ export function TextBlockSectionLinkItem({ onAdd }: TextBlockSectionLinkItemProp
             >
               <div className="flex w-full flex-col justify-between">
                 <p className="flex flex-1 flex-col gap-1">
-                  <span className="flex w-fit items-center gap-2 text-2xl leading-snug font-medium">
-                    Text
+                  <span className="flex w-fit items-center gap-2 text-xl leading-snug font-semibold">
+                    <TextAaIcon className="size-6" weight="bold" />
+                    <span>Text</span>
                   </span>
                   {/*<span className="text-sm text-muted-foreground">
                     Use for notes, context, and non-link content.
                   </span>*/}
                 </p>
-                <p className="text-right font-medium text-muted-foreground p-1">click to add</p>
+                <p className="text-right font-medium text-muted-foreground p-1">
+                  click to add
+                </p>
               </div>
             </motion.button>
           )}

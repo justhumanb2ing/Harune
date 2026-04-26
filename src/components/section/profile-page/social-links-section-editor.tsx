@@ -48,12 +48,13 @@ export function SocialLinksSectionEditor() {
       description="Add URLs for the platforms you want to show."
       isLoading={editor.isBooting || editor.isUserLoading}
       hasData={Boolean(editor.data)}
+      padded={false}
     >
       {editor.data ? (
         <>
-          <div className="relative flex min-h-0 flex-1 flex-col justify-center rounded-t-[2rem] bg-background">
-            <div className="relative z-10 flex min-h-[46rem] flex-col rounded-t-[2rem] bg-background">
-              <div className="mt-4 flex flex-col gap-3 rounded-t-[3rem] bg-background p-4 pt-12 shadow-brand-small ring-1 ring-border/20">
+          <div className="relative flex min-h-0 w-full flex-1 flex-col justify-center bg-background lg:rounded-t-[2rem]">
+            <div className="relative z-10 flex min-h-[46rem] w-full flex-col bg-background lg:rounded-t-[2rem]">
+              <div className="flex w-full flex-col gap-3 bg-background pt-12 lg:mt-4 lg:rounded-t-[3rem] lg:p-4 lg:pt-12 lg:shadow-brand-small lg:ring-1 lg:ring-border/20">
                 <p className="flex items-center justify-between mb-4">
                   <span className="font-medium text-lg">Available Social Links</span>
                   <span className="text-sm">
@@ -87,7 +88,7 @@ export function SocialLinksSectionEditor() {
                   );
                 })}
               </div>
-              <div className="relative z-10 -mt-3 min-h-20 flex-1 bg-background" />
+              <div className="relative z-10 -mt-3 hidden min-h-20 flex-1 bg-background lg:block" />
             </div>
           </div>
         </>

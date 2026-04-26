@@ -41,8 +41,8 @@ function getSectionBasePath(pathname: string) {
 
 function ProfileSectionLinkItem({ href }: { href: string }) {
   return (
-    <Link href={href} className={cn(sectionLinkClassName, "aspect-square")}>
-      <span className={"flex flex-1 flex-col gap-1"}>
+    <Link href={href} className={cn(sectionLinkClassName, "aspect-square min-w-0 flex-1 basis-0")}>
+      <span className={"flex min-w-0 flex-1 flex-col gap-1"}>
         <span className={"flex w-fit items-center gap-2 text-2xl leading-snug font-medium"}>
           Profile
         </span>
@@ -53,9 +53,9 @@ function ProfileSectionLinkItem({ href }: { href: string }) {
 
 function SocialSectionLinkItem({ href }: { href: string }) {
   return (
-    <Link href={href} className={cn(sectionLinkClassName, "aspect-square")}>
-      <span className={"flex flex-1 flex-col gap-1"}>
-        <span className="flex flex-1 w-fit flex-col items-start justify-between gap-10 text-2xl leading-snug font-medium">
+    <Link href={href} className={cn(sectionLinkClassName, "aspect-square min-w-0 flex-1 basis-0")}>
+      <span className={"flex min-w-0 flex-1 flex-col gap-1"}>
+        <span className="flex min-w-0 flex-1 flex-col items-start justify-between gap-10 text-2xl leading-snug font-medium">
           <span>Social</span>
           <AvatarGroup>
             <Avatar size="lg">
@@ -68,12 +68,15 @@ function SocialSectionLinkItem({ href }: { href: string }) {
                 <ColorYoutubeIcon className="size-6" aria-hidden="true" />
               </AvatarFallback>
             </Avatar>
-            <Avatar size="lg">
+            <Avatar size="lg" className="hidden lg:flex">
               <AvatarFallback className={"bg-secondary"}>
                 <ColorSpotifyIcon className="size-6" aria-hidden="true" />
               </AvatarFallback>
             </Avatar>
-            <AvatarGroupCount className="bg-secondary">+8</AvatarGroupCount>
+            <AvatarGroupCount className="bg-secondary">
+              <span className="lg:hidden">+9</span>
+              <span className="hidden lg:inline">+8</span>
+            </AvatarGroupCount>
           </AvatarGroup>
         </span>
       </span>

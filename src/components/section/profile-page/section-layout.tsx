@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { ChevronLeftIcon } from "lucide-react";
 
 type ProfilePageSectionLayoutProps = {
@@ -12,6 +13,7 @@ type ProfilePageSectionLayoutProps = {
   description: string;
   hasData: boolean;
   isLoading: boolean;
+  padded?: boolean;
   title: string;
 };
 
@@ -20,6 +22,7 @@ export function ProfilePageSectionLayout({
   description,
   hasData,
   isLoading,
+  padded = true,
   title,
 }: ProfilePageSectionLayoutProps) {
   const pathname = usePathname();
@@ -29,7 +32,7 @@ export function ProfilePageSectionLayout({
     sectionIndex === -1 ? "/app" : `/${segments.slice(0, sectionIndex + 1).join("/")}`;
 
   return (
-    <main className="h-full px-4 py-10 sm:px-0">
+    <main className={cn("h-full py-10", padded ? "px-4 sm:px-0" : "lg:px-4 lg:sm:px-0")}>
       <div className="space-y-6 pb-4">
         <div>
           <Button

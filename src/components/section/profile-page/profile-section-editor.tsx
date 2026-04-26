@@ -23,7 +23,7 @@ export function ProfileSectionEditor() {
         <div className="relative flex min-h-0 flex-1 flex-col justify-center rounded-t-[2rem] bg-background">
           <div className="relative z-10 flex min-h-[46rem] flex-col rounded-t-[2rem] bg-background">
             <div className="flex flex-col gap-2 rounded-t-[3rem] bg-background shadow-brand-small">
-              <div className="relative mb-16">
+              <div className="group/background-image relative mb-16">
                 <button
                   type="button"
                   className="relative flex h-52 w-full cursor-pointer items-center justify-center overflow-hidden rounded-t-[2rem] bg-secondary transition-colors hover:bg-input disabled:cursor-not-allowed disabled:opacity-70"
@@ -62,7 +62,7 @@ export function ProfileSectionEditor() {
                   <Button
                     type="button"
                     size="icon-lg"
-                    className="absolute top-3 right-3 z-10 rounded-full bg-background text-black shadow-sm hover:bg-secondary border-[0.5px] border-border"
+                    className="pointer-events-none absolute top-3 right-3 z-10 rounded-full border-[0.5px] border-border bg-background text-black opacity-0 shadow-sm transition-opacity hover:bg-secondary group-hover/background-image:pointer-events-auto group-hover/background-image:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100"
                     disabled={editor.isSyncing}
                     onClick={(event) => {
                       event.preventDefault();
@@ -75,7 +75,7 @@ export function ProfileSectionEditor() {
                   </Button>
                 ) : null}
 
-                <div className="absolute bottom-0 left-1/2 z-10 -translate-x-1/2 translate-y-1/2">
+                <div className="group/profile-image absolute bottom-0 left-1/2 z-10 -translate-x-1/2 translate-y-1/2">
                   <button
                     type="button"
                     className="relative flex size-32 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-secondary transition-colors hover:bg-input disabled:cursor-not-allowed disabled:opacity-70"
@@ -104,7 +104,7 @@ export function ProfileSectionEditor() {
                     <Button
                       type="button"
                       size="icon-lg"
-                      className="absolute -top-1 -right-1 z-10 rounded-full bg-background text-black shadow-sm hover:bg-secondary border-[0.5px] border-border"
+                      className="pointer-events-none absolute -top-1 -right-1 z-10 rounded-full border-[0.5px] border-border bg-background text-black opacity-0 shadow-sm transition-opacity hover:bg-secondary group-hover/profile-image:pointer-events-auto group-hover/profile-image:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100"
                       disabled={editor.isSyncing}
                       onClick={(event) => {
                         event.preventDefault();

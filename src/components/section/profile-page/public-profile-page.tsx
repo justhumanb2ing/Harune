@@ -19,6 +19,7 @@ import type { LinkItem, SocialLink, SocialPlatform, TextBoxItem } from "@/lib/pr
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { FaLinkedinIn, FaYoutube } from "react-icons/fa6";
+import { PublicProfileShareButton } from "./public-profile-share-button";
 
 type PublicProfilePageProps = {
   backgroundImage: string | null;
@@ -182,6 +183,7 @@ export function PublicProfilePage({
         handle={handle}
         profilePageId={profilePageId}
       />
+      <PublicProfileShareButton />
 
       <div className="h-full w-full rounded-2xl bg-background flex flex-col">
         <div

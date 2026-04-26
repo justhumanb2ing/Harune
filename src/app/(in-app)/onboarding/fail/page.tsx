@@ -31,7 +31,7 @@ export default async function OnboardingFailPage({ searchParams }: OnboardingFai
     .then((rows) => rows[0]);
 
   if (ownedPage?.handle) {
-    redirect(`/${ownedPage.handle}/section`);
+    redirect(`/${ownedPage.handle}/app`);
   }
 
   const { handle: rawHandle, message } = await searchParams;

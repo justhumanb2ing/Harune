@@ -71,7 +71,7 @@ export function OnboardingSuccess({ handle }: OnboardingSuccessProps) {
                 size="lg"
                 className="h-12 rounded-lg font-bold text-base! bg-indigo-400 hover:bg-indigo-500! border-indigo-400 shadow-lg group"
                 render={
-                  <Link href={`/${handle}/section`} className="flex items-center">
+                  <Link href={`/${handle}/app`} className="flex items-center">
                     <span>Go to your page</span>
                     <ArrowRightIcon className="mt-0.5 size-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 stroke-3 transition-all" />
                   </Link>

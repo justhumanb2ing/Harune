@@ -13,19 +13,23 @@ type PostSignInPageProps = {
 
 function getSafeRedirectPath(value?: string) {
   if (!value || !value.startsWith("/") || value.startsWith("//")) {
-    return "/section";
+    return "/app";
   }
 
   return value;
 }
 
-function resolveSectionRedirectPath(path: string, handle: string) {
-  if (path === "/section") {
-    return `/${handle}/section`;
+function resolveAppRedirectPath(path: string, handle: string) {
+  if (path === "/app" || path === "/section") {
+    return `/${handle}/app`;
+  }
+
+  if (path.startsWith("/app/")) {
+    return `/${handle}${path}`;
   }
 
   if (path.startsWith("/section/")) {
-    return `/${handle}${path}`;
+    return `/${handle}/app/${path.slice("/section/".length)}`;
   }
 
   return path;
@@ -57,7 +61,7 @@ export default async function PostSignInPage({ searchParams }: PostSignInPagePro
       onboardingParams.set("handle", handle);
     }
 
-    if (nextPath !== "/section") {
+    if (nextPath !== "/app") {
       onboardingParams.set("next", nextPath);
     }
 
@@ -68,5 +72,5 @@ export default async function PostSignInPage({ searchParams }: PostSignInPagePro
     redirect(onboardingUrl);
   }
 
-  redirect(resolveSectionRedirectPath(nextPath, ownedPage.handle));
+  redirect(resolveAppRedirectPath(nextPath, ownedPage.handle));
 }

@@ -3,7 +3,7 @@ import { SsgoiTransition } from "@ssgoi/react";
 
 export default function SocialSectionPage() {
   return (
-    <SsgoiTransition id="/section/social" className="block h-full">
+    <SsgoiTransition id="/app/social" className="block h-full">
       <SocialLinksSectionEditor />
     </SsgoiTransition>
   );

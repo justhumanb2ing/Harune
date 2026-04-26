@@ -42,7 +42,7 @@ export default async function SectionLayout({ children, params }: SectionLayoutP
   }
 
   if (initialProfilePageData.page.handle !== handle) {
-    redirect(`/${initialProfilePageData.page.handle}/section`);
+    redirect(`/${initialProfilePageData.page.handle}/app`);
   }
 
   return (

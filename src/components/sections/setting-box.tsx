@@ -114,9 +114,7 @@ export default function SettingBox() {
     ? pathname === `/${profilePage.handle}/analytics` ||
       pathname.startsWith(`/${profilePage.handle}/analytics/`)
     : pathname === "/analytics" || pathname.startsWith("/analytics/");
-  const sectionToggleHref = profilePage?.handle
-    ? `/${profilePage.handle}/section`
-    : "/post-sign-in";
+  const sectionToggleHref = profilePage?.handle ? `/${profilePage.handle}/app` : "/post-sign-in";
   const analyticsToggleHref = profilePage?.handle
     ? `/${profilePage.handle}/analytics`
     : "/post-sign-in";

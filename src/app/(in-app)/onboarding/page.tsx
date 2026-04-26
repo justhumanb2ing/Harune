@@ -32,7 +32,7 @@ export default async function OnboardingPage({ searchParams }: OnboardingPagePro
   const { handle } = await searchParams;
 
   if (ownedPage) {
-    redirect(`/${ownedPage.handle}/section`);
+    redirect(`/${ownedPage.handle}/app`);
   }
 
   return (

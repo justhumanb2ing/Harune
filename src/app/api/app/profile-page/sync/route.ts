@@ -19,7 +19,7 @@ export const POST = withAuthRequired(async (req, context) => {
     });
 
     revalidatePath(`/${data.page.handle}`);
-    revalidatePath(`/${data.page.handle}/section`);
+    revalidatePath(`/${data.page.handle}/app`);
 
     return NextResponse.json(data);
   } catch (error) {

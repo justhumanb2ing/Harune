@@ -7,8 +7,8 @@ import type { ReactNode } from "react";
 const sectionTransitionConfig = {
   transitions: [
     {
-      from: "/section",
-      to: "/section/*",
+      from: "/app",
+      to: "/app/*",
       transition: drill({
         opacity: true,
         physics: { inertia: { acceleration: 30, resistance: 1.2 } },
@@ -16,8 +16,8 @@ const sectionTransitionConfig = {
       }),
     },
     {
-      from: "/section/*",
-      to: "/section",
+      from: "/app/*",
+      to: "/app",
       transition: drill({
         opacity: true,
         physics: { inertia: { acceleration: 30, resistance: 1.2 } },
@@ -25,7 +25,7 @@ const sectionTransitionConfig = {
       }),
     },
     {
-      from: "/section",
+      from: "/app",
       to: "/analytics",
       transition: swap(),
       symmetric: true,

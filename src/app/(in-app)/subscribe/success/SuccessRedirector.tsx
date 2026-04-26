@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 export default function SuccessRedirector() {
   const router = useRouter();
   const { profilePage } = useUser();
-  const sectionHref = profilePage?.handle ? `/${profilePage.handle}/section` : "/post-sign-in";
+  const sectionHref = profilePage?.handle ? `/${profilePage.handle}/app` : "/post-sign-in";
   const [countdown, setCountdown] = useState(10);
 
   useEffect(() => {

@@ -3,7 +3,7 @@ import { SsgoiTransition } from "@ssgoi/react";
 
 export default function SectionPage() {
   return (
-    <SsgoiTransition id="/section" className="block h-full">
+    <SsgoiTransition id="/app" className="block h-full">
       <SectionPageClient />
     </SsgoiTransition>
   );

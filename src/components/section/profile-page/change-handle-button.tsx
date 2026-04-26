@@ -6,6 +6,11 @@ import { useState } from "react";
 
 import type { MeResponse } from "@/app/api/app/me/types";
 import {
+  Popover,
+  PopoverPanel,
+  PopoverTrigger,
+} from "@/components/animate-ui/components/base/popover";
+import {
   buildSyncPayload,
   createDraftData,
 } from "@/components/section/profile-page/profile-page-editor-store";
@@ -17,11 +22,6 @@ import {
   InputGroupInput,
   InputGroupText,
 } from "@/components/ui/input-group";
-import {
-  Popover,
-  PopoverPanel,
-  PopoverTrigger,
-} from "@/components/animate-ui/components/base/popover";
 import { useProfilePageHandleAvailability } from "@/hooks/use-profile-page-handle-availability";
 import { normalizeHandle, validateHandle } from "@/lib/handles";
 import { profilePageQueryOptions } from "@/lib/profile-page/query-options";
@@ -34,7 +34,7 @@ function replaceHandleInPath(pathname: string, handle: string) {
   const segments = pathname.split("/").filter(Boolean);
 
   if (segments.length === 0) {
-    return `/${handle}/section`;
+    return `/${handle}/app`;
   }
 
   return `/${[handle, ...segments.slice(1)].join("/")}`;
@@ -46,22 +46,14 @@ export function ChangeHandleButton() {
   const profilePageQuery = useQuery(profilePageQueryOptions());
   const profilePageData = profilePageQuery.data;
   const [isOpen, setIsOpen] = useState(false);
-  const [handleDraft, setHandleDraft] = useState(
-    profilePageData?.page.handle ?? "",
-  );
+  const [handleDraft, setHandleDraft] = useState(profilePageData?.page.handle ?? "");
   const [isSavingHandle, setIsSavingHandle] = useState(false);
   const initialHandle = normalizeHandle(profilePageData?.page.handle ?? "");
   const currentHandle = normalizeHandle(handleDraft);
   const hasChangedHandle = currentHandle !== initialHandle;
-  const handleValidationError = hasChangedHandle
-    ? validateHandle(handleDraft)
-    : null;
-  const {
-    isCheckingAvailability,
-    isHandleAvailable,
-    isHandleTaken,
-    shouldShowState,
-  } = useProfilePageHandleAvailability(hasChangedHandle ? handleDraft : "");
+  const handleValidationError = hasChangedHandle ? validateHandle(handleDraft) : null;
+  const { isCheckingAvailability, isHandleAvailable, isHandleTaken, shouldShowState } =
+    useProfilePageHandleAvailability(hasChangedHandle ? handleDraft : "");
   const isHandleSaveDisabled =
     !hasChangedHandle ||
     !!handleValidationError ||
@@ -94,16 +86,13 @@ export function ChangeHandleButton() {
 
     setIsSavingHandle(true);
 
-    const syncedData = await apiFetch<ProfilePageData>(
-      "/api/app/profile-page/sync",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(buildSyncPayload(nextDraftData)),
+    const syncedData = await apiFetch<ProfilePageData>("/api/app/profile-page/sync", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    ).finally(() => {
+      body: JSON.stringify(buildSyncPayload(nextDraftData)),
+    }).finally(() => {
       setIsSavingHandle(false);
     });
 
@@ -163,15 +152,11 @@ export function ChangeHandleButton() {
                 autoComplete="off"
                 autoFocus
                 value={handleDraft}
-                onChange={(event) =>
-                  setHandleDraft(event.target.value.toLowerCase())
-                }
+                onChange={(event) => setHandleDraft(event.target.value.toLowerCase())}
                 className="px-0.5!"
               />
               <InputGroupAddon align="inline-start">
-                <InputGroupText className="text-primary">
-                  leeve.li/
-                </InputGroupText>
+                <InputGroupText className="text-primary">leeve.li/</InputGroupText>
               </InputGroupAddon>
               <InputGroupAddon align="inline-end">
                 {isCheckingAvailability ? (

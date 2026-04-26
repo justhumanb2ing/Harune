@@ -52,6 +52,11 @@ function getLegacyRedirectPath(pathname: string) {
     return APP_ENTRY_PATH;
   }
 
+  const [, handle, area, ...rest] = pathname.split("/");
+  if (handle && area === "section") {
+    return `/${handle}/app${rest.length > 0 ? `/${rest.join("/")}` : ""}`;
+  }
+
   if (pathname.startsWith("/app/")) {
     return APP_ENTRY_PATH;
   }
@@ -85,7 +90,7 @@ function hasPathPrefix(pathname: string, prefix: string) {
 function isHandleAppPath(pathname: string) {
   const [, handle, area] = pathname.split("/");
 
-  return Boolean(handle) && (area === "section" || area === "analytics");
+  return Boolean(handle) && (area === "app" || area === "analytics");
 }
 
 function createSignInUrl(req: NextRequest) {
@@ -100,6 +105,8 @@ export const config = {
     "/app/:path*",
     "/plan",
     "/plan/:path*",
+    "/:handle/app",
+    "/:handle/app/:path*",
     "/:handle/section",
     "/:handle/section/:path*",
     "/:handle/analytics",

@@ -29,7 +29,7 @@ function replaceHandleInPath(pathname: string, handle: string) {
   const segments = pathname.split("/").filter(Boolean);
 
   if (segments.length === 0) {
-    return `/${handle}/section`;
+    return `/${handle}/app`;
   }
 
   return `/${[handle, ...segments.slice(1)].join("/")}`;

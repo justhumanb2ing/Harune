@@ -3,7 +3,7 @@ import { SsgoiTransition } from "@ssgoi/react";
 
 export default function ProfilePage() {
   return (
-    <SsgoiTransition id="/section/profile" className="block h-full">
+    <SsgoiTransition id="/app/profile" className="block h-full">
       <ProfileSectionEditor />
     </SsgoiTransition>
   );

@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { ChevronLeftIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ChevronLeftIcon } from "lucide-react";
 
 type ProfilePageSectionLayoutProps = {
   children?: ReactNode;
@@ -24,11 +24,9 @@ export function ProfilePageSectionLayout({
 }: ProfilePageSectionLayoutProps) {
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean);
-  const sectionIndex = segments.indexOf("section");
+  const sectionIndex = segments.indexOf("app");
   const sectionPath =
-    sectionIndex === -1
-      ? "/section"
-      : `/${segments.slice(0, sectionIndex + 1).join("/")}`;
+    sectionIndex === -1 ? "/app" : `/${segments.slice(0, sectionIndex + 1).join("/")}`;
 
   return (
     <main className="h-full px-4 py-10 sm:px-0">
@@ -37,12 +35,9 @@ export function ProfilePageSectionLayout({
           <Button
             nativeButton={false}
             size={"lg"}
-            className={'w-full h-12 text-base! brand-button font-bold'}
+            className={"w-full h-12 text-base! brand-button font-bold"}
             render={
-              <Link
-                href={sectionPath}
-                className="flex items-center gap-1"
-              >
+              <Link href={sectionPath} className="flex items-center gap-1">
                 <ChevronLeftIcon className="size-5 stroke-3" />
                 <span>{title}</span>
               </Link>

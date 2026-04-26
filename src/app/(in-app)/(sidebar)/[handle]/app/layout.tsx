@@ -38,7 +38,7 @@ export default async function SectionLayout({ children, params }: SectionLayoutP
   const initialProfilePageData = queryClient.getQueryData(profilePageQuery.queryKey) ?? null;
 
   if (!initialProfilePageData?.page.handle) {
-    redirect("/onboarding");
+    redirect("/create");
   }
 
   if (initialProfilePageData.page.handle !== handle) {

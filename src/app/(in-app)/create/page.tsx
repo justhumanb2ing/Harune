@@ -36,7 +36,7 @@ export default async function OnboardingPage({ searchParams }: OnboardingPagePro
   }
 
   return (
-    <SsgoiTransition id="/onboarding" className="block h-full">
+    <SsgoiTransition id="/create" className="block h-full">
       <OnboardingForm handle={handle} />
     </SsgoiTransition>
   );

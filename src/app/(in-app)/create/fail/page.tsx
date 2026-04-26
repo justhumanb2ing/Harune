@@ -38,7 +38,7 @@ export default async function OnboardingFailPage({ searchParams }: OnboardingFai
   const handle = normalizeHandle(rawHandle ?? "");
 
   return (
-    <SsgoiTransition id="/onboarding/fail" className="block h-full">
+    <SsgoiTransition id="/create/fail" className="block h-full">
       <OnboardingFail handle={handle || undefined} message={message} />
     </SsgoiTransition>
   );

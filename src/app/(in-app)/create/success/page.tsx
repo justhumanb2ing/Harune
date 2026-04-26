@@ -23,11 +23,11 @@ export default async function OnboardingSuccessPage() {
     .then((rows) => rows[0]);
 
   if (!ownedPage?.handle) {
-    redirect("/onboarding");
+    redirect("/create");
   }
 
   return (
-    <SsgoiTransition id="/onboarding/success" className="block h-full">
+    <SsgoiTransition id="/create/success" className="block h-full">
       <OnboardingSuccess handle={ownedPage.handle} />
     </SsgoiTransition>
   );

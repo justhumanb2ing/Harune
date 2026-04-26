@@ -7,7 +7,7 @@ type OnboardingFailProps = {
 };
 
 export function OnboardingFail({ handle, message }: OnboardingFailProps) {
-  const retryHref = handle ? `/onboarding?handle=${encodeURIComponent(handle)}` : "/onboarding";
+  const retryHref = handle ? `/create?handle=${encodeURIComponent(handle)}` : "/create";
 
   return (
     <div className="flex h-full flex-col gap-4 py-6 bg-background">

@@ -65,7 +65,7 @@ export default async function PostSignInPage({ searchParams }: PostSignInPagePro
       onboardingParams.set("next", nextPath);
     }
 
-    const onboardingUrl = `/onboarding${
+    const onboardingUrl = `/create${
       onboardingParams.toString() ? `?${onboardingParams.toString()}` : ""
     }`;
 

@@ -7,12 +7,7 @@ const APP_ENTRY_PATH = "/post-sign-in";
 const SIGN_IN_PATH = "/sign-in";
 
 const AUTH_PAGE_PREFIXES = [SIGN_IN_PATH, "/sign-up"] as const;
-const AUTH_REQUIRED_PAGE_PREFIXES = [
-  "/profile",
-  "/subscribe",
-  "/onboarding",
-  APP_ENTRY_PATH,
-] as const;
+const AUTH_REQUIRED_PAGE_PREFIXES = ["/profile", "/subscribe", "/create", APP_ENTRY_PATH] as const;
 
 export async function proxy(req: NextRequest) {
   const session = await auth();
@@ -113,7 +108,7 @@ export const config = {
     "/:handle/analytics/:path*",
     "/profile/:path*",
     "/subscribe/:path*",
-    "/onboarding",
+    "/create",
     "/post-sign-in",
     "/sign-in",
     "/sign-up",

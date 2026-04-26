@@ -26,7 +26,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
   const profilePageData = queryClient.getQueryData(profilePageQuery.queryKey);
 
   if (!profilePageData?.page.handle) {
-    redirect("/onboarding");
+    redirect("/create");
   }
 
   if (profilePageData.page.handle !== handle) {

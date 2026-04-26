@@ -7,8 +7,8 @@ import type { ReactNode } from "react";
 const transitionConfig = {
   transitions: [
     {
-      from: "/onboarding",
-      to: "/onboarding/success",
+      from: "/create",
+      to: "/create/success",
       transition: swap({
         scaleOffset: 0.1,
         physics: {

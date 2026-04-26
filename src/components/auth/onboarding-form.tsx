@@ -388,7 +388,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
     }
 
     try {
-      await apiFetch<{ success: true }>("/api/app/onboarding", {
+      await apiFetch<{ success: true }>("/api/app/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -403,7 +403,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
         }),
       });
       await queryClient.invalidateQueries({ queryKey: queryKeys.app.me() });
-      router.push("/onboarding/success");
+      router.push("/create/success");
     } catch (submitError) {
       if (uploadedImageUrl) {
         try {
@@ -436,7 +436,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
         failParams.set("message", apiError.message);
       }
 
-      router.push(`/onboarding/fail?${failParams.toString()}`);
+      router.push(`/create/fail?${failParams.toString()}`);
     } finally {
       setIsSubmitting(false);
     }

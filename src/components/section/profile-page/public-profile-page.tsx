@@ -180,7 +180,7 @@ export function PublicProfilePage({
   const orderedSocialLinks = [...socialLinks].sort(byPosition);
 
   return (
-    <section className="mx-auto flex h-full min-h-full w-full items-start pb-8">
+    <section className="relative mx-auto flex h-full min-h-full w-full items-start pb-8">
       <ProfilePageAnalyticsTracker
         displayName={name ?? userName ?? ""}
         handle={handle}

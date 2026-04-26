@@ -30,7 +30,7 @@ export function PublicProfileShareButton() {
     <Button
       type="button"
       size="icon-lg"
-      className="fixed right-4 bottom-4 z-50 size-12 rounded-full shadow-float border border-primary shadow-float!"
+      className="absolute right-4 bottom-4 z-50 size-12 rounded-full shadow-float border border-primary shadow-float!"
       aria-label={isCopied ? "Copied page URL" : "Copy page URL"}
       onClick={() => void handleCopyCurrentUrl()}
     >

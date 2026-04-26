@@ -5,7 +5,7 @@ import { useProfilePageEditor } from "@/components/section/profile-page/use-prof
 import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
 import useUser from "@/lib/users/useUser";
-import { CheckIcon, CopyIcon, Loader2 } from "lucide-react";
+import { CheckIcon, ChevronRightIcon, CopyIcon, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -72,35 +72,50 @@ export function ProfilePagePreview() {
       <div
         className="absolute inset-0 scale-105 blur-xl"
         style={{
-          backgroundImage: editor.previewImageSrc ? `url(${editor.previewImageSrc})` : undefined,
+          backgroundImage: editor.previewImageSrc
+            ? `url(${editor.previewImageSrc})`
+            : undefined,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
         }}
       />
       <div className="relative z-10 flex flex-col h-full">
-        <div className="flex items-center justify-between px-5 py-4">
+        <div className="flex items-center justify-between py-4 w-[375px] mx-auto">
           <div className="group/share flex items-center justify-center min-w-32 h-10 overflow-hidden rounded-md bg-foreground text-primary-foreground shadow-sm transition-all duration-300">
-            <Link
-              href={`/${editor.data.page.handle}`}
-              className="flex items-center gap-1 px-4 py-3 font-medium text-sm justify-center min-w-0"
-            >
-              <p className="truncate line-clamp-1">leeve.li/{editor.data.page.handle}</p>
-            </Link>
+            <Button
+              nativeButton={false}
+              className={"px-4 py-3 font-bold text-base"}
+              render={
+                <Link
+                  href={`/${editor.data.page.handle}`}
+                  className="min-w-0"
+                >
+                  <p className="truncate line-clamp-1">Preview</p>
+                  <ChevronRightIcon className="stroke-3 size-4"/>
+                </Link>
+              }
+            />
           </div>
           <Button
             type="button"
             size={"lg"}
             onClick={() => void handlePrimaryAction()}
             disabled={editor.isSyncing}
-            className={"px-6 h-10 rounded-md uppercase text-xs min-w-30"}
+            className={
+              "px-6 h-10 rounded-md font-bold text-base min-w-32 bg-green-400 border-green-400 hover:bg-green-500"
+            }
           >
             {editor.isSyncing && <Loader2 className="size-4 animate-spin" />}
             {editor.hasUnsyncedChanges ? (
               <span>Sync</span>
             ) : (
               <>
-                {isCopied ? <CheckIcon className="size-4" /> : <CopyIcon className="size-4" />}
+                {isCopied ? (
+                  <CheckIcon className="size-4" />
+                ) : (
+                  <CopyIcon className="size-4 stroke-3" />
+                )}
                 <span>{isCopied ? "Copied" : "Share"}</span>
               </>
             )}

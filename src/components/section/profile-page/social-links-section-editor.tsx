@@ -1,22 +1,23 @@
 "use client";
 
 import {
-  AppleMusicIcon,
-  GithubIcon,
-  InstagramIcon,
-  LogoBehanceIcon,
-  LogoThreadsIcon,
-  MailIcon,
-  SoundcloudLogoSolidIcon,
-  SpotifyIcon,
-  TiktokIcon,
-  XTwitterIcon,
+  ColorAppleMusicIcon,
+  ColorBehanceIcon,
+  ColorGithubIcon,
+  ColorInstagramIcon,
+  ColorLinkedInIcon,
+  ColorMailIcon,
+  ColorSoundcloudIcon,
+  ColorSpotifyIcon,
+  ColorThreadsIcon,
+  ColorTiktokIcon,
+  ColorXTwitterIcon,
+  ColorYoutubeIcon,
 } from "@/components/icon";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { GripVertical } from "lucide-react";
-import { FaLinkedinIn, FaYoutube } from "react-icons/fa6";
 
 import { ProfilePageSectionLayout } from "@/components/section/profile-page/section-layout";
 import { SortableShell } from "@/components/section/profile-page/sortable-shell";
@@ -34,18 +35,18 @@ import { MAX_SOCIAL_LINKS } from "@/lib/profile-page/types";
 import { cn } from "@/lib/utils";
 
 const socialPlatformIcons = {
-  x: XTwitterIcon,
-  instagram: InstagramIcon,
-  youtube: FaYoutube,
-  linkedin: FaLinkedinIn,
-  github: GithubIcon,
-  threads: LogoThreadsIcon,
-  soundcloud: SoundcloudLogoSolidIcon,
-  spotify: SpotifyIcon,
-  behance: LogoBehanceIcon,
-  tiktok: TiktokIcon,
-  mail: MailIcon,
-  apple_music: AppleMusicIcon,
+  x: ColorXTwitterIcon,
+  instagram: ColorInstagramIcon,
+  youtube: ColorYoutubeIcon,
+  linkedin: ColorLinkedInIcon,
+  github: ColorGithubIcon,
+  threads: ColorThreadsIcon,
+  soundcloud: ColorSoundcloudIcon,
+  spotify: ColorSpotifyIcon,
+  behance: ColorBehanceIcon,
+  tiktok: ColorTiktokIcon,
+  mail: ColorMailIcon,
+  apple_music: ColorAppleMusicIcon,
 } as const;
 
 export function SocialLinksSectionEditor() {
@@ -95,16 +96,14 @@ export function SocialLinksSectionEditor() {
                     onClick={() => editor.toggleSocialLink(platform.key)}
                     disabled={editor.isSyncing}
                     aria-pressed={isSelected}
-                    aria-label={`${platform.label} ${isSelected ? "등록 해제" : "등록"}`}
+                    aria-label={`${isSelected ? "Remove" : "Add"} ${platform.label}`}
                     className={cn(
-                      "inline-flex size-10 items-center justify-center rounded-full bg-background text-foreground shadow-brand transition-[transform,box-shadow,opacity] hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-50",
-                      isSelected
-                        ? "ring-2 ring-ring ring-offset-2 ring-foreground bg-background"
-                        : "",
+                      "inline-flex size-12 items-center justify-center rounded-full bg-background text-foreground shadow-brand transition-[transform,box-shadow,opacity] hover:-translate-y-0.5 disabled:pointer-events-none disabled:opacity-50",
+                      isSelected ? "ring-2 ring-offset-2 ring-foreground bg-background" : "",
                       isSelectionDisabled ? "opacity-100" : ""
                     )}
                   >
-                    <Icon className="size-5" aria-hidden="true" />
+                    <Icon className="size-7 text-foreground" aria-hidden="true" />
                   </button>
                 );
               })}
@@ -130,10 +129,10 @@ export function SocialLinksSectionEditor() {
                     <SortableShell key={platform.key} id={platform.key}>
                       {({ attributes, listeners }) => (
                         <div className="group/item relative">
-                          <InputGroup className="h-12 rounded-md border-0 bg-background shadow-brand has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
+                          <InputGroup className="h-14 rounded-md border-0 bg-background shadow-brand has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
                             <InputGroupAddon className="pl-3">
                               <InputGroupText>
-                                <Icon className="size-6 text-black" aria-hidden="true" />
+                                <Icon className="size-9 text-foreground" aria-hidden="true" />
                               </InputGroupText>
                             </InputGroupAddon>
                             <InputGroupInput
@@ -144,17 +143,17 @@ export function SocialLinksSectionEditor() {
                               placeholder={platform.placeholder}
                               autoComplete="off"
                               aria-label={platform.label}
-                              className="h-full px-0 pl-4!"
+                              className="h-full px-0 pl-4! text-base!"
                             />
                           </InputGroup>
                           <button
                             type="button"
                             className="absolute top-1/2 -right-6 inline-flex -translate-y-1/2 cursor-grab items-center justify-center bg-transparent text-muted-foreground opacity-0 transition-opacity group-hover/item:opacity-100"
-                            aria-label={`${platform.label} 순서 변경`}
+                            aria-label={`Reorder ${platform.label}`}
                             {...attributes}
                             {...listeners}
                           >
-                            <GripVertical className="size-4" />
+                            <GripVertical className="size-5" />
                           </button>
                         </div>
                       )}

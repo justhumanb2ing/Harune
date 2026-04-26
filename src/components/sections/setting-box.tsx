@@ -4,6 +4,8 @@ import { CurrentPageButton, useCurrentPageMeta } from "@/components/layout/curre
 import { ChangeHandleButton } from "@/components/section/profile-page/change-handle-button";
 import { DeleteAccountDialog } from "@/components/sections/delete-account-dialog";
 import { Button } from "@/components/ui/button";
+import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { useIsBelowLg } from "@/hooks/use-mobile";
 import { authClient } from "@/lib/auth-client";
 import useUser from "@/lib/users/useUser";
 import { BoxIcon, ChartColumnBigIcon, PlusIcon } from "lucide-react";
@@ -110,6 +112,7 @@ export default function SettingBox() {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const isBelowLg = useIsBelowLg();
   const isAnalyticsPath = profilePage?.handle
     ? pathname === `/${profilePage.handle}/analytics` ||
       pathname.startsWith(`/${profilePage.handle}/analytics/`)
@@ -205,7 +208,7 @@ export default function SettingBox() {
   }, [pathname]);
 
   useEffect(() => {
-    if (!isExpanded) {
+    if (!isExpanded || isBelowLg) {
       return;
     }
 
@@ -238,7 +241,7 @@ export default function SettingBox() {
       document.removeEventListener("mousedown", handlePointerDown);
       document.removeEventListener("touchstart", handlePointerDown);
     };
-  }, [isDeleteDialogOpen, isExpanded]);
+  }, [isBelowLg, isDeleteDialogOpen, isExpanded]);
 
   if (!isMounted) {
     return null;
@@ -246,6 +249,77 @@ export default function SettingBox() {
 
   return createPortal(
     <MotionConfig transition={shellExpandTransition}>
+      <Drawer open={isBelowLg && isExpanded} onOpenChange={setIsExpanded}>
+        <DrawerTrigger asChild>
+          <button
+            type="button"
+            className="fixed left-2 bottom-16 z-50 flex size-12 items-center justify-center rounded-full bg-background shadow-float lg:hidden"
+            aria-label="Open settings"
+          >
+            <CurrentPageButton size="lg" />
+          </button>
+        </DrawerTrigger>
+        <DrawerContent aria-label="Page settings" className="max-h-[85vh] overflow-hidden p-0">
+          <DrawerTitle className="sr-only">Page settings</DrawerTitle>
+          <div className="flex min-h-0 flex-col bg-background">
+            <div className="flex h-16 items-center gap-3 border-b border-border/60 px-4">
+              <CurrentPageButton size="lg" />
+              <div className="flex min-w-0 flex-1 flex-col">
+                <span className="truncate text-sm font-medium text-foreground">{pageName}</span>
+                <span className="truncate text-xs font-medium text-muted-foreground">
+                  {pageHandleLabel}
+                </span>
+              </div>
+              <Button
+                nativeButton={false}
+                variant="ghost"
+                size="icon-sm"
+                className="rounded-full p-4 text-primary hover:bg-background"
+                render={
+                  <Link
+                    href={toggleHref}
+                    aria-label={isAnalyticsPath ? "Go to Section" : "Go to Analytics"}
+                  >
+                    <ToggleIcon className="size-5 stroke-2" />
+                  </Link>
+                }
+              />
+            </div>
+            <div className="flex min-h-0 flex-1 flex-col justify-between gap-8 overflow-y-auto p-2">
+              <div>
+                <Button
+                  type="button"
+                  variant={"ghost"}
+                  className={"w-full py-6 font-normal justify-between px-4"}
+                >
+                  <span>Create new page</span>
+                  <PlusIcon className="size-4" />
+                </Button>
+                <ChangeHandleButton />
+              </div>
+
+              <aside>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={isSigningOut}
+                  aria-busy={isSigningOut}
+                  className="flex w-full items-center justify-start gap-2 px-4 py-6 font-normal"
+                  onClick={handleSignOut}
+                >
+                  <span>{isSigningOut ? "Logging Out..." : "Log Out"}</span>
+                </Button>
+                <DeleteAccountDialog
+                  open={isDeleteDialogOpen}
+                  onOpenChange={handleDeleteDialogOpenChange}
+                  isDeleting={isDeletingAccount}
+                  onConfirm={handleDeleteAccount}
+                />
+              </aside>
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
       <motion.div
         ref={containerRef}
         animate={{
@@ -255,7 +329,7 @@ export default function SettingBox() {
           y: isExpanded ? [0, -3, 0] : 0,
         }}
         transition={isExpanded ? shellExpandTransition : shellCollapseTransition}
-        className="fixed left-6 z-50 flex flex-col overflow-hidden bg-background shadow-float"
+        className="hidden fixed left-6 z-50 flex-col overflow-hidden bg-background shadow-float lg:flex"
         // border border-border/80 shadow-[0_10px_45px_0px_rgba(15,23,42,0.12)]
         style={{
           bottom: BOX_OFFSET,

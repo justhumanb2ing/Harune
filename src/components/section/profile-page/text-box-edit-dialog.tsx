@@ -8,8 +8,10 @@ import {
   DialogTitle,
 } from "@/components/animate-ui/components/base/dialog";
 import { Button } from "@/components/ui/button";
+import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useIsBelowLg } from "@/hooks/use-mobile";
 import type { DraftTextBoxItem } from "@/lib/profile-page/types";
 
 type TextBoxEditDialogProps = {
@@ -27,6 +29,57 @@ export function TextBoxEditDialog({
   onTextBoxChange,
   textBox,
 }: TextBoxEditDialogProps) {
+  const isBelowLg = useIsBelowLg();
+
+  const content = textBox ? (
+    <div className="min-w-0 space-y-0 p-2">
+      <Input
+        value={textBox.title}
+        onChange={(event) => onTextBoxChange(textBox.id, "title", event.target.value)}
+        placeholder="What do you want to write?"
+        className="w-full min-w-0 max-w-full border-0 font-medium text-lg! focus-visible:ring-0 truncate"
+      />
+      <Textarea
+        value={textBox.description ?? ""}
+        onChange={(event) => onTextBoxChange(textBox.id, "description", event.target.value)}
+        placeholder="Add description for detail"
+        className="min-h-32 w-full min-w-0 max-h-64 max-w-full text-base! break-all resize-none overflow-x-hidden overflow-y-auto border-0 [field-sizing:fixed] [overflow-wrap:anywhere] focus-visible:ring-0"
+      />
+    </div>
+  ) : null;
+
+  if (isBelowLg) {
+    return (
+      <Drawer open={Boolean(textBox)} onOpenChange={onOpenChange}>
+        <DrawerContent aria-label="Edit text" className="max-h-[85vh] gap-0 rounded-t-2xl p-0 pt-1">
+          <DrawerTitle className="sr-only">Edit text</DrawerTitle>
+          <div className="grid grid-cols-3 items-center px-3 py-2">
+            <DrawerClose asChild>
+              <Button
+                size={"lg"}
+                variant={"outline"}
+                className="h-10 justify-self-start shadow-sm font-semibold px-6 rounded-md text-base border-border/60"
+              >
+                Close
+              </Button>
+            </DrawerClose>
+            <h2 className="justify-self-center text-xl font-medium">Edit</h2>
+            <DrawerClose asChild>
+              <Button
+                size={"lg"}
+                variant={"outline"}
+                className="brand-success-button h-10 justify-self-end shadow-sm font-semibold px-6 rounded-md text-base border text-primary-foreground hover:text-primary-foreground"
+              >
+                Save
+              </Button>
+            </DrawerClose>
+          </div>
+          <div className="min-h-0 overflow-y-auto">{content}</div>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
   return (
     <Dialog open={Boolean(textBox)} onOpenChange={onOpenChange}>
       <DialogPopup
@@ -63,22 +116,7 @@ export function TextBoxEditDialog({
           </div>
         </DialogHeader>
 
-        {textBox ? (
-          <div className="min-w-0 space-y-0 p-2">
-            <Input
-              value={textBox.title}
-              onChange={(event) => onTextBoxChange(textBox.id, "title", event.target.value)}
-              placeholder="What do you want to write?"
-              className="w-full min-w-0 max-w-full border-0 font-medium text-lg! focus-visible:ring-0 truncate"
-            />
-            <Textarea
-              value={textBox.description ?? ""}
-              onChange={(event) => onTextBoxChange(textBox.id, "description", event.target.value)}
-              placeholder="Add description for detail"
-              className="min-h-32 w-full min-w-0 max-h-64 max-w-full text-base! break-all resize-none overflow-x-hidden overflow-y-auto border-0 [field-sizing:fixed] [overflow-wrap:anywhere] focus-visible:ring-0"
-            />
-          </div>
-        ) : null}
+        {content}
       </DialogPopup>
     </Dialog>
   );

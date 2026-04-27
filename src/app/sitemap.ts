@@ -36,7 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .map((page) => ({
       url: absoluteUrl(`/${page.handle}`),
       lastModified: page.updatedAt,
-      changeFrequency: "weekly" as const,
+      changeFrequency: "daily" as const,
       priority: 0.7,
     }));
 

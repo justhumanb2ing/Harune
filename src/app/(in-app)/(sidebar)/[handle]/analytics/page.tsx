@@ -1,8 +1,15 @@
 import { AnalyticsPageClient } from "@/app/(in-app)/(sidebar)/[handle]/analytics/page-client";
 import { auth } from "@/auth";
+import { normalizeAnalyticsTimezone } from "@/lib/analytics/analytics-ranges";
+import { profileAnalyticsServerQueryOptions } from "@/lib/analytics/server-query-options";
 import { profilePageServerQueryOptions } from "@/lib/profile-page/server-query-options";
 import { SsgoiTransition } from "@ssgoi/react";
-import { QueryClient } from "@tanstack/react-query";
+import {
+  HydrationBoundary,
+  QueryClient,
+  dehydrate,
+} from "@tanstack/react-query";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 type AnalyticsPageProps = {
@@ -33,14 +40,26 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
     redirect(`/${profilePageData.page.handle}/analytics`);
   }
 
+  const requestHeaders = await headers();
+  const timezone = normalizeAnalyticsTimezone(
+    requestHeaders.get("x-vercel-ip-timezone"),
+  );
+
+  await queryClient.prefetchQuery(
+    profileAnalyticsServerQueryOptions({
+      profilePageId: profilePageData.page.id,
+      timezone,
+      userId: session.user.id,
+    }),
+  );
+
   return (
-    <SsgoiTransition id="/analytics" className="block h-full">
-      <main className="flex h-full min-h-0 p-8 flex-col gap-12">
-        <header className="space-y-3">
-          <h1 className="text-3xl">Analytics</h1>
-        </header>
-        <AnalyticsPageClient />
-      </main>
-    </SsgoiTransition>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <SsgoiTransition id="/analytics" className="block h-full min-h-0">
+        <main className="flex h-full min-h-0 flex-col gap-12 overflow-y-auto p-4 sm:p-8">
+          <AnalyticsPageClient />
+        </main>
+      </SsgoiTransition>
+    </HydrationBoundary>
   );
 }

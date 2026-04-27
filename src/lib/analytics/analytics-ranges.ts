@@ -165,6 +165,34 @@ export const getAnalyticsRangeWindow = (
   };
 };
 
+export const getPreviousAnalyticsRangeWindow = (
+  range: AnalyticsRangeKey,
+  options?: {
+    now?: Date;
+    timezone?: string | null;
+  }
+): AnalyticsRangeWindow => {
+  const window = getAnalyticsRangeWindow(range, options);
+
+  if (range === "today") {
+    return {
+      ...window,
+      endAt: window.endAt - ONE_DAY_MS,
+      label: "Yesterday",
+      startAt: window.startAt - ONE_DAY_MS,
+    };
+  }
+
+  const duration = window.endAt - window.startAt;
+
+  return {
+    ...window,
+    endAt: window.startAt - 1,
+    label: `Previous ${window.label}`,
+    startAt: window.startAt - duration,
+  };
+};
+
 export const getAnalyticsRangeWindows = (options?: {
   now?: Date;
   timezone?: string | null;
@@ -172,4 +200,13 @@ export const getAnalyticsRangeWindows = (options?: {
   "7d": getAnalyticsRangeWindow("7d", options),
   "30d": getAnalyticsRangeWindow("30d", options),
   today: getAnalyticsRangeWindow("today", options),
+});
+
+export const getPreviousAnalyticsRangeWindows = (options?: {
+  now?: Date;
+  timezone?: string | null;
+}): Record<AnalyticsRangeKey, AnalyticsRangeWindow> => ({
+  "7d": getPreviousAnalyticsRangeWindow("7d", options),
+  "30d": getPreviousAnalyticsRangeWindow("30d", options),
+  today: getPreviousAnalyticsRangeWindow("today", options),
 });

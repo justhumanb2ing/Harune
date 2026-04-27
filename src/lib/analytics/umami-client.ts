@@ -10,6 +10,11 @@ type UmamiEventSeriesRow = {
   y: number;
 };
 
+type UmamiEventDataValueRow = {
+  total: number;
+  value: string;
+};
+
 type UmamiReportingConfig = {
   apiEndpoint: string;
   authHeaderName: string;
@@ -93,6 +98,7 @@ export const fetchUmamiEventSeries = async ({
 
   const url = new URL(`${config.apiEndpoint}/websites/${config.websiteId}/events/series`);
   url.searchParams.set("endAt", String(endAt));
+  url.searchParams.set("filters", JSON.stringify({ path }));
   url.searchParams.set("path", path);
   url.searchParams.set("startAt", String(startAt));
   url.searchParams.set("timezone", timezone);
@@ -126,5 +132,64 @@ export const fetchUmamiEventSeries = async ({
       typeof (row as UmamiEventSeriesRow).x === "string" &&
       typeof (row as UmamiEventSeriesRow).y === "number" &&
       typeof (row as UmamiEventSeriesRow).t === "string"
+  );
+};
+
+type FetchUmamiEventDataValuesParams = {
+  endAt: number;
+  event: string;
+  path: string;
+  propertyName: string;
+  startAt: number;
+};
+
+export const fetchUmamiEventDataValues = async ({
+  endAt,
+  event,
+  path,
+  propertyName,
+  startAt,
+}: FetchUmamiEventDataValuesParams): Promise<UmamiEventDataValueRow[]> => {
+  const config = getUmamiReportingConfig();
+
+  if (!config) {
+    return [];
+  }
+
+  const url = new URL(`${config.apiEndpoint}/websites/${config.websiteId}/event-data/values`);
+  url.searchParams.set("endAt", String(endAt));
+  url.searchParams.set("event", event);
+  url.searchParams.set("filters", JSON.stringify({ path }));
+  url.searchParams.set("path", path);
+  url.searchParams.set("propertyName", propertyName);
+  url.searchParams.set("startAt", String(startAt));
+  url.searchParams.set("url", path);
+
+  const response = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+      [config.authHeaderName]: config.authHeaderValue,
+    },
+    next: {
+      revalidate: ONE_DAY_IN_SECONDS,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Umami request failed with status ${response.status}`);
+  }
+
+  const data = (await response.json()) as unknown;
+
+  if (!Array.isArray(data)) {
+    return [];
+  }
+
+  return data.filter(
+    (row): row is UmamiEventDataValueRow =>
+      typeof row === "object" &&
+      row !== null &&
+      typeof (row as UmamiEventDataValueRow).total === "number" &&
+      typeof (row as UmamiEventDataValueRow).value === "string"
   );
 };

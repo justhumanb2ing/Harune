@@ -144,20 +144,18 @@ export function SectionPageClient() {
       <div className="space-y-8 pb-4">
         <header className="flex flex-row items-center justify-between">
           <h1 className="text-3xl font-semibold">My Page</h1>
-          <div className="mt-2.5">
-            <Button
-              nativeButton={false}
-              variant="ghost"
-              size="icon-lg"
-              className="lg:hidden brand-button"
-              aria-label="Go to Analytics"
-              render={
-                <Link href={analyticsPath}>
-                  <ChartColumnBigIcon className="size-5 stroke-2" />
-                </Link>
-              }
-            />
-          </div>
+          <Button
+            nativeButton={false}
+            variant="outline"
+            size="icon-lg"
+            className="shadow-sm"
+            aria-label="Go to Analytics"
+            render={
+              <Link href={analyticsPath}>
+                <ChartColumnBigIcon className="size-5 stroke-2" />
+              </Link>
+            }
+          />
         </header>
         <section className="space-y-3">
           <div className="flex flex-col gap-2">

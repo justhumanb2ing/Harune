@@ -8,11 +8,9 @@ import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/
 import { useIsBelowLg } from "@/hooks/use-mobile";
 import { authClient } from "@/lib/auth-client";
 import { clearAuthenticatedAppQueries } from "@/lib/react-query/app-cache";
-import useUser from "@/lib/users/useUser";
 import { useQueryClient } from "@tanstack/react-query";
-import { BoxIcon, ChartColumnBigIcon, PlusIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import { AnimatePresence, MotionConfig, type Transition, motion } from "motion/react";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -107,7 +105,6 @@ export default function SettingBox() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { pageHandleLabel, pageName } = useCurrentPageMeta();
-  const { profilePage } = useUser();
   const previousPathnameRef = useRef(pathname);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMounted, setIsMounted] = useState(false);
@@ -116,16 +113,6 @@ export default function SettingBox() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const isBelowLg = useIsBelowLg();
-  const isAnalyticsPath = profilePage?.handle
-    ? pathname === `/${profilePage.handle}/analytics` ||
-      pathname.startsWith(`/${profilePage.handle}/analytics/`)
-    : pathname === "/analytics" || pathname.startsWith("/analytics/");
-  const sectionToggleHref = profilePage?.handle ? `/${profilePage.handle}/app` : "/post-sign-in";
-  const analyticsToggleHref = profilePage?.handle
-    ? `/${profilePage.handle}/analytics`
-    : "/post-sign-in";
-  const toggleHref = isAnalyticsPath ? sectionToggleHref : analyticsToggleHref;
-  const ToggleIcon = isAnalyticsPath ? BoxIcon : ChartColumnBigIcon;
 
   const handleSignOut = async () => {
     if (isSigningOut) {
@@ -197,14 +184,6 @@ export default function SettingBox() {
     }
 
     setIsDeleteDialogOpen(open);
-  };
-
-  const prefetchToggleRoute = () => {
-    if (!profilePage?.handle) {
-      return;
-    }
-
-    router.prefetch(toggleHref);
   };
 
   useEffect(() => {
@@ -283,23 +262,6 @@ export default function SettingBox() {
                   {pageHandleLabel}
                 </span>
               </div>
-              <Button
-                nativeButton={false}
-                variant="ghost"
-                size="icon-sm"
-                className="rounded-full p-4 text-primary hover:bg-background"
-                render={
-                  <Link
-                    href={toggleHref}
-                    prefetch={profilePage?.handle ? undefined : false}
-                    aria-label={isAnalyticsPath ? "Go to Section" : "Go to Analytics"}
-                    onFocus={prefetchToggleRoute}
-                    onMouseEnter={prefetchToggleRoute}
-                  >
-                    <ToggleIcon className="size-5 stroke-2" />
-                  </Link>
-                }
-              />
             </div>
             <div className="flex min-h-0 flex-1 flex-col justify-between gap-8 overflow-y-auto p-2">
               <div>
@@ -377,24 +339,6 @@ export default function SettingBox() {
               </span>
             </div>
           </button>
-          <Button
-            nativeButton={false}
-            variant="ghost"
-            size="icon-sm"
-            className="rounded-full text-primary p-4 hover:bg-background"
-            render={
-              <Link
-                href={toggleHref}
-                prefetch={profilePage?.handle ? undefined : false}
-                aria-label={isAnalyticsPath ? "Go to Section" : "Go to Analytics"}
-                onFocus={prefetchToggleRoute}
-                onMouseEnter={prefetchToggleRoute}
-                onClick={(event) => event.stopPropagation()}
-              >
-                <ToggleIcon className="size-5 stroke-2" />
-              </Link>
-            }
-          />
         </motion.div>
 
         <AnimatePresence initial={false} mode="sync">

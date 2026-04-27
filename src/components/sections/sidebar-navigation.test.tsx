@@ -13,10 +13,18 @@ describe("sidebar navigation prefetch policy", () => {
     expect(source).toContain('prefetch={href === "/post-sign-in" ? false : undefined}');
   });
 
-  test("setting toggle prefetches handle routes but not post-sign-in fallback", () => {
+  test("setting box does not own analytics navigation", () => {
     const source = readSource("src/components/sections/setting-box.tsx");
 
-    expect(source).toContain("router.prefetch(toggleHref)");
-    expect(source).toContain("prefetch={profilePage?.handle ? undefined : false}");
+    expect(source).not.toContain("Go to Analytics");
+    expect(source).not.toContain("router.prefetch(toggleHref)");
+  });
+
+  test("section page keeps analytics action visible next to My Page", () => {
+    const source = readSource("src/components/section/profile-page/section-page-client.tsx");
+
+    expect(source).toContain("Go to Analytics");
+    expect(source).toContain("ChartColumnBigIcon");
+    expect(source).not.toContain("lg:hidden brand-button");
   });
 });

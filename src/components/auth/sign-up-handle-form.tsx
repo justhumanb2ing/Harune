@@ -56,7 +56,7 @@ export function SignUpHandleForm() {
     <form onSubmit={handleSubmit} className="space-y-2">
       <InputGroup className="h-16 rounded-full has-[[data-slot=input-group-control]:focus-visible]:border-input bg-background! transition-all">
         <InputGroupAddon className="pl-5">
-          <InputGroupText className="text-lg">leeve.li /</InputGroupText>
+          <InputGroupText className="text-lg">harune.me /</InputGroupText>
         </InputGroupAddon>
         <InputGroupInput
           autoFocus

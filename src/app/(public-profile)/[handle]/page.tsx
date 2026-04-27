@@ -1,4 +1,5 @@
 import { PublicProfilePage } from "@/components/section/profile-page/public-profile-page";
+import { appConfig } from "@/lib/config";
 import { getPublicProfilePage } from "@/lib/profile-page/queries";
 import { createPageMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
@@ -22,8 +23,8 @@ export async function generateMetadata({ params }: HandlePageProps): Promise<Met
 
   return createPageMetadata({
     path: `/${owner.handle}`,
-    title: `${owner.name || owner.userName || owner.handle} on Leeve`,
-    description: owner.bio || `Visit @${owner.handle}'s public Leeve page.`,
+    title: `${owner.name || owner.userName || owner.handle} on ${appConfig.projectName}`,
+    description: owner.bio || `Visit @${owner.handle}'s public ${appConfig.projectName} page.`,
   });
 }
 

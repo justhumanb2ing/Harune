@@ -38,7 +38,7 @@ const socialProviders = {
 export const betterAuthServer = betterAuth({
   appName: appConfig.projectName,
   baseURL: {
-    allowedHosts: ["localhost:3000", "*.vercel.app"],
+    allowedHosts: ["localhost:3000", "harune.me", "www.harune.me", "*.vercel.app"],
     protocol: process.env.NODE_ENV === "production" ? "https" : "http",
   },
   database: drizzleAdapter(db, {

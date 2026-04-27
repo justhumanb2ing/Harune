@@ -19,8 +19,7 @@ interface LayoutProps {
   previewText?: string;
 }
 
-const baseUrl =
-  process.env.NODE_ENV === "production" ? env.NEXT_PUBLIC_APP_URL : "http://localhost:3000";
+const baseUrl = (env.NEXT_PUBLIC_APP_URL ?? appConfig.url).replace(/\/$/, "");
 
 export const Layout = ({ children, previewText }: LayoutProps) => {
   return (

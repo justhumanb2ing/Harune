@@ -32,7 +32,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "startup-template-sage.vercel.app",
+        hostname: "harune.me",
       },
       ...(s3Host
         ? [

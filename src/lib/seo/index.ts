@@ -2,7 +2,7 @@ import { env } from "@/env";
 import { appConfig } from "@/lib/config";
 import type { Metadata } from "next";
 
-const FALLBACK_SITE_URL = "http://localhost:3000";
+const FALLBACK_SITE_URL = appConfig.url;
 const defaultSiteUrl = (env.NEXT_PUBLIC_APP_URL ?? FALLBACK_SITE_URL).replace(/\/$/, "");
 
 type PublicPath = `/${string}` | "/";

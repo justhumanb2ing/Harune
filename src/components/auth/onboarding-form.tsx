@@ -491,7 +491,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
 
                         <InputGroup className="h-12 rounded-xl has-[[data-slot=input-group-control]:focus-visible]:border-secondary bg-secondary! transition-all border-0">
                           <InputGroupAddon className="pl-5">
-                            <InputGroupText className="text-primary">leeve.li/</InputGroupText>
+                            <InputGroupText className="text-primary">harune.me/</InputGroupText>
                           </InputGroupAddon>
                           <InputGroupInput
                             id="handle"

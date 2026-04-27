@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
+import { appConfig } from "@/lib/config";
 import { invalidateAuthenticatedAppQueries } from "@/lib/react-query/app-cache";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
@@ -93,7 +94,7 @@ export function AuthForm({
               callbackURL: resolvedCallbackUrl,
             })
           : await authClient.signUp.email({
-              name: name || email.split("@")[0] || "Leeve User",
+              name: name || email.split("@")[0] || `${appConfig.projectName} User`,
               email,
               password,
               callbackURL: resolvedCallbackUrl,

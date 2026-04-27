@@ -100,7 +100,7 @@ export function ProfileHandleDialog() {
               disabled={editor.isSyncing}
             >
               <div className="flex w-full items-center gap-1 text-left">
-                <span className="text-muted-foreground text-sm">leeve.li/</span>
+                <span className="text-muted-foreground text-sm">harune.me/</span>
                 <span
                   className={cn(
                     "flex-1 truncate text-sm",
@@ -147,7 +147,7 @@ export function ProfileHandleDialog() {
                 className="px-0.5!"
               />
               <InputGroupAddon align="inline-start">
-                <InputGroupText>leeve.li/</InputGroupText>
+                <InputGroupText>harune.me/</InputGroupText>
               </InputGroupAddon>
               <InputGroupAddon align="inline-end">
                 {isCheckingAvailability ? (

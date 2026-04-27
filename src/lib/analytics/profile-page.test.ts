@@ -59,7 +59,7 @@ describe("profile page analytics", () => {
           profilePageId: "page-1",
         },
         name: PROFILE_PAGE_ANALYTICS_EVENT_NAMES.pageView,
-        title: "Leeve on Leeve",
+        title: "Leeve on Harune",
         url: "/_analytics/profile-page/page-1",
       });
     } finally {

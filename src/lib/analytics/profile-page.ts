@@ -1,3 +1,4 @@
+import { appConfig } from "@/lib/config";
 import type { SocialPlatform } from "@/lib/profile-page/types";
 
 export const PROFILE_PAGE_ANALYTICS_PATH_PREFIX = "/_analytics/profile-page";
@@ -109,7 +110,7 @@ export const trackProfilePagePageView = ({
     },
     eventName: PROFILE_PAGE_ANALYTICS_EVENT_NAMES.pageView,
     profilePageId,
-    title: `${displayName} on Leeve`,
+    title: `${displayName} on ${appConfig.projectName}`,
   });
 
 type TrackProfilePageItemClickParams = {

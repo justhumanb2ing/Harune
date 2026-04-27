@@ -11,7 +11,7 @@ export default function WebsiteHomepage() {
       <HandleCardSection />
       <AnalyticsCardSection />
       <LiveCardSection />
-      <section className="h-1/2 flex flex-col justify-center items-center">
+      <section className="h-[20rem] flex flex-col justify-center items-center">
         <div className="flex flex-col justify-center items-center gap-2">
           <Button
             size={"lg"}
@@ -19,7 +19,7 @@ export default function WebsiteHomepage() {
           >
             Get Started
           </Button>
-          <p className="text-sm text-muted-foreground">It's all free!</p>
+          <p className="text-sm text-muted-foreground">Unique links are still available</p>
         </div>
       </section>
     </main>

@@ -157,7 +157,7 @@ export function ChangeHandleButton() {
                 className="px-0.5!"
               />
               <InputGroupAddon align="inline-start">
-                <InputGroupText className="text-primary">leeve.li/</InputGroupText>
+                <InputGroupText className="text-primary">harune.me/</InputGroupText>
               </InputGroupAddon>
               <InputGroupAddon align="inline-end">
                 {isCheckingAvailability ? (

@@ -256,7 +256,7 @@ export default function LiveCardSection() {
                 className="pointer-events-none absolute inset-0 bg-background"
                 style={{ opacity: looseItemBackgroundOpacity }}
               />
-              <p className="relative rounded-lg px-3 py-2 text-base font-medium">@kaidonovan</p>
+              <p className="relative rounded-lg px-3 py-2 text-2xl font-medium">@kai_donovan</p>
             </LiveCardItem>
 
             {/* Link 1 */}

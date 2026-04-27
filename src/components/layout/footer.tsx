@@ -35,11 +35,6 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/refund" className="hover:text-primary">
-                  Refund Policy
-                </Link>
-              </li>
-              <li>
                 <a
                   href="https://buymeacoffee.com/justhumanb2ing"
                   target="_blank"

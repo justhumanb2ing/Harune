@@ -19,6 +19,12 @@ import type { LinkItem, SocialLink, SocialPlatform, TextBoxItem } from "@/lib/pr
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { FaLinkedinIn, FaYoutube } from "react-icons/fa6";
+import {
+  PublicProfileAvatarMotion,
+  PublicProfileBackgroundImageMotion,
+  PublicProfileReveal,
+  PublicProfileStagger,
+} from "./public-profile-motion";
 import { PublicProfileShareButton } from "./public-profile-share-button";
 
 type PublicProfilePageProps = {
@@ -189,9 +195,9 @@ export function PublicProfilePage({
 
       <div className="relative flex min-h-lvh w-full flex-col rounded-2xl bg-background">
         <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 mx-auto max-w-lg px-4">
-          <div className="flex justify-end">
+          <PublicProfileReveal className="flex justify-end" delay={0.62} y={8}>
             <PublicProfileShareButton />
-          </div>
+          </PublicProfileReveal>
         </div>
 
         <div
@@ -201,25 +207,33 @@ export function PublicProfilePage({
           )}
         >
           {backgroundImage ? (
-            <img
+            <PublicProfileBackgroundImageMotion
               src={backgroundImage}
               alt=""
               className="pointer-events-none absolute inset-0 z-0 size-full object-cover"
             />
           ) : null}
           {image ? (
-            <img
-              src={image}
-              alt={name ?? userName ?? ""}
+            <div
               className={cn(
-                "relative z-10 size-36 object-cover rounded-full",
+                "relative z-10 size-36",
                 backgroundImage && "absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2"
               )}
-            />
+            >
+              <PublicProfileAvatarMotion
+                src={image}
+                alt={name ?? userName ?? ""}
+                className="size-full rounded-full object-cover"
+              />
+            </div>
           ) : null}
         </div>
 
-        <div className="flex flex-col items-center justify-center gap-6 px-4 py-1 sm:flex-row">
+        <PublicProfileReveal
+          className="flex flex-col items-center justify-center gap-6 px-4 py-1 sm:flex-row"
+          delay={0.2}
+          y={8}
+        >
           <div className="space-y-2 text-center">
             <h1 className="text-3xl font-semibold tracking-tight">{name}</h1>
             {role || location ? (
@@ -230,19 +244,24 @@ export function PublicProfilePage({
               </div>
             ) : null}
           </div>
-        </div>
+        </PublicProfileReveal>
 
         {bio ? (
-          <div className="px-4 py-1">
+          <PublicProfileReveal className="px-4 py-1" delay={0.32} y={8}>
             <p className="whitespace-pre-line break-words text-center text-sm leading-7 text-neutral-800">
               {bio}
             </p>
-          </div>
+          </PublicProfileReveal>
         ) : null}
 
         {orderedSocialLinks.length > 0 ? (
           <div className="mt-4 space-y-3 py-2 mb-6">
-            <div className="flex items-center justify-center gap-3">
+            <PublicProfileStagger
+              className="flex items-center justify-center gap-3"
+              delay={0.44}
+              stagger={0.055}
+              y={6}
+            >
               {orderedSocialLinks.map((socialLink) => {
                 const Icon = socialPlatformIcons[socialLink.platform];
                 const label = socialPlatformLabels[socialLink.platform];
@@ -271,16 +290,23 @@ export function PublicProfilePage({
                   </TrackedProfilePageLink>
                 );
               })}
-            </div>
+            </PublicProfileStagger>
           </div>
         ) : null}
 
         <div className="flex-1">
-          {contentBlocks.map((block) => {
+          {contentBlocks.map((block, index) => {
+            const blockDelay = 0.56 + index * 0.1;
+
             if (block.type === "links") {
               return (
                 <div key={block.id} className="space-y-3 px-4 py-4">
-                  <div className="space-y-3">
+                  <PublicProfileStagger
+                    className="space-y-3"
+                    delay={blockDelay}
+                    stagger={0.09}
+                    y={14}
+                  >
                     {block.linkItems.map((item) => {
                       const faviconUrl = resolveFaviconUrl(item.favicon, item.url);
 
@@ -320,13 +346,18 @@ export function PublicProfilePage({
                         </TrackedProfilePageLink>
                       );
                     })}
-                  </div>
+                  </PublicProfileStagger>
                 </div>
               );
             }
 
             return (
-              <div key={block.item.id} className="my-6 space-y-3">
+              <PublicProfileReveal
+                key={block.item.id}
+                className="my-6 space-y-3"
+                delay={blockDelay}
+                y={12}
+              >
                 <div className="flex flex-col items-center px-5 py-4">
                   <p className="text-lg font-medium break-all text-center">{block.item.title}</p>
                   {block.item.description ? (
@@ -335,12 +366,16 @@ export function PublicProfilePage({
                     </p>
                   ) : null}
                 </div>
-              </div>
+              </PublicProfileReveal>
             );
           })}
         </div>
 
-        <div className="p-12 text-xs flex items-center justify-center uppercase">
+        <PublicProfileReveal
+          className="p-12 text-xs flex items-center justify-center uppercase"
+          delay={0.76}
+          y={8}
+        >
           <Button
             nativeButton={false}
             size={"sm"}
@@ -352,7 +387,7 @@ export function PublicProfilePage({
               </Link>
             }
           />
-        </div>
+        </PublicProfileReveal>
       </div>
     </section>
   );

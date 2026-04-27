@@ -1,20 +1,42 @@
 "use client";
 
 import { DndContext, closestCenter } from "@dnd-kit/core";
-import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  restrictToParentElement,
+  restrictToVerticalAxis,
+} from "@dnd-kit/modifiers";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { LinkSimpleIcon, TextAaIcon } from "@phosphor-icons/react";
-import { ChevronRightIcon, GripVertical, Loader2Icon, TrashIcon } from "lucide-react";
+import {
+  ChartColumnBigIcon,
+  ChevronRightIcon,
+  GripVertical,
+  Loader2Icon,
+  TrashIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-import { ColorInstagramIcon, ColorSpotifyIcon, ColorYoutubeIcon } from "@/components/icon";
+import {
+  ColorInstagramIcon,
+  ColorSpotifyIcon,
+  ColorYoutubeIcon,
+} from "@/components/icon";
 import { SortableShell } from "@/components/section/profile-page/sortable-shell";
 import { TextBlockSectionLinkItem } from "@/components/section/profile-page/text-block-section-link-item";
 import { TextBoxEditDialog } from "@/components/section/profile-page/text-box-edit-dialog";
 import { useProfilePageEditor } from "@/components/section/profile-page/use-profile-page-editor";
-import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount } from "@/components/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarGroup,
+  AvatarGroupCount,
+} from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const sectionLinkClassName =
@@ -26,7 +48,8 @@ const sectionButtonClassName =
 const sectionMediaClassName =
   "flex shrink-0 items-center justify-center gap-2 [&_svg]:pointer-events-none";
 
-const sectionActionsClassName = "ml-auto flex shrink-0 items-center justify-end gap-2";
+const sectionActionsClassName =
+  "ml-auto flex shrink-0 items-center justify-end gap-2";
 
 function getSectionBasePath(pathname: string) {
   const segments = pathname.split("/").filter(Boolean);
@@ -39,11 +62,25 @@ function getSectionBasePath(pathname: string) {
   return `/${segments.slice(0, sectionIndex + 1).join("/")}`;
 }
 
+function getAnalyticsPath(sectionBasePath: string) {
+  return sectionBasePath.replace(/\/app$/, "/analytics");
+}
+
 function ProfileSectionLinkItem({ href }: { href: string }) {
   return (
-    <Link href={href} className={cn(sectionLinkClassName, "aspect-square min-w-0 flex-1 basis-0")}>
+    <Link
+      href={href}
+      className={cn(
+        sectionLinkClassName,
+        "aspect-square min-w-0 flex-1 basis-0",
+      )}
+    >
       <span className={"flex min-w-0 flex-1 flex-col gap-1"}>
-        <span className={"flex w-fit items-center gap-2 text-2xl leading-snug font-medium"}>
+        <span
+          className={
+            "flex w-fit items-center gap-2 text-2xl leading-snug font-medium"
+          }
+        >
           Profile
         </span>
       </span>
@@ -53,7 +90,13 @@ function ProfileSectionLinkItem({ href }: { href: string }) {
 
 function SocialSectionLinkItem({ href }: { href: string }) {
   return (
-    <Link href={href} className={cn(sectionLinkClassName, "aspect-square min-w-0 flex-1 basis-0")}>
+    <Link
+      href={href}
+      className={cn(
+        sectionLinkClassName,
+        "aspect-square min-w-0 flex-1 basis-0",
+      )}
+    >
       <span className={"flex min-w-0 flex-1 flex-col gap-1"}>
         <span className="flex min-w-0 flex-1 flex-col items-start justify-between gap-10 text-2xl leading-snug font-medium">
           <span>Social</span>
@@ -88,15 +131,33 @@ export function SectionPageClient() {
   const editor = useProfilePageEditor();
   const pathname = usePathname();
   const sectionBasePath = getSectionBasePath(pathname);
-  const [selectedTextBoxId, setSelectedTextBoxId] = useState<string | null>(null);
+  const analyticsPath = getAnalyticsPath(sectionBasePath);
+  const [selectedTextBoxId, setSelectedTextBoxId] = useState<string | null>(
+    null,
+  );
   const selectedTextBox =
-    editor.data?.textBoxItems.find((item) => item.id === selectedTextBoxId) ?? null;
+    editor.data?.textBoxItems.find((item) => item.id === selectedTextBoxId) ??
+    null;
 
   return (
     <main className="h-full px-4 py-10 sm:px-0">
       <div className="space-y-8 pb-4">
-        <header>
+        <header className="flex flex-row items-center justify-between">
           <h1 className="text-3xl font-semibold">My Page</h1>
+          <div className="mt-2.5">
+            <Button
+              nativeButton={false}
+              variant="ghost"
+              size="icon-lg"
+              className="lg:hidden brand-button"
+              aria-label="Go to Analytics"
+              render={
+                <Link href={analyticsPath}>
+                  <ChartColumnBigIcon className="size-5 stroke-2" />
+                </Link>
+              }
+            />
+          </div>
         </header>
         <section className="space-y-3">
           <div className="flex flex-col gap-2">
@@ -125,7 +186,11 @@ export function SectionPageClient() {
                     {editor.pageEditorBlocks.map((block) => {
                       if (block.type === "links") {
                         return (
-                          <SortableShell key={block.id} id={block.id} className="shadow-none">
+                          <SortableShell
+                            key={block.id}
+                            id={block.id}
+                            className="shadow-none"
+                          >
                             {({ attributes, listeners }) => (
                               <div className="group/item relative">
                                 <Link
@@ -134,10 +199,18 @@ export function SectionPageClient() {
                                     "group/item flex w-full flex-wrap gap-2.5 rounded-2xl bg-background px-4 py-6 text-sm shadow-float transition-colors outline-none"
                                   }
                                 >
-                                  <span className={sectionMediaClassName} aria-hidden="true">
-                                    <LinkSimpleIcon className="size-6" weight="bold" />
+                                  <span
+                                    className={sectionMediaClassName}
+                                    aria-hidden="true"
+                                  >
+                                    <LinkSimpleIcon
+                                      className="size-6"
+                                      weight="bold"
+                                    />
                                   </span>
-                                  <span className={"flex flex-1 flex-col gap-1"}>
+                                  <span
+                                    className={"flex flex-1 flex-col gap-1"}
+                                  >
                                     <span
                                       className={
                                         "line-clamp-1 flex w-fit items-center gap-2 text-lg leading-snug font-medium underline-offset-4"
@@ -173,7 +246,7 @@ export function SectionPageClient() {
                       }
 
                       const item = editor.data?.textBoxItems.find(
-                        (textBoxItem) => textBoxItem.id === block.textBoxId
+                        (textBoxItem) => textBoxItem.id === block.textBoxId,
                       );
 
                       if (!item) {
@@ -183,24 +256,39 @@ export function SectionPageClient() {
                       const title = item.title.trim() || "Untitled";
 
                       return (
-                        <SortableShell key={block.id} id={block.id} className="shadow-none">
+                        <SortableShell
+                          key={block.id}
+                          id={block.id}
+                          className="shadow-none"
+                        >
                           {({ attributes, listeners }) => (
                             <div className="group/item relative">
                               <button
                                 type="button"
                                 className="absolute top-1/2 -left-8 inline-flex size-7 -translate-y-1/2 items-center justify-center text-muted-foreground opacity-0 outline-none transition-opacity focus-visible:ring-3 focus-visible:ring-ring/50 group-hover/item:opacity-100 bg-primary rounded-full shadow-sm border border-border/30"
-                                onClick={() => void editor.handleDeleteTextBox(item.id)}
+                                onClick={() =>
+                                  void editor.handleDeleteTextBox(item.id)
+                                }
                                 aria-label={`Delete ${title}`}
                               >
                                 <TrashIcon className="text-primary-foreground size-4 stroke-3" />
                               </button>
                               <button
                                 type="button"
-                                className={cn(sectionButtonClassName, "min-w-0")}
+                                className={cn(
+                                  sectionButtonClassName,
+                                  "min-w-0",
+                                )}
                                 onClick={() => setSelectedTextBoxId(item.id)}
                               >
-                                <span className={sectionMediaClassName} aria-hidden="true">
-                                  <TextAaIcon className="size-6" weight="bold" />
+                                <span
+                                  className={sectionMediaClassName}
+                                  aria-hidden="true"
+                                >
+                                  <TextAaIcon
+                                    className="size-6"
+                                    weight="bold"
+                                  />
                                 </span>
                                 <span
                                   className={
@@ -238,7 +326,7 @@ export function SectionPageClient() {
             <div
               className={cn(
                 "group/item flex justify-center items-center w-full rounded-2xl bg-background px-4 py-3 text-sm",
-                "bg-secondary aspect-square border-4 border-dashed border-border/50 cursor-not-allowed"
+                "bg-secondary aspect-square border-4 border-dashed border-border/50 cursor-not-allowed",
               )}
             >
               <p

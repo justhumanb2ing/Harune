@@ -10,9 +10,8 @@ import {
 } from "@/components/ui/select";
 import type { AnalyticsRangeKey } from "@/lib/analytics/analytics-ranges";
 import { profileAnalyticsQueryOptions } from "@/lib/analytics/query-options";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { Loader2Icon } from "lucide-react";
-import { Suspense, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 const analyticsRanges: Array<{ label: string; value: AnalyticsRangeKey }> = [
   { label: "Today", value: "today" },
@@ -25,15 +24,34 @@ type AnalyticsSummaryQueryProps = {
 };
 
 function AnalyticsSummaryQuery({ range }: AnalyticsSummaryQueryProps) {
-  const analyticsQuery = useSuspenseQuery(profileAnalyticsQueryOptions());
+  const analyticsQuery = useQuery(profileAnalyticsQueryOptions());
+
+  if (analyticsQuery.isPending) {
+    return <AnalyticsSummaryFallback />;
+  }
+
+  if (analyticsQuery.isError) {
+    return (
+      <div className="rounded-xl bg-background p-6 text-sm text-muted-foreground shadow-float">
+        Analytics could not be loaded.
+      </div>
+    );
+  }
 
   return <ProfileAnalyticsSummary range={range} response={analyticsQuery.data} />;
 }
 
 function AnalyticsSummaryFallback() {
   return (
-    <div className="flex min-h-40 flex-1 items-center justify-center">
-      <Loader2Icon className="size-5 animate-spin" />
+    <div className="flex flex-col gap-4" aria-busy="true">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="min-h-28 animate-pulse rounded-xl bg-muted lg:aspect-square lg:min-h-0" />
+        <div className="min-h-28 animate-pulse rounded-xl bg-muted lg:aspect-square lg:min-h-0" />
+        <div className="min-h-28 animate-pulse rounded-xl bg-muted lg:aspect-square lg:min-h-0" />
+        <div className="min-h-32 animate-pulse rounded-xl bg-muted" />
+      </div>
+      <div className="h-80 animate-pulse rounded-xl bg-muted" />
+      <div className="h-48 animate-pulse rounded-xl bg-muted" />
     </div>
   );
 }
@@ -67,9 +85,7 @@ export function AnalyticsPageClient() {
           </Select>
         </header>
 
-        <Suspense fallback={<AnalyticsSummaryFallback />}>
-          <AnalyticsSummaryQuery range={range} />
-        </Suspense>
+        <AnalyticsSummaryQuery range={range} />
       </div>
     </section>
   );

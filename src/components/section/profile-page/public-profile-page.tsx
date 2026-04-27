@@ -15,7 +15,12 @@ import {
   XTwitterIcon,
 } from "@/components/icon";
 import { Button } from "@/components/ui/button";
-import type { LinkItem, SocialLink, SocialPlatform, TextBoxItem } from "@/lib/profile-page/types";
+import type {
+  LinkItem,
+  SocialLink,
+  SocialPlatform,
+  TextBoxItem,
+} from "@/lib/profile-page/types";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { FaLinkedinIn, FaYoutube } from "react-icons/fa6";
@@ -85,9 +90,13 @@ const socialHandleBaseUrls: Partial<Record<SocialPlatform, string>> = {
   tiktok: "https://www.tiktok.com/@",
 };
 
-const byPosition = <T extends { position: number }>(a: T, b: T) => a.position - b.position;
+const byPosition = <T extends { position: number }>(a: T, b: T) =>
+  a.position - b.position;
 
-function resolveFaviconUrl(favicon: string | null | undefined, pageUrl: string) {
+function resolveFaviconUrl(
+  favicon: string | null | undefined,
+  pageUrl: string,
+) {
   const value = favicon?.trim();
 
   if (!value) {
@@ -117,7 +126,9 @@ function resolveSocialHref(socialLink: SocialLink) {
   }
 
   if (socialLink.platform === "mail") {
-    return value.toLowerCase().startsWith("mailto:") ? value : `mailto:${value}`;
+    return value.toLowerCase().startsWith("mailto:")
+      ? value
+      : `mailto:${value}`;
   }
 
   if (hasExplicitUrlScheme(value)) {
@@ -203,7 +214,7 @@ export function PublicProfilePage({
         <div
           className={cn(
             "group relative flex h-60 items-center justify-center px-4",
-            backgroundImage && "mb-20 h-60"
+            backgroundImage && "mb-20 h-60",
           )}
         >
           {backgroundImage ? (
@@ -217,7 +228,8 @@ export function PublicProfilePage({
             <div
               className={cn(
                 "relative z-10 size-36",
-                backgroundImage && "absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2"
+                backgroundImage &&
+                  "absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2",
               )}
             >
               <PublicProfileAvatarMotion
@@ -308,7 +320,10 @@ export function PublicProfilePage({
                     y={14}
                   >
                     {block.linkItems.map((item) => {
-                      const faviconUrl = resolveFaviconUrl(item.favicon, item.url);
+                      const faviconUrl = resolveFaviconUrl(
+                        item.favicon,
+                        item.url,
+                      );
 
                       return (
                         <TrackedProfilePageLink
@@ -359,7 +374,9 @@ export function PublicProfilePage({
                 y={12}
               >
                 <div className="flex flex-col items-center px-5 py-4">
-                  <p className="text-lg font-medium break-all text-center">{block.item.title}</p>
+                  <p className="text-lg font-medium break-all text-center">
+                    {block.item.title}
+                  </p>
                   {block.item.description ? (
                     <p className="mt-1 break-all text-center text-base leading-6 text-neutral-800">
                       {block.item.description}
@@ -382,7 +399,7 @@ export function PublicProfilePage({
             variant={"link"}
             className={"text-neutral-500"}
             render={
-              <Link href={"/sign-in"} className="">
+              <Link href={"/join"} prefetch={false} className="">
                 Create your page
               </Link>
             }

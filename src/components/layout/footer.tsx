@@ -20,12 +20,18 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/changelog" className="inline-block hover:text-primary">
+                <Link
+                  href="/changelog"
+                  className="inline-block hover:text-primary"
+                >
                   Changelog
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="inline-block hover:text-primary">
+                <Link
+                  href="/privacy"
+                  className="inline-block hover:text-primary"
+                >
                   Privacy Policy
                 </Link>
               </li>
@@ -41,7 +47,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="hover:text-primary"
                 >
-                  Fuel this Service
+                  Keep us going
                 </a>
               </li>
             </ul>

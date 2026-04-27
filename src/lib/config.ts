@@ -67,28 +67,24 @@ export const appConfig: AppConfigPublic = {
   ],
   description: "Harune is a link-in-bio service for sharing everything you do in one place.",
   auth: {
-    enablePasswordAuth: false, // Set to true to enable password-based authentication
+    enablePasswordAuth: true, // Set to true to enable password-based authentication
   },
   legal: {
     address: {
-      street: "Plot No 337, Workyard, Phase 2, Industrial Business &amp; Park",
-      city: "Chandigarh",
-      state: "Punjab",
-      postalCode: "160002",
-      country: "India",
+      street: "548 Market St",
+      city: "San Francisco",
+      state: "CA",
+      postalCode: "94104",
+      country: "United States",
     },
-    email: "ssent.hq@gmail.com",
-    phone: "+91 9876543210",
+    email: "justhumanb2ing@gmail.com",
+    phone: "",
   },
   social: {
-    twitter: "https://twitter.com/cjsingg",
-    instagram: "https://instagram.com/-",
-    linkedin: "https://linkedin.com/-",
-    facebook: "https://facebook.com/-",
-    youtube: "https://youtube.com/-",
+    twitter: "https://x.com/Leeve_L",
   },
   email: {
     senderName: "Harune",
-    senderEmail: "ssent.hq@gmail.com",
+    senderEmail: "justhumanb2ing@gmail.com",
   },
 };

@@ -35,16 +35,16 @@ export default function MainHeroSection() {
     <section className="min-h-dvh flex flex-col items-center justify-center gap-40">
       <header className="flex flex-col gap-4 items-center">
         <motion.div className="mb-20 flex flex-col gap-2 items-center">
-          <div className="size-16 aspect-square rounded-xl">
+          <div className="size-20 aspect-square rounded-xl">
             <Image
-              src={""}
+              src={"/assets/logo.jpeg"}
               alt="Harune Logo"
               width={64}
               height={64}
               className="mb-4 rounded-lg object-cover size-full"
             />
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold">Harune</h1>
+          <h1 className="text-xl sm:text-xl font-bold">Harune</h1>
         </motion.div>
         <motion.div
           animate="visible"
@@ -80,7 +80,7 @@ export default function MainHeroSection() {
         <Button
           nativeButton={false}
           size="lg"
-          className={"h-12 min-w-48 font-bold! brand-button text-base px-24 py-7"}
+          className={"h-12 min-w-48 font-bold! brand-button text-base px-24 py-8 rounded-xl"}
           render={
             <Link href="/join" className="inline-block uppercase">
               <span className="uppercase sm:hidden">Sign up</span>

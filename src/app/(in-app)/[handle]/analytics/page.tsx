@@ -1,4 +1,4 @@
-import { AnalyticsPageClient } from "@/app/(in-app)/(sidebar)/[handle]/analytics/page-client";
+import { AnalyticsPageClient } from "@/app/(in-app)/[handle]/analytics/page-client";
 import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";

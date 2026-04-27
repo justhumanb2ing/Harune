@@ -1,3 +1,4 @@
+import PolicyContentSection from "@/components/sections/policy-content-section";
 import { getPolicyBySlug } from "@/lib/mdx/policies";
 import { absoluteUrl, createPageMetadata, seoConfig } from "@/lib/seo";
 import { format } from "date-fns";
@@ -42,14 +43,12 @@ export default async function PrivacyPolicyPage() {
           name: "Privacy Policy",
         }}
       />
-      <header className="mb-12 space-y-4 text-center">
-        <h1 className="text-4xl font-semibold md:text-5xl">{policy.frontmatter.title}</h1>
-        <p className="text-sm text-muted-foreground">
-          Last updated: {format(new Date(policy.frontmatter.lastUpdated), "MMMM d, yyyy")}
-        </p>
-      </header>
-
-      <main className="policy-content">{policy.content}</main>
+      <PolicyContentSection
+        title={policy.frontmatter.title}
+        lastUpdatedLabel={format(new Date(policy.frontmatter.lastUpdated), "MMMM d, yyyy")}
+      >
+        {policy.content}
+      </PolicyContentSection>
     </>
   );
 }

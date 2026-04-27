@@ -4,10 +4,6 @@ lastUpdated: "2024-01-04"
 description: Read about the terms and conditions that govern your use of our platform.
 ---
 
-# Terms of Service
-
-These Terms of Service govern your access to and use of our services.
-
 ## Acceptance of Terms
 
 By accessing or using our services, you agree to be bound by these terms.

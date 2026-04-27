@@ -1,6 +1,7 @@
 "use client";
 
 import { type Variants, motion } from "motion/react";
+import type React from "react";
 
 const variants: Variants = {
   hidden: {
@@ -24,9 +25,19 @@ const variants: Variants = {
   },
 };
 
-export default function LeaderboardSection() {
+export type PolicyContentSectionProps = {
+  children: React.ReactNode;
+  lastUpdatedLabel: string;
+  title: string;
+};
+
+export default function PolicyContentSection({
+  children,
+  lastUpdatedLabel,
+  title,
+}: PolicyContentSectionProps) {
   return (
-    <section className="h-full flex flex-col">
+    <section className="flex min-h-dvh flex-col">
       <header className="h-[12rem] flex flex-col justify-center items-center mt-8">
         <motion.div
           animate="visible"
@@ -45,16 +56,14 @@ export default function LeaderboardSection() {
             y: -5,
           }}
         >
-          <h2 className="text-center text-3xl font-bold tracking-tight sm:text-5xl text-primary-foreground bg-green-400 rounded-xl p-3 px-6 py-3">
-            Leaderboard
-          </h2>
+          <div className="m-0! text-center text-3xl font-bold tracking-tight sm:text-5xl text-primary-foreground bg-red-400 rounded-xl p-3 px-6 py-3">
+            {title}
+          </div>
         </motion.div>
+        <p className="mt-6 text-sm text-muted-foreground">Last updated: {lastUpdatedLabel}</p>
       </header>
-      <main className="flex-1 flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8 rounded-2xl mx-8">
-        <div className="flex flex-col gap-2 items-center">
-          <p className="font-medium text-lg">Leaderboard is on the horizon. 🚀</p>
-          <p>It's in the works.</p>
-        </div>
+      <main className="policy-content mx-auto w-full max-w-3xl flex-1 rounded-3xl px-4 py-8 text-base text-black sm:px-6 lg:px-8 [&_a]:text-black [&_blockquote]:text-black [&_em]:text-black [&_h1]:text-black [&_h2]:text-black [&_h3]:text-black [&_h4]:text-black [&_li::marker]:text-black [&_li]:text-black [&_p]:text-black [&_strong]:text-black">
+        {children}
       </main>
     </section>
   );

@@ -15,22 +15,36 @@ export function Footer() {
           <div className="flex-1">
             <ul className="flex flex-col items-center md:flex-row gap-10 text-sm font-medium text-muted-foreground">
               <li>
+                <Link href="/" className="inline-block hover:text-primary">
+                  Home
+                </Link>
+              </li>
+              <li>
                 <Link href="/join" className="inline-block hover:text-primary">
                   Log In
                 </Link>
               </li>
               <li>
-                <Link href="/leaderboard" className="inline-block hover:text-primary">
+                <Link
+                  href="/leaderboard"
+                  className="inline-block hover:text-primary"
+                >
                   Leaderboard
                 </Link>
               </li>
               <li>
-                <Link href="/changelog" className="inline-block hover:text-primary">
+                <Link
+                  href="/changelog"
+                  className="inline-block hover:text-primary"
+                >
                   Changelog
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="inline-block hover:text-primary">
+                <Link
+                  href="/privacy"
+                  className="inline-block hover:text-primary"
+                >
                   Privacy Policy
                 </Link>
               </li>

@@ -4,10 +4,6 @@ lastUpdated: "2024-01-04"
 description: Learn about how we collect, use, and protect your personal information.
 ---
 
-# Privacy Policy
-
-This Privacy Policy describes how we collect, use, and handle your personal information.
-
 ## Information We Collect
 
 We collect information that you provide directly to us, including:

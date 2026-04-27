@@ -1,16 +1,13 @@
 import { AnalyticsScript } from "@/components/analytics/analytics-script";
 import { absoluteUrl, seoConfig } from "@/lib/seo";
-import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
-import { Geist, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
 import Providers from "./Providers";
 import "./globals.css";
 
-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
-
 const inter = Inter({
-  variable: "--font-inter",
   subsets: ["latin"],
+  variable: "--font-sans",
 });
 
 export const metadata: Metadata = {
@@ -58,13 +55,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={cn("h-full font-sans", geist.variable)}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${inter.variable} ${inter.className} h-full`}
+    >
       <head>
         {/* For Google Search Console */}
         <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE_HERE" />
         <AnalyticsScript />
       </head>
-      <body className={`${inter.variable} h-full antialiased bg-background`}>
+      <body className="h-full bg-background antialiased">
         <Providers>
           <div className="relative h-full min-h-lvh">{children}</div>
         </Providers>

@@ -4,8 +4,9 @@ import type { AuthSession } from "@/auth";
 import { db } from "@/db";
 import { plans } from "@/db/schema/plans";
 import { users } from "@/db/schema/user";
+import { createUnauthorizedResponse } from "@/lib/auth/responses";
 import { eq } from "drizzle-orm";
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest, NextResponse } from "next/server";
 
 type WithManagerHandler = (
   req: NextRequest,
@@ -34,13 +35,7 @@ const withAuthRequired = (handler: WithManagerHandler) => {
     const session = await auth();
 
     if (!session || !session.user || !session.user.id || !session.user.email) {
-      return NextResponse.json(
-        {
-          error: "Unauthorized",
-          message: "You are not authorized to perform this action",
-        },
-        { status: 401 }
-      );
+      return createUnauthorizedResponse();
     }
 
     const userId = session.user.id;

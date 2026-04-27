@@ -11,7 +11,6 @@ const reservedHandles = new Set([
   "profile",
   "privacy",
   "refund",
-  "section",
   "sign-in",
   "sign-up",
   "subscribe",

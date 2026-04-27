@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import type React from "react";
+
+export const metadata: Metadata = {
+  robots: {
+    follow: false,
+    index: false,
+  },
+};
 
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (

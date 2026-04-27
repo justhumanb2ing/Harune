@@ -1,8 +1,10 @@
 import { AnalyticsPageClient } from "@/app/(in-app)/(sidebar)/[handle]/analytics/page-client";
 import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
+import { appConfig } from "@/lib/config";
 import { getOwnedProfilePage } from "@/lib/profile-page/queries";
 import { SsgoiTransition } from "@ssgoi/react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -11,6 +13,33 @@ type AnalyticsPageProps = {
     handle: string;
   }>;
 };
+
+export async function generateMetadata({ params }: AnalyticsPageProps): Promise<Metadata> {
+  const [{ handle }, session] = await Promise.all([params, auth()]);
+
+  if (!session?.user?.id) {
+    return {
+      title: "Analytics",
+      description: `View your ${appConfig.projectName} profile page analytics.`,
+      robots: {
+        follow: false,
+        index: false,
+      },
+    };
+  }
+
+  const profilePage = await getOwnedProfilePage(session.user.id);
+  const displayName = profilePage?.name || profilePage?.handle || handle;
+
+  return {
+    title: `${displayName} analytics`,
+    description: `View clicks, visits, and engagement for @${profilePage?.handle || handle}.`,
+    robots: {
+      follow: false,
+      index: false,
+    },
+  };
+}
 
 export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
   const session = await auth();

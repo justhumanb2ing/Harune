@@ -2,13 +2,49 @@ import { auth } from "@/auth";
 import { ProfilePageEditorProvider } from "@/components/section/profile-page/profile-page-editor-provider";
 import { ProfilePagePreview } from "@/components/section/profile-page/profile-page-preview";
 import ProfilePreviewMobileDrawer from "@/components/section/profile-page/profile-preview-mobile-drawer";
+import { appConfig } from "@/lib/config";
+import { getOwnedProfilePage } from "@/lib/profile-page/queries";
 import { profilePageServerQueryOptions } from "@/lib/profile-page/server-query-options";
 import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
+
+type SectionRouteProps = {
+  params: Promise<{
+    handle: string;
+  }>;
+};
+
+export async function generateMetadata({ params }: SectionRouteProps): Promise<Metadata> {
+  const [{ handle }, session] = await Promise.all([params, auth()]);
+
+  if (!session?.user.id) {
+    return {
+      title: "Edit profile",
+      description: `Manage your ${appConfig.projectName} profile page.`,
+      robots: {
+        follow: false,
+        index: false,
+      },
+    };
+  }
+
+  const profilePage = await getOwnedProfilePage(session.user.id);
+  const displayName = profilePage?.name || profilePage?.handle || handle;
+
+  return {
+    title: `Edit ${displayName}`,
+    description: `Manage links, socials, and profile details for @${profilePage?.handle || handle}.`,
+    robots: {
+      follow: false,
+      index: false,
+    },
+  };
+}
 
 function SectionLayoutFallback() {
   return (
@@ -23,10 +59,7 @@ function SectionLayoutFallback() {
 
 type SectionLayoutProps = {
   children: ReactNode;
-  params: Promise<{
-    handle: string;
-  }>;
-};
+} & SectionRouteProps;
 
 export default async function SectionLayout({ children, params }: SectionLayoutProps) {
   const queryClient = new QueryClient();

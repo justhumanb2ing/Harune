@@ -9,8 +9,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "Sign In",
-  description: `Sign in to your ${appConfig.projectName} account`,
+  title: "Log In",
+  description: `Log in to your ${appConfig.projectName} account`,
 };
 
 type SignInPageProps = {

@@ -2,28 +2,11 @@ import {
   ProfilePageAnalyticsTracker,
   TrackedProfilePageLink,
 } from "@/components/analytics/profile-page-analytics-tracker";
-import {
-  AppleMusicIcon,
-  GithubIcon,
-  InstagramIcon,
-  LogoBehanceIcon,
-  LogoThreadsIcon,
-  MailIcon,
-  SoundcloudLogoSolidIcon,
-  SpotifyIcon,
-  TiktokIcon,
-  XTwitterIcon,
-} from "@/components/icon";
+import { SocialPlatformIcon, socialPlatformLabels } from "@/components/icon";
 import { Button } from "@/components/ui/button";
-import type {
-  LinkItem,
-  SocialLink,
-  SocialPlatform,
-  TextBoxItem,
-} from "@/lib/profile-page/types";
+import type { LinkItem, SocialLink, SocialPlatform, TextBoxItem } from "@/lib/profile-page/types";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { FaLinkedinIn, FaYoutube } from "react-icons/fa6";
 import {
   PublicProfileAvatarMotion,
   PublicProfileBackgroundImageMotion,
@@ -48,36 +31,6 @@ type PublicProfilePageProps = {
   userName?: string | null;
 };
 
-const socialPlatformLabels: Record<SocialPlatform, string> = {
-  x: "X",
-  instagram: "Instagram",
-  youtube: "YouTube",
-  linkedin: "LinkedIn",
-  github: "GitHub",
-  threads: "Threads",
-  soundcloud: "SoundCloud",
-  spotify: "Spotify",
-  behance: "Behance",
-  tiktok: "TikTok",
-  mail: "Email",
-  apple_music: "Apple Music",
-};
-
-const socialPlatformIcons = {
-  x: XTwitterIcon,
-  instagram: InstagramIcon,
-  youtube: FaYoutube,
-  linkedin: FaLinkedinIn,
-  github: GithubIcon,
-  threads: LogoThreadsIcon,
-  soundcloud: SoundcloudLogoSolidIcon,
-  spotify: SpotifyIcon,
-  behance: LogoBehanceIcon,
-  tiktok: TiktokIcon,
-  mail: MailIcon,
-  apple_music: AppleMusicIcon,
-} as const;
-
 const socialHandleBaseUrls: Partial<Record<SocialPlatform, string>> = {
   x: "https://x.com/",
   instagram: "https://instagram.com/",
@@ -90,13 +43,9 @@ const socialHandleBaseUrls: Partial<Record<SocialPlatform, string>> = {
   tiktok: "https://www.tiktok.com/@",
 };
 
-const byPosition = <T extends { position: number }>(a: T, b: T) =>
-  a.position - b.position;
+const byPosition = <T extends { position: number }>(a: T, b: T) => a.position - b.position;
 
-function resolveFaviconUrl(
-  favicon: string | null | undefined,
-  pageUrl: string,
-) {
+function resolveFaviconUrl(favicon: string | null | undefined, pageUrl: string) {
   const value = favicon?.trim();
 
   if (!value) {
@@ -126,9 +75,7 @@ function resolveSocialHref(socialLink: SocialLink) {
   }
 
   if (socialLink.platform === "mail") {
-    return value.toLowerCase().startsWith("mailto:")
-      ? value
-      : `mailto:${value}`;
+    return value.toLowerCase().startsWith("mailto:") ? value : `mailto:${value}`;
   }
 
   if (hasExplicitUrlScheme(value)) {
@@ -214,7 +161,7 @@ export function PublicProfilePage({
         <div
           className={cn(
             "group relative flex h-60 items-center justify-center px-4",
-            backgroundImage && "mb-20 h-60",
+            backgroundImage && "mb-20 h-60"
           )}
         >
           {backgroundImage ? (
@@ -228,8 +175,7 @@ export function PublicProfilePage({
             <div
               className={cn(
                 "relative z-10 size-36",
-                backgroundImage &&
-                  "absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2",
+                backgroundImage && "absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2"
               )}
             >
               <PublicProfileAvatarMotion
@@ -275,7 +221,6 @@ export function PublicProfilePage({
               y={6}
             >
               {orderedSocialLinks.map((socialLink) => {
-                const Icon = socialPlatformIcons[socialLink.platform];
                 const label = socialPlatformLabels[socialLink.platform];
                 const href = resolveSocialHref(socialLink);
 
@@ -295,7 +240,8 @@ export function PublicProfilePage({
                     platform={socialLink.platform}
                     profilePageId={profilePageId}
                   >
-                    <Icon
+                    <SocialPlatformIcon
+                      platform={socialLink.platform}
                       className="size-full group-hover:scale-125 transition-transform"
                       aria-hidden="true"
                     />
@@ -320,10 +266,7 @@ export function PublicProfilePage({
                     y={14}
                   >
                     {block.linkItems.map((item) => {
-                      const faviconUrl = resolveFaviconUrl(
-                        item.favicon,
-                        item.url,
-                      );
+                      const faviconUrl = resolveFaviconUrl(item.favicon, item.url);
 
                       return (
                         <TrackedProfilePageLink
@@ -374,9 +317,7 @@ export function PublicProfilePage({
                 y={12}
               >
                 <div className="flex flex-col items-center px-5 py-4">
-                  <p className="text-lg font-medium break-all text-center">
-                    {block.item.title}
-                  </p>
+                  <p className="text-lg font-medium break-all text-center">{block.item.title}</p>
                   {block.item.description ? (
                     <p className="mt-1 break-all text-center text-base leading-6 text-neutral-800">
                       {block.item.description}

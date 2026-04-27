@@ -1,15 +1,4 @@
-import {
-  AppleMusicIcon,
-  GithubIcon,
-  InstagramIcon,
-  LogoBehanceIcon,
-  LogoThreadsIcon,
-  MailIcon,
-  SoundcloudLogoSolidIcon,
-  SpotifyIcon,
-  TiktokIcon,
-  XTwitterIcon,
-} from "@/components/icon";
+import { SocialPlatformIcon } from "@/components/icon";
 import { Button } from "@/components/ui/button";
 import type {
   DraftLinkItem,
@@ -20,7 +9,6 @@ import type {
   TextBoxItem,
 } from "@/lib/profile-page/types";
 import { cn } from "@/lib/utils";
-import { FaLinkedinIn, FaYoutube } from "react-icons/fa6";
 
 type ProfilePageRendererProps = {
   backgroundImage: string | null;
@@ -38,21 +26,6 @@ type ProfilePageRendererProps = {
   textBoxItems: Array<TextBoxItem | DraftTextBoxItem>;
   userName?: string | null;
 };
-
-const socialPlatformIcons = {
-  x: XTwitterIcon,
-  instagram: InstagramIcon,
-  youtube: FaYoutube,
-  linkedin: FaLinkedinIn,
-  github: GithubIcon,
-  threads: LogoThreadsIcon,
-  soundcloud: SoundcloudLogoSolidIcon,
-  spotify: SpotifyIcon,
-  behance: LogoBehanceIcon,
-  tiktok: TiktokIcon,
-  mail: MailIcon,
-  apple_music: AppleMusicIcon,
-} as const;
 
 const byPosition = <T extends { position: number }>(a: T, b: T) => a.position - b.position;
 
@@ -192,8 +165,6 @@ export function ProfilePageRenderer({
               <div className="space-y-3 mt-4 hover:bg-black/5 py-2">
                 <div className="flex justify-center items-center gap-2">
                   {orderedSocialLinks.map((socialLink) => {
-                    const Icon = socialPlatformIcons[socialLink.platform];
-
                     return (
                       <Button
                         key={socialLink.platform}
@@ -202,7 +173,11 @@ export function ProfilePageRenderer({
                         size={"icon-sm"}
                         className={"rounded-full hover:bg-transparent cursor-default"}
                       >
-                        <Icon className="size-5" aria-hidden="true" />
+                        <SocialPlatformIcon
+                          platform={socialLink.platform}
+                          className="size-5"
+                          aria-hidden="true"
+                        />
                       </Button>
                     );
                   })}

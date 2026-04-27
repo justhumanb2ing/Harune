@@ -19,6 +19,12 @@ export { LogoBehanceIcon } from "./logo-behance-icon";
 export { LogoThreadsIcon } from "./logo-threads-icon";
 export { MailIcon } from "./mail-icon";
 export { SoundcloudLogoSolidIcon } from "./soundcloud-logo-solid-icon";
+export {
+  SocialPlatformIcon,
+  socialPlatformColorIcons,
+  socialPlatformIcons,
+  socialPlatformLabels,
+} from "./social-platform-icon";
 export { SpotifyIcon } from "./spotify-icon";
 export { TiktokIcon } from "./tiktok-icon";
 export { XTwitterIcon } from "./x-twitter-icon";

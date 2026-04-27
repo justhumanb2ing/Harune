@@ -1,19 +1,6 @@
 "use client";
 
-import {
-  ColorAppleMusicIcon,
-  ColorBehanceIcon,
-  ColorGithubIcon,
-  ColorInstagramIcon,
-  ColorLinkedInIcon,
-  ColorMailIcon,
-  ColorSoundcloudIcon,
-  ColorSpotifyIcon,
-  ColorThreadsIcon,
-  ColorTiktokIcon,
-  ColorXTwitterIcon,
-  ColorYoutubeIcon,
-} from "@/components/icon";
+import { SocialPlatformIcon } from "@/components/icon";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,79 +84,66 @@ const socialPlatforms: Array<{
   key: SocialLinkKey;
   label: string;
   placeholder: string;
-  colorIcon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 }> = [
   {
     key: "x",
     label: "X",
     placeholder: "https://x.com/yourname",
-    colorIcon: ColorXTwitterIcon,
   },
   {
     key: "instagram",
     label: "Instagram",
     placeholder: "https://instagram.com/yourname",
-    colorIcon: ColorInstagramIcon,
   },
   {
     key: "youtube",
     label: "YouTube",
     placeholder: "https://youtube.com/@yourname",
-    colorIcon: ColorYoutubeIcon,
   },
   {
     key: "linkedin",
     label: "LinkedIn",
     placeholder: "https://linkedin.com/in/yourname",
-    colorIcon: ColorLinkedInIcon,
   },
   {
     key: "github",
     label: "GitHub",
     placeholder: "https://github.com/yourname",
-    colorIcon: ColorGithubIcon,
   },
   {
     key: "threads",
     label: "Threads",
     placeholder: "https://www.threads.net/@yourname",
-    colorIcon: ColorThreadsIcon,
   },
   {
     key: "soundcloud",
     label: "SoundCloud",
     placeholder: "https://soundcloud.com/yourname",
-    colorIcon: ColorSoundcloudIcon,
   },
   {
     key: "spotify",
     label: "Spotify",
     placeholder: "https://open.spotify.com/artist/yourid",
-    colorIcon: ColorSpotifyIcon,
   },
   {
     key: "behance",
     label: "Behance",
     placeholder: "https://www.behance.net/yourname",
-    colorIcon: ColorBehanceIcon,
   },
   {
     key: "tiktok",
     label: "TikTok",
     placeholder: "https://www.tiktok.com/@yourname",
-    colorIcon: ColorTiktokIcon,
   },
   {
     key: "mail",
     label: "Email",
     placeholder: "example@domain.com",
-    colorIcon: ColorMailIcon,
   },
   {
     key: "apple_music",
     label: "Apple Music",
     placeholder: "https://music.apple.com/profile/yourname",
-    colorIcon: ColorAppleMusicIcon,
   },
 ];
 
@@ -712,7 +686,12 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                         <div className="flex flex-col gap-3 rounded-t-[3rem] bg-background p-4 pt-18 shadow-brand-small">
                           {socialPlatforms.map((platform) => (
                             <div key={platform.key} className="flex items-center gap-3">
-                              <platform.colorIcon className="size-10 shrink-0" aria-hidden="true" />
+                              <SocialPlatformIcon
+                                platform={platform.key}
+                                variant="color"
+                                className="size-10 shrink-0"
+                                aria-hidden="true"
+                              />
                               <InputGroup className="h-11 flex-1 rounded-md border-0 bg-secondary">
                                 <InputGroupInput
                                   id={platform.key}

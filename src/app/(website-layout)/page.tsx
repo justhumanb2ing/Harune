@@ -1,37 +1,25 @@
+import AnalyticsCardSection from "@/components/sections/analytics-card-section";
+import HandleCardSection from "@/components/sections/handle-card-section";
+import LiveCardSection from "@/components/sections/live-card-section";
+import MainHeroSection from "@/components/sections/main-hero-section";
 import { Button } from "@/components/ui/button";
-import { env } from "@/env";
-import Link from "next/link";
-
-const signInEnabled = env.NEXT_PUBLIC_SIGNIN_ENABLED === "true";
 
 export default function WebsiteHomepage() {
   return (
-    <main className="h-full p-10">
-      <section className="min-h-dvh flex flex-col items-center justify-center">
-        <div className="flex flex-col items-center gap-1">
+    <main className="relative h-full">
+      <MainHeroSection />
+      <HandleCardSection />
+      <AnalyticsCardSection />
+      <LiveCardSection />
+      <section className="h-1/2 flex flex-col justify-center items-center">
+        <div className="flex flex-col justify-center items-center gap-2">
           <Button
-            nativeButton={false}
-            size="lg"
-            className={"h-12 w-68 max-w-68 font-bold! brand-button  text-base py-7"}
-            render={
-              <Link href="/join" className="inline-block uppercase">
-                <span className="uppercase sm:hidden">Sign up</span>
-                <span className="hidden uppercase sm:inline">Sign Up For Free</span>
-              </Link>
-            }
-          />
-          {signInEnabled && (
-            <Button
-              nativeButton={false}
-              size="lg"
-              variant="link"
-              render={
-                <Link href="/login" className="text-xs font-medium">
-                  Log In
-                </Link>
-              }
-            />
-          )}
+            size={"lg"}
+            className={"brand-button h-12 min-w-60 max-w-68 text-lg py-7 font-bold!"}
+          >
+            Get Started
+          </Button>
+          <p className="text-sm text-muted-foreground">It's all free!</p>
         </div>
       </section>
     </main>

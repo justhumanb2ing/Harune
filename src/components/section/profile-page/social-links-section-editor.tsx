@@ -5,20 +5,7 @@ import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifi
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { GripVertical } from "lucide-react";
 
-import {
-  ColorAppleMusicIcon,
-  ColorBehanceIcon,
-  ColorGithubIcon,
-  ColorInstagramIcon,
-  ColorLinkedInIcon,
-  ColorMailIcon,
-  ColorSoundcloudIcon,
-  ColorSpotifyIcon,
-  ColorThreadsIcon,
-  ColorTiktokIcon,
-  ColorXTwitterIcon,
-  ColorYoutubeIcon,
-} from "@/components/icon";
+import { SocialPlatformIcon } from "@/components/icon";
 
 import { ProfilePageSectionLayout } from "@/components/section/profile-page/section-layout";
 import { SortableShell } from "@/components/section/profile-page/sortable-shell";
@@ -28,21 +15,6 @@ import {
 } from "@/components/section/profile-page/use-profile-page-editor";
 import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 import { MAX_SOCIAL_LINKS } from "@/lib/profile-page/types";
-
-const socialPlatformIcons = {
-  x: ColorXTwitterIcon,
-  instagram: ColorInstagramIcon,
-  youtube: ColorYoutubeIcon,
-  linkedin: ColorLinkedInIcon,
-  github: ColorGithubIcon,
-  threads: ColorThreadsIcon,
-  soundcloud: ColorSoundcloudIcon,
-  spotify: ColorSpotifyIcon,
-  behance: ColorBehanceIcon,
-  tiktok: ColorTiktokIcon,
-  mail: ColorMailIcon,
-  apple_music: ColorAppleMusicIcon,
-} as const;
 
 type SocialPlatformOption = (typeof socialPlatforms)[number];
 
@@ -67,11 +39,14 @@ export function SocialLinksSectionEditor() {
     platform: SocialPlatformOption,
     isRegistrationDisabled: boolean
   ) => {
-    const Icon = socialPlatformIcons[platform.key];
-
     return (
       <div className="flex items-center gap-3">
-        <Icon className="size-10 shrink-0" aria-hidden="true" />
+        <SocialPlatformIcon
+          platform={platform.key}
+          variant="color"
+          className="size-10 shrink-0"
+          aria-hidden="true"
+        />
         <InputGroup className="h-11 flex-1 rounded-md border-0 bg-secondary">
           <InputGroupInput
             value={editor.socialDrafts[platform.key]}

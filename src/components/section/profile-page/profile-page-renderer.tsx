@@ -130,8 +130,8 @@ export function ProfilePageRenderer({
     <section className="mx-auto flex min-h-full h-full w-full items-center">
       <div
         className={cn(
-          "w-full overflow-x-hidden scrollbar-hidden",
-          framed ? "h-[700px] overflow-y-auto" : "h-auto overflow-y-visible",
+          "w-full overflow-x-hidden scrollbar-hidden-stable",
+          framed ? "h-[700px] overflow-y-auto overscroll-y-none" : "h-auto overflow-y-visible",
           framed && "rounded-[2rem] border border-border/60 shadow-brand"
         )}
       >

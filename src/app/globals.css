@@ -428,6 +428,18 @@ html[data-onboarding-step-transition="back"]::view-transition-new(onboarding-ste
     display: none;
   }
 
+  .scrollbar-hidden-stable {
+    -ms-overflow-style: none !important;
+    scrollbar-color: transparent transparent;
+    scrollbar-width: none !important;
+  }
+
+  .scrollbar-hidden-stable::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
   .shadow-float {
     box-shadow:
       0 0 0 1px rgba(0, 0, 0, 0.04),

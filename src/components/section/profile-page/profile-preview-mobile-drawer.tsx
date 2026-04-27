@@ -33,7 +33,7 @@ export default function ProfilePreviewMobileDrawer() {
         className="h-[90vh] max-h-[90vh] overflow-hidden p-0"
       >
         <DrawerTitle className="sr-only">Profile page preview</DrawerTitle>
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto pt-6">
           <ProfilePagePreview framed={false} showActions={false} />
         </div>
         <DrawerFooter className="relative z-10 bg-background p-2">

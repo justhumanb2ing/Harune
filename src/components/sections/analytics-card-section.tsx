@@ -260,7 +260,7 @@ export default function AnalyticsCardSection() {
           {/*Simple insights — who visited, what they clicked.*/}
         </motion.p>
         <motion.p
-          className="pointer-events-none text-center text-3xl font-normal tracking-normal text-foreground md:text-3xl"
+          className="pointer-events-none text-center text-2xl font-normal md:text-3xl"
           variants={headerTextVariants}
         >
           who visited, what they clicked.

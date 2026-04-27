@@ -24,7 +24,10 @@ export async function generateMetadata({ params }: HandlePageProps): Promise<Met
   return createPageMetadata({
     path: `/${owner.handle}`,
     title: `${owner.name || owner.userName || owner.handle} on ${appConfig.projectName}`,
-    description: owner.bio || `Visit @${owner.handle}'s public ${appConfig.projectName} page.`,
+    description: owner.bio || `Visit @${owner.handle}'s page.`,
+    imageAlt: `${owner.name || owner.userName || owner.handle} on ${appConfig.projectName}`,
+    imagePath: `/${owner.handle}/opengraph-image`,
+    twitterImagePath: `/${owner.handle}/twitter-image`,
   });
 }
 

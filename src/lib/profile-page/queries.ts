@@ -148,3 +148,20 @@ export const getPublicProfilePage = async (handle: string) => {
     textBoxItems,
   };
 };
+
+export const getPublicProfilePageSocialImage = async (handle: string) => {
+  return db
+    .select({
+      handle: profilePages.handle,
+      name: profilePages.name,
+      role: profilePages.role,
+      bio: profilePages.bio,
+      image: profilePages.image,
+      userName: users.name,
+    })
+    .from(profilePages)
+    .innerJoin(users, eq(profilePages.userId, users.id))
+    .where(eq(profilePages.handle, handle))
+    .limit(1)
+    .then((rows) => rows[0] ?? null);
+};

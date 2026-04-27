@@ -23,7 +23,7 @@ export async function proxy(req: NextRequest) {
 
   if (isAuthPage(pathname)) {
     if (isAuth) {
-      return NextResponse.redirect(new URL(APP_ENTRY_PATH, req.url));
+      return NextResponse.redirect(createPostSignInUrl(req));
     }
     return NextResponse.next();
   }
@@ -91,6 +91,22 @@ function isHandleAppPath(pathname: string) {
 function createSignInUrl(req: NextRequest) {
   const callbackUrl = `${req.nextUrl.pathname}${req.nextUrl.search}`;
   return new URL(`${SIGN_IN_PATH}?callbackUrl=${encodeURIComponent(callbackUrl)}`, req.url);
+}
+
+function createPostSignInUrl(req: NextRequest) {
+  const redirectUrl = new URL(APP_ENTRY_PATH, req.url);
+  const callbackUrl = req.nextUrl.searchParams.get("callbackUrl");
+  const handle = req.nextUrl.searchParams.get("handle");
+
+  if (callbackUrl) {
+    redirectUrl.searchParams.set("next", callbackUrl);
+  }
+
+  if (handle) {
+    redirectUrl.searchParams.set("handle", handle);
+  }
+
+  return redirectUrl;
 }
 
 export const config = {

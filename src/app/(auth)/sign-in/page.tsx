@@ -1,9 +1,12 @@
+import { auth } from "@/auth";
 import { AuthForm } from "@/components/auth/auth-form";
 import PolicyBox from "@/components/auth/policy-box";
 import { env } from "@/env";
+import { resolveAuthenticatedAppRedirect } from "@/lib/auth/app-redirect";
 import { appConfig } from "@/lib/config";
 import { SsgoiTransition } from "@ssgoi/react";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Sign In",
@@ -21,7 +24,19 @@ type SignInPageProps = {
 };
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
+  const session = await auth();
   const { callbackUrl, error, error_description, handle, oauth } = await searchParams;
+
+  if (session?.user?.id) {
+    redirect(
+      await resolveAuthenticatedAppRedirect({
+        handle,
+        next: callbackUrl,
+        userId: session.user.id,
+      })
+    );
+  }
+
   const redirectTarget = new URLSearchParams();
 
   if (callbackUrl) {

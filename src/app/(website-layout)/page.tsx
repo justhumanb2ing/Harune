@@ -14,7 +14,7 @@ export default function WebsiteHomepage() {
             size="lg"
             className={"h-12 w-68 max-w-68 font-bold! brand-button  text-base py-7"}
             render={
-              <Link href="/sign-up" className="inline-block uppercase">
+              <Link href="/join" className="inline-block uppercase">
                 <span className="uppercase sm:hidden">Sign up</span>
                 <span className="hidden uppercase sm:inline">Sign Up For Free</span>
               </Link>
@@ -26,7 +26,7 @@ export default function WebsiteHomepage() {
               size="lg"
               variant="link"
               render={
-                <Link href="/sign-in" className="text-xs font-medium">
+                <Link href="/login" className="text-xs font-medium">
                   Log In
                 </Link>
               }

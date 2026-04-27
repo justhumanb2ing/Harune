@@ -37,7 +37,7 @@ export function Header() {
                 className="rounded-full transition-all duration-300 ease-out"
                 render={
                   <Link
-                    href="/sign-in"
+                    href="/login"
                     className="text-sm font-medium uppercase transition-all duration-300 ease-out hover:bg-primary hover:text-white px-5 py-5"
                   >
                     Log In
@@ -52,7 +52,7 @@ export function Header() {
               className="rounded-full transition-all duration-300 ease-out"
               render={
                 <Link
-                  href="/sign-up"
+                  href="/join"
                   className="text-sm font-medium transition-all duration-300 ease-out hover:bg-primary hover:text-white px-5 py-5"
                 >
                   <span className="uppercase sm:hidden">Sign up</span>

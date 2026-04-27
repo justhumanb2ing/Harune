@@ -47,6 +47,10 @@ export const metadata: Metadata = {
     icon: "/assets/logo.jpeg",
     apple: "/assets/logo.jpeg",
   },
+  verification: {
+    google: "RgHBA8CyoOi7nfUueLvoheQFmwX7abnJM8LWPi584J8",
+  },
+  category: "website",
 };
 
 export default function RootLayout({
@@ -61,8 +65,6 @@ export default function RootLayout({
       className={`${inter.variable} ${inter.className} h-full`}
     >
       <head>
-        {/* For Google Search Console */}
-        <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE_HERE" />
         <AnalyticsScript />
       </head>
       <body className="h-full bg-background antialiased">

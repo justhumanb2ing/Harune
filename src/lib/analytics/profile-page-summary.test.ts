@@ -136,4 +136,63 @@ describe("profile analytics summary", () => {
     expect(summary.itemClicks).toBe(5);
     expect(summary.ctr).toBe(50);
   });
+
+  test("adds previous-period comparisons and trend points", () => {
+    const summary = buildProfileAnalyticsSummary(
+      {
+        endAt: new Date("2026-04-23T12:00:00.000Z").getTime(),
+        label: "7d",
+        startAt: new Date("2026-04-16T12:00:00.000Z").getTime(),
+        timezone: "UTC",
+        unit: "day",
+      },
+      [
+        {
+          t: "2026-04-12T12:00:00.000Z",
+          x: "profile-page-view",
+          y: 50,
+        },
+        {
+          t: "2026-04-12T12:00:00.000Z",
+          x: "profile-link-click",
+          y: 5,
+        },
+        {
+          t: "2026-04-20T12:00:00.000Z",
+          x: "profile-page-view",
+          y: 100,
+        },
+        {
+          t: "2026-04-20T12:00:00.000Z",
+          x: "profile-link-click",
+          y: 20,
+        },
+      ],
+      {
+        previousWindow: {
+          endAt: new Date("2026-04-16T11:59:59.999Z").getTime(),
+          label: "Previous 7d",
+          startAt: new Date("2026-04-09T12:00:00.000Z").getTime(),
+          timezone: "UTC",
+          unit: "day",
+        },
+      }
+    );
+
+    expect(summary.previous.pageViews).toBe(50);
+    expect(summary.previous.itemClicks).toBe(5);
+    expect(summary.changes.pageViews.absolute).toBe(50);
+    expect(summary.changes.pageViews.percent).toBe(100);
+    expect(summary.changes.ctr.absolute).toBe(10);
+    expect(summary.series).toEqual([
+      {
+        ctr: 20,
+        itemClicks: 20,
+        linkClicks: 20,
+        pageViews: 100,
+        socialClicks: 0,
+        timestamp: new Date("2026-04-20T12:00:00.000Z").getTime(),
+      },
+    ]);
+  });
 });

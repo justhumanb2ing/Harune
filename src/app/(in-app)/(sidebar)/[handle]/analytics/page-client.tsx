@@ -1,54 +1,76 @@
 "use client";
 
 import { ProfileAnalyticsSummary } from "@/components/analytics/profile-analytics-summary";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { AnalyticsRangeKey } from "@/lib/analytics/analytics-ranges";
 import { profileAnalyticsQueryOptions } from "@/lib/analytics/query-options";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Loader2Icon } from "lucide-react";
+import { Suspense, useState } from "react";
 
-const analyticsTabs: Array<{ label: string; value: AnalyticsRangeKey }> = [
+const analyticsRanges: Array<{ label: string; value: AnalyticsRangeKey }> = [
   { label: "Today", value: "today" },
-  { label: "7d", value: "7d" },
-  { label: "30d", value: "30d" },
+  { label: "7 days", value: "7d" },
+  { label: "30 days", value: "30d" },
 ];
 
-export function AnalyticsPageClient() {
-  const analyticsQuery = useQuery(profileAnalyticsQueryOptions());
+type AnalyticsSummaryQueryProps = {
+  range: AnalyticsRangeKey;
+};
 
-  if (analyticsQuery.isPending) {
-    return (
-      <section className="container mx-auto flex min-h-40 max-w-md flex-1 items-center justify-center">
-        <Loader2Icon className="size-5 animate-spin" />
-      </section>
-    );
-  }
+function AnalyticsSummaryQuery({ range }: AnalyticsSummaryQueryProps) {
+  const analyticsQuery = useSuspenseQuery(profileAnalyticsQueryOptions());
 
-  if (!analyticsQuery.data) {
-    return null;
-  }
+  return <ProfileAnalyticsSummary range={range} response={analyticsQuery.data} />;
+}
 
+function AnalyticsSummaryFallback() {
   return (
-    <section className="max-w-md mx-auto container">
-      <Tabs defaultValue="today" className="gap-6">
-        <TabsList className="grid w-full max-w-60 grid-cols-3 bg-transparent p-0 dark:bg-transparent">
-          {analyticsTabs.map((tab) => (
-            <TabsTrigger
-              key={tab.value}
-              value={tab.value}
-              className="w-full rounded-full border-b border-transparent px-0 data-active:bg-primary data-active:text-primary-foreground data-active:shadow-none data-active:after:opacity-0 data-active:hover:text-primary-foreground dark:data-active:bg-transparent dark:data-active:text-black"
-            >
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+    <div className="flex min-h-40 flex-1 items-center justify-center">
+      <Loader2Icon className="size-5 animate-spin" />
+    </div>
+  );
+}
 
-        {analyticsTabs.map((tab) => (
-          <TabsContent key={tab.value} value={tab.value}>
-            <ProfileAnalyticsSummary range={tab.value} response={analyticsQuery.data} />
-          </TabsContent>
-        ))}
-      </Tabs>
+export function AnalyticsPageClient() {
+  const [range, setRange] = useState<AnalyticsRangeKey>("7d");
+  return (
+    <section className="container mx-auto max-w-3xl">
+      <div className="flex flex-col gap-6">
+        <header className="flex flex-row items-center justify-between gap-4">
+          <h1 className="text-3xl font-semibold">Analytics</h1>
+          <Select
+            value={range}
+            onValueChange={(value) => {
+              setRange(value as AnalyticsRangeKey);
+            }}
+          >
+            <SelectTrigger
+              size="default"
+              className="mt-1 h-10! w-36 border-0 bg-background text-base font-semibold shadow-float"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {analyticsRanges.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </header>
+
+        <Suspense fallback={<AnalyticsSummaryFallback />}>
+          <AnalyticsSummaryQuery range={range} />
+        </Suspense>
+      </div>
     </section>
   );
 }

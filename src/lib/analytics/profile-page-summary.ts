@@ -2,17 +2,25 @@ import {
   ANALYTICS_RANGE_KEYS,
   type AnalyticsRangeWindow,
   getAnalyticsRangeWindows,
+  getPreviousAnalyticsRangeWindows,
 } from "@/lib/analytics/analytics-ranges";
 import {
   PROFILE_PAGE_ANALYTICS_EVENT_NAMES,
   buildProfilePageAnalyticsPath,
 } from "@/lib/analytics/profile-page";
 import type {
+  ProfileAnalyticsMetricKey,
+  ProfileAnalyticsMetricTotals,
   ProfileAnalyticsResponse,
   ProfileAnalyticsSummary,
   ProfileAnalyticsSummaryMap,
+  ProfileAnalyticsTopItem,
 } from "@/lib/analytics/types";
-import { fetchUmamiEventSeries, getUmamiReportingConfig } from "@/lib/analytics/umami-client";
+import {
+  fetchUmamiEventDataValues,
+  fetchUmamiEventSeries,
+  getUmamiReportingConfig,
+} from "@/lib/analytics/umami-client";
 
 type UmamiSeriesRow = {
   t: string;
@@ -21,28 +29,75 @@ type UmamiSeriesRow = {
 };
 
 const roundCtr = (value: number) => Math.round(value);
+const roundPercent = (value: number) => Math.round(value * 10) / 10;
+const TOP_ITEMS_LIMIT = 5;
 
-export const createEmptyProfileAnalyticsSummary = (
-  window: AnalyticsRangeWindow
-): ProfileAnalyticsSummary => ({
-  ...window,
+const metricKeys = [
+  "ctr",
+  "itemClicks",
+  "linkClicks",
+  "pageViews",
+  "socialClicks",
+] as const satisfies ProfileAnalyticsMetricKey[];
+
+const emptyMetricTotals: ProfileAnalyticsMetricTotals = {
   ctr: 0,
   itemClicks: 0,
   linkClicks: 0,
   pageViews: 0,
   socialClicks: 0,
-});
+};
+
+const createMetricChange = (current: number, previous: number) => {
+  const absolute = current - previous;
+
+  return {
+    absolute,
+    direction: absolute > 0 ? "up" : absolute < 0 ? "down" : "flat",
+    percent:
+      previous === 0 ? (current === 0 ? 0 : null) : roundPercent((absolute / previous) * 100),
+    previous,
+  } as const;
+};
+
+const createMetricChanges = (
+  current: ProfileAnalyticsMetricTotals,
+  previous: ProfileAnalyticsMetricTotals
+) =>
+  Object.fromEntries(
+    metricKeys.map((metric) => [metric, createMetricChange(current[metric], previous[metric])])
+  ) as ProfileAnalyticsSummary["changes"];
+
+export const createEmptyProfileAnalyticsSummary = (
+  window: AnalyticsRangeWindow,
+  previousWindow?: AnalyticsRangeWindow
+): ProfileAnalyticsSummary => {
+  const previous = {
+    ...(previousWindow ?? window),
+    ...emptyMetricTotals,
+  };
+
+  return {
+    ...window,
+    ...emptyMetricTotals,
+    changes: createMetricChanges(emptyMetricTotals, emptyMetricTotals),
+    previous,
+    series: [],
+    topItems: [],
+  };
+};
 
 export const createEmptyProfileAnalyticsSummaryMap = (options?: {
   now?: Date;
   timezone?: string | null;
 }): ProfileAnalyticsSummaryMap => {
   const windows = getAnalyticsRangeWindows(options);
+  const previousWindows = getPreviousAnalyticsRangeWindows(options);
 
   return {
-    "7d": createEmptyProfileAnalyticsSummary(windows["7d"]),
-    "30d": createEmptyProfileAnalyticsSummary(windows["30d"]),
-    today: createEmptyProfileAnalyticsSummary(windows.today),
+    "7d": createEmptyProfileAnalyticsSummary(windows["7d"], previousWindows["7d"]),
+    "30d": createEmptyProfileAnalyticsSummary(windows["30d"], previousWindows["30d"]),
+    today: createEmptyProfileAnalyticsSummary(windows.today, previousWindows.today),
   };
 };
 
@@ -55,19 +110,14 @@ const isRowInWindow = (row: UmamiSeriesRow, window: AnalyticsRangeWindow) => {
   return Number.isFinite(timestamp) && timestamp >= window.startAt && timestamp <= window.endAt;
 };
 
-export const buildProfileAnalyticsSummary = (
-  window: AnalyticsRangeWindow,
-  rows: UmamiSeriesRow[]
-): ProfileAnalyticsSummary => {
-  const rowsInWindow = rows.filter((row) => isRowInWindow(row, window));
-  const pageViews = sumEventRows(rowsInWindow, PROFILE_PAGE_ANALYTICS_EVENT_NAMES.pageView);
-  const socialClicks = sumEventRows(rowsInWindow, PROFILE_PAGE_ANALYTICS_EVENT_NAMES.socialClick);
-  const linkClicks = sumEventRows(rowsInWindow, PROFILE_PAGE_ANALYTICS_EVENT_NAMES.linkClick);
+const buildMetricTotals = (rows: UmamiSeriesRow[]): ProfileAnalyticsMetricTotals => {
+  const pageViews = sumEventRows(rows, PROFILE_PAGE_ANALYTICS_EVENT_NAMES.pageView);
+  const socialClicks = sumEventRows(rows, PROFILE_PAGE_ANALYTICS_EVENT_NAMES.socialClick);
+  const linkClicks = sumEventRows(rows, PROFILE_PAGE_ANALYTICS_EVENT_NAMES.linkClick);
   const itemClicks = socialClicks + linkClicks;
   const ctr = pageViews > 0 ? roundCtr((itemClicks / pageViews) * 100) : 0;
 
   return {
-    ...window,
     ctr,
     itemClicks,
     linkClicks,
@@ -76,26 +126,198 @@ export const buildProfileAnalyticsSummary = (
   };
 };
 
+const buildSeries = (rows: UmamiSeriesRow[], window: AnalyticsRangeWindow) => {
+  const rowsByTimestamp = rows
+    .filter((row) => isRowInWindow(row, window))
+    .reduce((groups, row) => {
+      const timestamp = Date.parse(row.t);
+
+      if (!Number.isFinite(timestamp)) {
+        return groups;
+      }
+
+      const groupedRows = groups.get(timestamp) ?? [];
+      groupedRows.push(row);
+      groups.set(timestamp, groupedRows);
+
+      return groups;
+    }, new Map<number, UmamiSeriesRow[]>());
+
+  return [...rowsByTimestamp.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([timestamp, groupedRows]) => ({
+      timestamp,
+      ...buildMetricTotals(groupedRows),
+    }));
+};
+
+export const buildProfileAnalyticsSummary = (
+  window: AnalyticsRangeWindow,
+  rows: UmamiSeriesRow[],
+  options?: {
+    previousWindow?: AnalyticsRangeWindow;
+    topItems?: ProfileAnalyticsTopItem[];
+  }
+): ProfileAnalyticsSummary => {
+  const rowsInWindow = rows.filter((row) => isRowInWindow(row, window));
+  const currentTotals = buildMetricTotals(rowsInWindow);
+  const previousWindow = options?.previousWindow ?? window;
+  const previousTotals = buildMetricTotals(
+    rows.filter((row) => isRowInWindow(row, previousWindow))
+  );
+
+  return {
+    ...window,
+    ...currentTotals,
+    changes: createMetricChanges(currentTotals, previousTotals),
+    previous: {
+      ...previousWindow,
+      ...previousTotals,
+    },
+    series: buildSeries(rows, window),
+    topItems: options?.topItems ?? [],
+  };
+};
+
+const topItemKey = (item: { kind: "link" | "social"; label: string }) =>
+  `${item.kind}:${item.label}`;
+
+const fetchTopItemsForWindow = async (options: {
+  analyticsPath: string;
+  endAt: number;
+  startAt: number;
+}) => {
+  const eventRequests = [
+    {
+      event: PROFILE_PAGE_ANALYTICS_EVENT_NAMES.linkClick,
+      kind: "link",
+    },
+    {
+      event: PROFILE_PAGE_ANALYTICS_EVENT_NAMES.socialClick,
+      kind: "social",
+    },
+  ] as const;
+
+  const rows = await Promise.all(
+    eventRequests.map(async ({ event, kind }) => {
+      const values = await fetchUmamiEventDataValues({
+        endAt: options.endAt,
+        event,
+        path: options.analyticsPath,
+        propertyName: "itemLabel",
+        startAt: options.startAt,
+      });
+
+      return values.map((value) => ({
+        clicks: value.total,
+        kind,
+        label: value.value,
+      }));
+    })
+  );
+
+  return rows.flat();
+};
+
+const buildTopItems = async (options: {
+  analyticsPath: string;
+  currentWindow: AnalyticsRangeWindow;
+  previousWindow: AnalyticsRangeWindow;
+}): Promise<ProfileAnalyticsTopItem[]> => {
+  const [currentItems, previousItems] = await Promise.all([
+    fetchTopItemsForWindow({
+      analyticsPath: options.analyticsPath,
+      endAt: options.currentWindow.endAt,
+      startAt: options.currentWindow.startAt,
+    }),
+    fetchTopItemsForWindow({
+      analyticsPath: options.analyticsPath,
+      endAt: options.previousWindow.endAt,
+      startAt: options.previousWindow.startAt,
+    }),
+  ]);
+
+  const previousClicksByItem = new Map(
+    previousItems.map((item) => [topItemKey(item), item.clicks])
+  );
+  const totalCurrentClicks = currentItems.reduce((total, item) => total + item.clicks, 0);
+
+  return currentItems
+    .sort((a, b) => b.clicks - a.clicks)
+    .slice(0, TOP_ITEMS_LIMIT)
+    .map((item) => {
+      const previousClicks = previousClicksByItem.get(topItemKey(item)) ?? 0;
+      const change = item.clicks - previousClicks;
+
+      return {
+        change,
+        changePercent:
+          previousClicks === 0
+            ? item.clicks === 0
+              ? 0
+              : null
+            : roundPercent((change / previousClicks) * 100),
+        clicks: item.clicks,
+        kind: item.kind,
+        label: item.label,
+        previousClicks,
+        share: totalCurrentClicks > 0 ? roundPercent((item.clicks / totalCurrentClicks) * 100) : 0,
+      };
+    });
+};
+
 export const getProfileAnalyticsSummaryMap = async (options: {
   now?: Date;
   profilePageId: string;
   timezone?: string | null;
 }): Promise<ProfileAnalyticsSummaryMap> => {
   const windows = getAnalyticsRangeWindows(options);
+  const previousWindows = getPreviousAnalyticsRangeWindows(options);
   const analyticsPath = buildProfilePageAnalyticsPath(options.profilePageId);
-  const sourceWindow = windows["30d"];
-  const rows = await fetchUmamiEventSeries({
-    endAt: sourceWindow.endAt,
-    path: analyticsPath,
-    startAt: sourceWindow.startAt,
-    timezone: sourceWindow.timezone,
-    unit: "hour",
-  });
+  const daySourceStartAt = previousWindows["30d"].startAt;
+  const [dayRows, hourlyRows, topItemsByRange] = await Promise.all([
+    fetchUmamiEventSeries({
+      endAt: windows["30d"].endAt,
+      path: analyticsPath,
+      startAt: daySourceStartAt,
+      timezone: windows["30d"].timezone,
+      unit: "day",
+    }),
+    fetchUmamiEventSeries({
+      endAt: windows.today.endAt,
+      path: analyticsPath,
+      startAt: previousWindows.today.startAt,
+      timezone: windows.today.timezone,
+      unit: "hour",
+    }),
+    Promise.all(
+      ANALYTICS_RANGE_KEYS.map(async (range) => {
+        const topItems = await buildTopItems({
+          analyticsPath,
+          currentWindow: windows[range],
+          previousWindow: previousWindows[range],
+        });
+
+        return [range, topItems] as const;
+      })
+    ),
+  ]);
+  const topItemsMap = Object.fromEntries(topItemsByRange) as Record<
+    (typeof ANALYTICS_RANGE_KEYS)[number],
+    ProfileAnalyticsTopItem[]
+  >;
 
   const summaries = ANALYTICS_RANGE_KEYS.map((range) => {
     const window = windows[range];
+    const rows = range === "today" ? hourlyRows : dayRows;
 
-    return [range, buildProfileAnalyticsSummary(window, rows)] as const;
+    return [
+      range,
+      buildProfileAnalyticsSummary(window, rows, {
+        previousWindow: previousWindows[range],
+        topItems: topItemsMap[range],
+      }),
+    ] as const;
   });
 
   return Object.fromEntries(summaries) as ProfileAnalyticsSummaryMap;

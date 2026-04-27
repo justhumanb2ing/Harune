@@ -32,6 +32,10 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { normalizeHandle, validateHandle } from "@/lib/handles";
 import { PROFILE_IMAGE_ACCEPT } from "@/lib/profile-page/image-upload";
+import {
+  clearAuthenticatedAppQueries,
+  invalidateAuthenticatedAppQueries,
+} from "@/lib/react-query/app-cache";
 import { type ApiError, apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { cn } from "@/lib/utils";
@@ -402,7 +406,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
           socialLinks,
         }),
       });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.app.me() });
+      await invalidateAuthenticatedAppQueries(queryClient);
       router.push("/create/success");
     } catch (submitError) {
       if (uploadedImageUrl) {
@@ -471,6 +475,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
         return;
       }
 
+      clearAuthenticatedAppQueries(queryClient);
       router.push("/sign-in");
       router.refresh();
     } catch (signOutError) {

@@ -16,8 +16,10 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
+import { clearAuthenticatedAppQueries } from "@/lib/react-query/app-cache";
 import useUser from "@/lib/users/useUser";
 import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangleIcon,
   BoxIcon,
@@ -112,6 +114,7 @@ function isActiveRoute(pathname: string, href: string) {
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { pageHandleLabel, pageImage, pageName } = useCurrentPageMeta();
   const { profilePage } = useUser();
   const previousPathnameRef = useRef(pathname);
@@ -137,6 +140,7 @@ export default function Sidebar() {
         return;
       }
 
+      clearAuthenticatedAppQueries(queryClient);
       setIsExpanded(false);
       router.push("/sign-in");
       router.refresh();
@@ -168,6 +172,7 @@ export default function Sidebar() {
       }
 
       toast.success("Account deleted");
+      clearAuthenticatedAppQueries(queryClient);
       setIsDeleteDialogOpen(false);
       setIsExpanded(false);
       router.replace("/sign-in");
@@ -185,6 +190,14 @@ export default function Sidebar() {
     }
 
     setIsDeleteDialogOpen(open);
+  };
+
+  const prefetchAppRoute = (href: string) => {
+    if (href === "/post-sign-in") {
+      return;
+    }
+
+    router.prefetch(href);
   };
 
   useEffect(() => {
@@ -298,8 +311,11 @@ export default function Sidebar() {
                           render={
                             <Link
                               href={href}
+                              prefetch={href === "/post-sign-in" ? false : undefined}
                               aria-current={isActive ? "page" : undefined}
                               aria-label={label}
+                              onFocus={() => prefetchAppRoute(href)}
+                              onMouseEnter={() => prefetchAppRoute(href)}
                               onClick={() => setIsExpanded(false)}
                             />
                           }

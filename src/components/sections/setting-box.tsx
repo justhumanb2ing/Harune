@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { useIsBelowLg } from "@/hooks/use-mobile";
 import { authClient } from "@/lib/auth-client";
+import { clearAuthenticatedAppQueries } from "@/lib/react-query/app-cache";
 import useUser from "@/lib/users/useUser";
+import { useQueryClient } from "@tanstack/react-query";
 import { BoxIcon, ChartColumnBigIcon, PlusIcon } from "lucide-react";
 import { AnimatePresence, MotionConfig, type Transition, motion } from "motion/react";
 import Link from "next/link";
@@ -103,6 +105,7 @@ function panelItemExitTransition(index: number): Transition {
 export default function SettingBox() {
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { pageHandleLabel, pageName } = useCurrentPageMeta();
   const { profilePage } = useUser();
   const previousPathnameRef = useRef(pathname);
@@ -135,6 +138,7 @@ export default function SettingBox() {
       const result = await authClient.signOut({
         fetchOptions: {
           onSuccess: () => {
+            clearAuthenticatedAppQueries(queryClient);
             setIsExpanded(false);
             router.push("/sign-in");
             router.refresh();
@@ -175,6 +179,7 @@ export default function SettingBox() {
       }
 
       toast.success("Account deleted");
+      clearAuthenticatedAppQueries(queryClient);
       setIsDeleteDialogOpen(false);
       setIsExpanded(false);
       router.replace("/sign-in");
@@ -192,6 +197,14 @@ export default function SettingBox() {
     }
 
     setIsDeleteDialogOpen(open);
+  };
+
+  const prefetchToggleRoute = () => {
+    if (!profilePage?.handle) {
+      return;
+    }
+
+    router.prefetch(toggleHref);
   };
 
   useEffect(() => {
@@ -278,7 +291,10 @@ export default function SettingBox() {
                 render={
                   <Link
                     href={toggleHref}
+                    prefetch={profilePage?.handle ? undefined : false}
                     aria-label={isAnalyticsPath ? "Go to Section" : "Go to Analytics"}
+                    onFocus={prefetchToggleRoute}
+                    onMouseEnter={prefetchToggleRoute}
                   >
                     <ToggleIcon className="size-5 stroke-2" />
                   </Link>
@@ -369,7 +385,10 @@ export default function SettingBox() {
             render={
               <Link
                 href={toggleHref}
+                prefetch={profilePage?.handle ? undefined : false}
                 aria-label={isAnalyticsPath ? "Go to Section" : "Go to Analytics"}
+                onFocus={prefetchToggleRoute}
+                onMouseEnter={prefetchToggleRoute}
                 onClick={(event) => event.stopPropagation()}
               >
                 <ToggleIcon className="size-5 stroke-2" />

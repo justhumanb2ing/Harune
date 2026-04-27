@@ -3,7 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
+import { invalidateAuthenticatedAppQueries } from "@/lib/react-query/app-cache";
 import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
@@ -29,6 +31,7 @@ export function AuthForm({
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const resolvedCallbackUrl = callbackUrl || searchParams?.get("callbackUrl") || "/post-sign-in";
   const errorCallbackParams = new URLSearchParams();
   const callbackUrlParam = searchParams?.get("callbackUrl");
@@ -101,6 +104,7 @@ export function AuthForm({
         return;
       }
 
+      await invalidateAuthenticatedAppQueries(queryClient);
       router.push(resolvedCallbackUrl);
       router.refresh();
     } catch (error) {
@@ -163,14 +167,14 @@ export function AuthForm({
       {mode === "sign-up" ? (
         <p className="mb-8 text-sm text-muted-foreground space-x-1">
           <span>or</span>
-          <Link href="/sign-in" className="">
+          <Link href="/sign-in" prefetch={false} className="">
             log in
           </Link>
         </p>
       ) : (
         <p className="mb-8 text-sm text-muted-foreground space-x-1">
           <span>or</span>
-          <Link href="/sign-up" className="">
+          <Link href="/sign-up" prefetch={false} className="">
             sign up
           </Link>
         </p>

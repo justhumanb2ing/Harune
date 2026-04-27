@@ -1,9 +1,7 @@
-import { env } from "@/env";
 import { appConfig } from "@/lib/config";
 import type { Metadata } from "next";
 
-const FALLBACK_SITE_URL = appConfig.url;
-const defaultSiteUrl = (env.NEXT_PUBLIC_APP_URL ?? FALLBACK_SITE_URL).replace(/\/$/, "");
+const defaultSiteUrl = appConfig.url.replace(/\/$/, "");
 
 type PublicPath = `/${string}` | "/";
 
@@ -13,7 +11,8 @@ export const seoConfig = {
   description: appConfig.description,
   keywords: appConfig.keywords,
   locale: "en_US",
-  defaultOgImagePath: "/images/og.png" as PublicPath,
+  defaultOgImagePath: "/opengraph-image" as PublicPath,
+  defaultTwitterImagePath: "/twitter-image" as PublicPath,
 } as const;
 
 export const absoluteUrl = (path = "/") => new URL(path, `${seoConfig.siteUrl}/`).toString();
@@ -25,6 +24,7 @@ export type PageMetadataOptions = {
   type?: "website" | "article";
   keywords?: string[];
   imagePath?: string;
+  twitterImagePath?: string;
   imageAlt?: string;
 };
 
@@ -35,10 +35,12 @@ export const createPageMetadata = ({
   type = "website",
   keywords,
   imagePath = seoConfig.defaultOgImagePath,
+  twitterImagePath = seoConfig.defaultTwitterImagePath,
   imageAlt = title,
 }: PageMetadataOptions): Metadata => {
   const canonicalUrl = absoluteUrl(path);
   const ogImageUrl = absoluteUrl(imagePath);
+  const twitterImageUrl = absoluteUrl(twitterImagePath);
 
   return {
     title,
@@ -67,7 +69,7 @@ export const createPageMetadata = ({
       card: "summary_large_image",
       title,
       description,
-      images: [ogImageUrl],
+      images: [twitterImageUrl],
     },
   };
 };

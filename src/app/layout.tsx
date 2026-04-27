@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: seoConfig.siteName,
     description: seoConfig.description,
-    images: [absoluteUrl(seoConfig.defaultOgImagePath)],
+    images: [absoluteUrl(seoConfig.defaultTwitterImagePath)],
   },
   icons: {
     icon: "/assets/logo.jpeg",

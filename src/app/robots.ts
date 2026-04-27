@@ -7,7 +7,20 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/api/", "/app", "/profile", "/subscribe/"],
+      disallow: [
+        "/api/",
+        "/sign-in",
+        "/sign-up",
+        "/login",
+        "/join",
+        "/post-sign-in",
+        "/create",
+        "/subscribe",
+        "/*/app",
+        "/*/app/",
+        "/*/analytics",
+        "/*/analytics/",
+      ],
     },
     sitemap: absoluteUrl("/sitemap.xml"),
   };

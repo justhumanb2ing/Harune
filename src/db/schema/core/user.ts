@@ -37,7 +37,7 @@ export const users = pgTable(
     planId: text("planId").references(() => plans.id),
   },
   () => []
-);
+).enableRLS();
 
 export const authAccounts = pgTable(
   "auth_account",
@@ -66,7 +66,7 @@ export const authAccounts = pgTable(
     uniqueIndex("auth_account_provider_account_idx").on(table.providerId, table.accountId),
     index("auth_account_userId_idx").on(table.userId),
   ]
-);
+).enableRLS();
 
 export const authSessions = pgTable(
   "auth_session",
@@ -88,7 +88,7 @@ export const authSessions = pgTable(
     uniqueIndex("auth_session_token_idx").on(table.token),
     index("auth_session_userId_idx").on(table.userId),
   ]
-);
+).enableRLS();
 
 export const authVerifications = pgTable(
   "auth_verification",
@@ -105,4 +105,18 @@ export const authVerifications = pgTable(
   (table) => [
     uniqueIndex("auth_verification_identifier_value_idx").on(table.identifier, table.value),
   ]
-);
+).enableRLS();
+
+export const authJwks = pgTable(
+  "jwks",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    publicKey: text("publicKey").notNull(),
+    privateKey: text("privateKey").notNull(),
+    createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
+    expiresAt: timestamp("expiresAt", { mode: "date" }),
+  },
+  () => []
+).enableRLS();

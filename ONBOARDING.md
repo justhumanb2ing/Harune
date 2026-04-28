@@ -89,6 +89,7 @@ src/
 | `createPageMetadata` | 페이지별 SEO 메타를 일관되게 생성하는 헬퍼 |
 | `absoluteUrl` | 경로를 절대 URL(canonical/JSON-LD)로 변환 |
 | `auth()` | 현재 세션을 가져오는 서버 유틸 |
+| Supabase RLS | Better Auth JWT `sub`를 DB owner 정책에 연결하는 방어층 |
 | `creditTransactions` | 크레딧 증감 이력 저장 테이블 |
 | `policy content` | `src/content/policies/*`의 법적 문서 MDX |
 
@@ -153,10 +154,12 @@ bun run build
 2. 인증/권한 로직 변경
 - `src/auth.ts`와 `src/lib/auth/*`에서 처리
 - 보호 라우트는 `src/proxy.ts` 정책 확인
+- Supabase RLS는 DB row 접근 방어층입니다. `auth()`, `withAuthRequired`, `/:handle/app` 라우트 가드는 제거하지 마세요.
 
 3. DB 스키마 변경
 - `src/db/schema/*` 수정
 - Drizzle 명령으로 마이그레이션 생성/적용
+- Supabase 노출 역할이 필요한 테이블은 RLS policy와 SQL `GRANT`/`REVOKE`를 함께 확인하세요.
 
 처음 읽기 좋은 파일:
 

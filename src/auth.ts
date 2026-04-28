@@ -2,15 +2,17 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { betterAuth } from "better-auth/minimal";
 import { nextCookies } from "better-auth/next-js";
+import { jwt } from "better-auth/plugins";
 import { and, eq, isNull } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { db } from "./db";
 import { coupons } from "./db/schema/coupons";
-import { authAccounts, authSessions, authVerifications, users } from "./db/schema/user";
+import { authAccounts, authJwks, authSessions, authVerifications, users } from "./db/schema/user";
 import { env } from "./env";
 import { passwordHashing } from "./lib/auth/password";
+import { betterAuthSupabaseJwtOptions } from "./lib/auth/supabase-jwt";
 import { appConfig } from "./lib/config";
 import onUserCreate from "./lib/users/onUserCreate";
 
@@ -48,6 +50,7 @@ export const betterAuthServer = betterAuth({
       account: authAccounts,
       session: authSessions,
       verification: authVerifications,
+      jwks: authJwks,
     },
   }),
   session: {
@@ -119,7 +122,7 @@ export const betterAuthServer = betterAuth({
       },
     },
   },
-  plugins: [nextCookies()],
+  plugins: [jwt(betterAuthSupabaseJwtOptions), nextCookies()],
 });
 
 export const auth = async (): Promise<AuthSession | null> => {

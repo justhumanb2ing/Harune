@@ -1,5 +1,14 @@
+import { sql } from "drizzle-orm";
+import { pgPolicy } from "drizzle-orm/pg-core";
 import { index, integer, pgEnum, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
+import {
+  authenticatedWriteRole,
+  exposedReadRoles,
+  hasProfilePage,
+  isCurrentBetterAuthUser,
+  isProfilePageOwner,
+} from "../rls";
 import { users } from "./user";
 
 export const profileSocialPlatformEnum = pgEnum("profile_social_platform", [
@@ -40,8 +49,29 @@ export const profilePages = pgTable(
   (table) => [
     uniqueIndex("profile_page_handle_idx").on(table.handle),
     index("profile_page_user_id_idx").on(table.userId),
+    pgPolicy("profile_page_public_select", {
+      for: "select",
+      to: exposedReadRoles,
+      using: sql`true`,
+    }),
+    pgPolicy("profile_page_owner_insert", {
+      for: "insert",
+      to: authenticatedWriteRole,
+      withCheck: isCurrentBetterAuthUser(table.userId),
+    }),
+    pgPolicy("profile_page_owner_update", {
+      for: "update",
+      to: authenticatedWriteRole,
+      using: isCurrentBetterAuthUser(table.userId),
+      withCheck: isCurrentBetterAuthUser(table.userId),
+    }),
+    pgPolicy("profile_page_owner_delete", {
+      for: "delete",
+      to: authenticatedWriteRole,
+      using: isCurrentBetterAuthUser(table.userId),
+    }),
   ]
-);
+).enableRLS();
 
 export const profileSocialLinks = pgTable(
   "profile_social_link",
@@ -62,8 +92,29 @@ export const profileSocialLinks = pgTable(
     uniqueIndex("profile_social_link_page_platform_idx").on(table.profilePageId, table.platform),
     uniqueIndex("profile_social_link_page_position_idx").on(table.profilePageId, table.position),
     index("profile_social_link_page_id_idx").on(table.profilePageId),
+    pgPolicy("profile_social_link_public_select", {
+      for: "select",
+      to: exposedReadRoles,
+      using: hasProfilePage(table.profilePageId),
+    }),
+    pgPolicy("profile_social_link_owner_insert", {
+      for: "insert",
+      to: authenticatedWriteRole,
+      withCheck: isProfilePageOwner(table.profilePageId),
+    }),
+    pgPolicy("profile_social_link_owner_update", {
+      for: "update",
+      to: authenticatedWriteRole,
+      using: isProfilePageOwner(table.profilePageId),
+      withCheck: isProfilePageOwner(table.profilePageId),
+    }),
+    pgPolicy("profile_social_link_owner_delete", {
+      for: "delete",
+      to: authenticatedWriteRole,
+      using: isProfilePageOwner(table.profilePageId),
+    }),
   ]
-);
+).enableRLS();
 
 export const profileLinkItems = pgTable(
   "profile_link_item",
@@ -85,8 +136,29 @@ export const profileLinkItems = pgTable(
   (table) => [
     uniqueIndex("profile_link_item_page_position_idx").on(table.profilePageId, table.position),
     index("profile_link_item_page_id_idx").on(table.profilePageId),
+    pgPolicy("profile_link_item_public_select", {
+      for: "select",
+      to: exposedReadRoles,
+      using: hasProfilePage(table.profilePageId),
+    }),
+    pgPolicy("profile_link_item_owner_insert", {
+      for: "insert",
+      to: authenticatedWriteRole,
+      withCheck: isProfilePageOwner(table.profilePageId),
+    }),
+    pgPolicy("profile_link_item_owner_update", {
+      for: "update",
+      to: authenticatedWriteRole,
+      using: isProfilePageOwner(table.profilePageId),
+      withCheck: isProfilePageOwner(table.profilePageId),
+    }),
+    pgPolicy("profile_link_item_owner_delete", {
+      for: "delete",
+      to: authenticatedWriteRole,
+      using: isProfilePageOwner(table.profilePageId),
+    }),
   ]
-);
+).enableRLS();
 
 export const profileTextBoxItems = pgTable(
   "profile_text_box_item",
@@ -107,5 +179,26 @@ export const profileTextBoxItems = pgTable(
   (table) => [
     uniqueIndex("profile_text_box_item_page_position_idx").on(table.profilePageId, table.position),
     index("profile_text_box_item_page_id_idx").on(table.profilePageId),
+    pgPolicy("profile_text_box_item_public_select", {
+      for: "select",
+      to: exposedReadRoles,
+      using: hasProfilePage(table.profilePageId),
+    }),
+    pgPolicy("profile_text_box_item_owner_insert", {
+      for: "insert",
+      to: authenticatedWriteRole,
+      withCheck: isProfilePageOwner(table.profilePageId),
+    }),
+    pgPolicy("profile_text_box_item_owner_update", {
+      for: "update",
+      to: authenticatedWriteRole,
+      using: isProfilePageOwner(table.profilePageId),
+      withCheck: isProfilePageOwner(table.profilePageId),
+    }),
+    pgPolicy("profile_text_box_item_owner_delete", {
+      for: "delete",
+      to: authenticatedWriteRole,
+      using: isProfilePageOwner(table.profilePageId),
+    }),
   ]
-);
+).enableRLS();

@@ -6,6 +6,7 @@
 - `/scripts` : 일회성 실행 스크립트와 운영용 유틸리티를 둔다.
 - `/scripts/_bootstrap` : `bun run script` 실행 전에 공통 환경을 초기화하는 부트스트랩 코드를 둔다.
 - `/src` : 실제 애플리케이션 코드가 들어가는 메인 폴더다.
+- `/docs/solutions` : 해결한 문제와 설계 판단을 YAML frontmatter(`module`, `problem_type`, `tags`)로 검색 가능하게 기록한 지식 저장소다.
 
 ### `src` 하위
 - `/src/app` : Next.js App Router 엔트리다. 페이지, 레이아웃, 전역 스타일, 메타데이터, 라우트 핸들러를 둔다.

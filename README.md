@@ -26,7 +26,17 @@ This template organizes Drizzle schemas into `core` and `extensions`.
 - `src/db/schema/extensions/*`
   - Optional schema modules that can be added when needed.
 
-Drizzle reads `DB_MODULES` from [drizzle.config.ts](/Users/kinmongsang/Documents/KINMONGSANG/nextjs-sass-boilerplate/drizzle.config.ts:1) to decide which extensions to include.
+Drizzle reads `DB_MODULES` from `drizzle.config.ts` to decide which extensions to include.
+
+### Supabase RLS and Better Auth
+
+Better Auth remains the source of truth for users and sessions. Supabase RLS uses short-lived Better Auth JWTs only as a downstream authorization contract when a Supabase exposed role calls the database directly.
+
+- `app_user`, Better Auth internals, JWKS, credit ledger, and coupon tables are RLS-enabled with no exposed-role policies by default.
+- Public profile tables allow `anon` and `authenticated` reads. Authenticated writes require the JWT `sub` to match the owning `app_user.id`.
+- `plans` allows public reads and keeps writes server-only.
+- Next.js route guards and API checks still stay in place. RLS is the database defense layer, not the `/[handle]/app` UX or API authorization controller.
+- Do not put service-role or secret database credentials in client code. Browser Supabase clients must use only a publishable key plus a Better Auth JWT access token.
 
 ### Core Schema
 

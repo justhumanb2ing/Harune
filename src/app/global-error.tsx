@@ -1,31 +1,42 @@
 "use client";
 
 import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { inter } from "@/lib/fonts";
+import "./globals.css";
 
 export default function GlobalError({
   error,
-  reset,
+  unstable_retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  unstable_retry: () => void;
 }) {
   useEffect(() => {
     console.error(error);
   }, [error]);
 
   return (
-    <html lang="en">
-      <body className="bg-background text-foreground">
-        <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col items-center justify-center gap-4 px-6 text-center">
-          <h1 className="text-2xl font-semibold">Something's off</h1>
-          <p className="text-sm text-muted-foreground">Try again in a moment.</p>
-          <button
-            type="button"
-            onClick={reset}
-            className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-          >
-            Try again
-          </button>
+    <html lang="en" className={`${inter.variable} ${inter.className} h-full`}>
+      <body className="h-full bg-background text-foreground antialiased">
+        <main className="flex h-full items-center justify-center">
+          <section className="flex flex-col items-center gap-10">
+            <header className="flex flex-col items-center gap-1">
+              <h1 className="text-xl font-bold">Something went off track.</h1>
+              <p className="text-muted-foreground">We’re getting it back in place.</p>
+            </header>
+
+            <Button
+              size={"lg"}
+              type="button"
+              onClick={() => unstable_retry()}
+              className={
+                "h-12 w-52 max-w-52 text-lg! font-bold! brand-button shadow-brand-small py-7 px-8"
+              }
+            >
+              Try again
+            </Button>
+          </section>
         </main>
       </body>
     </html>

@@ -1,15 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import { AnalyticsScript } from "@/components/site-instrumentation/analytics-script";
 import { SiteStructuredData } from "@/components/site-instrumentation/structured-data";
+import { inter } from "@/lib/fonts";
 import { absoluteUrl, seoConfig } from "@/lib/seo";
 import Providers from "./providers";
 import "./globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(seoConfig.siteUrl),

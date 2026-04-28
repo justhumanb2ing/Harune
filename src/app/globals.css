@@ -399,8 +399,7 @@ html[data-onboarding-step-transition="back"]::view-transition-new(onboarding-ste
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
-    letter-spacing: var(--tracking-normal);
+    @apply bg-background text-foreground tracking-normal;
   }
   html {
     @apply font-sans;

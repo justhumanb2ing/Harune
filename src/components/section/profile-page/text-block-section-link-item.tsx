@@ -1,16 +1,13 @@
 "use client";
 
-import {
-  AnimatePresence,
-  MotionConfig,
-  type Transition,
-  motion,
-} from "motion/react";
+import { AnimatePresence, MotionConfig, type Transition, motion } from "motion/react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Drawer, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useIsBelowLg } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { TextAaIcon } from "@phosphor-icons/react/dist/ssr";
 
@@ -87,9 +84,8 @@ type TextBlockSectionLinkItemProps = {
   onAdd: (textBox: { description: string; title: string }) => void;
 };
 
-export function TextBlockSectionLinkItem({
-  onAdd,
-}: TextBlockSectionLinkItemProps) {
+export function TextBlockSectionLinkItem({ onAdd }: TextBlockSectionLinkItemProps) {
+  const isBelowLg = useIsBelowLg();
   const [isExpanded, setIsExpanded] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -115,6 +111,101 @@ export function TextBlockSectionLinkItem({
     reset();
   };
 
+  const formHeader = (
+    <div className="grid grid-cols-3 items-center px-1 py-1">
+      <Button
+        type="button"
+        size="lg"
+        variant="outline"
+        onClick={reset}
+        className="h-10 justify-self-start rounded-md border-border/60 px-4 text-base font-semibold shadow-sm"
+      >
+        Cancel
+      </Button>
+      <p className="justify-self-center text-xl font-semibold">Text</p>
+      <Button
+        type="button"
+        size="lg"
+        variant="outline"
+        disabled={!canAdd}
+        onClick={handleAdd}
+        className="brand-success-button h-10 justify-self-end rounded-md border px-6 text-base font-semibold text-primary-foreground shadow-sm hover:text-primary-foreground"
+      >
+        Add
+      </Button>
+    </div>
+  );
+
+  const formFields = (
+    <div className="space-y-0 p-1">
+      <Input
+        value={title}
+        onChange={(event) => setTitle(event.target.value)}
+        placeholder="What’s on your mind?"
+        className="h-11 w-full min-w-0 max-w-full border-0 text-lg! font-medium focus-visible:ring-0"
+      />
+      <Textarea
+        value={description}
+        onChange={(event) => setDescription(event.target.value)}
+        placeholder="Add more about this"
+        className="max-h-64 min-h-32 w-full min-w-0 max-w-full resize-none overflow-x-hidden overflow-y-auto break-all border-0 py-0 text-base! [field-sizing:fixed] [overflow-wrap:anywhere] focus-visible:ring-0"
+      />
+    </div>
+  );
+
+  const collapsedContent = (
+    <div className="flex w-full flex-col justify-between">
+      <p className="flex flex-1 flex-col gap-1">
+        <span className="flex w-fit items-center gap-2 text-xl leading-snug font-semibold">
+          <TextAaIcon className="size-6" weight="bold" />
+          <span>Text</span>
+        </span>
+        {/*<span className="text-sm text-muted-foreground">
+            Use for notes, context, and non-link content.
+          </span>*/}
+      </p>
+      <p className="p-1 text-right font-medium text-muted-foreground">click to add</p>
+    </div>
+  );
+
+  if (isBelowLg) {
+    return (
+      <>
+        <div className="h-32 w-full overflow-hidden rounded-2xl bg-background shadow-float">
+          <button
+            type="button"
+            onClick={() => setIsExpanded(true)}
+            className={cn(sectionLinkClassName, "h-full text-left")}
+          >
+            {collapsedContent}
+          </button>
+        </div>
+        <Drawer
+          open={isExpanded}
+          onOpenChange={(open) => {
+            if (open) {
+              setIsExpanded(true);
+              return;
+            }
+
+            reset();
+          }}
+        >
+          <DrawerContent
+            aria-label="Add text"
+            className="max-h-[85vh] min-h-[50vh] gap-0 rounded-t-2xl p-0 pt-1"
+          >
+            <DrawerTitle className="sr-only">Add text</DrawerTitle>
+            <div className="flex min-h-0 flex-col overflow-y-auto bg-background p-2">
+              {formHeader}
+              <div className="min-w-0 flex-1 overflow-hidden">{formFields}</div>
+            </div>
+          </DrawerContent>
+        </Drawer>
+      </>
+    );
+  }
+
   return (
     <MotionConfig transition={shellExpandTransition}>
       <motion.div
@@ -124,9 +215,7 @@ export function TextBlockSectionLinkItem({
           scale: isExpanded ? [1, 1.018, 1] : 1,
           y: isExpanded ? [0, -3, 0] : 0,
         }}
-        transition={
-          isExpanded ? shellExpandTransition : shellCollapseTransition
-        }
+        transition={isExpanded ? shellExpandTransition : shellCollapseTransition}
         className="w-full overflow-hidden bg-background shadow-float"
       >
         <AnimatePresence initial={false} mode="sync">
@@ -144,31 +233,7 @@ export function TextBlockSectionLinkItem({
               transition={panelTransition}
               className="flex h-full min-h-0 flex-col overflow-hidden bg-background p-2"
             >
-              <div className="grid grid-cols-3 items-center px-1 py-1">
-                <Button
-                  type="button"
-                  size="lg"
-                  variant="outline"
-                  onClick={reset}
-                  className="h-10 justify-self-start rounded-md border-border/60 px-4 text-base font-semibold shadow-sm"
-                >
-                  Cancel
-                </Button>
-                <p className="justify-self-center text-xl font-semibold">
-                  Text
-                </p>
-                <Button
-                  type="button"
-                  size="lg"
-                  variant="outline"
-                  disabled={!canAdd}
-                  onClick={handleAdd}
-                  className="brand-success-button h-10 justify-self-end rounded-md border px-6 text-base font-semibold text-primary-foreground shadow-sm hover:text-primary-foreground"
-                >
-                  Add
-                </Button>
-              </div>
-
+              {formHeader}
               <motion.div
                 initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -181,20 +246,7 @@ export function TextBlockSectionLinkItem({
                 transition={panelTransition}
                 className="min-w-0 flex-1 overflow-hidden"
               >
-                <div className="space-y-0 p-1">
-                  <Input
-                    value={title}
-                    onChange={(event) => setTitle(event.target.value)}
-                    placeholder="What’s on your mind?"
-                    className="h-11 w-full min-w-0 max-w-full border-0 text-lg! font-medium focus-visible:ring-0"
-                  />
-                  <Textarea
-                    value={description}
-                    onChange={(event) => setDescription(event.target.value)}
-                    placeholder="Add more about this"
-                    className="max-h-64 min-h-32 w-full py-0 min-w-0 max-w-full resize-none overflow-x-hidden overflow-y-auto break-all border-0 text-base! [field-sizing:fixed] [overflow-wrap:anywhere] focus-visible:ring-0"
-                  />
-                </div>
+                {formFields}
               </motion.div>
             </motion.div>
           ) : (
@@ -213,20 +265,7 @@ export function TextBlockSectionLinkItem({
               onClick={() => setIsExpanded(true)}
               className={cn(sectionLinkClassName, "h-full text-left")}
             >
-              <div className="flex w-full flex-col justify-between">
-                <p className="flex flex-1 flex-col gap-1">
-                  <span className="flex w-fit items-center gap-2 text-xl leading-snug font-semibold">
-                    <TextAaIcon className="size-6" weight="bold" />
-                    <span>Text</span>
-                  </span>
-                  {/*<span className="text-sm text-muted-foreground">
-                    Use for notes, context, and non-link content.
-                  </span>*/}
-                </p>
-                <p className="text-right font-medium text-muted-foreground p-1">
-                  click to add
-                </p>
-              </div>
+              {collapsedContent}
             </motion.button>
           )}
         </AnimatePresence>

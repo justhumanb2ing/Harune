@@ -1,4 +1,5 @@
 import ChangelogSection from "@/components/sections/changelog-section";
+import { BreadcrumbJsonLd } from "@/components/seo/structured-data";
 import { getPolicyBySlug } from "@/lib/mdx/policies";
 import { absoluteUrl, createPageMetadata, seoConfig } from "@/lib/seo";
 import { format } from "date-fns";
@@ -42,6 +43,12 @@ export default async function ChangelogPage() {
           "@type": "Thing",
           name: "Changelog",
         }}
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", path: "/" },
+          { name: "Changelog", path: "/changelog" },
+        ]}
       />
       <ChangelogSection
         title={policy.frontmatter.title}

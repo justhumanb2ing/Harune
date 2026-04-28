@@ -13,7 +13,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .from(profilePages);
 
   // Static pages
-  const staticPageRoutes = ["", "/changelog"] as const;
+  const staticPageRoutes = ["", "/leaderboard", "/changelog", "/roadmap"] as const;
 
   const staticPages = staticPageRoutes.map((route) => ({
     url: absoluteUrl(route === "" ? "/" : route),

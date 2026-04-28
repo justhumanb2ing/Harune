@@ -1,3 +1,4 @@
+import { BreadcrumbJsonLd } from "@/components/seo/structured-data";
 import { getPolicyBySlug } from "@/lib/mdx/policies";
 import { absoluteUrl, createPageMetadata, seoConfig } from "@/lib/seo";
 import { format } from "date-fns";
@@ -41,6 +42,12 @@ export default async function RefundPolicyPage() {
           "@type": "Thing",
           name: "Refund Policy",
         }}
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", path: "/" },
+          { name: "Refund Policy", path: "/refund" },
+        ]}
       />
       <header className="mb-12 space-y-4 text-center">
         <h1 className="text-4xl font-semibold md:text-5xl">{policy.frontmatter.title}</h1>

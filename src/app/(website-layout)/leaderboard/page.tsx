@@ -1,12 +1,15 @@
 import LeaderboardSection from "@/components/sections/leaderboard-section";
+import { BreadcrumbJsonLd, WebPageStructuredData } from "@/components/seo/structured-data";
 import { appConfig } from "@/lib/config";
 import { createPageMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
 
+const leaderboardDescription = `Discover top ${appConfig.projectName} creator pages and see which public profiles are leading the community.`;
+
 export const metadata: Metadata = createPageMetadata({
   path: "/leaderboard",
   title: "Leaderboard",
-  description: `Discover top ${appConfig.projectName} creator pages and see which public profiles are leading the community.`,
+  description: leaderboardDescription,
   keywords: [
     ...appConfig.keywords,
     `${appConfig.projectName} leaderboard`,
@@ -20,8 +23,21 @@ export const metadata: Metadata = createPageMetadata({
 
 export default function LeaderboardPage() {
   return (
-    <main className="relative h-dvh min-h-dvh">
-      <LeaderboardSection />
-    </main>
+    <>
+      <WebPageStructuredData
+        name="Leaderboard"
+        description={leaderboardDescription}
+        path="/leaderboard"
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", path: "/" },
+          { name: "Leaderboard", path: "/leaderboard" },
+        ]}
+      />
+      <main className="relative h-dvh min-h-dvh">
+        <LeaderboardSection />
+      </main>
+    </>
   );
 }

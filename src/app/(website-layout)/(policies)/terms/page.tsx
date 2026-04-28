@@ -1,4 +1,5 @@
 import PolicyContentSection from "@/components/sections/policy-content-section";
+import { BreadcrumbJsonLd } from "@/components/seo/structured-data";
 import { getPolicyBySlug } from "@/lib/mdx/policies";
 import { absoluteUrl, createPageMetadata, seoConfig } from "@/lib/seo";
 import { format } from "date-fns";
@@ -42,6 +43,12 @@ export default async function TermsPage() {
           "@type": "Thing",
           name: "Terms of Service",
         }}
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", path: "/" },
+          { name: "Terms of Service", path: "/terms" },
+        ]}
       />
       <PolicyContentSection
         title={policy.frontmatter.title}

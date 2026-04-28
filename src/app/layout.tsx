@@ -1,4 +1,5 @@
 import { AnalyticsScript } from "@/components/analytics/analytics-script";
+import { SiteStructuredData } from "@/components/seo/structured-data";
 import { absoluteUrl, seoConfig } from "@/lib/seo";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -20,6 +21,17 @@ export const metadata: Metadata = {
   keywords: seoConfig.keywords,
   alternates: {
     canonical: seoConfig.siteUrl,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
   },
   openGraph: {
     title: seoConfig.siteName,
@@ -51,6 +63,8 @@ export const metadata: Metadata = {
     google: "RgHBA8CyoOi7nfUueLvoheQFmwX7abnJM8LWPi584J8",
   },
   category: "website",
+  applicationName: seoConfig.siteName,
+  publisher: seoConfig.siteName,
 };
 
 export default function RootLayout({
@@ -66,6 +80,7 @@ export default function RootLayout({
     >
       <head>
         <AnalyticsScript />
+        <SiteStructuredData />
       </head>
       <body className="h-full bg-background antialiased">
         <Providers>

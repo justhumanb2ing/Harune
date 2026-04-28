@@ -8,18 +8,18 @@ import { WebPageJsonLd } from "next-seo";
 import { notFound } from "next/navigation";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const policy = await getPolicyBySlug("privacy");
+  const policy = await getPolicyBySlug("roadmap");
   if (!policy) return {};
 
   return createPageMetadata({
-    path: "/privacy",
+    path: "/roadmap",
     title: policy.frontmatter.title,
     description: policy.frontmatter.description ?? "",
   });
 }
 
-export default async function PrivacyPolicyPage() {
-  const policy = await getPolicyBySlug("privacy");
+export default async function RoadmapPage() {
+  const policy = await getPolicyBySlug("roadmap");
 
   if (!policy) {
     notFound();
@@ -29,7 +29,7 @@ export default async function PrivacyPolicyPage() {
     <>
       <WebPageJsonLd
         useAppDir
-        id={absoluteUrl("/privacy")}
+        id={absoluteUrl("/roadmap")}
         title={policy.frontmatter.title}
         description={policy.frontmatter.description}
         lastUpdated={policy.frontmatter.lastUpdated}
@@ -41,13 +41,13 @@ export default async function PrivacyPolicyPage() {
         }}
         about={{
           "@type": "Thing",
-          name: "Privacy Policy",
+          name: "Roadmap",
         }}
       />
       <BreadcrumbJsonLd
         items={[
           { name: "Home", path: "/" },
-          { name: "Privacy Policy", path: "/privacy" },
+          { name: "Roadmap", path: "/roadmap" },
         ]}
       />
       <PolicyContentSection

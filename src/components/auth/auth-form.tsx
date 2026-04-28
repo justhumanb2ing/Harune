@@ -33,7 +33,7 @@ export function AuthForm({
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const resolvedCallbackUrl = callbackUrl || searchParams?.get("callbackUrl") || "/post-sign-in";
+  const resolvedCallbackUrl = callbackUrl || searchParams?.get("callbackUrl") || "/join";
   const errorCallbackParams = new URLSearchParams();
   const callbackUrlParam = searchParams?.get("callbackUrl");
   const handleParam = searchParams?.get("handle");

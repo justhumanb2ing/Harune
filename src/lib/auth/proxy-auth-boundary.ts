@@ -1,8 +1,8 @@
-const APP_ENTRY_PATH = "/post-sign-in";
+const APP_ENTRY_PATH = "/join";
 const SIGN_IN_PATH = "/sign-in";
 
 const AUTH_PAGE_PREFIXES = [SIGN_IN_PATH, "/sign-up"] as const;
-const AUTH_REQUIRED_PAGE_PREFIXES = ["/profile", "/subscribe", "/create", APP_ENTRY_PATH] as const;
+const AUTH_REQUIRED_PAGE_PREFIXES = ["/profile", "/subscribe", "/create"] as const;
 
 export type ProxyAuthSignal = {
   hasSessionSignal: boolean;
@@ -43,7 +43,7 @@ export function getProxyRouteDecision({
 
   if (isAuthPage(pathname)) {
     if (hasSessionSignal) {
-      return { kind: "redirect", url: createPostSignInUrl(requestUrl) };
+      return { kind: "redirect", url: createAppEntryUrl(requestUrl) };
     }
     return { kind: "next" };
   }
@@ -81,7 +81,7 @@ export function createSignInUrl(requestUrl: URL) {
   return new URL(`${SIGN_IN_PATH}?callbackUrl=${encodeURIComponent(callbackUrl)}`, requestUrl);
 }
 
-export function createPostSignInUrl(requestUrl: URL) {
+export function createAppEntryUrl(requestUrl: URL) {
   const redirectUrl = new URL(APP_ENTRY_PATH, requestUrl);
   const callbackUrl = requestUrl.searchParams.get("callbackUrl");
   const handle = requestUrl.searchParams.get("handle");

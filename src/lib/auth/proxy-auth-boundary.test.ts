@@ -11,32 +11,32 @@ const decide = (path: string, hasSessionSignal = false) =>
   });
 
 describe("proxy auth boundary", () => {
-  test("redirects legacy app entry to post-sign-in", () => {
+  test("redirects legacy app entry to join", () => {
     const decision = decide("/app?from=legacy");
 
     expect(decision.kind).toBe("redirect");
     if (decision.kind === "redirect") {
-      expect(decision.url.pathname).toBe("/post-sign-in");
+      expect(decision.url.pathname).toBe("/join");
       expect(decision.url.search).toBe("?from=legacy");
     }
   });
 
-  test("redirects authenticated auth-page access to post-sign-in with callback", () => {
+  test("redirects authenticated auth-page access to join with callback", () => {
     const decision = decide("/sign-in?callbackUrl=/create", true);
 
     expect(decision.kind).toBe("redirect");
     if (decision.kind === "redirect") {
-      expect(decision.url.pathname).toBe("/post-sign-in");
+      expect(decision.url.pathname).toBe("/join");
       expect(decision.url.searchParams.get("next")).toBe("/create");
     }
   });
 
-  test("lets post-sign-in normalize external callback attempts", () => {
+  test("lets join normalize external callback attempts", () => {
     const decision = decide("/sign-in?callbackUrl=//evil.example", true);
 
     expect(decision.kind).toBe("redirect");
     if (decision.kind === "redirect") {
-      expect(decision.url.pathname).toBe("/post-sign-in");
+      expect(decision.url.pathname).toBe("/join");
       expect(decision.url.searchParams.get("next")).toBe("//evil.example");
     }
   });

@@ -37,12 +37,12 @@ import { toast } from "sonner";
 
 const navItems = [
   {
-    getHref: (handle?: string) => (handle ? `/${handle}/app` : "/post-sign-in"),
+    getHref: (handle?: string) => (handle ? `/${handle}/app` : "/join"),
     label: "Section",
     icon: BoxIcon,
   },
   {
-    getHref: (handle?: string) => (handle ? `/${handle}/analytics` : "/post-sign-in"),
+    getHref: (handle?: string) => (handle ? `/${handle}/analytics` : "/join"),
     label: "Analytics",
     icon: ChartColumnBigIcon,
   },
@@ -193,7 +193,7 @@ export default function Sidebar() {
   };
 
   const prefetchAppRoute = (href: string) => {
-    if (href === "/post-sign-in") {
+    if (href === "/join") {
       return;
     }
 
@@ -311,7 +311,7 @@ export default function Sidebar() {
                           render={
                             <Link
                               href={href}
-                              prefetch={href === "/post-sign-in" ? false : undefined}
+                              prefetch={href === "/join" ? false : undefined}
                               aria-current={isActive ? "page" : undefined}
                               aria-label={label}
                               onFocus={() => prefetchAppRoute(href)}

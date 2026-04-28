@@ -49,7 +49,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
     redirectTarget.set("handle", handle);
   }
 
-  const resolvedCallbackUrl = `/post-sign-in${
+  const resolvedCallbackUrl = `/join${
     redirectTarget.toString() ? `?${redirectTarget.toString()}` : ""
   }`;
   const oauthErrorMessage =

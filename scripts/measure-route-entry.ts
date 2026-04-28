@@ -15,9 +15,9 @@ const cookie = process.env.ROUTE_ENTRY_COOKIE;
 
 const routes = [
   "/",
+  "/join",
   "/sign-in",
   "/sign-up",
-  "/post-sign-in",
   "/create",
   `/${handle}/app`,
   `/${handle}/analytics`,

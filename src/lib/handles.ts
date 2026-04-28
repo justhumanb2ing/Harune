@@ -12,7 +12,6 @@ const reservedHandles = new Set([
   "join",
   "leaderboard",
   "login",
-  "post-sign-in",
   "profile",
   "privacy",
   "refund",

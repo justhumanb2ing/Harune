@@ -7,7 +7,7 @@ import Link from "next/link";
 
 export function AppHeader() {
   const { profilePage } = useUser();
-  const sectionHref = profilePage?.handle ? `/${profilePage.handle}/app` : "/post-sign-in";
+  const sectionHref = profilePage?.handle ? `/${profilePage.handle}/app` : "/join";
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/60 backdrop-blur-xs supports-backdrop-filter:bg-background/60">

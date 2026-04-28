@@ -10,7 +10,7 @@ describe("sidebar navigation prefetch policy", () => {
 
     expect(source).toContain('aria-current={isActive ? "page" : undefined}');
     expect(source).toContain("router.prefetch(href)");
-    expect(source).toContain('prefetch={href === "/post-sign-in" ? false : undefined}');
+    expect(source).toContain('prefetch={href === "/join" ? false : undefined}');
   });
 
   test("setting box does not own analytics navigation", () => {

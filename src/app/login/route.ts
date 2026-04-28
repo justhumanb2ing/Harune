@@ -3,5 +3,5 @@ import { redirect } from "next/navigation";
 import type { NextRequest } from "next/server";
 
 export function GET(request: NextRequest) {
-  redirect(getSessionCookie(request) ? "/post-sign-in" : "/sign-in");
+  redirect(getSessionCookie(request) ? "/join" : "/sign-in");
 }

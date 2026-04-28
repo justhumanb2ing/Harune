@@ -30,7 +30,6 @@ export const config = {
     "/profile/:path*",
     "/subscribe/:path*",
     "/create",
-    "/post-sign-in",
     "/sign-in",
     "/sign-up",
   ],

@@ -46,7 +46,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
     redirectTarget.set("handle", handle);
   }
 
-  const resolvedCallbackUrl = `/post-sign-in${
+  const resolvedCallbackUrl = `/join${
     redirectTarget.toString() ? `?${redirectTarget.toString()}` : ""
   }`;
 

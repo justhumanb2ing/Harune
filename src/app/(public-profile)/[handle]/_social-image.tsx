@@ -46,7 +46,7 @@ export function createProfileSocialImage(profile: ProfileSocialImageData | null)
       style={{
         width: "100%",
         height: "100%",
-        background: "#f8f6ef",
+        background: "#ffffff",
         color: "#1d1c1c",
         display: "flex",
         flexDirection: "column",

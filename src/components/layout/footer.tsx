@@ -20,7 +20,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/join" className="inline-block hover:text-primary">
+                <Link href="/join" prefetch={false} className="inline-block hover:text-primary">
                   Log In
                 </Link>
               </li>

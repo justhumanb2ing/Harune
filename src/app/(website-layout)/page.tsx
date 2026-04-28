@@ -35,7 +35,11 @@ export default function WebsiteHomepage() {
               nativeButton={false}
               size={"lg"}
               className={"brand-button h-12 min-w-60 max-w-68 text-lg py-8 rounded-xl font-bold!"}
-              render={<Link href="/join">Get Started</Link>}
+              render={
+                <Link href="/join" prefetch={false}>
+                  Get Started
+                </Link>
+              }
             />
             <p className="text-sm text-muted-foreground">Unique links are still available</p>
           </div>

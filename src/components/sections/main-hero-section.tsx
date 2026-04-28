@@ -82,7 +82,7 @@ export default function MainHeroSection() {
           size="lg"
           className={"h-12 min-w-48 font-bold! brand-button text-base px-24 py-8 rounded-xl"}
           render={
-            <Link href="/join" className="inline-block uppercase">
+            <Link href="/join" prefetch={false} className="inline-block uppercase">
               <span className="uppercase sm:hidden">Sign up</span>
               <span className="hidden uppercase sm:inline">Sign Up For Free</span>
             </Link>
@@ -94,7 +94,7 @@ export default function MainHeroSection() {
             size="lg"
             variant="link"
             render={
-              <Link href="/login" className="text-xs font-medium">
+              <Link href="/login" prefetch={false} className="text-xs font-medium">
                 Log In
               </Link>
             }

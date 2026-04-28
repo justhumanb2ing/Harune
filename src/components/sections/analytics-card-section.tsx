@@ -2,7 +2,6 @@
 import { ProgressiveBlur } from "@/components/ui/progressive-blur";
 import { ArrowUpIcon, EyeIcon, MousePointerClickIcon, PercentIcon, TrophyIcon } from "lucide-react";
 import { type Variants, motion } from "motion/react";
-import { useState } from "react";
 
 const numberFormatter = new Intl.NumberFormat("en-US");
 
@@ -154,22 +153,15 @@ const listItemVariants: Variants = {
   },
 };
 
-type AnalyticsPreviewProps = {
-  isVisible: boolean;
-};
-
-function AnalyticsPreview({ isVisible }: AnalyticsPreviewProps) {
-  if (!isVisible) {
-    return null;
-  }
-
+function AnalyticsPreview() {
   return (
     <motion.div
       aria-label="Analytics preview"
-      animate="visible"
       className="relative w-full max-w-4xl overflow-hidden px-4 pt-4 sm:px-6"
       initial="hidden"
       variants={analyticsPreviewVariants}
+      viewport={{ once: true, margin: "-80px" }}
+      whileInView="visible"
     >
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {analyticsMetrics.map((metric) => {
@@ -239,14 +231,11 @@ function AnalyticsPreview({ isVisible }: AnalyticsPreviewProps) {
 }
 
 export default function AnalyticsCardSection() {
-  const [isPreviewVisible, setIsPreviewVisible] = useState(false);
-
   return (
     <section className="flex min-h-dvh flex-col items-center justify-center gap-8 overflow-hidden py-16">
       <motion.header
         className="flex flex-col items-center gap-4"
         initial="hidden"
-        onAnimationComplete={() => setIsPreviewVisible(true)}
         variants={headerVariants}
         viewport={{ once: true, margin: "-80px" }}
         whileInView="visible"
@@ -266,7 +255,7 @@ export default function AnalyticsCardSection() {
           who visited, what they clicked.
         </motion.p>
       </motion.header>
-      <AnalyticsPreview isVisible={isPreviewVisible} />
+      <AnalyticsPreview />
     </section>
   );
 }

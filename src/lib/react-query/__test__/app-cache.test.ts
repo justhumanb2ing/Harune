@@ -1,11 +1,10 @@
 import { describe, expect, test } from "bun:test";
-
+import { QueryClient } from "@tanstack/react-query";
 import {
   clearAuthenticatedAppQueries,
   invalidateAuthenticatedAppQueries,
 } from "@/lib/react-query/app-cache";
 import { queryKeys } from "@/lib/react-query/query-keys";
-import { QueryClient } from "@tanstack/react-query";
 
 describe("authenticated app query cache helpers", () => {
   test("clears all app-scoped queries after sign-out style transitions", () => {

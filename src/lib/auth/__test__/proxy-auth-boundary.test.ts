@@ -16,7 +16,7 @@ describe("proxy auth boundary", () => {
 
     expect(decision.kind).toBe("redirect");
     if (decision.kind === "redirect") {
-      expect(decision.url.pathname).toBe("/join");
+      expect(decision.url.pathname).toBe("/api/join");
       expect(decision.url.search).toBe("?from=legacy");
     }
   });
@@ -26,7 +26,7 @@ describe("proxy auth boundary", () => {
 
     expect(decision.kind).toBe("redirect");
     if (decision.kind === "redirect") {
-      expect(decision.url.pathname).toBe("/join");
+      expect(decision.url.pathname).toBe("/api/join");
       expect(decision.url.searchParams.get("next")).toBe("/create");
     }
   });
@@ -36,7 +36,7 @@ describe("proxy auth boundary", () => {
 
     expect(decision.kind).toBe("redirect");
     if (decision.kind === "redirect") {
-      expect(decision.url.pathname).toBe("/join");
+      expect(decision.url.pathname).toBe("/api/join");
       expect(decision.url.searchParams.get("next")).toBe("//evil.example");
     }
   });

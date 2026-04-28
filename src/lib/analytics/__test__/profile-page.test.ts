@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
 import {
-  PROFILE_PAGE_ANALYTICS_EVENT_NAMES,
   buildProfilePageAnalyticsPath,
+  PROFILE_PAGE_ANALYTICS_EVENT_NAMES,
   trackProfilePageItemClick,
   trackProfilePagePageView,
 } from "@/lib/analytics/profile-page";
@@ -42,10 +42,12 @@ describe("profile page analytics", () => {
       expect(tracked).toBe(true);
       expect(trackCalls).toHaveLength(1);
 
-      const payloadFactory = trackCalls[0] as (payload: {
-        title?: string;
-        url?: string;
-      }) => { data: Record<string, unknown>; name: string; title: string; url: string };
+      const payloadFactory = trackCalls[0] as (payload: { title?: string; url?: string }) => {
+        data: Record<string, unknown>;
+        name: string;
+        title: string;
+        url: string;
+      };
 
       expect(
         payloadFactory({
@@ -91,10 +93,12 @@ describe("profile page analytics", () => {
 
       expect(trackCalls).toHaveLength(1);
 
-      const payloadFactory = trackCalls[0] as (payload: {
+      const payloadFactory = trackCalls[0] as (payload: { title?: string; url?: string }) => {
+        data: Record<string, unknown>;
+        name: string;
         title?: string;
-        url?: string;
-      }) => { data: Record<string, unknown>; name: string; title?: string; url: string };
+        url: string;
+      };
 
       expect(
         payloadFactory({

@@ -1,13 +1,13 @@
 import { describe, expect, test } from "bun:test";
 
 import {
-  LINK_BLOCK_ID,
   buildSyncPayload,
   createDraftData,
   createProfilePageEditorStore,
   getPageEditorBlocks,
+  LINK_BLOCK_ID,
   textBoxBlockId,
-} from "@/components/section/profile-page/profile-page-editor-store";
+} from "@/hooks/profile-page-editor-store";
 import { MAX_SOCIAL_LINKS, type ProfilePageData } from "@/lib/profile-page/types";
 
 const createProfilePageData = (): ProfilePageData => ({

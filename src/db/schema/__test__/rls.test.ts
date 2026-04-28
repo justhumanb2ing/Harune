@@ -23,7 +23,7 @@ const expectPolicies = (actual: string[], expected: string[]) => {
 };
 
 const migrationSql = readFileSync(
-  new URL("../../../drizzle/0010_early_masked_marvel.sql", import.meta.url),
+  new URL("../../../../drizzle/0010_early_masked_marvel.sql", import.meta.url),
   "utf8"
 );
 

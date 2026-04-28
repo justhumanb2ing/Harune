@@ -1,7 +1,7 @@
-import AuthLayoutTransition from "@/components/animation/auth-layout-transition";
 import { XIcon } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import AuthLayoutTransition from "@/components/transition/auth-layout-transition";
 
 interface AuthLayoutProps {
   children: ReactNode;

@@ -1,10 +1,10 @@
-import { SectionRouteTransition } from "@/components/section/profile-page/section-route-transition";
-import { TextBoxesSectionEditor } from "@/components/section/profile-page/text-boxes-section-editor";
+import { TextSectionEditor } from "@/components/profile-page/editor-core/text-section-editor";
+import { ProfileLayoutTransition } from "@/components/transition/profile-layout-transition";
 
 export default function TextBoxSectionPage() {
   return (
-    <SectionRouteTransition id="/app/text-box">
-      <TextBoxesSectionEditor />
-    </SectionRouteTransition>
+    <ProfileLayoutTransition id="/app/text-box">
+      <TextSectionEditor />
+    </ProfileLayoutTransition>
   );
 }

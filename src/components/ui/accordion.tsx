@@ -1,8 +1,7 @@
 import { Accordion as AccordionPrimitive } from "@base-ui/react/accordion";
-import * as React from "react";
-
-import { cn } from "@/lib/utils";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 type AccordionMode = "single" | "multiple";
 type AccordionSingleValue = string | undefined;
@@ -124,4 +123,4 @@ function AccordionContent({ className, children, ...props }: AccordionPrimitive.
   );
 }
 
-export { Accordion, AccordionItem, AccordionTrigger, AccordionContent };
+export { Accordion, AccordionContent, AccordionItem, AccordionTrigger };

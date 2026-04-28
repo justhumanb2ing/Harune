@@ -1,3 +1,6 @@
+import { eq } from "drizzle-orm";
+import { notFound, redirect } from "next/navigation";
+import { z } from "zod";
 import { auth, signIn } from "@/auth";
 import { db } from "@/db";
 import { plans } from "@/db/schema/plans";
@@ -11,11 +14,8 @@ import {
   PlanType,
   type SubscribeParams,
   subscribeParams,
-} from "@/lib/plans/getSubscribeUrl";
+} from "@/lib/plans/get-subscribe-url";
 import stripe from "@/lib/stripe";
-import { eq } from "drizzle-orm";
-import { notFound, redirect } from "next/navigation";
-import { z } from "zod";
 
 async function SubscribePage({
   searchParams,

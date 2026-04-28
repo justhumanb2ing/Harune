@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
   return (
@@ -16,11 +16,7 @@ export default function NotFound() {
           className={
             "h-12 w-52 max-w-52 text-lg! font-bold! brand-button shadow-brand-small py-7 px-8"
           }
-          render={
-            <Link href="/">
-              Take me home
-            </Link>
-          }
+          render={<Link href="/">Take me home</Link>}
         />
       </section>
     </main>

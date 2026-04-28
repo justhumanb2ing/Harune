@@ -1,5 +1,5 @@
-import { env } from "@/env";
 import { drizzle } from "drizzle-orm/postgres-js";
+import { env } from "@/env";
 
 if (!env.DATABASE_URL) {
   throw new Error("DATABASE_URL is required to initialize the database client.");

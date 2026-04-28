@@ -1,6 +1,6 @@
-import withAuthRequired from "@/lib/auth/withAuthRequired";
-import { ProfilePageError, deleteSocialLink } from "@/lib/profile-page/mutations";
 import { NextResponse } from "next/server";
+import withAuthRequired from "@/lib/auth/with-auth-required";
+import { deleteSocialLink, ProfilePageError } from "@/lib/profile-page/mutations";
 
 export const DELETE = withAuthRequired(async (_req, context) => {
   try {

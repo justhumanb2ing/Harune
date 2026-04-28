@@ -1,6 +1,6 @@
+import { ImageResponse } from "next/og";
 import { appConfig } from "@/lib/config";
 import { absoluteUrl } from "@/lib/seo";
-import { ImageResponse } from "next/og";
 
 export const socialImageSize = {
   width: 1200,

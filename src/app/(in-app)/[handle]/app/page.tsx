@@ -1,10 +1,10 @@
-import { SectionPageClient } from "@/components/section/profile-page/section-page-client";
-import { SectionRouteTransition } from "@/components/section/profile-page/section-route-transition";
+import { SectionPageClient } from "@/components/profile-page/layout/section-page-client";
+import { ProfileLayoutTransition } from "@/components/transition/profile-layout-transition";
 
 export default function SectionPage() {
   return (
-    <SectionRouteTransition id="/app">
+    <ProfileLayoutTransition id="/app">
       <SectionPageClient />
-    </SectionRouteTransition>
+    </ProfileLayoutTransition>
   );
 }

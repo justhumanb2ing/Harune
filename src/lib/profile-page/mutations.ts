@@ -1,3 +1,4 @@
+import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import {
   profileLinkItems,
@@ -6,7 +7,7 @@ import {
   profileTextBoxItems,
 } from "@/db/schema/profile-page";
 import { getS3ObjectKeyFromPublicUrl } from "@/lib/s3/config";
-import { deletePublicS3Object } from "@/lib/s3/deleteObject";
+import { deletePublicS3Object } from "@/lib/s3/delete-object";
 import type {
   LinkItemInput,
   ProfilePageSyncValues,
@@ -14,7 +15,6 @@ import type {
   SocialLinkInput,
   TextBoxItemInput,
 } from "@/lib/validations/profile-page.schema";
-import { and, asc, desc, eq } from "drizzle-orm";
 
 export class ProfilePageError extends Error {
   constructor(
@@ -495,13 +495,7 @@ export const updateLinkItem = async ({
   return updated;
 };
 
-export const deleteLinkItem = async ({
-  userId,
-  linkId,
-}: {
-  userId: string;
-  linkId: string;
-}) => {
+export const deleteLinkItem = async ({ userId, linkId }: { userId: string; linkId: string }) => {
   const ownedPage = await getOwnedPageOrThrow(userId);
 
   await db.transaction(async (tx) => {

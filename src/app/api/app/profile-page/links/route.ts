@@ -1,7 +1,7 @@
-import withAuthRequired from "@/lib/auth/withAuthRequired";
-import { ProfilePageError, createLinkItem } from "@/lib/profile-page/mutations";
-import { linkItemInputSchema } from "@/lib/validations/profile-page.schema";
 import { NextResponse } from "next/server";
+import withAuthRequired from "@/lib/auth/with-auth-required";
+import { createLinkItem, ProfilePageError } from "@/lib/profile-page/mutations";
+import { linkItemInputSchema } from "@/lib/validations/profile-page.schema";
 
 export const POST = withAuthRequired(async (req, context) => {
   try {

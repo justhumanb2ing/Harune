@@ -1,12 +1,11 @@
 "use client";
 
-import { env } from "@/env";
-
-import useUser from "@/lib/users/useUser";
-import { type Paddle, initializePaddle } from "@paddle/paddle-js";
+import { initializePaddle, type Paddle } from "@paddle/paddle-js";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { env } from "@/env";
+import useUser from "@/lib/users/use-user";
 
 export default function PaddleCheckoutPage() {
   const searchParams = useSearchParams();
@@ -15,7 +14,7 @@ export default function PaddleCheckoutPage() {
   const [error, setError] = useState<string | null>(null);
   const [showRetry, setShowRetry] = useState(false);
   const { profilePage, user } = useUser();
-  const sectionHref = profilePage?.handle ? `/${profilePage.handle}/app` : "/join";
+  const sectionHref = profilePage?.handle ? `/${profilePage.handle}/app` : "/api/join";
   useEffect(() => {
     // Show retry button after 3 seconds
     const timer = setTimeout(() => {

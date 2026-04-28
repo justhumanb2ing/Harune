@@ -1,6 +1,6 @@
+import { z } from "zod";
 import { MAX_SOCIAL_LINKS } from "@/lib/profile-page/types";
 import { handleSchema } from "@/lib/validations/auth.schema";
-import { z } from "zod";
 
 const emptyStringToNull = (value: unknown) => {
   if (typeof value !== "string") {

@@ -1,8 +1,9 @@
-import { env } from "@/env";
 import { countries } from "countries-list";
+import { env } from "@/env";
 import { creditsConfig } from "../credits/config";
 import type { CreditType } from "../credits/credits";
 import client from "./client";
+
 interface CreateCheckoutSessionResponse {
   payment_link: string;
   client_secret?: string;

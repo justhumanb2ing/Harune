@@ -1,9 +1,9 @@
 import "server-only";
 
+import { queryOptions } from "@tanstack/react-query";
 import { getProfilePageEditorData } from "@/lib/profile-page/queries";
 import type { ProfilePageData } from "@/lib/profile-page/types";
 import { queryKeys } from "@/lib/react-query/query-keys";
-import { queryOptions } from "@tanstack/react-query";
 
 const getSerializableProfilePageEditorData = async (
   userId: string

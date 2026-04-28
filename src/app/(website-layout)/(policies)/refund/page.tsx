@@ -1,10 +1,10 @@
-import { BreadcrumbJsonLd } from "@/components/seo/structured-data";
-import { getPolicyBySlug } from "@/lib/mdx/policies";
-import { absoluteUrl, createPageMetadata, seoConfig } from "@/lib/seo";
 import { format } from "date-fns";
 import type { Metadata } from "next";
-import { WebPageJsonLd } from "next-seo";
 import { notFound } from "next/navigation";
+import { WebPageJsonLd } from "next-seo";
+import { BreadcrumbJsonLd } from "@/components/site-instrumentation/structured-data";
+import { getPolicyBySlug } from "@/lib/mdx/policies";
+import { absoluteUrl, createPageMetadata, seoConfig } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
   const policy = await getPolicyBySlug("refund");

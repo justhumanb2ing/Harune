@@ -1,6 +1,6 @@
 "use client";
 
-import { MutationCache, QueryClient, environmentManager } from "@tanstack/react-query";
+import { environmentManager, MutationCache, QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const STALE_TIME_MS = 60 * 1000;
@@ -111,7 +111,7 @@ const makeQueryClient = () =>
     },
   });
 
-let browserQueryClient: QueryClient | undefined = undefined;
+let browserQueryClient: QueryClient | undefined;
 
 export const getQueryClient = () => {
   if (environmentManager.isServer()) {

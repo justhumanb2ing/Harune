@@ -1,6 +1,8 @@
 "use client";
 
-import { ProfileAnalyticsSummary } from "@/components/analytics/profile-analytics-summary";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { ProfileAnalyticsSummary } from "@/components/profile-page/layout/profile-analytics-summary";
 import {
   Select,
   SelectContent,
@@ -10,8 +12,6 @@ import {
 } from "@/components/ui/select";
 import type { AnalyticsRangeKey } from "@/lib/analytics/analytics-ranges";
 import { profileAnalyticsQueryOptions } from "@/lib/analytics/query-options";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
 
 const analyticsRanges: Array<{ label: string; value: AnalyticsRangeKey }> = [
   { label: "Today", value: "today" },

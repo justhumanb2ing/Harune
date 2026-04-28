@@ -1,8 +1,6 @@
 import { boolean, index, jsonb, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
-
-import { plans } from "./plans";
-
 import type { CreditType } from "@/lib/credits/credits";
+import { plans } from "./plans";
 
 type CreditRecord = {
   [K in CreditType]?: number;

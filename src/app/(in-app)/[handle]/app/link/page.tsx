@@ -1,10 +1,10 @@
-import { LinksSectionEditor } from "@/components/section/profile-page/links-section-editor";
-import { SectionRouteTransition } from "@/components/section/profile-page/section-route-transition";
+import { LinksSectionEditor } from "@/components/profile-page/editor-core/links-section-editor";
+import { ProfileLayoutTransition } from "@/components/transition/profile-layout-transition";
 
 export default function LinkSectionPage() {
   return (
-    <SectionRouteTransition id="/app/link">
+    <ProfileLayoutTransition id="/app/link">
       <LinksSectionEditor />
-    </SectionRouteTransition>
+    </ProfileLayoutTransition>
   );
 }

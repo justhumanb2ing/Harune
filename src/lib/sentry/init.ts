@@ -1,6 +1,5 @@
-import type { NextConfig } from "next";
-
 import { withSentryConfig } from "@sentry/nextjs";
+import type { NextConfig } from "next";
 
 export const withSentry = (config: NextConfig): NextConfig => {
   if (!process.env.NEXT_PUBLIC_SENTRY_DSN) {

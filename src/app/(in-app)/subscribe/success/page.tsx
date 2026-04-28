@@ -1,7 +1,7 @@
 import client from "@/lib/dodopayments/client";
-import { PlanProvider } from "@/lib/plans/getSubscribeUrl";
-import ErrorRedirector from "./ErrorRedirector";
-import SuccessRedirector from "./SuccessRedirector";
+import { PlanProvider } from "@/lib/plans/get-subscribe-url";
+import ErrorRedirector from "./error-redirector";
+import SuccessRedirector from "./success-redirector";
 
 export default async function SubscribeSuccessPage({
   searchParams,

@@ -1,13 +1,13 @@
-import { db } from "@/db";
-import { users } from "@/db/schema/user";
-import { env } from "@/env";
-import withAuthRequired from "@/lib/auth/withAuthRequired";
-import client from "@/lib/dodopayments/client";
-import { createPaddleCustomerPortalSession } from "@/lib/paddle";
-import stripe from "@/lib/stripe";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
+import { db } from "@/db";
+import { users } from "@/db/schema/user";
+import { env } from "@/env";
+import withAuthRequired from "@/lib/auth/with-auth-required";
+import client from "@/lib/dodopayments/client";
+import { createPaddleCustomerPortalSession } from "@/lib/paddle";
+import stripe from "@/lib/stripe";
 
 export const GET = withAuthRequired(async (_req, context) => {
   const user = await db
@@ -39,7 +39,7 @@ export const GET = withAuthRequired(async (_req, context) => {
   if (stripeCustomerId) {
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,
-      return_url: `${env.NEXT_PUBLIC_APP_URL}/join`,
+      return_url: `${env.NEXT_PUBLIC_APP_URL}/api/join`,
     });
     return redirect(portalSession.url);
   }

@@ -1,6 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, integer, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import { pgPolicy } from "drizzle-orm/pg-core";
+import { boolean, integer, jsonb, pgPolicy, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
 import { exposedReadRoles } from "../rls";

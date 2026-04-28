@@ -1,10 +1,9 @@
-import { env } from "@/env";
 import { z } from "zod";
-
 import type { MeResponse } from "@/app/api/app/me/types";
 import type { Quotas } from "@/db/schema/plans";
-import { PlanProvider } from "@/lib/plans/getSubscribeUrl";
-import { creditTypeSchema, creditsConfig } from "./config";
+import { env } from "@/env";
+import { PlanProvider } from "@/lib/plans/get-subscribe-url";
+import { creditsConfig, creditTypeSchema } from "./config";
 
 interface CreditBuySlab {
   from: number;

@@ -1,17 +1,22 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/auth-client";
-import { appConfig } from "@/lib/config";
-import { invalidateAuthenticatedAppQueries } from "@/lib/react-query/app-cache";
-import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 import { FaGoogle, FaSpinner } from "react-icons/fa";
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "../ui/input-group";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import { authClient } from "@/lib/auth-client";
+import { appConfig } from "@/lib/config";
+import { invalidateAuthenticatedAppQueries } from "@/lib/react-query/app-cache";
+import { cn } from "@/lib/utils";
 
 interface AuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
   callbackUrl?: string;
@@ -33,7 +38,7 @@ export function AuthForm({
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const resolvedCallbackUrl = callbackUrl || searchParams?.get("callbackUrl") || "/join";
+  const resolvedCallbackUrl = callbackUrl || searchParams?.get("callbackUrl") || "/api/join";
   const errorCallbackParams = new URLSearchParams();
   const callbackUrlParam = searchParams?.get("callbackUrl");
   const handleParam = searchParams?.get("handle");

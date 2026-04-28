@@ -1,6 +1,6 @@
-import withAuthRequired from "@/lib/auth/withAuthRequired";
-import createS3UploadFields from "@/lib/s3/createS3UploadFields";
 import { NextResponse } from "next/server";
+import withAuthRequired from "@/lib/auth/with-auth-required";
+import createS3UploadFields from "@/lib/s3/create-s3-upload-fields";
 
 interface UploadImageRequest {
   fileName: string;

@@ -1,6 +1,6 @@
+import type { MetadataRoute } from "next";
 import { appConfig } from "@/lib/config";
 import { seoConfig } from "@/lib/seo";
-import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {

@@ -1,7 +1,7 @@
-import { Footer } from "@/components/layout/footer";
-import { seoConfig } from "@/lib/seo";
 import type { Metadata } from "next";
 import type React from "react";
+import { Footer } from "@/components/website/footer";
+import { seoConfig } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: {

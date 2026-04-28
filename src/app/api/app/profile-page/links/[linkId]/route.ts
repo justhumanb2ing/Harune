@@ -1,7 +1,7 @@
-import withAuthRequired from "@/lib/auth/withAuthRequired";
-import { ProfilePageError, deleteLinkItem, updateLinkItem } from "@/lib/profile-page/mutations";
-import { linkItemInputSchema } from "@/lib/validations/profile-page.schema";
 import { NextResponse } from "next/server";
+import withAuthRequired from "@/lib/auth/with-auth-required";
+import { deleteLinkItem, ProfilePageError, updateLinkItem } from "@/lib/profile-page/mutations";
+import { linkItemInputSchema } from "@/lib/validations/profile-page.schema";
 
 export const PATCH = withAuthRequired(async (req, context) => {
   try {

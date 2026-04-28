@@ -1,11 +1,11 @@
 import "server-only";
 
+import { eq } from "drizzle-orm";
 import type { MeResponse } from "@/app/api/app/me/types";
 import { db } from "@/db";
 import { plans } from "@/db/schema/plans";
 import { profilePages } from "@/db/schema/profile-page";
 import { users } from "@/db/schema/user";
-import { eq } from "drizzle-orm";
 
 export async function getMeForUser(userId: string): Promise<MeResponse> {
   const user = await db

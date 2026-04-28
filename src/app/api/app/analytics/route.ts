@@ -1,8 +1,8 @@
+import { NextResponse } from "next/server";
 import { normalizeAnalyticsTimezone } from "@/lib/analytics/analytics-ranges";
 import { getProfileAnalyticsResponse } from "@/lib/analytics/profile-page-summary";
-import withAuthRequired from "@/lib/auth/withAuthRequired";
+import withAuthRequired from "@/lib/auth/with-auth-required";
 import { getOwnedProfilePage } from "@/lib/profile-page/queries";
-import { NextResponse } from "next/server";
 
 export const GET = withAuthRequired(async (req, context) => {
   try {

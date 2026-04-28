@@ -1,7 +1,7 @@
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { type CreditTransaction, creditTransactions } from "@/db/schema/credits";
 import { users } from "@/db/schema/user";
-import { eq } from "drizzle-orm";
 import type { CreditType } from "./credits";
 
 type CreditRecord = {

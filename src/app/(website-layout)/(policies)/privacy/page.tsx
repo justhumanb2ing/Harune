@@ -1,11 +1,11 @@
-import PolicyContentSection from "@/components/sections/policy-content-section";
-import { BreadcrumbJsonLd } from "@/components/seo/structured-data";
-import { getPolicyBySlug } from "@/lib/mdx/policies";
-import { absoluteUrl, createPageMetadata, seoConfig } from "@/lib/seo";
 import { format } from "date-fns";
 import type { Metadata } from "next";
-import { WebPageJsonLd } from "next-seo";
 import { notFound } from "next/navigation";
+import { WebPageJsonLd } from "next-seo";
+import { BreadcrumbJsonLd } from "@/components/site-instrumentation/structured-data";
+import MdxContentSection from "@/components/website/mdx-content-section";
+import { getPolicyBySlug } from "@/lib/mdx/policies";
+import { absoluteUrl, createPageMetadata, seoConfig } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
   const policy = await getPolicyBySlug("privacy");
@@ -50,12 +50,12 @@ export default async function PrivacyPolicyPage() {
           { name: "Privacy Policy", path: "/privacy" },
         ]}
       />
-      <PolicyContentSection
+      <MdxContentSection
         title={policy.frontmatter.title}
         lastUpdatedLabel={format(new Date(policy.frontmatter.lastUpdated), "MMMM d, yyyy")}
       >
         {policy.content}
-      </PolicyContentSection>
+      </MdxContentSection>
     </>
   );
 }

@@ -1,3 +1,4 @@
+import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import {
   profileLinkItems,
@@ -6,7 +7,6 @@ import {
   profileTextBoxItems,
 } from "@/db/schema/profile-page";
 import { users } from "@/db/schema/user";
-import { asc, eq } from "drizzle-orm";
 
 export const getOwnedProfilePage = async (userId: string) => {
   return db

@@ -1,10 +1,10 @@
-import { auth } from "@/auth";
-import { OnboardingForm } from "@/components/auth/onboarding-form";
-import { db } from "@/db";
-import { profilePages } from "@/db/schema/profile-page";
 import { SsgoiTransition } from "@ssgoi/react";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { OnboardingForm } from "@/components/onboarding/onboarding-form";
+import { db } from "@/db";
+import { profilePages } from "@/db/schema/profile-page";
 
 type OnboardingPageProps = {
   searchParams: Promise<{

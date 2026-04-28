@@ -1,13 +1,13 @@
-import AnalyticsCardSection from "@/components/sections/analytics-card-section";
-import HandleCardSection from "@/components/sections/handle-card-section";
-import LiveCardSection from "@/components/sections/live-card-section";
-import MainHeroSection from "@/components/sections/main-hero-section";
-import { WebPageStructuredData } from "@/components/seo/structured-data";
-import { Button } from "@/components/ui/button";
-import { appConfig } from "@/lib/config";
-import { createPageMetadata } from "@/lib/seo";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { WebPageStructuredData } from "@/components/site-instrumentation/structured-data";
+import { Button } from "@/components/ui/button";
+import AnalyticsCardSection from "@/components/website/landing/analytics-card-section";
+import HandleCardSection from "@/components/website/landing/handle-card-section";
+import LiveCardSection from "@/components/website/landing/live-card-section";
+import MainHeroSection from "@/components/website/landing/main-hero-section";
+import { appConfig } from "@/lib/config";
+import { createPageMetadata } from "@/lib/seo";
 
 const homepageTitle = "A Link in bio: One page, all of you.";
 const homepageDescription = `Create a free ${appConfig.projectName} bio site to share your links, social profiles, and creator page in one place.`;
@@ -36,7 +36,7 @@ export default function WebsiteHomepage() {
               size={"lg"}
               className={"brand-button h-12 min-w-60 max-w-68 text-lg py-8 rounded-xl font-bold!"}
               render={
-                <Link href="/join" prefetch={false}>
+                <Link href="/api/join" prefetch={false}>
                   Get Started
                 </Link>
               }

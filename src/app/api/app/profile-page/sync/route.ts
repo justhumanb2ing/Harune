@@ -1,8 +1,8 @@
-import withAuthRequired from "@/lib/auth/withAuthRequired";
-import { ProfilePageError, syncProfilePageDraft } from "@/lib/profile-page/mutations";
-import { profilePageSyncSchema } from "@/lib/validations/profile-page.schema";
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
+import withAuthRequired from "@/lib/auth/with-auth-required";
+import { ProfilePageError, syncProfilePageDraft } from "@/lib/profile-page/mutations";
+import { profilePageSyncSchema } from "@/lib/validations/profile-page.schema";
 
 export const dynamic = "force-dynamic";
 

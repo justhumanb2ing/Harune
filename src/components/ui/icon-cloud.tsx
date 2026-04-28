@@ -1,14 +1,14 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import Image from "next/image";
+import { useTheme } from "next-themes";
 import { useEffect, useMemo, useState } from "react";
 import {
   Cloud,
-  type ICloud,
-  type SimpleIcon,
   fetchSimpleIcons,
+  type ICloud,
   renderSimpleIcon,
+  type SimpleIcon,
 } from "react-icon-cloud";
 
 export type DynamicCloudProps = {

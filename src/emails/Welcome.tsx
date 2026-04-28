@@ -1,9 +1,9 @@
-import { appConfig } from "@/lib/config";
 import { Button } from "@react-email/button";
 import { Container } from "@react-email/container";
 import { Html } from "@react-email/html";
 import { Text } from "@react-email/text";
-import Layout from "./components/Layout";
+import { appConfig } from "@/lib/config";
+import Layout from "./email-layout";
 
 interface WelcomeEmailProps {
   userName: string;

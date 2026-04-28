@@ -1,3 +1,6 @@
+import { SsgoiTransition } from "@ssgoi/react";
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AuthForm } from "@/components/auth/auth-form";
 import PolicyBox from "@/components/auth/policy-box";
@@ -5,9 +8,6 @@ import { env } from "@/env";
 import { resolveAuthenticatedAppRedirect } from "@/lib/auth/app-redirect";
 import { appConfig } from "@/lib/config";
 import { createPageMetadata } from "@/lib/seo";
-import { SsgoiTransition } from "@ssgoi/react";
-import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 
 export const metadata: Metadata = createPageMetadata({
   path: "/sign-in",
@@ -49,7 +49,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
     redirectTarget.set("handle", handle);
   }
 
-  const resolvedCallbackUrl = `/join${
+  const resolvedCallbackUrl = `/api/join${
     redirectTarget.toString() ? `?${redirectTarget.toString()}` : ""
   }`;
   const oauthErrorMessage =

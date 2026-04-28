@@ -1,9 +1,9 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "@/hooks/use-debounce";
 import { normalizeHandle, validateHandle } from "@/lib/handles";
 import { type ApiError, apiFetch } from "@/lib/react-query/fetcher";
-import { useQuery } from "@tanstack/react-query";
 
 type HandleAvailabilityResponse = {
   available: boolean;

@@ -14,7 +14,7 @@ import { env } from "./env";
 import { passwordHashing } from "./lib/auth/password";
 import { betterAuthSupabaseJwtOptions } from "./lib/auth/supabase-jwt";
 import { appConfig } from "./lib/config";
-import onUserCreate from "./lib/users/onUserCreate";
+import onUserCreate from "./lib/users/on-user-create";
 
 export interface AuthSession {
   user: {

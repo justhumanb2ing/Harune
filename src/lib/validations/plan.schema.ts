@@ -1,5 +1,5 @@
-import { quotaSchema } from "@/db/schema/plans";
 import { z } from "zod";
+import { quotaSchema } from "@/db/schema/plans";
 
 export const planFormSchema = z.object({
   name: z.string().min(1, "Name is required"),

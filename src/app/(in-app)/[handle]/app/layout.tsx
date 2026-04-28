@@ -1,15 +1,15 @@
-import { auth } from "@/auth";
-import { ProfilePageEditorProvider } from "@/components/section/profile-page/profile-page-editor-provider";
-import { ProfilePagePreview } from "@/components/section/profile-page/profile-page-preview";
-import ProfilePreviewMobileDrawer from "@/components/section/profile-page/profile-preview-mobile-drawer";
-import { appConfig } from "@/lib/config";
-import { getOwnedProfilePage } from "@/lib/profile-page/queries";
-import { profilePageServerQueryOptions } from "@/lib/profile-page/server-query-options";
-import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query";
+import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { Suspense } from "react";
+import { auth } from "@/auth";
+import { ProfilePageEditorProvider } from "@/components/profile-page/layout/profile-page-editor-provider";
+import { ProfilePagePreview } from "@/components/profile-page/preview/profile-page-preview";
+import ProfilePreviewMobileDrawer from "@/components/profile-page/preview/profile-preview-mobile-drawer";
+import { appConfig } from "@/lib/config";
+import { getOwnedProfilePage } from "@/lib/profile-page/queries";
+import { profilePageServerQueryOptions } from "@/lib/profile-page/server-query-options";
 
 export const dynamic = "force-dynamic";
 

@@ -1,4 +1,4 @@
-const APP_ENTRY_PATH = "/join";
+const APP_ENTRY_PATH = "/api/join";
 const SIGN_IN_PATH = "/sign-in";
 
 const AUTH_PAGE_PREFIXES = [SIGN_IN_PATH, "/sign-up"] as const;

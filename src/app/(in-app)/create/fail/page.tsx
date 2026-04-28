@@ -1,11 +1,11 @@
-import { auth } from "@/auth";
-import { OnboardingFail } from "@/components/auth/onboarding-fail";
-import { db } from "@/db";
-import { profilePages } from "@/db/schema/profile-page";
-import { normalizeHandle } from "@/lib/handles";
 import { SsgoiTransition } from "@ssgoi/react";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { OnboardingFail } from "@/components/onboarding/onboarding-fail";
+import { db } from "@/db";
+import { profilePages } from "@/db/schema/profile-page";
+import { normalizeHandle } from "@/lib/handles";
 
 type OnboardingFailPageProps = {
   searchParams: Promise<{

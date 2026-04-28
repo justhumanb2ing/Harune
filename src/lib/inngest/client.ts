@@ -1,6 +1,6 @@
-import { env } from "@/env";
 import { sentryMiddleware } from "@inngest/middleware-sentry";
-import { Inngest, eventType, staticSchema } from "inngest";
+import { eventType, Inngest, staticSchema } from "inngest";
+import { env } from "@/env";
 import { appConfig } from "../config";
 import type { InngestEvents } from "./functions";
 

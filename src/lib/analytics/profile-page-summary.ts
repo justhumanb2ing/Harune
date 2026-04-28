@@ -5,8 +5,8 @@ import {
   getPreviousAnalyticsRangeWindows,
 } from "@/lib/analytics/analytics-ranges";
 import {
-  PROFILE_PAGE_ANALYTICS_EVENT_NAMES,
   buildProfilePageAnalyticsPath,
+  PROFILE_PAGE_ANALYTICS_EVENT_NAMES,
 } from "@/lib/analytics/profile-page";
 import type {
   ProfileAnalyticsMetricKey,

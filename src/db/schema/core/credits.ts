@@ -1,8 +1,6 @@
 import { integer, jsonb, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
-
-import { users } from "./user";
-
 import type { CreditType } from "@/lib/credits/credits";
+import { users } from "./user";
 
 export const transactionTypeEnum = pgEnum("transaction_type", ["credit", "debit", "expired"]);
 

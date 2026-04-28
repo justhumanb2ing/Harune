@@ -1,5 +1,5 @@
-import { seoConfig } from "@/lib/seo";
 import { ImageResponse } from "next/og";
+import { seoConfig } from "@/lib/seo";
 
 export const alt = `${seoConfig.siteName} twitter image`;
 export const size = {

@@ -1,16 +1,12 @@
-import { auth } from "@/auth";
-import { SectionTransitionScope } from "@/components/section/profile-page/section-transition-scope";
-import SettingBox from "@/components/sections/setting-box";
-import { meServerQueryOptions } from "@/lib/users/server-query-options";
-import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query";
+import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 import { redirect } from "next/navigation";
 import type React from "react";
+import { auth } from "@/auth";
+import SettingBox from "@/components/profile-page/layout/setting-box";
+import { ProfileLayoutTransitionScope } from "@/components/transition/profile-layout-transition";
+import { meServerQueryOptions } from "@/lib/users/server-query-options";
 
-export default async function SidebarLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function SidebarLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -24,9 +20,9 @@ export default async function SidebarLayout({
     <HydrationBoundary state={dehydrate(queryClient)}>
       <main className="relative flex h-dvh min-h-dvh flex-row gap-4 overflow-hidden">
         <SettingBox />
-        <SectionTransitionScope>
+        <ProfileLayoutTransitionScope>
           <div className="relative h-full min-h-0 grow overflow-hidden">{children}</div>
-        </SectionTransitionScope>
+        </ProfileLayoutTransitionScope>
       </main>
     </HydrationBoundary>
   );

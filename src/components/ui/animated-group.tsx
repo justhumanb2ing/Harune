@@ -1,5 +1,5 @@
 "use client";
-import { type Variants, motion } from "motion/react";
+import { motion, type Variants } from "motion/react";
 import type { ReactNode } from "react";
 import React from "react";
 

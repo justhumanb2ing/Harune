@@ -1,12 +1,12 @@
 "use client";
 
 import {
+  getProfileImageCacheVersion,
   PROFILE_IMAGE_UPLOAD_ROUTE,
   type ProfileImageKind,
-  getProfileImageCacheVersion,
 } from "@/lib/profile-page/image-upload";
 import { apiFetch } from "@/lib/react-query/fetcher";
-import { ClientS3Uploader } from "@/lib/s3/clientS3Uploader";
+import { ClientS3Uploader } from "@/lib/s3/client-s3-uploader";
 
 const uploader = new ClientS3Uploader({ presignedRouteProvider: PROFILE_IMAGE_UPLOAD_ROUTE });
 

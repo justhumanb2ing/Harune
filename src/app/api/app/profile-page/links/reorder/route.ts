@@ -1,7 +1,7 @@
-import withAuthRequired from "@/lib/auth/withAuthRequired";
+import { NextResponse } from "next/server";
+import withAuthRequired from "@/lib/auth/with-auth-required";
 import { ProfilePageError, reorderLinkItems } from "@/lib/profile-page/mutations";
 import { reorderItemsSchema } from "@/lib/validations/profile-page.schema";
-import { NextResponse } from "next/server";
 
 export const POST = withAuthRequired(async (req, context) => {
   try {

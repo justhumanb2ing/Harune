@@ -1,8 +1,8 @@
+import { XCircle } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { appConfig } from "@/lib/config";
-import { XCircle } from "lucide-react";
-import Link from "next/link";
 
 type ErrorCodeType =
   | "STRIPE_CANCEL_BEFORE_SUBSCRIBING"

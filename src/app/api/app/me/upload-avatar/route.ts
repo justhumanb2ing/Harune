@@ -1,7 +1,7 @@
-import withAuthRequired from "@/lib/auth/withAuthRequired";
-import { getMissingS3ConfigKeys, getPublicS3ObjectUrl } from "@/lib/s3/config";
-import createS3UploadFields from "@/lib/s3/createS3UploadFields";
 import { NextResponse } from "next/server";
+import withAuthRequired from "@/lib/auth/with-auth-required";
+import { getMissingS3ConfigKeys, getPublicS3ObjectUrl } from "@/lib/s3/config";
+import createS3UploadFields from "@/lib/s3/create-s3-upload-fields";
 
 interface UploadAvatarRequest {
   fileName: string;

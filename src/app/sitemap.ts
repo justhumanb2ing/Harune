@@ -1,8 +1,8 @@
+import type { MetadataRoute } from "next";
 import { db } from "@/db";
 import { profilePages } from "@/db/schema/profile-page";
 import { isReservedHandle } from "@/lib/handles";
 import { absoluteUrl } from "@/lib/seo";
-import type { MetadataRoute } from "next";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const publicProfilePages = await db

@@ -1,8 +1,11 @@
-import LeaderboardSection from "@/components/sections/leaderboard-section";
-import { BreadcrumbJsonLd, WebPageStructuredData } from "@/components/seo/structured-data";
+import type { Metadata } from "next";
+import {
+  BreadcrumbJsonLd,
+  WebPageStructuredData,
+} from "@/components/site-instrumentation/structured-data";
+import LeaderboardSection from "@/components/website/leaderboard-section";
 import { appConfig } from "@/lib/config";
 import { createPageMetadata } from "@/lib/seo";
-import type { Metadata } from "next";
 
 const leaderboardDescription = `Discover top ${appConfig.projectName} creator pages and see which public profiles are leading the community.`;
 

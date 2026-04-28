@@ -1,9 +1,9 @@
-import { PublicProfilePage } from "@/components/section/profile-page/public-profile-page";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { PublicProfilePage } from "@/components/profile-page/live-page/live-page";
 import { appConfig } from "@/lib/config";
 import { getPublicProfilePage } from "@/lib/profile-page/queries";
 import { createPageMetadata } from "@/lib/seo";
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 
 type HandlePageProps = {
   params: Promise<{

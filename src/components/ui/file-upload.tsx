@@ -1,7 +1,5 @@
 "use client";
 
-import { Slot } from "@/components/ui/slot";
-import { cn } from "@/lib/utils";
 import {
   FileArchiveIcon,
   FileAudioIcon,
@@ -12,6 +10,8 @@ import {
   FileVideoIcon,
 } from "lucide-react";
 import * as React from "react";
+import { Slot } from "@/components/ui/slot";
+import { cn } from "@/lib/utils";
 
 const ROOT_NAME = "FileUpload";
 const DROPZONE_NAME = "FileUploadDropzone";
@@ -1341,29 +1341,29 @@ function FileUploadClear(props: FileUploadClearProps) {
 }
 
 export {
-  FileUploadRoot as FileUpload,
-  FileUploadDropzone,
-  FileUploadTrigger,
-  FileUploadList,
-  FileUploadItem,
-  FileUploadItemPreview,
-  FileUploadItemMetadata,
-  FileUploadItemProgress,
-  FileUploadItemDelete,
   FileUploadClear,
+  FileUploadClear as Clear,
+  FileUploadDropzone,
+  FileUploadDropzone as Dropzone,
+  FileUploadItem,
+  FileUploadItem as Item,
+  FileUploadItemDelete,
+  FileUploadItemDelete as ItemDelete,
+  FileUploadItemMetadata,
+  FileUploadItemMetadata as ItemMetadata,
+  FileUploadItemPreview,
+  FileUploadItemPreview as ItemPreview,
+  FileUploadItemProgress,
+  FileUploadItemProgress as ItemProgress,
+  FileUploadList,
+  FileUploadList as List,
+  FileUploadRoot as FileUpload,
   //
   FileUploadRoot as Root,
-  FileUploadDropzone as Dropzone,
-  FileUploadTrigger as Trigger,
-  FileUploadList as List,
-  FileUploadItem as Item,
-  FileUploadItemPreview as ItemPreview,
-  FileUploadItemMetadata as ItemMetadata,
-  FileUploadItemProgress as ItemProgress,
-  FileUploadItemDelete as ItemDelete,
-  FileUploadClear as Clear,
-  //
-  useStore as useFileUpload,
   //
   type FileUploadRootProps as FileUploadProps,
+  FileUploadTrigger,
+  FileUploadTrigger as Trigger,
+  //
+  useStore as useFileUpload,
 };

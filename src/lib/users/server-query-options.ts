@@ -1,9 +1,9 @@
 import "server-only";
 
+import { queryOptions } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { getMeForUser } from "@/lib/users/me";
 import { ME_GC_TIME_MS, ME_STALE_TIME_MS } from "@/lib/users/query-policy";
-import { queryOptions } from "@tanstack/react-query";
 
 export const meServerQueryOptions = (userId: string) =>
   queryOptions({

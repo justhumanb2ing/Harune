@@ -1,9 +1,9 @@
-import { AnalyticsScript } from "@/components/analytics/analytics-script";
-import { SiteStructuredData } from "@/components/seo/structured-data";
-import { absoluteUrl, seoConfig } from "@/lib/seo";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import Providers from "./Providers";
+import { AnalyticsScript } from "@/components/site-instrumentation/analytics-script";
+import { SiteStructuredData } from "@/components/site-instrumentation/structured-data";
+import { absoluteUrl, seoConfig } from "@/lib/seo";
+import Providers from "./providers";
 import "./globals.css";
 
 const inter = Inter({

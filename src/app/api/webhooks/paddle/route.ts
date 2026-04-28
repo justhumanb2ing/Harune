@@ -1,15 +1,3 @@
-import { db } from "@/db";
-import { plans } from "@/db/schema/plans";
-import { users } from "@/db/schema/user";
-import { env } from "@/env";
-import { allocatePlanCredits } from "@/lib/credits/allocatePlanCredits";
-import { creditTypeSchema } from "@/lib/credits/config";
-import type { CreditType } from "@/lib/credits/credits";
-import { addCredits } from "@/lib/credits/recalculate";
-import { getPaddleClient } from "@/lib/paddle/client";
-import downgradeToDefaultPlan from "@/lib/plans/downgradeToDefaultPlan";
-import updatePlan from "@/lib/plans/updatePlan";
-import getOrCreateUser from "@/lib/users/getOrCreateUser";
 import {
   type EventEntity,
   EventName,
@@ -20,6 +8,18 @@ import {
 } from "@paddle/paddle-node-sdk";
 import { eq, or } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
+import { db } from "@/db";
+import { plans } from "@/db/schema/plans";
+import { users } from "@/db/schema/user";
+import { env } from "@/env";
+import { allocatePlanCredits } from "@/lib/credits/allocate-plan-credits";
+import { creditTypeSchema } from "@/lib/credits/config";
+import type { CreditType } from "@/lib/credits/credits";
+import { addCredits } from "@/lib/credits/recalculate";
+import { getPaddleClient } from "@/lib/paddle/client";
+import downgradeToDefaultPlan from "@/lib/plans/downgrade-to-default-plan";
+import updatePlan from "@/lib/plans/update-plan";
+import getOrCreateUser from "@/lib/users/get-or-create-user";
 
 class PaddleWebhookHandler {
   private event: EventEntity;

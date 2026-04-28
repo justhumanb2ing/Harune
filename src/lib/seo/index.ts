@@ -1,5 +1,5 @@
-import { appConfig } from "@/lib/config";
 import type { Metadata } from "next";
+import { appConfig } from "@/lib/config";
 
 const defaultSiteUrl = appConfig.url.replace(/\/$/, "");
 

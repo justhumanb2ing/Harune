@@ -1,8 +1,8 @@
-import withAuthRequired from "@/lib/auth/withAuthRequired";
+import { NextResponse } from "next/server";
+import withAuthRequired from "@/lib/auth/with-auth-required";
 import { ProfilePageError, updateProfileMetadata } from "@/lib/profile-page/mutations";
 import { getProfilePageEditorData } from "@/lib/profile-page/queries";
 import { profilePageUpdateSchema } from "@/lib/validations/profile-page.schema";
-import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 

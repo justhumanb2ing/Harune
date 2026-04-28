@@ -1,5 +1,5 @@
-import { seoConfig } from "@/lib/seo";
 import { ImageResponse } from "next/og";
+import { seoConfig } from "@/lib/seo";
 
 // Image metadata
 export const alt = `${seoConfig.siteName} opengraph image`;

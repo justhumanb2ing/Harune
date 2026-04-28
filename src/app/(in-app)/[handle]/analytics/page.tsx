@@ -1,12 +1,12 @@
+import { SsgoiTransition } from "@ssgoi/react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AnalyticsPageClient } from "@/app/(in-app)/[handle]/analytics/page-client";
 import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
 import { getOwnedProfilePage } from "@/lib/profile-page/queries";
-import { SsgoiTransition } from "@ssgoi/react";
-import type { Metadata } from "next";
-import Link from "next/link";
-import { redirect } from "next/navigation";
 
 type AnalyticsPageProps = {
   params: Promise<{

@@ -1,10 +1,10 @@
+import { eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { profilePages, profileSocialLinks } from "@/db/schema/profile-page";
 import { users } from "@/db/schema/user";
-import withAuthRequired from "@/lib/auth/withAuthRequired";
+import withAuthRequired from "@/lib/auth/with-auth-required";
 import { onboardingSchema } from "@/lib/validations/auth.schema";
-import { eq } from "drizzle-orm";
-import { NextResponse } from "next/server";
 
 export const POST = withAuthRequired(async (req, context) => {
   const currentUser = await db

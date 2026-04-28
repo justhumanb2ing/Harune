@@ -1,5 +1,5 @@
-import { env } from "@/env";
 import { Environment, Paddle } from "@paddle/paddle-node-sdk";
+import { env } from "@/env";
 
 export const getPaddleClient = () => {
   const apiKey = env.PADDLE_API_KEY;

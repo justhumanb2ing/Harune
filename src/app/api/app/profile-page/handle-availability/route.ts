@@ -1,7 +1,7 @@
-import withAuthRequired from "@/lib/auth/withAuthRequired";
-import { ProfilePageError, isHandleAvailableForUser } from "@/lib/profile-page/mutations";
-import { handleSchema } from "@/lib/validations/auth.schema";
 import { NextResponse } from "next/server";
+import withAuthRequired from "@/lib/auth/with-auth-required";
+import { isHandleAvailableForUser, ProfilePageError } from "@/lib/profile-page/mutations";
+import { handleSchema } from "@/lib/validations/auth.schema";
 
 export const GET = withAuthRequired(async (req, context) => {
   try {

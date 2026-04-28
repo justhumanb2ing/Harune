@@ -1,10 +1,10 @@
-import { db } from "@/db";
-import { users } from "@/db/schema/user";
-import withAuthRequired from "@/lib/auth/withAuthRequired";
-import { getMeForUser } from "@/lib/users/me";
-import { profileUpdateSchema } from "@/lib/validations/profile.schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { db } from "@/db";
+import { users } from "@/db/schema/user";
+import withAuthRequired from "@/lib/auth/with-auth-required";
+import { getMeForUser } from "@/lib/users/me";
+import { profileUpdateSchema } from "@/lib/validations/profile.schema";
 import type { MeResponse } from "./types";
 
 export const dynamic = "force-dynamic";

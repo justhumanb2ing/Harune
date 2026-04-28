@@ -1,7 +1,7 @@
 "use client";
 
-import { queryKeys } from "@/lib/react-query/query-keys";
 import type { QueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/react-query/query-keys";
 
 export function clearAuthenticatedAppQueries(queryClient: QueryClient) {
   queryClient.removeQueries({ queryKey: queryKeys.app.all() });

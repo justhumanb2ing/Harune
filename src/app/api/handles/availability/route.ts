@@ -1,8 +1,8 @@
+import { eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { profilePages } from "@/db/schema/profile-page";
 import { handleSchema } from "@/lib/validations/auth.schema";
-import { eq } from "drizzle-orm";
-import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);

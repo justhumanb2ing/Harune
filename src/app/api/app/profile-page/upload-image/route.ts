@@ -1,11 +1,13 @@
+import { eq } from "drizzle-orm";
+import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { profilePages } from "@/db/schema/profile-page";
-import withAuthRequired from "@/lib/auth/withAuthRequired";
+import withAuthRequired from "@/lib/auth/with-auth-required";
 import {
-  PROFILE_IMAGE_MAX_SIZE_BYTES,
   getProfileImageFileError,
   getProfileImageKind,
   getProfileImageObjectKey,
+  PROFILE_IMAGE_MAX_SIZE_BYTES,
   withProfileImageCacheVersion,
 } from "@/lib/profile-page/image-upload";
 import {
@@ -13,10 +15,8 @@ import {
   getPublicS3ObjectUrl,
   getS3ObjectKeyFromPublicUrl,
 } from "@/lib/s3/config";
-import createS3UploadFields from "@/lib/s3/createS3UploadFields";
-import { deletePublicS3Object } from "@/lib/s3/deleteObject";
-import { eq } from "drizzle-orm";
-import { NextResponse } from "next/server";
+import createS3UploadFields from "@/lib/s3/create-s3-upload-fields";
+import { deletePublicS3Object } from "@/lib/s3/delete-object";
 
 interface UploadProfileImageRequest {
   fileName: string;

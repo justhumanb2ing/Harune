@@ -9,6 +9,8 @@ describe("onboarding schema", () => {
       handle: "leeve",
       name: "Leeve",
       bio: "hello",
+      role: "Designer",
+      location: "Seoul",
       socialLinks: {
         x: "@leeve",
         instagram: "@leeve",
@@ -22,6 +24,39 @@ describe("onboarding schema", () => {
     });
 
     expect(result.success).toBe(true);
+  });
+
+  test("accepts empty optional role and location fields", () => {
+    const result = onboardingSchema.safeParse({
+      handle: "leeve",
+      name: "Leeve",
+      role: "",
+      location: "   ",
+      socialLinks: {},
+    });
+
+    expect(result.success).toBe(true);
+    if (!result.success) {
+      throw new Error("Expected onboarding schema to accept empty optional fields.");
+    }
+    expect(result.data).toMatchObject({
+      role: undefined,
+      location: undefined,
+    });
+  });
+
+  test("rejects optional role and location over 100 characters", () => {
+    const longValue = "a".repeat(101);
+
+    const result = onboardingSchema.safeParse({
+      handle: "leeve",
+      name: "Leeve",
+      role: longValue,
+      location: longValue,
+      socialLinks: {},
+    });
+
+    expect(result.success).toBe(false);
   });
 
   test("rejects more than the maximum number of selected social links", () => {

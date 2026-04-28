@@ -16,6 +16,11 @@ const optionalTextSchema = z.preprocess(
   z.string().max(280, "Must be 280 characters or fewer.").optional()
 );
 
+const optionalShortTextSchema = z.preprocess(
+  emptyStringToUndefined,
+  z.string().max(100, "Must be 100 characters or fewer.").optional()
+);
+
 const optionalUrlSchema = z.preprocess(
   emptyStringToUndefined,
   z.string().url("Enter a valid URL.").optional()
@@ -48,6 +53,8 @@ export const onboardingSchema = z
       .min(1, "Name is required.")
       .max(100, "Name must be 100 characters or fewer."),
     bio: optionalTextSchema,
+    role: optionalShortTextSchema,
+    location: optionalShortTextSchema,
     image: optionalUrlSchema,
     backgroundImage: optionalUrlSchema,
     socialLinks: z

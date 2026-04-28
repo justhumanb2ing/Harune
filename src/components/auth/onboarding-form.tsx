@@ -185,6 +185,8 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
     normalizeHandle(handle || searchParams.get("handle") || "")
   );
   const [name, setName] = React.useState("");
+  const [role, setRole] = React.useState("");
+  const [location, setLocation] = React.useState("");
   const [bio, setBio] = React.useState("");
   const [socialLinks, setSocialLinks] = React.useState<SocialLinksState>(createInitialSocialLinks);
 
@@ -376,6 +378,8 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
           image: uploadedImageUrl || undefined,
           backgroundImage: uploadedBackgroundImageUrl || undefined,
           name: trimmedName,
+          role,
+          location,
           bio,
           socialLinks,
         }),
@@ -671,6 +675,29 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                                 placeholder="Bio"
                                 aria-label="Bio"
                                 className="h-24 resize-none border-0 bg-secondary p-4 hover:bg-input"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input
+                                id="role"
+                                value={role}
+                                onChange={(event) => setRole(event.target.value)}
+                                placeholder="Role"
+                                aria-label="Role"
+                                autoComplete="off"
+                                maxLength={100}
+                                className="h-12 border-0 bg-secondary text-center hover:bg-input"
+                              />
+                              <Input
+                                id="location"
+                                value={location}
+                                onChange={(event) => setLocation(event.target.value)}
+                                placeholder="Location"
+                                aria-label="Location"
+                                autoComplete="off"
+                                maxLength={100}
+                                className="h-12 border-0 bg-secondary text-center hover:bg-input"
                               />
                             </div>
                           </div>

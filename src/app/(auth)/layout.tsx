@@ -13,9 +13,9 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       <main className="relative h-lvh flex flex-row bg-background">
         <div className="relative h-full flex-1 overflow-hidden">
           {/* Replace with Logo */}
-          <aside className="absolute top-3 left-3">
-            <Link href={"/"}>
-              <XIcon className="stroke-1 size-10" />
+          <aside className="absolute top-5 left-5 z-10">
+            <Link href={"/"} aria-label="Close authentication" className="font-extrabold tracking-tighter text-3xl">
+              Harune
             </Link>
           </aside>
 

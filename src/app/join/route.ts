@@ -1,13 +1,7 @@
-import { auth } from "@/auth";
-import { resolveAuthenticatedAppRedirect } from "@/lib/auth/app-redirect";
+import { getSessionCookie } from "better-auth/cookies";
 import { redirect } from "next/navigation";
+import type { NextRequest } from "next/server";
 
-export async function GET() {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    redirect("/sign-up");
-  }
-
-  redirect(await resolveAuthenticatedAppRedirect({ userId: session.user.id }));
+export function GET(request: NextRequest) {
+  redirect(getSessionCookie(request) ? "/post-sign-in" : "/sign-up");
 }

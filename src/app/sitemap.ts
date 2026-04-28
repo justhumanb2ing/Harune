@@ -13,13 +13,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .from(profilePages);
 
   // Static pages
-  const staticPageRoutes = ["", "/leaderboard", "/changelog", "/roadmap"] as const;
+  const staticPageRoutes = [
+    "",
+    "/sign-in",
+    "/sign-up",
+    "/leaderboard",
+    "/changelog",
+    "/roadmap",
+  ] as const;
 
   const staticPages = staticPageRoutes.map((route) => ({
     url: absoluteUrl(route === "" ? "/" : route),
     lastModified: new Date(),
     changeFrequency: "monthly" as const,
-    priority: route === "" ? 1 : 0.4,
+    priority: route === "" ? 1 : route === "/sign-in" || route === "/sign-up" ? 0.6 : 0.4,
   }));
 
   // Policy pages

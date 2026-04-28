@@ -1,6 +1,14 @@
 import { auth } from "@/auth";
 import { resolveAuthenticatedAppRedirect } from "@/lib/auth/app-redirect";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  robots: {
+    follow: false,
+    index: false,
+  },
+};
 
 type PostSignInPageProps = {
   searchParams: Promise<{

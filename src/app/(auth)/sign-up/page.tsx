@@ -4,14 +4,16 @@ import PolicyBox from "@/components/auth/policy-box";
 import { env } from "@/env";
 import { resolveAuthenticatedAppRedirect } from "@/lib/auth/app-redirect";
 import { appConfig } from "@/lib/config";
+import { createPageMetadata } from "@/lib/seo";
 import { SsgoiTransition } from "@ssgoi/react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
+  path: "/sign-up",
   title: "Sign Up",
-  description: `Create your ${appConfig.projectName} account`,
-};
+  description: `Create your ${appConfig.projectName} account.`,
+});
 
 type SignUpPageProps = {
   searchParams: Promise<{

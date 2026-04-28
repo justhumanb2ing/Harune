@@ -4,14 +4,16 @@ import PolicyBox from "@/components/auth/policy-box";
 import { env } from "@/env";
 import { resolveAuthenticatedAppRedirect } from "@/lib/auth/app-redirect";
 import { appConfig } from "@/lib/config";
+import { createPageMetadata } from "@/lib/seo";
 import { SsgoiTransition } from "@ssgoi/react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Log In",
-  description: `Log in to your ${appConfig.projectName} account`,
-};
+export const metadata: Metadata = createPageMetadata({
+  path: "/sign-in",
+  title: "Sign In",
+  description: `Sign in to your ${appConfig.projectName} account.`,
+});
 
 type SignInPageProps = {
   searchParams: Promise<{

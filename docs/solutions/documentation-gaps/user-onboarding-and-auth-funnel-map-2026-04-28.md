@@ -53,7 +53,7 @@ Landing page /
 | `src/app/login/route.ts` | 비로그인 사용자는 `/sign-in`, 로그인 사용자는 앱 redirect |
 | `src/app/(auth)/sign-in/page.tsx` | 로그인 화면, Google 사용 가능 여부, OAuth error 표시 |
 | `src/app/(auth)/sign-up/page.tsx` | 회원가입 화면, handle/callback forwarding |
-| `src/app/(auth)/post-sign-in/page.tsx` | 인증 후 `/create` 또는 `/{handle}/app` 결정 |
+| `src/app/post-sign-in/page.tsx` | 인증 후 `/create` 또는 `/{handle}/app` 결정 |
 | `src/app/(in-app)/create/page.tsx` | profile page가 없는 사용자만 온보딩 진입 |
 | `src/components/auth/onboarding-form.tsx` | handle, profile, social links 3단계 생성 폼 |
 | `src/app/api/app/create/route.ts` | 사용자 최초 profile page 생성 |

@@ -84,7 +84,7 @@ src/db/schema/core/profile-page.ts
 ```text
 src/proxy.ts
 src/lib/auth/proxy-auth-boundary.ts
-src/app/(auth)/post-sign-in/page.tsx
+src/app/post-sign-in/page.tsx
 src/lib/auth/app-redirect.ts
 src/lib/auth/withAuthRequired.ts
 ```

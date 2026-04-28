@@ -43,6 +43,8 @@ tags: [auth, onboarding, redirect, join, login, latency, better-auth]
 
 이 route들은 보안 경계가 아니다. 실제 보안 검증은 목적지인 `/post-sign-in`, `/sign-up`, `/sign-in`, 보호 app page에서 다시 수행된다. 따라서 shortcut route에서 full session validation을 반복할 필요가 없었다.
 
+추가로 `/post-sign-in`은 redirect 전용 페이지인데 `(auth)` route group 아래에 있으면, `/join`에서 로그인 사용자를 `/post-sign-in`으로 보낼 때 auth layout이 잠깐 보일 수 있다. redirect 전용 라우트는 사용자에게 보여줄 auth shell을 갖지 않아야 한다.
+
 ## Fix
 
 `/join`과 `/login`은 Better Auth session cookie signal만 보고 즉시 redirect하도록 바꿨다.
@@ -63,6 +65,7 @@ tags: [auth, onboarding, redirect, join, login, latency, better-auth]
 |---|---|
 | `src/app/join/route.ts` | `auth()`와 `resolveAuthenticatedAppRedirect` 제거, `getSessionCookie(request)` 기반 redirect |
 | `src/app/login/route.ts` | `auth()`와 `resolveAuthenticatedAppRedirect` 제거, `getSessionCookie(request)` 기반 redirect |
+| `src/app/post-sign-in/page.tsx` | `(auth)` route group 밖으로 이동해 중간 redirect 중 auth layout flash 제거 |
 
 ## Why This Is Safe
 
@@ -92,7 +95,7 @@ bun x biome check \
   src/app/(auth)/layout.tsx \
   src/app/(auth)/sign-in/page.tsx \
   src/app/(auth)/sign-up/page.tsx \
-  src/app/(auth)/post-sign-in/page.tsx \
+  src/app/post-sign-in/page.tsx \
   src/app/sitemap.ts \
   src/app/robots.ts
 

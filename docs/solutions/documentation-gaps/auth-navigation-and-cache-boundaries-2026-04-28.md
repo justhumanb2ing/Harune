@@ -42,7 +42,7 @@ Network request
 |---|---|
 | `src/auth.ts` | Better Auth 서버 설정과 `auth()` wrapper |
 | `src/lib/auth/withAuthRequired.ts` | API route의 실제 session 검증과 lazy context 제공 |
-| `src/app/(auth)/post-sign-in/page.tsx` | 로그인 후 onboarding 또는 `/:handle/app`으로 이동 |
+| `src/app/post-sign-in/page.tsx` | 로그인 후 onboarding 또는 `/:handle/app`으로 이동 |
 | `src/lib/auth/app-redirect.ts` | 보유 profile page 기준 app redirect 계산 |
 | `src/lib/auth/app-redirect-paths.ts` | callback/next path 안전성 제한 |
 

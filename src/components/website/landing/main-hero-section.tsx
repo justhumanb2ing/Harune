@@ -35,15 +35,15 @@ export default function MainHeroSection() {
     <section className="min-h-dvh flex flex-col items-center justify-center gap-40">
       <header className="flex flex-col gap-4 items-center">
         <motion.div className="mb-20 flex flex-col gap-2 items-center">
-          {/*<div className="size-20 aspect-square rounded-xl">
+          <div className="size-16 aspect-square rounded-xl">
             <Image
-              src={"/assets/logo.jpeg"}
+              src={"/assets/logo.png"}
               alt="Harune Logo"
-              width={64}
-              height={64}
+              width={256}
+              height={256}
               className="mb-4 rounded-lg object-cover size-full"
             />
-          </div>*/}
+          </div>
           <h1 className="text-xl sm:text-xl font-extrabold tracking-tighter">Harune</h1>
         </motion.div>
         <motion.div

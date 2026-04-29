@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export function Footer() {
@@ -5,7 +6,16 @@ export function Footer() {
     <footer className="min-h-[20rem] py-20">
       <div className="mx-auto flex items-center justify-center px-4 py-8  sm:px-6 lg:px-8">
         <div className="flex flex-col items-center gap-18">
-          <div>
+          <div className="flex flex-col items-center">
+            <div className="size-12 aspect-square rounded-xl">
+              <Image
+                src={"/assets/logo.png"}
+                alt="Harune Logo"
+                width={256}
+                height={256}
+                className="mb-4 rounded-lg object-cover size-full"
+              />
+            </div>
             <p className="font-bold text-muted-foreground">Harune.</p>
           </div>
           {/* Hooking Title */}

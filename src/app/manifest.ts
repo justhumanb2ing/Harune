@@ -14,14 +14,9 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#ffffff",
     icons: [
       {
-        src: "/assets/logo.jpeg",
-        sizes: "736x736",
-        type: "image/jpeg",
-      },
-      {
-        src: "/assets/icon.svg",
-        sizes: "any",
-        type: "image/svg+xml",
+        src: "/icon.png",
+        sizes: "192x192",
+        type: "image/png",
       },
     ],
     id: seoConfig.siteUrl,

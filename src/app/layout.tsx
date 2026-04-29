@@ -50,10 +50,6 @@ export const metadata: Metadata = {
     description: seoConfig.description,
     images: [absoluteUrl(seoConfig.defaultTwitterImagePath)],
   },
-  icons: {
-    icon: "/assets/logo.jpeg",
-    apple: "/assets/logo.jpeg",
-  },
   verification: {
     google: "RgHBA8CyoOi7nfUueLvoheQFmwX7abnJM8LWPi584J8",
   },

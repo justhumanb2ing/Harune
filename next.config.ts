@@ -1,5 +1,5 @@
-import { withSentry } from "@/lib/sentry/init";
 import type { NextConfig } from "next";
+import { withSentry } from "@/lib/sentry/init";
 import { env } from "./src/env";
 
 const s3Host =
@@ -33,6 +33,10 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "harune.me",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
       },
       ...(s3Host
         ? [

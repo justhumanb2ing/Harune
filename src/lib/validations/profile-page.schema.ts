@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { playlistProviderOrder } from "@/lib/profile-page/playlist";
 import { MAX_SOCIAL_LINKS } from "@/lib/profile-page/types";
 import { handleSchema } from "@/lib/validations/auth.schema";
 
@@ -92,6 +93,17 @@ export const profilePageSyncLinkItemSchema = z.object({
   url: z.string().trim().url("Enter a valid URL."),
 });
 
+export const playlistProviderSchema = z.enum(playlistProviderOrder);
+
+export const profilePageSyncPlaylistItemSchema = z.object({
+  id: entityIdSchema,
+  title: requiredText("Title", 100),
+  provider: playlistProviderSchema,
+  content: z.string().trim().min(1, "Content is required."),
+  position: z.number().int().nonnegative(),
+  blockPosition: z.number().int().nonnegative(),
+});
+
 export const profilePageSyncTextBoxItemSchema = z.object({
   id: entityIdSchema,
   title: requiredText("Title", 100),
@@ -116,6 +128,7 @@ export const profilePageSyncSchema = z
       .array(profilePageSyncSocialLinkSchema)
       .max(MAX_SOCIAL_LINKS, `You can add up to ${MAX_SOCIAL_LINKS} social links.`),
     linkItems: z.array(profilePageSyncLinkItemSchema),
+    playlistItems: z.array(profilePageSyncPlaylistItemSchema),
     textBoxItems: z.array(profilePageSyncTextBoxItemSchema),
   })
   .superRefine((value, ctx) => {
@@ -168,9 +181,44 @@ export const profilePageSyncSchema = z
       linkPositions.add(linkItem.position);
     }
 
+    const playlistIds = new Set<string>();
+    const playlistPositions = new Set<number>();
+    const playlistBlockPositions = new Set<number>([value.page.linkBlockPosition]);
+    for (const [index, playlistItem] of value.playlistItems.entries()) {
+      if (playlistIds.has(playlistItem.id)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Duplicate playlist item ids are not allowed.",
+          path: ["playlistItems", index, "id"],
+        });
+      }
+
+      playlistIds.add(playlistItem.id);
+
+      if (playlistPositions.has(playlistItem.position)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Duplicate playlist item positions are not allowed.",
+          path: ["playlistItems", index, "position"],
+        });
+      }
+
+      playlistPositions.add(playlistItem.position);
+
+      if (playlistBlockPositions.has(playlistItem.blockPosition)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Duplicate page editor block positions are not allowed.",
+          path: ["playlistItems", index, "blockPosition"],
+        });
+      }
+
+      playlistBlockPositions.add(playlistItem.blockPosition);
+    }
+
     const textBoxIds = new Set<string>();
     const textBoxPositions = new Set<number>();
-    const pageBlockPositions = new Set<number>([value.page.linkBlockPosition]);
+    const pageBlockPositions = new Set<number>(playlistBlockPositions);
     for (const [index, textBoxItem] of value.textBoxItems.entries()) {
       if (textBoxIds.has(textBoxItem.id)) {
         ctx.addIssue({

@@ -1,3 +1,5 @@
+import type { PlaylistProvider } from "@/lib/profile-page/playlist";
+
 export const MAX_SOCIAL_LINKS = 8;
 
 export type SocialPlatform =
@@ -42,6 +44,15 @@ export type LinkItem = {
   position: number;
 };
 
+export type PlaylistItem = {
+  id: string;
+  title: string;
+  provider: PlaylistProvider;
+  content: string;
+  position: number;
+  blockPosition: number;
+};
+
 export type TextBoxItem = {
   id: string;
   title: string;
@@ -54,6 +65,7 @@ export type ProfilePageData = {
   page: ProfilePage;
   socialLinks: SocialLink[];
   linkItems: LinkItem[];
+  playlistItems: PlaylistItem[];
   textBoxItems: TextBoxItem[];
 };
 
@@ -84,6 +96,15 @@ export type DraftLinkItem = {
   position: number;
 };
 
+export type DraftPlaylistItem = {
+  id: string;
+  title: string;
+  provider: PlaylistProvider;
+  content: string;
+  position: number;
+  blockPosition: number;
+};
+
 export type DraftTextBoxItem = {
   id: string;
   title: string;
@@ -96,6 +117,7 @@ export type ProfilePageDraftData = {
   page: DraftProfilePage;
   socialLinks: DraftSocialLink[];
   linkItems: DraftLinkItem[];
+  playlistItems: DraftPlaylistItem[];
   textBoxItems: DraftTextBoxItem[];
 };
 
@@ -122,6 +144,14 @@ export type ProfilePageSyncPayload = {
     favicon: string;
     position: number;
     url: string;
+  }>;
+  playlistItems: Array<{
+    id: string;
+    title: string;
+    provider: PlaylistProvider;
+    content: string;
+    position: number;
+    blockPosition: number;
   }>;
   textBoxItems: Array<{
     id: string;

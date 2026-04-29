@@ -15,12 +15,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ColorInstagramIcon, ColorSpotifyIcon, ColorYoutubeIcon } from "@/components/icons";
+import { PlaylistItem } from "@/components/profile-page/editor-block/playlist-item";
 import { TextEditDialog } from "@/components/profile-page/editor-block/text-edit-dialog";
 import { TextItem } from "@/components/profile-page/editor-block/text-item";
 import { SortableShell } from "@/components/profile-page/layout/sortable-shell";
 import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useProfilePageEditor } from "@/hooks/use-profile-page-editor";
+import { playlistProviderIcons } from "@/lib/profile-page/playlist";
 import { cn } from "@/lib/utils";
 
 const sectionLinkClassName =
@@ -195,6 +197,57 @@ export function SectionPageClient() {
                         );
                       }
 
+                      if (block.type === "playlist") {
+                        const item = editor.data?.playlistItems.find(
+                          (playlistItem) => playlistItem.id === block.playlistId
+                        );
+
+                        if (!item) {
+                          return null;
+                        }
+
+                        const ProviderIcon = playlistProviderIcons[item.provider];
+                        const title = item.title.trim() || "Untitled";
+
+                        return (
+                          <SortableShell key={block.id} id={block.id} className="shadow-none">
+                            {({ attributes, listeners }) => (
+                              <div className="group/item relative">
+                                <button
+                                  type="button"
+                                  className="absolute top-1/2 -left-8 inline-flex size-7 -translate-y-1/2 items-center justify-center text-muted-foreground opacity-0 outline-none transition-opacity focus-visible:ring-3 focus-visible:ring-ring/50 group-hover/item:opacity-100 bg-primary rounded-full shadow-sm border border-border/30"
+                                  onClick={() => void editor.handleDeletePlaylist(item.id)}
+                                  aria-label={`Delete ${title}`}
+                                >
+                                  <TrashIcon className="text-primary-foreground size-4 stroke-3" />
+                                </button>
+                                <div className="flex w-full items-center gap-2.5 rounded-2xl bg-background px-4 py-6 text-left text-sm shadow-float">
+                                  <span className={sectionMediaClassName} aria-hidden="true">
+                                    <ProviderIcon className="size-6"  />
+                                  </span>
+                                  <span
+                                    className={
+                                      "min-w-0 line-clamp-1 items-center text-lg leading-snug font-medium truncate"
+                                    }
+                                  >
+                                    {title}
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  className="size-7 absolute top-1/2 -right-8 inline-flex -translate-y-1/2 cursor-grab items-center justify-center opacity-0 transition-opacity group-hover/item:opacity-100 bg-primary rounded-full shadow-sm border border-border/30"
+                                  aria-label={`Reorder ${title}`}
+                                  {...attributes}
+                                  {...listeners}
+                                >
+                                  <GripVertical className="text-primary-foreground size-4 stroke-3" />
+                                </button>
+                              </div>
+                            )}
+                          </SortableShell>
+                        );
+                      }
+
                       const item = editor.data?.textBoxItems.find(
                         (textBoxItem) => textBoxItem.id === block.textBoxId
                       );
@@ -258,21 +311,7 @@ export function SectionPageClient() {
           <p className="text-xs text-muted-foreground uppercase">Other Block</p>
           <div className="flex flex-col gap-2">
             <TextItem onAdd={editor.handleCreateTextBox} />
-            <div
-              className={cn(
-                "group/item flex justify-center items-center w-full rounded-2xl bg-background px-4 py-3 text-sm",
-                "bg-secondary aspect-square border-4 border-dashed border-border/50 cursor-not-allowed"
-              )}
-            >
-              <p
-                className={
-                  "flex flex-col items-center gap-2 text-2xl font-bold text-muted-foreground"
-                }
-              >
-                <span>TBD</span>
-                <span className="text-xs font-normal">Coming soon...</span>
-              </p>
-            </div>
+            <PlaylistItem onAdd={editor.handleCreatePlaylist} />
           </div>
         </section>
 

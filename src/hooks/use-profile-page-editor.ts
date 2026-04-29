@@ -25,6 +25,7 @@ import { uploadProfileImageIfChanged } from "@/lib/profile-page/client-image-upl
 import { profilePageQueryOptions } from "@/lib/profile-page/query-options";
 import {
   type DraftLinkItem,
+  type DraftPlaylistItem,
   type DraftTextBoxItem,
   MAX_SOCIAL_LINKS,
   type ProfilePageData,
@@ -316,6 +317,14 @@ export function useProfilePageEditor() {
     store.actions.reorderTextBoxItems(String(event.active.id), String(event.over.id));
   };
 
+  const handlePlaylistDragEnd = (event: DragEndEvent) => {
+    if (!event.over || event.active.id === event.over.id) {
+      return;
+    }
+
+    store.actions.reorderPlaylistItems(String(event.active.id), String(event.over.id));
+  };
+
   const handlePageBlockDragEnd = (event: DragEndEvent) => {
     if (!event.over || event.active.id === event.over.id) {
       return;
@@ -328,6 +337,13 @@ export function useProfilePageEditor() {
     data: draftData,
     fallbackName,
     handleCreateLink: () => store.actions.addNewLink(),
+    handleCreatePlaylist: (draft: {
+      content: string;
+      provider: DraftPlaylistItem["provider"];
+      title: string;
+    }) => {
+      store.actions.addPlaylistItemFromDraft(draft);
+    },
     handleCreateTextBox: (draft?: { description: string; title: string }) => {
       if (draft) {
         store.actions.addNewTextBoxFromDraft(draft);
@@ -337,6 +353,7 @@ export function useProfilePageEditor() {
       store.actions.addNewTextBox();
     },
     handleDeleteLink: (id: string) => store.actions.removeLinkItem(id),
+    handleDeletePlaylist: (id: string) => store.actions.removePlaylistItem(id),
     handleDeleteSocialLink: (platform: SocialPlatform) => store.actions.removeSocialLink(platform),
     handleDeleteTextBox: (id: string) => store.actions.removeTextBoxItem(id),
     handleLinkDragEnd,
@@ -357,6 +374,7 @@ export function useProfilePageEditor() {
       value: string
     ) => store.actions.updateTextBoxItem(id, key, value),
     handleTextBoxDragEnd,
+    handlePlaylistDragEnd,
     hasUnsyncedChanges,
     backgroundImageInputRef,
     imageInputRef,

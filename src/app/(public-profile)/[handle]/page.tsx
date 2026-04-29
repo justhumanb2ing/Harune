@@ -50,6 +50,7 @@ export default async function HandlePage({ params }: HandlePageProps) {
         image={owner.image}
         linkBlockPosition={owner.linkBlockPosition}
         linkItems={owner.linkItems}
+        playlistItems={owner.playlistItems}
         location={owner.location}
         socialLinks={owner.socialLinks}
         role={owner.role}

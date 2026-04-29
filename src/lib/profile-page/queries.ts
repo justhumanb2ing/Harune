@@ -3,6 +3,7 @@ import { db } from "@/db";
 import {
   profileLinkItems,
   profilePages,
+  profilePlaylistItems,
   profileSocialLinks,
   profileTextBoxItems,
 } from "@/db/schema/profile-page";
@@ -37,7 +38,7 @@ export const getProfilePageEditorData = async (userId: string) => {
     return null;
   }
 
-  const [socialLinks, linkItems, textBoxItems] = await Promise.all([
+  const [socialLinks, linkItems, playlistItems, textBoxItems] = await Promise.all([
     db
       .select({
         id: profileSocialLinks.id,
@@ -62,6 +63,18 @@ export const getProfilePageEditorData = async (userId: string) => {
       .orderBy(asc(profileLinkItems.position)),
     db
       .select({
+        id: profilePlaylistItems.id,
+        title: profilePlaylistItems.title,
+        provider: profilePlaylistItems.provider,
+        content: profilePlaylistItems.content,
+        position: profilePlaylistItems.position,
+        blockPosition: profilePlaylistItems.blockPosition,
+      })
+      .from(profilePlaylistItems)
+      .where(eq(profilePlaylistItems.profilePageId, page.id))
+      .orderBy(asc(profilePlaylistItems.position)),
+    db
+      .select({
         id: profileTextBoxItems.id,
         title: profileTextBoxItems.title,
         description: profileTextBoxItems.description,
@@ -77,6 +90,7 @@ export const getProfilePageEditorData = async (userId: string) => {
     page,
     socialLinks,
     linkItems,
+    playlistItems,
     textBoxItems,
   };
 };
@@ -105,7 +119,7 @@ export const getPublicProfilePage = async (handle: string) => {
     return null;
   }
 
-  const [socialLinks, linkItems, textBoxItems] = await Promise.all([
+  const [socialLinks, linkItems, playlistItems, textBoxItems] = await Promise.all([
     db
       .select({
         id: profileSocialLinks.id,
@@ -130,6 +144,18 @@ export const getPublicProfilePage = async (handle: string) => {
       .orderBy(asc(profileLinkItems.position)),
     db
       .select({
+        id: profilePlaylistItems.id,
+        title: profilePlaylistItems.title,
+        provider: profilePlaylistItems.provider,
+        content: profilePlaylistItems.content,
+        position: profilePlaylistItems.position,
+        blockPosition: profilePlaylistItems.blockPosition,
+      })
+      .from(profilePlaylistItems)
+      .where(eq(profilePlaylistItems.profilePageId, owner.id))
+      .orderBy(asc(profilePlaylistItems.position)),
+    db
+      .select({
         id: profileTextBoxItems.id,
         title: profileTextBoxItems.title,
         description: profileTextBoxItems.description,
@@ -145,6 +171,7 @@ export const getPublicProfilePage = async (handle: string) => {
     ...owner,
     socialLinks,
     linkItems,
+    playlistItems,
     textBoxItems,
   };
 };

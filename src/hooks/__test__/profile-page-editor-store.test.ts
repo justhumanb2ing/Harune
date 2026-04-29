@@ -31,6 +31,7 @@ const createProfilePageData = (): ProfilePageData => ({
     },
   ],
   linkItems: [],
+  playlistItems: [],
   textBoxItems: [],
 });
 
@@ -601,5 +602,34 @@ describe("profile page editor store", () => {
       "Keep this local until sync"
     );
     expect(store.getState().hasUnsyncedChanges).toBe(true);
+  });
+
+  test("playlist drafts are added locally and included in sync payloads", () => {
+    const store = createProfilePageEditorStore();
+
+    store.actions.rebaseFromServer(createProfilePageData());
+    store.actions.addPlaylistItemFromDraft({
+      title: "Playlist",
+      provider: "Spotify",
+      content: "<iframe />",
+    });
+
+    const draftData = store.getState().draftData;
+
+    if (!draftData) {
+      throw new Error("Expected draft data to exist");
+    }
+
+    expect(draftData.playlistItems).toHaveLength(1);
+    expect(buildSyncPayload(draftData).playlistItems).toEqual([
+      {
+        id: draftData.playlistItems[0]?.id ?? "",
+        title: "Playlist",
+        provider: "Spotify",
+        content: "<iframe />",
+        position: 0,
+        blockPosition: 1,
+      },
+    ]);
   });
 });

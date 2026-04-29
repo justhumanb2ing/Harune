@@ -152,6 +152,7 @@ export function ProfilePagePreview({ framed = true, showActions = true }: Profil
             image={editor.previewImageSrc ?? null}
             linkBlockPosition={editor.data.page.linkBlockPosition}
             linkItems={editor.data.linkItems}
+            playlistItems={editor.data.playlistItems}
             location={editor.data.page.location || null}
             socialLinks={editor.data.socialLinks}
             role={editor.data.page.role || null}

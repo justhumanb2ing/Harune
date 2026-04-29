@@ -31,6 +31,16 @@ const validPayload = {
       url: "https://example.com/docs",
     },
   ],
+  playlistItems: [
+    {
+      id: "draft:playlist-1",
+      title: "Playlist",
+      provider: "Spotify",
+      content: "<iframe />",
+      position: 0,
+      blockPosition: 2,
+    },
+  ],
   textBoxItems: [
     {
       id: "draft:text-1",
@@ -181,6 +191,24 @@ describe("profile page sync schema", () => {
           favicon: "",
           position: 0,
           url: "https://example.com/blog",
+        },
+      ],
+      playlistItems: [
+        {
+          id: "draft:playlist-1",
+          title: "Playlist",
+          provider: "Spotify",
+          content: "<iframe />",
+          position: 0,
+          blockPosition: 2,
+        },
+        {
+          id: "draft:playlist-2",
+          title: "Playlist 2",
+          provider: "YouTube",
+          content: "<iframe />",
+          position: 0,
+          blockPosition: 3,
         },
       ],
       textBoxItems: [

@@ -3,6 +3,7 @@
 import { getProfileImageFileError } from "@/lib/profile-page/image-upload";
 import type {
   DraftLinkItem,
+  DraftPlaylistItem,
   DraftTextBoxItem,
   ProfilePageData,
   ProfilePageDraftData,
@@ -16,6 +17,7 @@ type DirtyState = {
   image: boolean;
   linkItems: boolean;
   profile: boolean;
+  playlistItems: boolean;
   socialLinks: boolean;
   textBoxItems: boolean;
 };
@@ -68,6 +70,7 @@ const initialDirtyState = (): DirtyState => ({
   profile: false,
   socialLinks: false,
   linkItems: false,
+  playlistItems: false,
   textBoxItems: false,
   backgroundImage: false,
   image: false,
@@ -91,10 +94,12 @@ const initialState = (): ProfilePageEditorState => ({
 
 const createDraftId = () => `draft:${crypto.randomUUID()}`;
 export const LINK_BLOCK_ID = "block:links";
+export const PLAYLIST_BLOCK_PREFIX = "block:playlist:";
 
 const normalizeNullableText = (value: string | null | undefined) => value ?? "";
 const hasTextBoxDraftContent = (value: NewTextBoxDraft) => value.title.trim().length > 0;
 export const textBoxBlockId = (id: string) => `block:text:${id}`;
+export const playlistBlockId = (id: string) => `${PLAYLIST_BLOCK_PREFIX}${id}`;
 
 const byPosition = <T extends { position: number }>(a: T, b: T) => a.position - b.position;
 
@@ -109,6 +114,12 @@ export type PageEditorBlock =
       position: number;
       textBoxId: string;
       type: "textBox";
+    }
+  | {
+      id: string;
+      position: number;
+      playlistId: string;
+      type: "playlist";
     };
 
 export const createDraftData = (data: ProfilePageData): ProfilePageDraftData => ({
@@ -139,6 +150,14 @@ export const createDraftData = (data: ProfilePageData): ProfilePageDraftData => 
     url: item.url,
     position: index,
   })),
+  playlistItems: [...data.playlistItems].sort(byPosition).map((item, index) => ({
+    id: item.id,
+    title: item.title,
+    provider: item.provider,
+    content: item.content,
+    position: index,
+    blockPosition: item.blockPosition ?? index + 1,
+  })),
   textBoxItems: [...data.textBoxItems].sort(byPosition).map((item, index) => ({
     id: item.id,
     title: item.title,
@@ -157,6 +176,12 @@ export const getPageEditorBlocks = (draftData: ProfilePageDraftData): PageEditor
 
   return [
     linkBlock,
+    ...draftData.playlistItems.map((item) => ({
+      id: playlistBlockId(item.id),
+      position: item.blockPosition,
+      playlistId: item.id,
+      type: "playlist" as const,
+    })),
     ...draftData.textBoxItems.map((item) => ({
       id: textBoxBlockId(item.id),
       position: item.blockPosition,
@@ -194,6 +219,16 @@ const toComparableLinkItems = (draftData: ProfilePageDraftData) =>
     url: item.url,
   }));
 
+const toComparablePlaylistItems = (draftData: ProfilePageDraftData) =>
+  draftData.playlistItems.map((item) => ({
+    id: item.id,
+    title: item.title,
+    provider: item.provider,
+    content: item.content,
+    position: item.position,
+    blockPosition: item.blockPosition,
+  }));
+
 const toComparableTextBoxItems = (draftData: ProfilePageDraftData) =>
   draftData.textBoxItems.map((item) => ({
     id: item.id,
@@ -223,6 +258,9 @@ const recalculateDirtyState = (state: ProfilePageEditorState): ProfilePageEditor
     linkItems:
       JSON.stringify(toComparableLinkItems(baseDraft)) !==
       JSON.stringify(toComparableLinkItems(state.draftData)),
+    playlistItems:
+      JSON.stringify(toComparablePlaylistItems(baseDraft)) !==
+      JSON.stringify(toComparablePlaylistItems(state.draftData)),
     textBoxItems:
       JSON.stringify(toComparableTextBoxItems(baseDraft)) !==
       JSON.stringify(toComparableTextBoxItems(state.draftData)),
@@ -271,6 +309,14 @@ export const buildSyncPayload = (draftData: ProfilePageDraftData): ProfilePageSy
     position: index,
     url: item.url,
   })),
+  playlistItems: draftData.playlistItems.map((item, index) => ({
+    id: item.id,
+    title: item.title,
+    provider: item.provider,
+    content: item.content,
+    position: index,
+    blockPosition: item.blockPosition,
+  })),
   textBoxItems: draftData.textBoxItems.map((item, index) => ({
     id: item.id,
     title: item.title,
@@ -283,6 +329,7 @@ export const buildSyncPayload = (draftData: ProfilePageDraftData): ProfilePageSy
 const getNextBlockPosition = (draftData: ProfilePageDraftData) =>
   Math.max(
     draftData.page.linkBlockPosition,
+    ...draftData.playlistItems.map((item) => item.blockPosition),
     ...draftData.textBoxItems.map((item) => item.blockPosition)
   ) + 1;
 
@@ -584,6 +631,73 @@ export function createProfilePageEditorStore(initialData?: ProfilePageData | nul
           });
         });
       },
+      addPlaylistItemFromDraft(draft: {
+        title: string;
+        provider: DraftPlaylistItem["provider"];
+        content: string;
+      }) {
+        setState((current) => {
+          if (!current.draftData) {
+            return current;
+          }
+
+          const nextPlaylistItem: DraftPlaylistItem = {
+            id: createDraftId(),
+            title: draft.title.trim(),
+            provider: draft.provider,
+            content: draft.content,
+            position: current.draftData.playlistItems.length,
+            blockPosition: getNextBlockPosition(current.draftData),
+          };
+
+          return recalculateDirtyState({
+            ...current,
+            draftData: {
+              ...current.draftData,
+              playlistItems: [...current.draftData.playlistItems, nextPlaylistItem],
+            },
+            syncError: null,
+          });
+        });
+      },
+      removePlaylistItem(id: string) {
+        setState((current) => {
+          if (!current.draftData) {
+            return current;
+          }
+
+          return recalculateDirtyState({
+            ...current,
+            draftData: {
+              ...current.draftData,
+              playlistItems: rebuildPositions(
+                current.draftData.playlistItems.filter((item) => item.id !== id)
+              ),
+            },
+            syncError: null,
+          });
+        });
+      },
+      reorderPlaylistItems(activeId: string, overId: string) {
+        setState((current) => {
+          if (!current.draftData) {
+            return current;
+          }
+
+          return recalculateDirtyState({
+            ...current,
+            draftData: {
+              ...current.draftData,
+              playlistItems: reorderItemsById(
+                current.draftData.playlistItems,
+                activeId,
+                overId
+              ),
+            },
+            syncError: null,
+          });
+        });
+      },
       addNewTextBox() {
         setState((current) => {
           if (!current.draftData) {
@@ -726,6 +840,11 @@ export function createProfilePageEditorStore(initialData?: ProfilePageData | nul
                 ...current.draftData.page,
                 linkBlockPosition,
               },
+              playlistItems: current.draftData.playlistItems.map((item) => ({
+                ...item,
+                blockPosition:
+                  blockPositions.get(playlistBlockId(item.id)) ?? item.blockPosition,
+              })),
               textBoxItems: current.draftData.textBoxItems.map((item) => ({
                 ...item,
                 blockPosition: blockPositions.get(textBoxBlockId(item.id)) ?? item.blockPosition,

@@ -1,10 +1,13 @@
 import { SocialPlatformIcon } from "@/components/icons";
+import { PlaylistIframe } from "@/components/profile-page/playlist-iframe";
 import { Button } from "@/components/ui/button";
 import type {
   DraftLinkItem,
+  DraftPlaylistItem,
   DraftSocialLink,
   DraftTextBoxItem,
   LinkItem,
+  PlaylistItem,
   SocialLink,
   TextBoxItem,
 } from "@/lib/profile-page/types";
@@ -19,6 +22,7 @@ type ProfilePageRendererProps = {
   isPreview?: boolean;
   linkBlockPosition: number;
   linkItems: Array<LinkItem | DraftLinkItem>;
+  playlistItems: Array<PlaylistItem | DraftPlaylistItem>;
   location: string | null;
   name: string | null;
   role: string | null;
@@ -50,10 +54,12 @@ function resolveFaviconUrl(favicon: string | null | undefined, pageUrl: string) 
 function getContentBlocks({
   linkBlockPosition,
   linkItems,
+  playlistItems,
   textBoxItems,
 }: {
   linkBlockPosition: number;
   linkItems: Array<LinkItem | DraftLinkItem>;
+  playlistItems: Array<PlaylistItem | DraftPlaylistItem>;
   textBoxItems: Array<TextBoxItem | DraftTextBoxItem>;
 }) {
   return [
@@ -67,6 +73,12 @@ function getContentBlocks({
           },
         ]
       : []),
+    ...playlistItems.map((item) => ({
+      id: item.id,
+      item,
+      position: item.blockPosition,
+      type: "playlist" as const,
+    })),
     ...textBoxItems.map((item) => ({
       id: item.id,
       item,
@@ -80,21 +92,23 @@ export function ProfilePageRenderer({
   backgroundImage,
   bio,
   framed = true,
-  handle,
+  handle: _handle,
   image,
-  isPreview = false,
+  isPreview: _isPreview = false,
   linkBlockPosition,
   linkItems,
+  playlistItems,
   location,
   name,
   role,
   socialLinks,
   textBoxItems,
-  userName,
+  userName: _userName,
 }: ProfilePageRendererProps) {
   const contentBlocks = getContentBlocks({
     linkBlockPosition,
     linkItems: [...linkItems].sort(byPosition),
+    playlistItems: [...playlistItems].sort(byPosition),
     textBoxItems: [...textBoxItems].sort(byPosition),
   });
   const orderedSocialLinks = [...socialLinks].sort(byPosition);
@@ -224,6 +238,16 @@ export function ProfilePageRenderer({
                           </div>
                         );
                       })}
+                    </div>
+                  </div>
+                );
+              }
+
+              if (block.type === "playlist") {
+                return (
+                  <div key={block.item.id} className="my-6 px-4">
+                    <div className="overflow-hidden rounded-md bg-background shadow-float">
+                      <PlaylistIframe content={block.item.content} title={block.item.title} />
                     </div>
                   </div>
                 );

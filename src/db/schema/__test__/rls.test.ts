@@ -8,6 +8,7 @@ import { plans } from "@/db/schema/plans";
 import {
   profileLinkItems,
   profilePages,
+  profilePlaylistItems,
   profileSocialLinks,
   profileTextBoxItems,
 } from "@/db/schema/profile-page";
@@ -22,8 +23,12 @@ const expectPolicies = (actual: string[], expected: string[]) => {
   }
 };
 
-const migrationSql = readFileSync(
+const baseMigrationSql = readFileSync(
   new URL("../../../../drizzle/0010_early_masked_marvel.sql", import.meta.url),
+  "utf8"
+);
+const playlistMigrationSql = readFileSync(
+  new URL("../../../../drizzle/0011_playlist_bright_harmony.sql", import.meta.url),
   "utf8"
 );
 
@@ -67,6 +72,13 @@ describe("schema RLS configuration", () => {
       "profile_link_item_owner_delete",
     ]);
 
+    expectPolicies(policyNames(profilePlaylistItems), [
+      "profile_playlist_item_public_select",
+      "profile_playlist_item_owner_insert",
+      "profile_playlist_item_owner_update",
+      "profile_playlist_item_owner_delete",
+    ]);
+
     expectPolicies(policyNames(profileTextBoxItems), [
       "profile_text_box_item_public_select",
       "profile_text_box_item_owner_insert",
@@ -84,23 +96,40 @@ describe("schema RLS configuration", () => {
 
   test("migration grants only the intended exposed role privileges", () => {
     expect(
-      migrationSql.includes(
+      baseMigrationSql.includes(
         'REVOKE ALL ON TABLE "auth_account", "auth_session", "auth_verification", "app_user", "jwks", "credit_transactions", "profile_page", "profile_social_link", "profile_link_item", "profile_text_box_item", "plans" FROM "anon", "authenticated"'
       )
     ).toBe(true);
     expect(
-      migrationSql.includes(
+      baseMigrationSql.includes(
         'GRANT SELECT ON TABLE "profile_page", "profile_social_link", "profile_link_item", "profile_text_box_item", "plans" TO "anon", "authenticated"'
       )
     ).toBe(true);
     expect(
-      migrationSql.includes(
+      baseMigrationSql.includes(
         'GRANT INSERT, UPDATE, DELETE ON TABLE "profile_page", "profile_social_link", "profile_link_item", "profile_text_box_item" TO "authenticated"'
       )
     ).toBe(true);
-    expect(migrationSql.includes("IF to_regclass('public.coupon') IS NOT NULL THEN")).toBe(true);
-    expect(migrationSql.includes('REVOKE ALL ON TABLE "coupon" FROM "anon", "authenticated"')).toBe(
+    expect(
+      playlistMigrationSql.includes(
+        'REVOKE ALL ON TABLE "profile_playlist_item" FROM "anon", "authenticated"'
+      )
+    ).toBe(true);
+    expect(
+      playlistMigrationSql.includes(
+        'GRANT SELECT ON TABLE "profile_playlist_item" TO "anon", "authenticated"'
+      )
+    ).toBe(true);
+    expect(
+      playlistMigrationSql.includes(
+        'GRANT INSERT, UPDATE, DELETE ON TABLE "profile_playlist_item" TO "authenticated"'
+      )
+    ).toBe(true);
+    expect(baseMigrationSql.includes("IF to_regclass('public.coupon') IS NOT NULL THEN")).toBe(
       true
     );
+    expect(
+      baseMigrationSql.includes('REVOKE ALL ON TABLE "coupon" FROM "anon", "authenticated"')
+    ).toBe(true);
   });
 });

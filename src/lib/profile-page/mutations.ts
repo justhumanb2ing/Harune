@@ -3,6 +3,7 @@ import { db } from "@/db";
 import {
   profileLinkItems,
   profilePages,
+  profilePlaylistItems,
   profileSocialLinks,
   profileTextBoxItems,
 } from "@/db/schema/profile-page";
@@ -62,7 +63,7 @@ const getProfilePageEditorDataByPageId = async (executor: DbExecutor, profilePag
     throw new ProfilePageError("Profile page not found.", 404);
   }
 
-  const [socialLinks, linkItems, textBoxItems] = await Promise.all([
+  const [socialLinks, linkItems, playlistItems, textBoxItems] = await Promise.all([
     executor
       .select({
         id: profileSocialLinks.id,
@@ -87,6 +88,18 @@ const getProfilePageEditorDataByPageId = async (executor: DbExecutor, profilePag
       .orderBy(asc(profileLinkItems.position)),
     executor
       .select({
+        id: profilePlaylistItems.id,
+        title: profilePlaylistItems.title,
+        provider: profilePlaylistItems.provider,
+        content: profilePlaylistItems.content,
+        position: profilePlaylistItems.position,
+        blockPosition: profilePlaylistItems.blockPosition,
+      })
+      .from(profilePlaylistItems)
+      .where(eq(profilePlaylistItems.profilePageId, profilePageId))
+      .orderBy(asc(profilePlaylistItems.position)),
+    executor
+      .select({
         id: profileTextBoxItems.id,
         title: profileTextBoxItems.title,
         description: profileTextBoxItems.description,
@@ -102,6 +115,7 @@ const getProfilePageEditorDataByPageId = async (executor: DbExecutor, profilePag
     page,
     socialLinks,
     linkItems,
+    playlistItems,
     textBoxItems,
   };
 };
@@ -905,6 +919,69 @@ const syncLinkItems = async ({
   }
 };
 
+const syncPlaylistItems = async ({
+  tx,
+  profilePageId,
+  values,
+}: {
+  tx: DbExecutor;
+  profilePageId: string;
+  values: ProfilePageSyncValues["playlistItems"];
+}) => {
+  const existingItems = await tx
+    .select({
+      id: profilePlaylistItems.id,
+    })
+    .from(profilePlaylistItems)
+    .where(eq(profilePlaylistItems.profilePageId, profilePageId));
+  const existingIds = new Set(existingItems.map((item) => item.id));
+  const nextIds = new Set(values.map((item) => item.id));
+  const now = new Date();
+
+  for (const [index, item] of existingItems.entries()) {
+    await tx
+      .update(profilePlaylistItems)
+      .set({
+        position: -(index + 1),
+        updatedAt: now,
+      })
+      .where(eq(profilePlaylistItems.id, item.id));
+  }
+
+  for (const item of existingItems) {
+    if (!nextIds.has(item.id)) {
+      await tx.delete(profilePlaylistItems).where(eq(profilePlaylistItems.id, item.id));
+    }
+  }
+
+  for (const playlistItem of values) {
+    if (existingIds.has(playlistItem.id)) {
+      await tx
+        .update(profilePlaylistItems)
+        .set({
+          title: playlistItem.title,
+          provider: playlistItem.provider,
+          content: playlistItem.content,
+          position: playlistItem.position,
+          blockPosition: playlistItem.blockPosition,
+          updatedAt: now,
+        })
+        .where(eq(profilePlaylistItems.id, playlistItem.id));
+      continue;
+    }
+
+    await tx.insert(profilePlaylistItems).values({
+      profilePageId,
+      title: playlistItem.title,
+      provider: playlistItem.provider,
+      content: playlistItem.content,
+      position: playlistItem.position,
+      blockPosition: playlistItem.blockPosition,
+      updatedAt: now,
+    });
+  }
+};
+
 const syncTextBoxItems = async ({
   tx,
   profilePageId,
@@ -1012,6 +1089,11 @@ export const syncProfilePageDraft = async ({
     tx: db,
     profilePageId: ownedPage.id,
     values: values.linkItems,
+  });
+  await syncPlaylistItems({
+    tx: db,
+    profilePageId: ownedPage.id,
+    values: values.playlistItems,
   });
   await syncTextBoxItems({
     tx: db,

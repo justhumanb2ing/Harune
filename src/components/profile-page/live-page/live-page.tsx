@@ -1,11 +1,18 @@
 import Link from "next/link";
 import { SocialPlatformIcon, socialPlatformLabels } from "@/components/icons";
+import { PlaylistIframe } from "@/components/profile-page/playlist-iframe";
 import {
   ProfilePageAnalyticsTracker,
   TrackedProfilePageLink,
 } from "@/components/site-instrumentation/profile-page-analytics-tracker";
 import { Button } from "@/components/ui/button";
-import type { LinkItem, SocialLink, SocialPlatform, TextBoxItem } from "@/lib/profile-page/types";
+import type {
+  LinkItem,
+  PlaylistItem,
+  SocialLink,
+  SocialPlatform,
+  TextBoxItem,
+} from "@/lib/profile-page/types";
 import { cn } from "@/lib/utils";
 import {
   PublicProfileAvatarMotion,
@@ -22,6 +29,7 @@ type PublicProfilePageProps = {
   image: string | null;
   linkBlockPosition: number;
   linkItems: LinkItem[];
+  playlistItems: PlaylistItem[];
   location: string | null;
   name: string | null;
   profilePageId: string;
@@ -94,10 +102,12 @@ function resolveSocialHref(socialLink: SocialLink) {
 function getContentBlocks({
   linkBlockPosition,
   linkItems,
+  playlistItems,
   textBoxItems,
 }: {
   linkBlockPosition: number;
   linkItems: LinkItem[];
+  playlistItems: PlaylistItem[];
   textBoxItems: TextBoxItem[];
 }) {
   return [
@@ -111,6 +121,12 @@ function getContentBlocks({
           },
         ]
       : []),
+    ...playlistItems.map((item) => ({
+      id: item.id,
+      item,
+      position: item.blockPosition,
+      type: "playlist" as const,
+    })),
     ...textBoxItems.map((item) => ({
       id: item.id,
       item,
@@ -127,6 +143,7 @@ export function PublicProfilePage({
   image,
   linkBlockPosition,
   linkItems,
+  playlistItems,
   location,
   name,
   profilePageId,
@@ -138,6 +155,7 @@ export function PublicProfilePage({
   const contentBlocks = getContentBlocks({
     linkBlockPosition,
     linkItems: [...linkItems].sort(byPosition),
+    playlistItems: [...playlistItems].sort(byPosition),
     textBoxItems: [...textBoxItems].sort(byPosition),
   });
   const orderedSocialLinks = [...socialLinks].sort(byPosition);
@@ -305,6 +323,21 @@ export function PublicProfilePage({
                     })}
                   </PublicProfileStagger>
                 </div>
+              );
+            }
+
+            if (block.type === "playlist") {
+              return (
+                <PublicProfileReveal
+                  key={block.item.id}
+                  className="my-6 px-4"
+                  delay={blockDelay}
+                  y={12}
+                >
+                  <div className="overflow-hidden rounded-md bg-background shadow-float">
+                    <PlaylistIframe content={block.item.content} title={block.item.title} />
+                  </div>
+                </PublicProfileReveal>
               );
             }
 

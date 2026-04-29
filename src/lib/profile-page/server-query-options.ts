@@ -28,6 +28,7 @@ const getSerializableProfilePageEditorData = async (
     },
     socialLinks: data.socialLinks,
     linkItems: data.linkItems,
+    playlistItems: data.playlistItems,
     textBoxItems: data.textBoxItems,
   };
 };

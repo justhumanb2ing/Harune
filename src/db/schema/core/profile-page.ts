@@ -210,3 +210,47 @@ export const profileTextBoxItems = pgTable(
     }),
   ]
 ).enableRLS();
+
+export const profilePlaylistItems = pgTable(
+  "profile_playlist_item",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    profilePageId: text("profilePageId")
+      .notNull()
+      .references(() => profilePages.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    provider: text("provider").notNull(),
+    content: text("content").notNull(),
+    position: integer("position").notNull(),
+    blockPosition: integer("blockPosition").notNull(),
+    createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("profile_playlist_item_page_position_idx").on(table.profilePageId, table.position),
+    index("profile_playlist_item_page_id_idx").on(table.profilePageId),
+    pgPolicy("profile_playlist_item_public_select", {
+      for: "select",
+      to: exposedReadRoles,
+      using: hasProfilePage(table.profilePageId),
+    }),
+    pgPolicy("profile_playlist_item_owner_insert", {
+      for: "insert",
+      to: authenticatedWriteRole,
+      withCheck: isProfilePageOwner(table.profilePageId),
+    }),
+    pgPolicy("profile_playlist_item_owner_update", {
+      for: "update",
+      to: authenticatedWriteRole,
+      using: isProfilePageOwner(table.profilePageId),
+      withCheck: isProfilePageOwner(table.profilePageId),
+    }),
+    pgPolicy("profile_playlist_item_owner_delete", {
+      for: "delete",
+      to: authenticatedWriteRole,
+      using: isProfilePageOwner(table.profilePageId),
+    }),
+  ]
+).enableRLS();

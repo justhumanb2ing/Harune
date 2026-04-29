@@ -6,7 +6,7 @@ import { AnalyticsPageClient } from "@/app/(in-app)/[handle]/analytics/page-clie
 import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
-import { getOwnedProfilePage } from "@/lib/profile-page/queries";
+import { getOwnedProfilePage, getOwnedProfilePageByHandle } from "@/lib/profile-page/queries";
 
 type AnalyticsPageProps = {
   params: Promise<{
@@ -28,12 +28,13 @@ export async function generateMetadata({ params }: AnalyticsPageProps): Promise<
     };
   }
 
-  const profilePage = await getOwnedProfilePage(session.user.id);
-  const displayName = profilePage?.name || profilePage?.handle || handle;
+  const profilePage = await getOwnedProfilePageByHandle(session.user.id, handle);
+  const ownedProfilePage = profilePage ?? (await getOwnedProfilePage(session.user.id));
+  const displayName = ownedProfilePage?.name || ownedProfilePage?.handle || handle;
 
   return {
     title: `${displayName} analytics`,
-    description: `View clicks, visits, and engagement for @${profilePage?.handle || handle}.`,
+    description: `View clicks, visits, and engagement for @${ownedProfilePage?.handle || handle}.`,
     robots: {
       follow: false,
       index: false,
@@ -49,14 +50,16 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
   }
 
   const { handle } = await params;
-  const profilePage = await getOwnedProfilePage(session.user.id);
+  const profilePage = await getOwnedProfilePageByHandle(session.user.id, handle);
 
   if (!profilePage?.handle) {
-    redirect("/create");
-  }
+    const ownedProfilePage = await getOwnedProfilePage(session.user.id);
 
-  if (profilePage.handle !== handle) {
-    redirect(`/${profilePage.handle}/analytics`);
+    if (ownedProfilePage?.handle) {
+      redirect(`/${ownedProfilePage.handle}/analytics`);
+    }
+
+    redirect("/create");
   }
 
   return (

@@ -25,10 +25,8 @@ function getPathLabel(pathname: string) {
 
 export function useCurrentPageMeta() {
   const pathname = usePathname();
-  const currentHandle = pathname.split("/").filter(Boolean)[0] ?? "";
-  const { profilePage, profilePages } = useUser();
-  const matchedProfilePage =
-    profilePages.find((page) => page.handle === currentHandle) ?? profilePage ?? null;
+  const { profilePage } = useUser();
+  const matchedProfilePage = profilePage ?? null;
   const currentPage = useOptionalProfilePageEditorStore((state) => state.baseData?.page ?? null);
   const draftPage = useOptionalProfilePageEditorStore((state) => state.draftData?.page ?? null);
   const previewImageUrl = useOptionalProfilePageEditorStore((state) => state.previewImageUrl);

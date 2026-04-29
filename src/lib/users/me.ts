@@ -1,12 +1,11 @@
 import "server-only";
 
-import { desc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { MeResponse } from "@/app/api/app/me/types";
 import { db } from "@/db";
 import { plans } from "@/db/schema/plans";
 import { profilePages } from "@/db/schema/profile-page";
 import { users } from "@/db/schema/user";
-import { getOwnedProfilePageCount, getOwnedProfilePages } from "@/lib/profile-page/queries";
 
 export async function getMeForUser(userId: string): Promise<MeResponse> {
   const user = await db
@@ -34,7 +33,7 @@ export async function getMeForUser(userId: string): Promise<MeResponse> {
     .where(eq(users.id, userId))
     .then((rows) => rows[0]);
 
-  const [currentPlan, ownedProfilePage, ownedProfilePages, profilePageCount] = await Promise.all([
+  const [currentPlan, ownedProfilePage] = await Promise.all([
     user?.planId ? getCurrentPlan(user.planId) : Promise.resolve(null),
     db
       .select({
@@ -45,18 +44,13 @@ export async function getMeForUser(userId: string): Promise<MeResponse> {
       })
       .from(profilePages)
       .where(eq(profilePages.userId, userId))
-      .orderBy(desc(profilePages.createdAt))
       .limit(1)
       .then((rows) => rows[0] ?? null),
-    getOwnedProfilePages(userId),
-    getOwnedProfilePageCount(userId),
   ]);
 
   return {
     currentPlan,
     profilePage: ownedProfilePage,
-    profilePages: ownedProfilePages,
-    profilePageCount,
     user,
   };
 }

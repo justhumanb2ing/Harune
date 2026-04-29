@@ -41,7 +41,6 @@ describe("profile page cache regression", () => {
         jsonResponse({
           currentPlan: null,
           profilePage: null,
-          profilePageCount: 0,
           user: {
             id: "user-1",
             email: "user@example.com",

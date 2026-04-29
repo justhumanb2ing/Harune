@@ -31,13 +31,26 @@ describe("proxy auth boundary", () => {
     }
   });
 
+  test("collapses nested join callbacks before resolving authenticated redirects", () => {
+    const decision = decide(
+      "/sign-in?callbackUrl=/api/join?next=%2Fapi%2Fjoin%3Fnext%3D%2Fcreate",
+      true
+    );
+
+    expect(decision.kind).toBe("redirect");
+    if (decision.kind === "redirect") {
+      expect(decision.url.pathname).toBe("/api/join");
+      expect(decision.url.searchParams.get("next")).toBe("/create");
+    }
+  });
+
   test("lets join normalize external callback attempts", () => {
     const decision = decide("/sign-in?callbackUrl=//evil.example", true);
 
     expect(decision.kind).toBe("redirect");
     if (decision.kind === "redirect") {
       expect(decision.url.pathname).toBe("/api/join");
-      expect(decision.url.searchParams.get("next")).toBe("//evil.example");
+      expect(decision.url.searchParams.get("next")).toBe("/app");
     }
   });
 

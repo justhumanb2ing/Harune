@@ -39,7 +39,8 @@ function replaceHandleInPath(pathname: string, handle: string) {
 export function ChangeHandleButton() {
   const pathname = usePathname();
   const queryClient = useQueryClient();
-  const profilePageQuery = useQuery(profilePageQueryOptions());
+  const routeHandle = pathname.split("/").filter(Boolean)[0] ?? "";
+  const profilePageQuery = useQuery(profilePageQueryOptions(routeHandle));
   const profilePageData = profilePageQuery.data;
   const [isOpen, setIsOpen] = useState(false);
   const [handleDraft, setHandleDraft] = useState(profilePageData?.page.handle ?? "");
@@ -69,7 +70,7 @@ export function ChangeHandleButton() {
       return;
     }
 
-    const profilePageQueryKey = profilePageQueryOptions().queryKey;
+    const profilePageQueryKey = profilePageQueryOptions(routeHandle).queryKey;
     const draftData = createDraftData(profilePageData);
     const nextDraftData = {
       ...draftData,

@@ -38,12 +38,14 @@ function useStoreSelector<T>(
 export function ProfilePageEditorProvider({
   children,
   initialData,
+  handle,
 }: {
   children: React.ReactNode;
   initialData: ProfilePageData | null;
+  handle: string;
 }) {
   const profilePageQuery = useQuery({
-    ...profilePageQueryOptions(),
+    ...profilePageQueryOptions(handle),
     initialData,
   });
   const storeRef = React.useRef<ProfilePageEditorStore | null>(null);

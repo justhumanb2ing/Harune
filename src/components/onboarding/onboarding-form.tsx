@@ -2,6 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { BubblesIcon, CircleFadingArrowUpIcon, DotIcon, Loader2Icon } from "lucide-react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 import { startTransition, ViewTransition } from "react";
@@ -219,19 +220,6 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
     !isCheckingAvailability &&
     (isHandleAvailable || isHandleTaken);
   const handleStepErrorMessage = currentStep === 0 ? error || handleErrorMessage : null;
-  const getInitials = React.useCallback(() => {
-    if (!trimmedName) {
-      return "N";
-    }
-
-    return trimmedName
-      .split(/\s+/)
-      .map((value) => value[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
-  }, [trimmedName]);
-
   const transitionToStep = React.useCallback(
     (nextStep: number, beforeStepChange?: () => void) => {
       const boundedNextStep = Math.min(Math.max(nextStep, 0), steps.length - 1);
@@ -368,24 +356,27 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
     }
 
     try {
-      await apiFetch<{ success: true }>("/api/app/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          handle: pageHandle,
-          image: uploadedImageUrl || undefined,
-          backgroundImage: uploadedBackgroundImageUrl || undefined,
-          name: trimmedName,
-          role,
-          location,
-          bio,
-          socialLinks,
-        }),
-      });
+      const response = await apiFetch<{ success: true; page: { handle: string } }>(
+        "/api/app/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            handle: pageHandle,
+            image: uploadedImageUrl || undefined,
+            backgroundImage: uploadedBackgroundImageUrl || undefined,
+            name: trimmedName,
+            role,
+            location,
+            bio,
+            socialLinks,
+          }),
+        }
+      );
       await invalidateAuthenticatedAppQueries(queryClient);
-      router.push("/create/success");
+      router.push(`/create/success?handle=${encodeURIComponent(response.page.handle)}`);
     } catch (submitError) {
       if (uploadedImageUrl) {
         try {
@@ -578,10 +569,11 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                               aria-label="Upload background image"
                             >
                               {backgroundImageUpload.previewUrl ? (
-                                <img
+                                <Image
                                   src={backgroundImageUpload.previewUrl}
                                   alt=""
-                                  className="size-full object-cover"
+                                  fill
+                                  className="object-cover"
                                 />
                               ) : null}
                               {backgroundImageUpload.isUploading ? (
@@ -811,11 +803,12 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
         </form>
       </div>
       <section className="hidden h-full flex-1 lg:block">
-        <div className="h-full">
-          <img
+        <div className="relative h-full">
+          <Image
             src="https://images.unsplash.com/photo-1713508298272-7d0db139dc54?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             alt="img"
-            className="h-full w-full object-cover"
+            fill
+            className="object-cover"
           />
         </div>
       </section>

@@ -8,7 +8,7 @@ import { ProfilePageEditorProvider } from "@/components/profile-page/layout/prof
 import { ProfilePagePreview } from "@/components/profile-page/preview/profile-page-preview";
 import ProfilePreviewMobileDrawer from "@/components/profile-page/preview/profile-preview-mobile-drawer";
 import { appConfig } from "@/lib/config";
-import { getOwnedProfilePage } from "@/lib/profile-page/queries";
+import { getOwnedProfilePage, getOwnedProfilePageByHandle } from "@/lib/profile-page/queries";
 import { profilePageServerQueryOptions } from "@/lib/profile-page/server-query-options";
 
 export const dynamic = "force-dynamic";
@@ -33,12 +33,13 @@ export async function generateMetadata({ params }: SectionRouteProps): Promise<M
     };
   }
 
-  const profilePage = await getOwnedProfilePage(session.user.id);
-  const displayName = profilePage?.name || profilePage?.handle || handle;
+  const profilePage = await getOwnedProfilePageByHandle(session.user.id, handle);
+  const ownedProfilePage = profilePage ?? (await getOwnedProfilePage(session.user.id));
+  const displayName = ownedProfilePage?.name || ownedProfilePage?.handle || handle;
 
   return {
     title: `Edit ${displayName}`,
-    description: `Manage links, socials, and profile details for @${profilePage?.handle || handle}.`,
+    description: `Manage links, socials, and profile details for @${ownedProfilePage?.handle || handle}.`,
     robots: {
       follow: false,
       index: false,
@@ -66,23 +67,24 @@ export default async function SectionLayout({ children, params }: SectionLayoutP
   const session = await auth();
   const userId = session?.user.id as string;
   const { handle } = await params;
-  const profilePageQuery = profilePageServerQueryOptions(userId);
+  const ownedProfilePage = await getOwnedProfilePage(userId);
+  const profilePageQuery = profilePageServerQueryOptions(userId, handle);
 
   await queryClient.prefetchQuery(profilePageQuery);
   const initialProfilePageData = queryClient.getQueryData(profilePageQuery.queryKey) ?? null;
 
   if (!initialProfilePageData?.page.handle) {
-    redirect("/create");
-  }
+    if (ownedProfilePage?.handle) {
+      redirect(`/${ownedProfilePage.handle}/app`);
+    }
 
-  if (initialProfilePageData.page.handle !== handle) {
-    redirect(`/${initialProfilePageData.page.handle}/app`);
+    redirect("/create");
   }
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <Suspense fallback={<SectionLayoutFallback />}>
-        <ProfilePageEditorProvider initialData={initialProfilePageData}>
+        <ProfilePageEditorProvider initialData={initialProfilePageData} handle={handle}>
           <div className="relative flex h-full min-h-0 flex-row gap-4">
             <section className="relative min-h-0 flex-1 overflow-hidden overflow-y-auto">
               <div className="relative z-0 mx-auto min-h-full w-full max-w-full pb-24 sm:max-w-sm lg:pb-8">

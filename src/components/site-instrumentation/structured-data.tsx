@@ -53,7 +53,7 @@ export function SiteStructuredData() {
             "@type": "Organization",
             name: seoConfig.siteName,
             url: seoConfig.siteUrl,
-            logo: absoluteUrl("/assets/logo.jpeg"),
+            logo: absoluteUrl("/icon.png"),
             description: seoConfig.description,
             ...(sameAs.length > 0 ? { sameAs } : {}),
           },

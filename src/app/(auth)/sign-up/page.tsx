@@ -6,6 +6,7 @@ import { AuthForm } from "@/components/auth/auth-form";
 import PolicyBox from "@/components/auth/policy-box";
 import { env } from "@/env";
 import { resolveAuthenticatedAppRedirect } from "@/lib/auth/app-redirect";
+import { getSafeRedirectPath } from "@/lib/auth/app-redirect-paths";
 import { appConfig } from "@/lib/config";
 import { createPageMetadata } from "@/lib/seo";
 
@@ -25,12 +26,13 @@ type SignUpPageProps = {
 export default async function SignUpPage({ searchParams }: SignUpPageProps) {
   const session = await auth();
   const { callbackUrl, handle } = await searchParams;
+  const resolvedCallbackPath = getSafeRedirectPath(callbackUrl);
 
   if (session?.user?.id) {
     redirect(
       await resolveAuthenticatedAppRedirect({
         handle,
-        next: callbackUrl,
+        next: resolvedCallbackPath,
         userId: session.user.id,
       })
     );
@@ -38,8 +40,8 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
 
   const redirectTarget = new URLSearchParams();
 
-  if (callbackUrl) {
-    redirectTarget.set("next", callbackUrl);
+  if (resolvedCallbackPath !== "/app") {
+    redirectTarget.set("next", resolvedCallbackPath);
   }
 
   if (handle) {

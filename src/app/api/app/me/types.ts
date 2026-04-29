@@ -16,5 +16,12 @@ export interface MeResponse {
     name: (typeof profilePages.$inferSelect)["name"];
     image: (typeof profilePages.$inferSelect)["image"];
   } | null;
+  profilePages: Array<{
+    id: (typeof profilePages.$inferSelect)["id"];
+    handle: (typeof profilePages.$inferSelect)["handle"];
+    name: (typeof profilePages.$inferSelect)["name"];
+    image: (typeof profilePages.$inferSelect)["image"];
+  }>;
+  profilePageCount: number;
   user: Omit<typeof users.$inferSelect, "password">;
 }

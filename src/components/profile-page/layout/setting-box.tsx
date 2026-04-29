@@ -3,6 +3,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { PlusIcon } from "lucide-react";
 import { AnimatePresence, MotionConfig, motion, type Transition } from "motion/react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -13,17 +14,21 @@ import {
   useCurrentPageMeta,
 } from "@/components/profile-page/layout/current-page-button";
 import { DeleteAccountDialog } from "@/components/profile-page/layout/delete-account-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { useIsBelowLg } from "@/hooks/use-mobile";
 import { authClient } from "@/lib/auth-client";
+import { MAX_PROFILE_PAGE_COUNT } from "@/lib/profile-page/limits";
 import { clearAuthenticatedAppQueries } from "@/lib/react-query/app-cache";
+import useUser from "@/lib/users/use-user";
 
 const BOX_WIDTH = 220;
-const COLLAPSED_HEIGHT = 56;
-const EXPANDED_HEIGHT = 360;
+const COLLAPSED_HEIGHT = 60;
+const EXPANDED_HEIGHT = 460;
 const BOX_OFFSET = 24;
 const BOX_RADIUS = 24;
+const DRAWER_MAX_HEIGHT_CLASS = "max-h-[92vh]";
 
 const EMPHASIZED_EASE = [0.22, 1, 0.36, 1] as const;
 const EXIT_EASE = [0.4, 0, 1, 1] as const;
@@ -87,6 +92,12 @@ const panelExitTransition: Transition = {
   ease: EXIT_EASE,
 };
 
+const createPageButtonClassName = "w-full min-h-16 justify-between px-4 py-6 font-normal";
+const interactivePageRowClassName =
+  "flex w-full min-w-0 flex-row items-center gap-3 rounded-xl px-1 py-1 text-left outline-none transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring/50";
+const pageRowClassName = `${interactivePageRowClassName} min-h-[3.25rem]`;
+const triggerPageRowClassName = `${interactivePageRowClassName} min-h-[3.25rem]`;
+
 function panelItemTransition(index: number): Transition {
   return {
     delay: 0.1 + index * 0.045,
@@ -103,11 +114,38 @@ function panelItemExitTransition(index: number): Transition {
   };
 }
 
+function CreatePageButton({
+  countLabel,
+  disabled,
+  onClick,
+}: {
+  countLabel: string;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      className={createPageButtonClassName}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      <div className="flex min-w-0 flex-col gap-0.5 text-left">
+        <span className="text-sm font-medium text-foreground">Create page</span>
+        <span className="text-xs font-light leading-none text-muted-foreground">{countLabel}</span>
+      </div>
+      <PlusIcon className="size-4 shrink-0" />
+    </Button>
+  );
+}
+
 export default function SettingBox() {
   const pathname = usePathname();
   const router = useRouter();
   const queryClient = useQueryClient();
   const { pageHandleLabel, pageName } = useCurrentPageMeta();
+  const { profilePageCount, profilePages } = useUser();
   const previousPathnameRef = useRef(pathname);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMounted, setIsMounted] = useState(false);
@@ -116,6 +154,39 @@ export default function SettingBox() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const isBelowLg = useIsBelowLg();
+  const currentHandle = pathname.split("/").filter(Boolean)[0] ?? "";
+  const otherPages = profilePages.filter((page) => page.handle !== currentHandle);
+  const createPageCountLabel = `${profilePageCount} / ${MAX_PROFILE_PAGE_COUNT} pages`;
+  const isCreatePageDisabled = profilePageCount >= MAX_PROFILE_PAGE_COUNT;
+  const otherPageRowClassName = isBelowLg ? pageRowClassName : triggerPageRowClassName;
+  const otherPageList = otherPages.length ? (
+    <div className="space-y-1">
+      {otherPages.map((page) => (
+        <Button
+          key={page.id}
+          nativeButton={false}
+          variant="ghost"
+          className="h-auto w-full justify-start p-0 font-normal"
+          render={
+            <Link href={`/${page.handle}/app`} className={otherPageRowClassName}>
+              <Avatar size="lg" className="shrink-0">
+                <AvatarImage src={page.image ?? undefined} alt={page.name?.trim() || page.handle} />
+                <AvatarFallback />
+              </Avatar>
+              <div className="flex min-w-0 flex-1 flex-col">
+                <span className="block truncate text-sm font-medium text-foreground">
+                  {page.name?.trim() || page.handle}
+                </span>
+                <span className="block truncate text-xs font-medium text-muted-foreground">
+                  harune.me/{page.handle}
+                </span>
+              </div>
+            </Link>
+          }
+        />
+      ))}
+    </div>
+  ) : null;
 
   const handleSignOut = async () => {
     if (isSigningOut) {
@@ -254,28 +325,34 @@ export default function SettingBox() {
             <CurrentPageButton size="lg" />
           </button>
         </DrawerTrigger>
-        <DrawerContent aria-label="Page settings" className="max-h-[85vh] overflow-hidden p-0">
+        <DrawerContent
+          aria-label="Page settings"
+          className={`${DRAWER_MAX_HEIGHT_CLASS} overflow-hidden p-0`}
+        >
           <DrawerTitle className="sr-only">Page settings</DrawerTitle>
           <div className="flex min-h-0 flex-col bg-background">
-            <div className="flex h-16 items-center gap-3 border-b border-border/60 px-4">
-              <CurrentPageButton size="lg" />
-              <div className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-sm font-medium text-foreground">{pageName}</span>
-                <span className="truncate text-xs font-medium text-muted-foreground">
-                  {pageHandleLabel}
-                </span>
+            <div className="flex flex-col px-4 border-b border-border/60 py-2">
+              <div className="flex h-16 items-center gap-3">
+                <CurrentPageButton size="lg" />
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <span className="truncate text-sm font-medium text-foreground">{pageName}</span>
+                  <span className="truncate text-xs font-medium text-muted-foreground">
+                    {pageHandleLabel}
+                  </span>
+                </div>
               </div>
+              {otherPageList}
             </div>
+
             <div className="flex min-h-0 flex-1 flex-col justify-between gap-8 overflow-y-auto p-2">
-              <div>
-                <Button
-                  type="button"
-                  variant={"ghost"}
-                  className={"w-full py-6 font-normal justify-between px-4"}
-                >
-                  <span>Create new page</span>
-                  <PlusIcon className="size-4" />
-                </Button>
+              <div className="">
+                <div className="space-y-1">
+                  <CreatePageButton
+                    countLabel={createPageCountLabel}
+                    disabled={isCreatePageDisabled}
+                    onClick={() => router.push("/create")}
+                  />
+                </div>
                 <ChangeHandleButton />
               </div>
 
@@ -323,7 +400,7 @@ export default function SettingBox() {
           initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={panelTransition}
-          className={`flex h-14 w-full flex-row items-center gap-2 px-3 ${
+          className={`flex w-full flex-col px-2 py-1 ${
             isExpanded ? "border-b border-border/60" : ""
           }`}
         >
@@ -331,7 +408,7 @@ export default function SettingBox() {
             type="button"
             aria-expanded={isExpanded}
             aria-controls="setting-box-panel"
-            className="flex min-w-0 flex-1 flex-row items-center gap-3 rounded-xl text-left outline-none transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring/50"
+            className={triggerPageRowClassName}
             onClick={() => setIsExpanded((prev) => !prev)}
           >
             <CurrentPageButton size="lg" />
@@ -342,6 +419,7 @@ export default function SettingBox() {
               </span>
             </div>
           </button>
+          {isExpanded ? otherPageList : null}
         </motion.div>
 
         <AnimatePresence initial={false} mode="sync">
@@ -370,17 +448,16 @@ export default function SettingBox() {
                   transition: panelItemExitTransition(3),
                 }}
                 transition={panelItemTransition(3)}
-                className="space-y-0 px-2 py-2 text-sm flex flex-col justify-between flex-1"
+                className="flex flex-1 flex-col justify-between space-y-0 px-2 py-2 text-sm"
               >
                 <div>
-                  <Button
-                    type="button"
-                    variant={"ghost"}
-                    className={"w-full py-6 font-normal justify-between px-4"}
-                  >
-                    <span>Create new page</span>
-                    <PlusIcon className="size-4" />
-                  </Button>
+                  <div className="space-y-1">
+                    <CreatePageButton
+                      countLabel={createPageCountLabel}
+                      disabled={isCreatePageDisabled}
+                      onClick={() => router.push("/create")}
+                    />
+                  </div>
                   <ChangeHandleButton />
                 </div>
 

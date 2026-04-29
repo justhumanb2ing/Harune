@@ -22,13 +22,13 @@ describe("profile page cache regression", () => {
     }) as typeof fetch;
 
     try {
-      const query = profilePageQueryOptions();
+      const query = profilePageQueryOptions("demo");
       await (query.queryFn as (context: { signal?: AbortSignal }) => Promise<unknown>)({});
     } finally {
       globalThis.fetch = originalFetch;
     }
 
-    expect(fetchCalls[0]?.input).toBe("/api/app/profile-page");
+    expect(fetchCalls[0]?.input).toBe("/api/app/profile-page?handle=demo");
     expect(fetchCalls[0]?.init?.cache).toBe("no-store");
   });
 
@@ -41,6 +41,7 @@ describe("profile page cache regression", () => {
         jsonResponse({
           currentPlan: null,
           profilePage: null,
+          profilePageCount: 0,
           user: {
             id: "user-1",
             email: "user@example.com",

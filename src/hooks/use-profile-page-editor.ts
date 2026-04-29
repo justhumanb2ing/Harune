@@ -9,6 +9,7 @@ import {
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { usePathname } from "next/navigation";
 import { type ChangeEvent, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import type { MeResponse } from "@/app/api/app/me/types";
@@ -69,7 +70,9 @@ export function useProfilePageEditor() {
   const { isLoading: isUserLoading, mutate, user } = useUser();
   const queryClient = useQueryClient();
   const store = useProfilePageEditorStoreApi();
-  useSuspenseQuery(profilePageQueryOptions());
+  const pathname = usePathname();
+  const currentHandle = pathname.split("/").filter(Boolean)[0] ?? "";
+  useSuspenseQuery(profilePageQueryOptions(currentHandle));
   const draftData = useProfilePageEditorStore((state) => state.draftData);
   const newLink = useProfilePageEditorStore((state) => state.newLink);
   const newTextBox = useProfilePageEditorStore((state) => state.newTextBox);
@@ -183,7 +186,7 @@ export function useProfilePageEditor() {
 
   const handleSync = async (draftDataOverride?: ProfilePageDraftData) => {
     const currentState = store.getState();
-    const profilePageQueryKey = profilePageQueryOptions().queryKey;
+    const profilePageQueryKey = profilePageQueryOptions(currentHandle).queryKey;
 
     const syncDraftData = draftDataOverride ?? currentState.draftData;
 

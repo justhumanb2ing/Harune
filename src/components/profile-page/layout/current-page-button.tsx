@@ -25,16 +25,29 @@ function getPathLabel(pathname: string) {
 
 export function useCurrentPageMeta() {
   const pathname = usePathname();
-  const { profilePage } = useUser();
+  const currentHandle = pathname.split("/").filter(Boolean)[0] ?? "";
+  const { profilePage, profilePages } = useUser();
+  const matchedProfilePage =
+    profilePages.find((page) => page.handle === currentHandle) ?? profilePage ?? null;
+  const currentPage = useOptionalProfilePageEditorStore((state) => state.baseData?.page ?? null);
   const draftPage = useOptionalProfilePageEditorStore((state) => state.draftData?.page ?? null);
   const previewImageUrl = useOptionalProfilePageEditorStore((state) => state.previewImageUrl);
 
-  const pageName = draftPage?.name?.trim() || profilePage?.name?.trim() || getRouteLabel(pathname);
-  const resolvedHandle = draftPage?.handle || profilePage?.handle;
+  const pageName =
+    draftPage?.name?.trim() ||
+    currentPage?.name?.trim() ||
+    matchedProfilePage?.name?.trim() ||
+    getRouteLabel(pathname);
+  const resolvedHandle = draftPage?.handle || currentPage?.handle || matchedProfilePage?.handle;
   const pageHandleLabel = resolvedHandle
     ? `${appConfig.url.replace(/^https?:\/\//, "")}/${resolvedHandle}`
     : getPathLabel(pathname);
-  const pageImage = previewImageUrl || draftPage?.image || profilePage?.image || undefined;
+  const pageImage =
+    previewImageUrl ||
+    draftPage?.image ||
+    currentPage?.image ||
+    matchedProfilePage?.image ||
+    undefined;
   const pageInitial = pageName.charAt(0).toUpperCase() || "P";
 
   return {

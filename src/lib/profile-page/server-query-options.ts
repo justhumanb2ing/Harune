@@ -6,9 +6,10 @@ import type { ProfilePageData } from "@/lib/profile-page/types";
 import { queryKeys } from "@/lib/react-query/query-keys";
 
 const getSerializableProfilePageEditorData = async (
-  userId: string
+  userId: string,
+  handle: string
 ): Promise<ProfilePageData | null> => {
-  const data = await getProfilePageEditorData(userId);
+  const data = await getProfilePageEditorData(userId, handle);
 
   if (!data) {
     return null;
@@ -33,8 +34,8 @@ const getSerializableProfilePageEditorData = async (
   };
 };
 
-export const profilePageServerQueryOptions = (userId: string) =>
+export const profilePageServerQueryOptions = (userId: string, handle: string) =>
   queryOptions({
-    queryKey: queryKeys.app.profilePage(),
-    queryFn: () => getSerializableProfilePageEditorData(userId),
+    queryKey: queryKeys.app.profilePage(handle),
+    queryFn: () => getSerializableProfilePageEditorData(userId, handle),
   });

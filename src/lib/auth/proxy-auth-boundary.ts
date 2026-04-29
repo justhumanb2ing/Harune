@@ -1,3 +1,5 @@
+import { getSafeRedirectPath } from "@/lib/auth/app-redirect-paths";
+
 const APP_ENTRY_PATH = "/api/join";
 const SIGN_IN_PATH = "/sign-in";
 
@@ -87,7 +89,7 @@ export function createAppEntryUrl(requestUrl: URL) {
   const handle = requestUrl.searchParams.get("handle");
 
   if (callbackUrl) {
-    redirectUrl.searchParams.set("next", callbackUrl);
+    redirectUrl.searchParams.set("next", getSafeRedirectPath(callbackUrl));
   }
 
   if (handle) {

@@ -11,7 +11,8 @@ const noStoreHeaders = {
 };
 
 export const GET = withAuthRequired(async (_req, context) => {
-  const data = await getProfilePageEditorData(context.session.user.id);
+  const handle = _req.nextUrl.searchParams.get("handle") ?? undefined;
+  const data = await getProfilePageEditorData(context.session.user.id, handle);
 
   if (!data) {
     return NextResponse.json(

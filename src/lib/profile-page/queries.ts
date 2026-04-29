@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   profileLinkItems,
@@ -30,12 +30,62 @@ export const getOwnedProfilePage = async (userId: string) => {
     })
     .from(profilePages)
     .where(eq(profilePages.userId, userId))
+    .orderBy(desc(profilePages.createdAt))
     .limit(1)
     .then((rows) => rows[0] ?? null);
 };
 
-export const getProfilePageEditorData = async (userId: string) => {
-  const page = await getOwnedProfilePage(userId);
+export const getOwnedProfilePageByHandle = async (userId: string, handle: string) => {
+  return db
+    .select({
+      id: profilePages.id,
+      userId: profilePages.userId,
+      handle: profilePages.handle,
+      linkBlockPosition: profilePages.linkBlockPosition,
+      location: profilePages.location,
+      name: profilePages.name,
+      role: profilePages.role,
+      bio: profilePages.bio,
+      image: profilePages.image,
+      backgroundImage: profilePages.backgroundImage,
+      createdAt: profilePages.createdAt,
+      updatedAt: profilePages.updatedAt,
+    })
+    .from(profilePages)
+    .where(and(eq(profilePages.userId, userId), eq(profilePages.handle, handle)))
+    .limit(1)
+    .then((rows) => rows[0] ?? null);
+};
+
+export const getOwnedProfilePageCount = async (userId: string) => {
+  const result = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(profilePages)
+    .where(eq(profilePages.userId, userId))
+    .then((rows) => rows[0]);
+
+  return Number(result?.count ?? 0);
+};
+
+export const getOwnedProfilePages = async (userId: string) => {
+  return db
+    .select({
+      id: profilePages.id,
+      handle: profilePages.handle,
+      name: profilePages.name,
+      image: profilePages.image,
+      createdAt: profilePages.createdAt,
+      updatedAt: profilePages.updatedAt,
+    })
+    .from(profilePages)
+    .where(eq(profilePages.userId, userId))
+    .orderBy(desc(profilePages.createdAt));
+};
+
+export const getProfilePageEditorData = async (userId: string, handle?: string) => {
+  const page = handle
+    ? await getOwnedProfilePageByHandle(userId, handle)
+    : await getOwnedProfilePage(userId);
 
   if (!page) {
     return null;

@@ -8,6 +8,9 @@ import {
   profileTextBoxItems,
 } from "@/db/schema/profile-page";
 import { users } from "@/db/schema/user";
+import type { PlaylistProvider } from "@/lib/profile-page/playlist";
+
+const toPlaylistProvider = (provider: string): PlaylistProvider => provider as PlaylistProvider;
 
 export const getOwnedProfilePage = async (userId: string) => {
   return db
@@ -90,7 +93,10 @@ export const getProfilePageEditorData = async (userId: string) => {
     page,
     socialLinks,
     linkItems,
-    playlistItems,
+    playlistItems: playlistItems.map((playlistItem) => ({
+      ...playlistItem,
+      provider: toPlaylistProvider(playlistItem.provider),
+    })),
     textBoxItems,
   };
 };
@@ -171,7 +177,10 @@ export const getPublicProfilePage = async (handle: string) => {
     ...owner,
     socialLinks,
     linkItems,
-    playlistItems,
+    playlistItems: playlistItems.map((playlistItem) => ({
+      ...playlistItem,
+      provider: toPlaylistProvider(playlistItem.provider),
+    })),
     textBoxItems,
   };
 };

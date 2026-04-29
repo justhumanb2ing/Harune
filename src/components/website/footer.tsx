@@ -42,7 +42,7 @@ export function Footer() {
                   Roadmap
                 </Link>
               </li>
-              <li>
+              {/*<li>
                 <Link href="/privacy" className="inline-block hover:text-primary">
                   Privacy Policy
                 </Link>
@@ -51,7 +51,7 @@ export function Footer() {
                 <Link href="/terms" className="hover:text-primary">
                   Terms of Service
                 </Link>
-              </li>
+              </li>*/}
               <li>
                 <a
                   href="https://buymeacoffee.com/justhumanb2ing"

@@ -4,10 +4,11 @@ import { usePathname } from "next/navigation";
 import { useOptionalProfilePageEditorStore } from "@/components/profile-page/layout/profile-page-editor-provider";
 import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { appConfig } from "@/lib/config";
+import { getProfileRouteHandle } from "@/lib/profile-page/app-paths";
 import useUser from "@/lib/users/use-user";
 
 function getRouteLabel(pathname: string) {
-  const segment = pathname.split("/").filter(Boolean)[0] ?? "page";
+  const segment = getProfileRouteHandle(pathname) || "page";
 
   return segment
     .split(/[-_]/g)

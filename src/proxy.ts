@@ -1,6 +1,6 @@
 import { getSessionCookie } from "better-auth/cookies";
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { getProxyRouteDecision } from "./lib/auth/proxy-auth-boundary";
 
 export function proxy(req: NextRequest) {
@@ -23,6 +23,10 @@ export const config = {
     "/app/:path*",
     "/plan",
     "/plan/:path*",
+    "/v1/:handle/app",
+    "/v1/:handle/app/:path*",
+    "/v1/:handle/analytics",
+    "/v1/:handle/analytics/:path*",
     "/:handle/app",
     "/:handle/app/:path*",
     "/:handle/analytics",

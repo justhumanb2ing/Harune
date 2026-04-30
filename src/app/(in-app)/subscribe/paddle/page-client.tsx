@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { env } from "@/env";
+import { getProfileAppPath } from "@/lib/profile-page/app-paths";
 import useUser from "@/lib/users/use-user";
 
 export default function PaddleCheckoutPage() {
@@ -14,7 +15,7 @@ export default function PaddleCheckoutPage() {
   const [error, setError] = useState<string | null>(null);
   const [showRetry, setShowRetry] = useState(false);
   const { profilePage, user } = useUser();
-  const sectionHref = profilePage?.handle ? `/${profilePage.handle}/app` : "/api/join";
+  const sectionHref = profilePage?.handle ? getProfileAppPath(profilePage.handle) : "/api/join";
   useEffect(() => {
     // Show retry button after 3 seconds
     const timer = setTimeout(() => {

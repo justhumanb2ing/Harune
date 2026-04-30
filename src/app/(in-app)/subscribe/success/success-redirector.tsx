@@ -6,12 +6,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { getProfileAppPath } from "@/lib/profile-page/app-paths";
 import useUser from "@/lib/users/use-user";
 
 export default function SuccessRedirector() {
   const router = useRouter();
   const { profilePage } = useUser();
-  const sectionHref = profilePage?.handle ? `/${profilePage.handle}/app` : "/api/join";
+  const sectionHref = profilePage?.handle ? getProfileAppPath(profilePage.handle) : "/api/join";
   const [countdown, setCountdown] = useState(10);
 
   useEffect(() => {

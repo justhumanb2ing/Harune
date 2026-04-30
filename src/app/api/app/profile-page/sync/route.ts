@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import withAuthRequired from "@/lib/auth/with-auth-required";
+import { getProfileAppPath } from "@/lib/profile-page/app-paths";
 import { ProfilePageError, syncProfilePageDraft } from "@/lib/profile-page/mutations";
 import { profilePageSyncSchema } from "@/lib/validations/profile-page.schema";
 
@@ -28,7 +29,7 @@ export const POST = withAuthRequired(async (req, context) => {
     });
 
     revalidatePath(`/${data.page.handle}`);
-    revalidatePath(`/${data.page.handle}/app`);
+    revalidatePath(getProfileAppPath(data.page.handle));
 
     return NextResponse.json(data, { headers: noStoreHeaders });
   } catch (error) {

@@ -8,6 +8,7 @@ import { ProfilePageEditorProvider } from "@/components/profile-page/layout/prof
 import { ProfilePagePreview } from "@/components/profile-page/preview/profile-page-preview";
 import ProfilePreviewMobileDrawer from "@/components/profile-page/preview/profile-preview-mobile-drawer";
 import { appConfig } from "@/lib/config";
+import { getProfileAppPath } from "@/lib/profile-page/app-paths";
 import { getOwnedProfilePage, getOwnedProfilePageByHandle } from "@/lib/profile-page/queries";
 import { profilePageServerQueryOptions } from "@/lib/profile-page/server-query-options";
 
@@ -75,7 +76,7 @@ export default async function SectionLayout({ children, params }: SectionLayoutP
 
   if (!initialProfilePageData?.page.handle) {
     if (ownedProfilePage?.handle) {
-      redirect(`/${ownedProfilePage.handle}/app`);
+      redirect(getProfileAppPath(ownedProfilePage.handle));
     }
 
     redirect("/create");

@@ -6,6 +6,7 @@ import { OnboardingFail } from "@/components/onboarding/onboarding-fail";
 import { db } from "@/db";
 import { profilePages } from "@/db/schema/profile-page";
 import { normalizeHandle } from "@/lib/handles";
+import { getProfileAppPath } from "@/lib/profile-page/app-paths";
 
 type OnboardingFailPageProps = {
   searchParams: Promise<{
@@ -31,7 +32,7 @@ export default async function OnboardingFailPage({ searchParams }: OnboardingFai
     .then((rows) => rows[0]);
 
   if (ownedPage?.handle) {
-    redirect(`/${ownedPage.handle}/app`);
+    redirect(getProfileAppPath(ownedPage.handle));
   }
 
   const { handle: rawHandle, message } = await searchParams;

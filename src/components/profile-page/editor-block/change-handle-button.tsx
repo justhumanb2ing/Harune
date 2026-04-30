@@ -21,25 +21,16 @@ import {
 import { buildSyncPayload, createDraftData } from "@/hooks/profile-page-editor-store";
 import { useProfilePageHandleAvailability } from "@/hooks/use-profile-page-handle-availability";
 import { normalizeHandle, validateHandle } from "@/lib/handles";
+import { getProfileRouteHandle, replaceProfileRouteHandle } from "@/lib/profile-page/app-paths";
 import { profilePageQueryOptions } from "@/lib/profile-page/query-options";
 import type { ProfilePageData } from "@/lib/profile-page/types";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
 
-function replaceHandleInPath(pathname: string, handle: string) {
-  const segments = pathname.split("/").filter(Boolean);
-
-  if (segments.length === 0) {
-    return `/${handle}/app`;
-  }
-
-  return `/${[handle, ...segments.slice(1)].join("/")}`;
-}
-
 export function ChangeHandleButton() {
   const pathname = usePathname();
   const queryClient = useQueryClient();
-  const routeHandle = pathname.split("/").filter(Boolean)[0] ?? "";
+  const routeHandle = getProfileRouteHandle(pathname);
   const profilePageQuery = useQuery(profilePageQueryOptions(routeHandle));
   const profilePageData = profilePageQuery.data;
   const [isOpen, setIsOpen] = useState(false);
@@ -79,7 +70,7 @@ export function ChangeHandleButton() {
         handle: currentHandle,
       },
     };
-    const nextPath = replaceHandleInPath(pathname, currentHandle);
+    const nextPath = replaceProfileRouteHandle(pathname, currentHandle);
 
     setIsSavingHandle(true);
 

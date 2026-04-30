@@ -54,13 +54,23 @@ describe("proxy auth boundary", () => {
     }
   });
 
+  test("redirects legacy handle app pages to the versioned namespace", () => {
+    const decision = decide("/demo/app/links?mode=edit", true);
+
+    expect(decision.kind).toBe("redirect");
+    if (decision.kind === "redirect") {
+      expect(decision.url.pathname).toBe("/v1/demo/app/links");
+      expect(decision.url.searchParams.get("mode")).toBe("edit");
+    }
+  });
+
   test("redirects missing session on protected app pages to sign-in callback", () => {
-    const decision = decide("/demo/app/links?mode=edit");
+    const decision = decide("/v1/demo/app/links?mode=edit");
 
     expect(decision.kind).toBe("redirect");
     if (decision.kind === "redirect") {
       expect(decision.url.pathname).toBe("/sign-in");
-      expect(decision.url.searchParams.get("callbackUrl")).toBe("/demo/app/links?mode=edit");
+      expect(decision.url.searchParams.get("callbackUrl")).toBe("/v1/demo/app/links?mode=edit");
     }
   });
 
@@ -68,7 +78,9 @@ describe("proxy auth boundary", () => {
     const response = createUnauthorizedResponse();
 
     expect(response.status).toBe(401);
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json();
+
+    expect(body).toEqual({
       error: "Unauthorized",
       message: "You are not authorized to perform this action",
     });
@@ -76,10 +88,10 @@ describe("proxy auth boundary", () => {
 
   test("leaves app api requests to route handlers for auth JSON", () => {
     expect(decide("/api/app/me")).toEqual({ kind: "next" });
-    expect(config.matcher).not.toContain("/api/app/:path*");
+    expect(config.matcher.includes("/api/app/:path*")).toBe(false);
   });
 
   test("allows session-cookie signal through to protected pages for page-level validation", () => {
-    expect(decide("/demo/analytics", true)).toEqual({ kind: "next" });
+    expect(decide("/v1/demo/analytics", true)).toEqual({ kind: "next" });
   });
 });

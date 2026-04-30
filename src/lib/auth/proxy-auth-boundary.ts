@@ -25,6 +25,12 @@ export function getLegacyRedirectPath(pathname: string) {
     return APP_ENTRY_PATH;
   }
 
+  const legacyHandleAppPath = getLegacyHandleAppPath(pathname);
+
+  if (legacyHandleAppPath) {
+    return legacyHandleAppPath;
+  }
+
   return null;
 }
 
@@ -64,7 +70,7 @@ export function isAuthPage(pathname: string) {
 export function isAuthRequiredPage(pathname: string) {
   return (
     AUTH_REQUIRED_PAGE_PREFIXES.some((prefix) => hasPathPrefix(pathname, prefix)) ||
-    isHandleAppPath(pathname)
+    isVersionedHandleAppPath(pathname)
   );
 }
 
@@ -72,10 +78,22 @@ export function hasPathPrefix(pathname: string, prefix: string) {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
 }
 
-export function isHandleAppPath(pathname: string) {
-  const [, handle, area] = pathname.split("/");
+export function isVersionedHandleAppPath(pathname: string) {
+  const [, version, handle, area] = pathname.split("/");
 
-  return Boolean(handle) && handle !== "api" && (area === "app" || area === "analytics");
+  return version === "v1" && Boolean(handle) && (area === "app" || area === "analytics");
+}
+
+function getLegacyHandleAppPath(pathname: string) {
+  const [, handle, area, ...restSegments] = pathname.split("/");
+
+  if (!handle || handle === "api" || handle === "v1" || (area !== "app" && area !== "analytics")) {
+    return null;
+  }
+
+  const restPath = restSegments.length > 0 ? `/${restSegments.join("/")}` : "";
+
+  return `/v1/${handle}/${area}${restPath}`;
 }
 
 export function createSignInUrl(requestUrl: URL) {

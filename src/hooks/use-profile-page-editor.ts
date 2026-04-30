@@ -22,6 +22,7 @@ import {
   getPageEditorBlocks,
   type ProfilePageEditorState,
 } from "@/hooks/profile-page-editor-store";
+import { getProfileRouteHandle } from "@/lib/profile-page/app-paths";
 import { uploadProfileImageIfChanged } from "@/lib/profile-page/client-image-upload";
 import { profilePageQueryOptions } from "@/lib/profile-page/query-options";
 import {
@@ -71,7 +72,7 @@ export function useProfilePageEditor() {
   const queryClient = useQueryClient();
   const store = useProfilePageEditorStoreApi();
   const pathname = usePathname();
-  const currentHandle = pathname.split("/").filter(Boolean)[0] ?? "";
+  const currentHandle = getProfileRouteHandle(pathname);
   useSuspenseQuery(profilePageQueryOptions(currentHandle));
   const draftData = useProfilePageEditorStore((state) => state.draftData);
   const newLink = useProfilePageEditorStore((state) => state.newLink);

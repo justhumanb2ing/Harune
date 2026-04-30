@@ -5,6 +5,7 @@ import Link from "next/link";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
+import { getProfileAppPath } from "@/lib/profile-page/app-paths";
 
 type OnboardingSuccessProps = {
   handle: string;
@@ -71,7 +72,7 @@ export function OnboardingSuccess({ handle }: OnboardingSuccessProps) {
                 size="lg"
                 className="h-12 rounded-lg font-bold text-base! bg-indigo-400 hover:bg-indigo-500! border-indigo-400 shadow-lg group"
                 render={
-                  <Link href={`/${handle}/app`} className="flex items-center">
+                  <Link href={getProfileAppPath(handle)} className="flex items-center">
                     <span>Go to your page</span>
                     <ArrowRightIcon className="mt-0.5 size-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 stroke-3 transition-all" />
                   </Link>

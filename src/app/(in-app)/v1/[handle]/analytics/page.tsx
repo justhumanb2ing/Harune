@@ -2,10 +2,11 @@ import { SsgoiTransition } from "@ssgoi/react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AnalyticsPageClient } from "@/app/(in-app)/[handle]/analytics/page-client";
+import { AnalyticsPageClient } from "@/app/(in-app)/v1/[handle]/analytics/page-client";
 import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
+import { getProfileAnalyticsPath, getProfileAppPath } from "@/lib/profile-page/app-paths";
 import { getOwnedProfilePage, getOwnedProfilePageByHandle } from "@/lib/profile-page/queries";
 
 type AnalyticsPageProps = {
@@ -56,7 +57,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
     const ownedProfilePage = await getOwnedProfilePage(session.user.id);
 
     if (ownedProfilePage?.handle) {
-      redirect(`/${ownedProfilePage.handle}/analytics`);
+      redirect(getProfileAnalyticsPath(ownedProfilePage.handle));
     }
 
     redirect("/create");
@@ -74,7 +75,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
           variant="outline"
           size="lg"
           className="h-12 w-full text-lg font-bold! brand-button"
-          render={<Link href={`/${profilePage.handle}/app`}>My Page</Link>}
+          render={<Link href={getProfileAppPath(profilePage.handle)}>My Page</Link>}
         />
       </aside>
     </SsgoiTransition>

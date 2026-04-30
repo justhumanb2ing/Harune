@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { OnboardingForm } from "@/components/onboarding/onboarding-form";
 import { db } from "@/db";
 import { profilePages } from "@/db/schema/profile-page";
+import { getProfileAppPath } from "@/lib/profile-page/app-paths";
 
 type OnboardingPageProps = {
   searchParams: Promise<{
@@ -31,7 +32,7 @@ export default async function OnboardingPage({ searchParams }: OnboardingPagePro
   const { handle } = await searchParams;
 
   if (ownedPage) {
-    redirect(`/${ownedPage.handle}/app`);
+    redirect(getProfileAppPath(ownedPage.handle));
   }
 
   return (

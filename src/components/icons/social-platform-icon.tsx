@@ -95,5 +95,9 @@ export function SocialPlatformIcon({
   const Icon =
     variant === "color" ? socialPlatformColorIcons[platform] : socialPlatformIcons[platform];
 
+  if (!Icon) {
+    return null;
+  }
+
   return <Icon {...props} />;
 }

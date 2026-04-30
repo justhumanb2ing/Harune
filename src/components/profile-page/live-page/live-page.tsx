@@ -238,7 +238,7 @@ export function PublicProfilePage({
               y={6}
             >
               {orderedSocialLinks.map((socialLink) => {
-                const label = socialPlatformLabels[socialLink.platform];
+                const label = socialPlatformLabels[socialLink.platform] ?? socialLink.platform;
                 const href = resolveSocialHref(socialLink);
 
                 if (!href) {
@@ -298,6 +298,7 @@ export function PublicProfilePage({
                           <div className="flex min-w-0 items-start gap-3 h-12">
                             <div className="size-12 shrink-0">
                               {faviconUrl ? (
+                                /* biome-ignore lint/performance/noImgElement: favicon URLs are remote static images in public profile cards */
                                 <img
                                   src={faviconUrl}
                                   alt={`${item.title || "Link"} favicon`}

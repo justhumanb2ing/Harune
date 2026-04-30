@@ -1,10 +1,9 @@
 import { format } from "date-fns";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { WebPageJsonLd } from "next-seo";
-import { BreadcrumbJsonLd } from "@/components/site-instrumentation/structured-data";
+import { BreadcrumbJsonLd, WebPageJsonLd } from "@/components/site-instrumentation/structured-data";
 import { getPolicyBySlug } from "@/lib/mdx/policies";
-import { absoluteUrl, createPageMetadata, seoConfig } from "@/lib/seo";
+import { createPageMetadata } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
   const policy = await getPolicyBySlug("refund");
@@ -27,16 +26,15 @@ export default async function RefundPolicyPage() {
   return (
     <>
       <WebPageJsonLd
-        useAppDir
-        id={absoluteUrl("/refund")}
+        id="https://harune.me/refund"
+        description={policy.frontmatter.description ?? ""}
         title={policy.frontmatter.title}
-        description={policy.frontmatter.description}
         lastUpdated={policy.frontmatter.lastUpdated}
-        isAccessibleForFree={true}
+        isAccessibleForFree
         publisher={{
           "@type": "Organization",
-          name: seoConfig.siteName,
-          url: seoConfig.siteUrl,
+          name: "Harune",
+          url: "https://harune.me",
         }}
         about={{
           "@type": "Thing",

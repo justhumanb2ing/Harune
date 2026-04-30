@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { WebPageJsonLd } from "next-seo";
 import { PublicProfilePage } from "@/components/profile-page/live-page/live-page";
+import { WebPageJsonLd } from "@/components/site-instrumentation/structured-data";
 import { appConfig } from "@/lib/config";
 import { getPublicProfilePage } from "@/lib/profile-page/queries";
 import { absoluteUrl, createPageMetadata } from "@/lib/seo";
@@ -43,12 +43,11 @@ export default async function HandlePage({ params }: HandlePageProps) {
   return (
     <>
       <WebPageJsonLd
-        useAppDir
         id={absoluteUrl(`/${owner.handle}`)}
-        title={`${owner.name || owner.userName || owner.handle} on ${appConfig.projectName}`}
         description={owner.bio || `Visit @${owner.handle}'s page.`}
+        title={`${owner.name || owner.userName || owner.handle} on ${appConfig.projectName}`}
         lastUpdated={owner.updatedAt}
-        isAccessibleForFree={true}
+        isAccessibleForFree
         publisher={{
           "@type": "Organization",
           name: appConfig.projectName,

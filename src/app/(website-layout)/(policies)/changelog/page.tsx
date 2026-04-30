@@ -1,11 +1,10 @@
 import { format } from "date-fns";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { WebPageJsonLd } from "next-seo";
-import { BreadcrumbJsonLd } from "@/components/site-instrumentation/structured-data";
+import { BreadcrumbJsonLd, WebPageJsonLd } from "@/components/site-instrumentation/structured-data";
 import ChangelogSection from "@/components/website/changelog-section";
 import { getPolicyBySlug } from "@/lib/mdx/policies";
-import { absoluteUrl, createPageMetadata, seoConfig } from "@/lib/seo";
+import { createPageMetadata } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
   const policy = await getPolicyBySlug("changelog");
@@ -28,16 +27,15 @@ export default async function ChangelogPage() {
   return (
     <>
       <WebPageJsonLd
-        useAppDir
-        id={absoluteUrl("/changelog")}
+        id="https://harune.me/changelog"
+        description={policy.frontmatter.description ?? ""}
         title={policy.frontmatter.title}
-        description={policy.frontmatter.description}
         lastUpdated={policy.frontmatter.lastUpdated}
-        isAccessibleForFree={true}
+        isAccessibleForFree
         publisher={{
           "@type": "Organization",
-          name: seoConfig.siteName,
-          url: seoConfig.siteUrl,
+          name: "Harune",
+          url: "https://harune.me",
         }}
         about={{
           "@type": "Thing",

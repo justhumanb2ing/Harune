@@ -14,6 +14,23 @@ type WebPageStructuredDataProps = {
   path: string;
 };
 
+type WebPageJsonLdProps = {
+  about?: {
+    "@type": "Thing";
+    name: string;
+  };
+  description: string;
+  id: string;
+  isAccessibleForFree?: boolean;
+  lastUpdated?: string | Date;
+  publisher: {
+    "@type": "Organization";
+    name: string;
+    url: string;
+  };
+  title: string;
+};
+
 const serializeJsonLd = (data: JsonLd) => JSON.stringify(data).replace(/</g, "\\u003c");
 
 function JsonLdScript({ data, id }: { data: JsonLd; id: string }) {
@@ -103,6 +120,34 @@ export function WebPageStructuredData({ description, name, path }: WebPageStruct
           "@id": absoluteUrl("/#organization"),
         },
         inLanguage: "en",
+      }}
+    />
+  );
+}
+
+export function WebPageJsonLd({
+  about,
+  description,
+  id,
+  isAccessibleForFree = true,
+  lastUpdated,
+  publisher,
+  title,
+}: WebPageJsonLdProps) {
+  return (
+    <JsonLdScript
+      id={`webpage-jsonld-${id.replaceAll("/", "-").replaceAll("#", "-")}`}
+      data={{
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "@id": `${id}#webpage`,
+        url: id,
+        name: title,
+        description,
+        isAccessibleForFree,
+        dateModified: lastUpdated,
+        publisher,
+        ...(about ? { about } : {}),
       }}
     />
   );

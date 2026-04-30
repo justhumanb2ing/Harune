@@ -109,6 +109,7 @@ export function PublicProfileBackgroundImageMotion({ alt = "", className, src }:
   const shouldReduceMotion = useReducedMotion();
 
   return (
+    /* biome-ignore lint/performance/noImgElement: motion.img is required for animated image reveal */
     <motion.img
       alt={alt}
       animate={{ opacity: 1, scale: 1 }}
@@ -130,6 +131,7 @@ export function PublicProfileAvatarMotion({ alt = "", className, src }: ImageMot
   const shouldReduceMotion = useReducedMotion();
 
   return (
+    /* biome-ignore lint/performance/noImgElement: motion.img is required for animated image reveal */
     <motion.img
       alt={alt}
       animate={{

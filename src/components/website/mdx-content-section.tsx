@@ -42,7 +42,7 @@ export default function MdxContentSection({
         <motion.div
           animate="visible"
           className="origin-left self-center rounded-2xl bg-background p-2 shadow-xl cursor-default"
-          initial="hidden"
+          initial={false}
           variants={variants}
           whileHover={{
             rotate: -8,

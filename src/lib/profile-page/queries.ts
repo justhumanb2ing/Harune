@@ -131,6 +131,7 @@ export const getPublicProfilePage = async (handle: string) => {
     .select({
       id: profilePages.id,
       handle: profilePages.handle,
+      updatedAt: profilePages.updatedAt,
       linkBlockPosition: profilePages.linkBlockPosition,
       location: profilePages.location,
       name: profilePages.name,

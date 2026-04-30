@@ -40,6 +40,7 @@ export function createProfileSocialImage(profile: ProfileSocialImageData | null)
   const description = truncate(profile?.bio || profile?.role || appConfig.description, 120);
   const imageUrl = resolveImageUrl(profile?.image ?? null);
   const avatarInitial = displayName.trim().charAt(0).toUpperCase() || "H";
+  const logoUrl = absoluteUrl("/assets/logo.png");
 
   return new ImageResponse(
     <div
@@ -50,57 +51,89 @@ export function createProfileSocialImage(profile: ProfileSocialImageData | null)
         color: "#1d1c1c",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "space-between",
+        position: "relative",
         padding: "64px",
         fontFamily: "Inter, Arial, sans-serif",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "42px" }}>
-        <div
-          style={{
-            width: 190,
-            height: 190,
-            background: "#ffffff",
-            border: "6px solid #1d1c1c",
-            borderRadius: 999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            overflow: "hidden",
-            flexShrink: 0,
-          }}
-        >
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              width={190}
-              height={190}
-              alt=""
-              style={{ objectFit: "cover", borderRadius: 999 }}
-            />
-          ) : (
-            <span style={{ fontSize: 92, fontWeight: 900 }}>{avatarInitial}</span>
-          )}
-        </div>
+      {/* biome-ignore lint/performance/noImgElement: next/og renders standard img elements in the generated image */}
+      <img
+        src={logoUrl}
+        alt=""
+        width={120}
+        height={120}
+        style={{
+          position: "absolute",
+          top: 32,
+          left: 32,
+        }}
+      />
 
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <div
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: "16px",
+            alignItems: "center",
+            gap: "48px",
             maxWidth: 790,
           }}
         >
-          <div style={{ fontSize: 80, fontWeight: 900, lineHeight: 0.95 }}>{displayName}</div>
           <div
             style={{
-              paddingLeft: 6,
-              fontSize: 36,
-              lineHeight: 1.25,
-              color: "#2f2d29",
+              width: 240,
+              height: 240,
+              background: "#ffffff",
+              borderRadius: 999,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
+              flexShrink: 0,
             }}
           >
-            {description}
+            {imageUrl ? (
+              <>
+                {/* biome-ignore lint/performance/noImgElement: next/og renders standard img elements in the generated image */}
+                <img
+                  src={imageUrl}
+                  width={240}
+                  height={240}
+                  alt=""
+                  style={{ objectFit: "cover", borderRadius: 999 }}
+                />
+              </>
+            ) : (
+              <span style={{ fontSize: 112, fontWeight: 900 }}>{avatarInitial}</span>
+            )}
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "18px",
+            }}
+          >
+            <div style={{ fontSize: 64, fontWeight: 900, lineHeight: 0.95 }}>{displayName}</div>
+            <div
+              style={{
+                paddingLeft: 6,
+                fontSize: 26,
+                lineHeight: 1.25,
+                color: "#2f2d29",
+              }}
+            >
+              {description}
+            </div>
           </div>
         </div>
       </div>
@@ -109,8 +142,12 @@ export function createProfileSocialImage(profile: ProfileSocialImageData | null)
         style={{
           display: "flex",
           justifyContent: "space-between",
-          fontSize: 28,
+          fontSize: 20,
           color: "#5b574f",
+          position: "absolute",
+          left: 64,
+          right: 64,
+          bottom: 64,
         }}
       >
         <span>Everything you are, in one place.</span>

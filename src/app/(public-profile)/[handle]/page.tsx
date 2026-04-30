@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { WebPageJsonLd } from "next-seo";
 import { PublicProfilePage } from "@/components/profile-page/live-page/live-page";
 import { appConfig } from "@/lib/config";
 import { getPublicProfilePage } from "@/lib/profile-page/queries";
-import { createPageMetadata } from "@/lib/seo";
+import { absoluteUrl, createPageMetadata } from "@/lib/seo";
 
 type HandlePageProps = {
   params: Promise<{
@@ -40,23 +41,42 @@ export default async function HandlePage({ params }: HandlePageProps) {
   }
 
   return (
-    <main className="mx-auto min-h-lvh max-w-lg">
-      <PublicProfilePage
-        profilePageId={owner.id}
-        backgroundImage={owner.backgroundImage}
-        handle={owner.handle}
-        name={owner.name}
-        bio={owner.bio}
-        image={owner.image}
-        linkBlockPosition={owner.linkBlockPosition}
-        linkItems={owner.linkItems}
-        playlistItems={owner.playlistItems}
-        location={owner.location}
-        socialLinks={owner.socialLinks}
-        role={owner.role}
-        textBoxItems={owner.textBoxItems}
-        userName={owner.userName}
+    <>
+      <WebPageJsonLd
+        useAppDir
+        id={absoluteUrl(`/${owner.handle}`)}
+        title={`${owner.name || owner.userName || owner.handle} on ${appConfig.projectName}`}
+        description={owner.bio || `Visit @${owner.handle}'s page.`}
+        lastUpdated={owner.updatedAt}
+        isAccessibleForFree={true}
+        publisher={{
+          "@type": "Organization",
+          name: appConfig.projectName,
+          url: appConfig.url,
+        }}
+        about={{
+          "@type": "Thing",
+          name: owner.handle,
+        }}
       />
-    </main>
+      <main className="mx-auto min-h-lvh max-w-lg">
+        <PublicProfilePage
+          profilePageId={owner.id}
+          backgroundImage={owner.backgroundImage}
+          handle={owner.handle}
+          name={owner.name}
+          bio={owner.bio}
+          image={owner.image}
+          linkBlockPosition={owner.linkBlockPosition}
+          linkItems={owner.linkItems}
+          playlistItems={owner.playlistItems}
+          location={owner.location}
+          socialLinks={owner.socialLinks}
+          role={owner.role}
+          textBoxItems={owner.textBoxItems}
+          userName={owner.userName}
+        />
+      </main>
+    </>
   );
 }

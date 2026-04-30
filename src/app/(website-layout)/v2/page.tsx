@@ -1,4 +1,4 @@
-import GridTest from "./grid-test";
+import GridTest from "@/components/grid/grid-test";
 
 export default function V2Page() {
   return (

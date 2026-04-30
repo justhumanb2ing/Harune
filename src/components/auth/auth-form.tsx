@@ -25,6 +25,12 @@ interface AuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 type AuthMode = "sign-in" | "sign-up";
+type PendingAction = "google" | "demo" | AuthMode;
+
+const DEMO_ACCOUNT = {
+  email: "demo@demo.com",
+  password: "demo1234",
+} as const;
 
 export function AuthForm({
   className,
@@ -33,7 +39,7 @@ export function AuthForm({
   mode,
   ...props
 }: AuthFormProps) {
-  const [pendingAction, setPendingAction] = React.useState<"google" | AuthMode | null>(null);
+  const [pendingAction, setPendingAction] = React.useState<PendingAction | null>(null);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -121,6 +127,33 @@ export function AuthForm({
     }
   };
 
+  const handleDemoSignIn = async () => {
+    setErrorMessage(null);
+    setPendingAction("demo");
+
+    try {
+      const result = await authClient.signIn.email({
+        email: DEMO_ACCOUNT.email,
+        password: DEMO_ACCOUNT.password,
+        callbackURL: resolvedCallbackUrl,
+      });
+
+      if (result.error) {
+        setErrorMessage(result.error.message || "Could not sign in with the demo account.");
+        return;
+      }
+
+      await invalidateAuthenticatedAppQueries(queryClient);
+      router.push(resolvedCallbackUrl);
+      router.refresh();
+    } catch (error) {
+      console.error("Demo authentication error:", error);
+      setErrorMessage("Could not sign in with the demo account.");
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
   const shouldShowGoogleButton = enableGoogle && !hasEmailInputValue;
   const shouldShowEmailButton = hasEmailInputValue || !enableGoogle;
 
@@ -143,32 +176,47 @@ export function AuthForm({
         <span className="text-sm font-bold uppercase">or</span>
       </div>
 
-      {shouldShowEmailButton ? (
-        <Button
-          type="submit"
-          form={formId}
-          disabled={isLoading}
-          className="h-12 py-6 w-full font-semibold shadow-lg border-foreground"
-        >
-          {pendingAction === mode ? <FaSpinner className="mr-2 h-4 w-4 animate-spin" /> : null}
-          {mode === "sign-up" ? "Create account" : "Log in"}
-        </Button>
-      ) : shouldShowGoogleButton ? (
-        <Button
-          variant="outline"
-          type="button"
-          disabled={isLoading}
-          onClick={handleGoogleSignIn}
-          className="h-12 w-full py-6 font-semibold shadow-lg border-indigo-400 bg-indigo-400 hover:bg-indigo-500 text-white!"
-        >
-          {pendingAction === "google" ? (
-            <FaSpinner className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <FaGoogle className="mr-2 h-4 w-4" />
-          )}
-          Continue with Google
-        </Button>
-      ) : null}
+      <div className="flex flex-col gap-1">
+        {shouldShowEmailButton ? (
+          <Button
+            type="submit"
+            form={formId}
+            disabled={isLoading}
+            className="h-12 py-6 w-full font-semibold shadow-lg border-foreground"
+          >
+            {pendingAction === mode ? <FaSpinner className="mr-2 h-4 w-4 animate-spin" /> : null}
+            {mode === "sign-up" ? "Create account" : "Log in"}
+          </Button>
+        ) : shouldShowGoogleButton ? (
+          <Button
+            variant="outline"
+            type="button"
+            disabled={isLoading}
+            onClick={handleGoogleSignIn}
+            className="h-12 w-full py-6 font-semibold shadow-lg border-indigo-400 bg-indigo-400 hover:bg-indigo-500 text-white!"
+          >
+            {pendingAction === "google" ? (
+              <FaSpinner className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <FaGoogle className="mr-2 h-4 w-4" />
+            )}
+            Continue with Google
+          </Button>
+        ) : null}
+
+        {mode === "sign-in" ? (
+          <Button
+            variant="secondary"
+            type="button"
+            disabled={isLoading}
+            onClick={handleDemoSignIn}
+            className="h-12 w-full py-6 font-semibold"
+          >
+            {pendingAction === "demo" ? <FaSpinner className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Try demo account
+          </Button>
+        ) : null}
+      </div>
 
       {mode === "sign-up" ? (
         <p className="mb-8 text-sm text-muted-foreground space-x-1">

@@ -20,10 +20,11 @@
 - `/src/content` : MD/MDX 기반 콘텐츠 원본을 둔다.
 - `/src/db` : DB 연결과 Drizzle ORM 스키마 진입점을 둔다.
 - `/src/emails` : React Email 기반 메일 템플릿을 둔다.
-- `/src/hooks` : 커스텀 React 훅을 둔다.
-- `/src/lib` : 비즈니스 로직, 외부 서비스 연동, 공용 유틸리티를 둔다.
+- `/src/hooks` : 커스텀 React 훅을 둔다. 컴포넌트에서 분리한 상태 관리, 이벤트 처리, 브라우저/클라이언트 상호작용 훅은 이 폴더에 배치한다.
+- `/src/lib` : 비즈니스 로직, 외부 서비스 연동, 공용 유틸리티와 설정을 둔다. UI 렌더링과 무관한 계산 함수, 정책값, config는 역할에 맞는 하위 폴더로 분리한다.
 
 ### 작업 원칙
-- 새 UI를 추가할 때는 먼저 `/src/components/ui`, `/src/components/layout`, `/src/components/website` 중 어디에 들어가야 하는지 판단한 뒤 배치한다.
+- 새 UI를 추가할 때는 먼저 `/src/components/ui`, `/src/components/layout`, `/src/components/website` 또는 기능 단위 컴포넌트 폴더 중 어디에 들어가야 하는지 판단한 뒤 배치한다.
 - 페이지 라우팅 변경은 `/src/app`, 비즈니스 로직 변경은 `/src/lib`, DB 변경은 `/src/db/schema`에서 우선 찾는다.
+- 파일을 분리할 때는 역할에 맞는 폴더를 우선한다. 훅은 `/src/hooks`, 재사용 UI는 `/src/components`, 렌더링과 무관한 유틸리티와 설정은 `/src/lib` 아래의 기능별 하위 폴더에 둔다.
 - React/Next.js 코드를 작성, 수정, 리팩터링할 때는 `$vercel-composition-patterns`와 `$vercel-react-best-practices` 스킬을 먼저 확인하고 적용한다.

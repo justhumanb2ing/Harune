@@ -1,5 +1,4 @@
 import type { LayoutItem } from "react-grid-layout";
-import { COLS } from "@/lib/grid/grid-config";
 import { createLayoutItem, normalizeLayouts } from "@/lib/grid/grid-layout-utils";
 import type { GridBreakpoint, GridItem, GridLayouts } from "@/lib/grid/grid-types";
 import type {
@@ -31,6 +30,9 @@ export const toBentoLayoutItems = (
     ...item.layout[breakpoint],
   }));
 
+export const toBentoItemTypeById = (bento: ProfileBentoItem[]) =>
+  new Map(bento.map((item) => [item.id, item.type] as const));
+
 export const toProfileBentoLayout = (
   layout: LayoutItem,
   w: number,
@@ -46,10 +48,13 @@ export const getBentoLayoutLabel = (item: ProfileBentoItem) =>
   `D ${item.layout.desktop.x},${item.layout.desktop.y},${item.layout.desktop.w}x${item.layout.desktop.h} / C ${item.layout.compact.x},${item.layout.compact.y},${item.layout.compact.w}x${item.layout.compact.h}`;
 
 export const toBentoGridLayouts = (bento: ProfileBentoItem[]): GridLayouts =>
-  normalizeLayouts({
-    desktop: toBentoLayoutItems(bento, "desktop"),
-    compact: toBentoLayoutItems(bento, "compact"),
-  });
+  normalizeLayouts(
+    {
+      desktop: toBentoLayoutItems(bento, "desktop"),
+      compact: toBentoLayoutItems(bento, "compact"),
+    },
+    toBentoItemTypeById(bento)
+  );
 
 export const toBentoGridItem = (item: ProfileBentoItem): GridItem => ({
   id: item.id,
@@ -91,16 +96,18 @@ export function createAutoBentoItem(type: CreatableBentoType, currentItems: Prof
   const desktopLayout = createLayoutItem(
     id,
     "desktop",
-    toBentoLayoutItems(currentItems, "desktop")
+    toBentoLayoutItems(currentItems, "desktop"),
+    { itemType: type }
   );
   const compactLayout = createLayoutItem(
     id,
     "compact",
-    toBentoLayoutItems(currentItems, "compact")
+    toBentoLayoutItems(currentItems, "compact"),
+    { itemType: type }
   );
   const baseLayout = {
-    desktop: toProfileBentoLayout(desktopLayout, Math.min(2, COLS.desktop), 2),
-    compact: toProfileBentoLayout(compactLayout, Math.min(2, COLS.compact), 2),
+    desktop: toProfileBentoLayout(desktopLayout, desktopLayout.w, desktopLayout.h),
+    compact: toProfileBentoLayout(compactLayout, compactLayout.w, compactLayout.h),
   };
 
   if (type === "link") {
@@ -122,10 +129,7 @@ export function createAutoBentoItem(type: CreatableBentoType, currentItems: Prof
     return {
       id,
       type,
-      layout: {
-        desktop: { ...baseLayout.desktop, h: 1 },
-        compact: { ...baseLayout.compact, h: 1 },
-      },
+      layout: baseLayout,
       content: {
         title: `Auto section ${count}`,
       },

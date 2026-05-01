@@ -17,6 +17,7 @@ import {
   mergeLayoutsIntoBento,
   toBentoGridItem,
   toBentoGridLayouts,
+  toBentoItemTypeById,
 } from "./profile-bento-grid-model";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -45,9 +46,12 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   } = useGridDragMotion();
   const activeBreakpoint: GridBreakpoint = width > BREAKPOINTS.desktop ? "desktop" : "compact";
   const bentoById = useMemo(() => new Map(bento.map((item) => [item.id, item] as const)), [bento]);
+  const itemTypeById = useMemo(() => toBentoItemTypeById(bento), [bento]);
   const gridItems = useMemo(() => bento.map(toBentoGridItem), [bento]);
   const bentoCountLabel = useMemo(() => `${bento.length} items`, [bento.length]);
-  const gridClassName = `w-full max-w-full [&_.react-draggable-dragging]:z-20! [&_.react-grid-item:not(.react-grid-placeholder)]:z-10 [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none! [&_.react-grid-placeholder]:z-0! [&_.react-grid-placeholder]:rounded-xl! [&_.react-grid-placeholder]:bg-secondary! [&_.react-grid-placeholder]:opacity-100! [&_.react-grid-placeholder]:shadow-[inset_0_1px_6px_rgb(0_0_0_/_0.08),inset_0_-1px_1px_rgb(255_255_255_/_0.8)]! ${isThinPlaceholderActive ? "[&_.react-grid-placeholder]:h-[var(--thin-placeholder-height)]! [&_.react-grid-placeholder]:translate-y-[var(--thin-placeholder-offset)]!" : ""}`;
+  const isSectionDragActive =
+    activeDragItemId !== null && itemTypeById.get(activeDragItemId) === "section";
+  const gridClassName = `w-full max-w-full [&_.react-draggable-dragging]:z-20! [&_.react-grid-item:not(.react-grid-placeholder)]:z-10 [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none! [&_.react-grid-placeholder]:z-0! [&_.react-grid-placeholder]:rounded-xl! [&_.react-grid-placeholder]:bg-secondary! [&_.react-grid-placeholder]:opacity-100! [&_.react-grid-placeholder]:shadow-[inset_0_1px_6px_rgb(0_0_0_/_0.08),inset_0_-1px_1px_rgb(255_255_255_/_0.8)]! ${isThinPlaceholderActive || isSectionDragActive ? "[&_.react-grid-placeholder]:h-[var(--thin-placeholder-height)]! [&_.react-grid-placeholder]:translate-y-[var(--thin-placeholder-offset)]!" : ""}`;
   const gridStyle = {
     "--thin-placeholder-height": `${ROW_HEIGHT[activeBreakpoint]}px`,
     "--thin-placeholder-offset": `${ROW_HEIGHT[activeBreakpoint] + GRID_MARGIN[1]}px`,
@@ -72,15 +76,22 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   };
 
   const resizeItem = (id: string, option: ResizeOption) => {
+    if (itemTypeById.get(id) === "section") {
+      return;
+    }
+
     setLayouts((currentLayouts) =>
-      normalizeLayouts({
-        desktop: (currentLayouts.desktop ?? []).map((item) =>
-          item.i === id ? { ...item, w: Math.min(option.w, COLS.desktop), h: option.h } : item
-        ),
-        compact: (currentLayouts.compact ?? []).map((item) =>
-          item.i === id ? { ...item, w: Math.min(option.w, COLS.compact), h: option.h } : item
-        ),
-      })
+      normalizeLayouts(
+        {
+          desktop: (currentLayouts.desktop ?? []).map((item) =>
+            item.i === id ? { ...item, w: Math.min(option.w, COLS.desktop), h: option.h } : item
+          ),
+          compact: (currentLayouts.compact ?? []).map((item) =>
+            item.i === id ? { ...item, w: Math.min(option.w, COLS.compact), h: option.h } : item
+          ),
+        },
+        itemTypeById
+      )
     );
   };
 
@@ -107,7 +118,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
           onDragStart={startDrag}
           onDragStop={stopDrag}
           onLayoutChange={(nextLayouts) => {
-            setLayouts(normalizeLayouts(nextLayouts));
+            setLayouts(normalizeLayouts(nextLayouts, itemTypeById));
           }}
           onRemoveItem={removeItem}
           onResizeItem={resizeItem}

@@ -193,6 +193,7 @@ export const profileBentoSyncSchema = z
       for (const breakpoint of ["desktop", "compact"] as const) {
         const layout = item.layout[breakpoint];
         const constraints = BENTO_GRID_SIZE_CONSTRAINTS[item.type];
+        const minW = Math.min(constraints.minW, COLS[breakpoint]);
         const maxW = Math.min(constraints.maxW, COLS[breakpoint]);
 
         if (layout.x + layout.w > COLS[breakpoint]) {
@@ -203,7 +204,7 @@ export const profileBentoSyncSchema = z
           });
         }
 
-        if (layout.w < constraints.minW || layout.w > maxW) {
+        if (layout.w < minW || layout.w > maxW) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "Bento width is outside the allowed range.",

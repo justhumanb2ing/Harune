@@ -10,8 +10,82 @@ export function snapCardHeight(height: number) {
   return height <= 3 ? 2 : 4;
 }
 
-export function normalizeLayoutItem(item: LayoutItem, breakpoint: GridBreakpoint): LayoutItem {
-  if (item.i === THIN_PLACEHOLDER_ITEM_ID) {
+type CreateLayoutItemOptions = {
+  h?: number;
+  itemType?: string;
+  w?: number;
+};
+
+const isFullRowThinItem = (id: string, itemType?: string) =>
+  id === THIN_PLACEHOLDER_ITEM_ID || itemType === "section";
+
+function getItemType(itemTypeById: ReadonlyMap<string, string> | undefined, id: string) {
+  return itemTypeById?.get(id);
+}
+
+function getOccupiedCells(layout: readonly LayoutItem[]) {
+  const occupiedCells = new Set<string>();
+
+  for (const item of layout) {
+    for (let y = item.y; y < item.y + item.h; y++) {
+      for (let x = item.x; x < item.x + item.w; x++) {
+        occupiedCells.add(`${x}:${y}`);
+      }
+    }
+  }
+
+  return occupiedCells;
+}
+
+function canPlaceItem(
+  occupiedCells: ReadonlySet<string>,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  cols: number
+) {
+  if (x + w > cols) {
+    return false;
+  }
+
+  for (let nextY = y; nextY < y + h; nextY++) {
+    for (let nextX = x; nextX < x + w; nextX++) {
+      if (occupiedCells.has(`${nextX}:${nextY}`)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+function findFirstAvailablePosition(
+  layout: readonly LayoutItem[],
+  cols: number,
+  w: number,
+  h: number
+) {
+  const occupiedCells = getOccupiedCells(layout);
+  let y = 0;
+
+  while (true) {
+    for (let x = 0; x <= cols - w; x++) {
+      if (canPlaceItem(occupiedCells, x, y, w, h, cols)) {
+        return { x, y };
+      }
+    }
+
+    y++;
+  }
+}
+
+export function normalizeLayoutItem(
+  item: LayoutItem,
+  breakpoint: GridBreakpoint,
+  itemType?: string
+): LayoutItem {
+  if (isFullRowThinItem(item.i, itemType)) {
     const cols = COLS[breakpoint];
 
     return {
@@ -23,7 +97,7 @@ export function normalizeLayoutItem(item: LayoutItem, breakpoint: GridBreakpoint
       maxW: cols,
       minH: 2,
       maxH: 2,
-      isResizable: true,
+      isResizable: false,
     };
   }
 
@@ -36,10 +110,17 @@ export function normalizeLayoutItem(item: LayoutItem, breakpoint: GridBreakpoint
   };
 }
 
-export function normalizeLayouts(nextLayouts: GridLayouts): GridLayouts {
+export function normalizeLayouts(
+  nextLayouts: GridLayouts,
+  itemTypeById?: ReadonlyMap<string, string>
+): GridLayouts {
   return {
-    desktop: (nextLayouts.desktop ?? []).map((item) => normalizeLayoutItem(item, "desktop")),
-    compact: (nextLayouts.compact ?? []).map((item) => normalizeLayoutItem(item, "compact")),
+    desktop: (nextLayouts.desktop ?? []).map((item) =>
+      normalizeLayoutItem(item, "desktop", getItemType(itemTypeById, item.i))
+    ),
+    compact: (nextLayouts.compact ?? []).map((item) =>
+      normalizeLayoutItem(item, "compact", getItemType(itemTypeById, item.i))
+    ),
   };
 }
 
@@ -66,58 +147,41 @@ export function getResizeOptionId(
 }
 
 export function getResizeOptionsForItem(item: GridItem) {
+  if (item.id === THIN_PLACEHOLDER_ITEM_ID || item.itemType === "section") {
+    return [];
+  }
+
   return RESIZE_OPTIONS.filter(
     (option) => !item.itemType || !option.hiddenForItemTypes?.includes(item.itemType)
   );
 }
 
-function getOccupiedCells(layout: readonly LayoutItem[]) {
-  const occupiedCells = new Set<string>();
-
-  for (const item of layout) {
-    for (let y = item.y; y < item.y + item.h; y++) {
-      for (let x = item.x; x < item.x + item.w; x++) {
-        occupiedCells.add(`${x}:${y}`);
-      }
-    }
-  }
-
-  return occupiedCells;
-}
-
-function findFirstEmptyCell(layout: readonly LayoutItem[], cols: number) {
-  const occupiedCells = getOccupiedCells(layout);
-  let y = 0;
-
-  while (true) {
-    for (let x = 0; x < cols; x++) {
-      if (!occupiedCells.has(`${x}:${y}`)) {
-        return { x, y };
-      }
-    }
-
-    y++;
-  }
-}
-
 export function createLayoutItem(
   id: string,
   breakpoint: GridBreakpoint,
-  layout: readonly LayoutItem[]
+  layout: readonly LayoutItem[],
+  options: CreateLayoutItemOptions = {}
 ): LayoutItem {
   const cols = COLS[breakpoint];
-  const nextPosition = findFirstEmptyCell(layout, cols);
+  const itemType = options.itemType;
+  const w = isFullRowThinItem(id, itemType) ? cols : Math.min(options.w ?? 1, cols);
+  const h = isFullRowThinItem(id, itemType) ? 2 : (options.h ?? 2);
+  const nextPosition = findFirstAvailablePosition(layout, cols, w, h);
 
-  return {
-    i: id,
-    x: nextPosition.x,
-    y: nextPosition.y,
-    w: 1,
-    h: 2,
-    minW: 1,
-    maxW: 4,
-    minH: 1,
-    maxH: 4,
-    isResizable: true,
-  };
+  return normalizeLayoutItem(
+    {
+      i: id,
+      x: nextPosition.x,
+      y: nextPosition.y,
+      w,
+      h,
+      minW: w,
+      maxW: cols,
+      minH: 1,
+      maxH: 4,
+      isResizable: true,
+    },
+    breakpoint,
+    itemType
+  );
 }

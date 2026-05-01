@@ -29,12 +29,13 @@ export function GridCard({
   children,
 }: GridCardProps) {
   const isThinPlaceholderItem = item.id === THIN_PLACEHOLDER_ITEM_ID;
+  const isVisuallyThinItem = isThinPlaceholderItem || item.itemType === "section";
   const resizeOptions = getResizeOptionsForItem(item);
   const selectedResizeOption = getResizeOptionId(layouts, activeBreakpoint, item.id);
 
   return (
     <motion.div
-      className={`group/item relative flex w-full flex-col justify-between rounded-xl border border-black/10 bg-white p-4 shadow-xs cursor-grab pointer-events-auto active:cursor-grabbing ${isThinPlaceholderItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isDragActive ? "will-change-transform drop-shadow-xs" : ""}`}
+      className={`group/item relative flex w-full flex-col justify-between rounded-xl border border-black/10 bg-white p-4 shadow-xs cursor-grab pointer-events-auto active:cursor-grabbing ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isDragActive ? "will-change-transform drop-shadow-xs" : ""}`}
       style={{
         rotate: isDragActive ? cardRotate : 0,
         x: isDragActive ? cardX : 0,
@@ -75,15 +76,17 @@ export function GridCard({
           </button>
         </div>
       ) : null}
-      {isThinPlaceholderItem ? null : (
+      {resizeOptions.length > 0 ? (
         <GridResizeControls
           item={item}
           onResize={onResize}
           options={resizeOptions}
           selectedOptionId={selectedResizeOption}
         />
-      )}
-      <p className="text-[10px] text-stone-400 uppercase tracking-[0.2em]">resize</p>
+      ) : null}
+      {resizeOptions.length > 0 ? (
+        <p className="text-[10px] text-stone-400 uppercase tracking-[0.2em]">resize</p>
+      ) : null}
     </motion.div>
   );
 }

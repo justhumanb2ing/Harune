@@ -3,7 +3,7 @@
 import { closestCenter, DndContext } from "@dnd-kit/core";
 import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { LinkSimpleIcon, TextAaIcon } from "@phosphor-icons/react";
+import { LinkSimpleIcon, SquaresFourIcon, TextAaIcon } from "@phosphor-icons/react";
 import {
   ChartColumnBigIcon,
   ChevronRightIcon,
@@ -96,6 +96,25 @@ function SocialSectionLinkItem({ href }: { href: string }) {
   );
 }
 
+function BentoSectionLinkItem({ href }: { href: string }) {
+  return (
+    <Link href={href} className={cn(sectionLinkClassName, "min-h-20")}>
+      <span className={sectionMediaClassName} aria-hidden="true">
+        <SquaresFourIcon className="size-6" weight="bold" />
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="line-clamp-1 flex w-fit items-center gap-2 text-lg leading-snug font-medium underline-offset-4">
+          Bento
+        </span>
+        <span className="text-muted-foreground text-xs">Edit /v2 grid</span>
+      </span>
+      <span className={sectionActionsClassName}>
+        <ChevronRightIcon className="size-5 stroke-3" aria-hidden="true" />
+      </span>
+    </Link>
+  );
+}
+
 export function SectionPageClient() {
   const editor = useProfilePageEditor();
   const pathname = usePathname();
@@ -129,6 +148,7 @@ export function SectionPageClient() {
               <ProfileSectionLinkItem href={`${sectionBasePath}/profile`} />
               <SocialSectionLinkItem href={`${sectionBasePath}/social`} />
             </div>
+            <BentoSectionLinkItem href={`${sectionBasePath}/bento`} />
 
             {editor.isBooting ? (
               <div className="flex min-h-14 items-center justify-center rounded-lg bg-background shadow-brand">
@@ -223,7 +243,7 @@ export function SectionPageClient() {
                                 </button>
                                 <div className="flex w-full items-center gap-2.5 rounded-2xl bg-background px-4 py-6 text-left text-sm shadow-float">
                                   <span className={sectionMediaClassName} aria-hidden="true">
-                                    <ProviderIcon className="size-6"  />
+                                    <ProviderIcon className="size-6" />
                                   </span>
                                   <span
                                     className={

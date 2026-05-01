@@ -20,9 +20,9 @@ export const ROW_HEIGHT = {
 
 export const RESIZE_OPTIONS: readonly ResizeOption[] = [
   { id: "1x2", w: 1, h: 2 },
-  { id: "1x4", w: 1, h: 4 },
+  { id: "1x4", w: 1, h: 4, hiddenForItemTypes: ["section"] },
   { id: "2x2", w: 2, h: 2 },
-  { id: "2x4", w: 2, h: 4 },
+  { id: "2x4", w: 2, h: 4, hiddenForItemTypes: ["section"] },
   { id: "2x1", w: 2, h: 1 },
   { id: "4x1", w: 4, h: 1 },
 ] as const;

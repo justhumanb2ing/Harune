@@ -9,6 +9,7 @@ symptoms:
   - Sync payload and response contain changed Profile, Social, Link, or Text values, but refresh restores old values.
   - Success toast can appear even though the committed DB row was not updated.
   - Reordering social links can return the expected positions in the response while the persisted order remains stale.
+  - Bento v2 sync can return newly added `profile_bento` items while the committed `profile_bento` / `profile_*_bento` rows are missing them.
   - Duplicate sync?t and profile-page?t requests can appear if client-side verification retry logic is added.
 root_cause: logic_error
 resolution_type: code_fix
@@ -19,7 +20,7 @@ tags: [profile-page, sync, db-persistence, transaction, ordering, cache]
 # Profile page draft sync persistence regression
 
 ## Problem
-Profile page Sync could report success and return the changed editor data even though a later refresh, API read, or direct DB inspection still showed the previous values. The issue affected the full draft sync surface: profile fields, social links, link items, text box items, deletion, and ordering.
+Profile page Sync could report success and return the changed editor data even though a later refresh, API read, or direct DB inspection still showed the previous values. The issue affected the full draft sync surface: profile fields, social links, link items, text box items, deletion, ordering, and later the `/v2/[handle]` bento sync surface.
 
 The confusing part was that the network payload and network response were both correct. For example, after swapping `mail` and `x`, the payload and response could show `mail.position = 2` and `x.position = 1`, but the committed DB state still had the old order.
 
@@ -27,6 +28,7 @@ The confusing part was that the network payload and network response were both c
 - Pressing Sync showed a success toast.
 - `POST /api/app/profile-page/sync` payload contained the edited data.
 - `POST /api/app/profile-page/sync` response also contained the edited data.
+- `POST /api/app/profile-page/bento/sync` response could contain a newly added bento item such as `New text 1`, while a direct DB read still only showed the previous `profile_bento` rows.
 - Refreshing the editor called the normal profile-page read path and restored the old data.
 - Direct DB inspection still showed the old values.
 - The first sync after starting the dev server could appear to work, while later syncs did not reliably persist.
@@ -35,6 +37,7 @@ The confusing part was that the network payload and network response were both c
 ## What Didn't Work
 - Treating this as only a cache invalidation issue was incomplete. Cache could make stale reads more visible, but it did not explain why a direct DB read still showed old values.
 - Trusting the Sync response as proof of persistence was unsafe. The response was not necessarily coming from a committed DB read.
+- Reading inside `db.transaction(async (tx) => ...)` and returning that value was unsafe for profile-page rebase responses. A transaction-local read can make the network response look correct even when the committed DB state is still old.
 - Retrying Sync or adding verification requests with timestamp query parameters created noise. It produced duplicate `sync?t=...` and `profile-page?t=...` requests, but it did not fix persistence.
 - Focusing only on social-link ordering was too narrow. The same response-versus-DB mismatch also applied to profile text fields, item edits, and deletion.
 
@@ -94,6 +97,8 @@ return nextData;
 ```
 
 This changes the meaning of a successful Sync response. It now means the server performed the writes and a subsequent normal DB read observed the saved state.
+
+The same rule applies to Bento v2. `syncProfileBentoDraft()` must not return a response assembled from `tx`. It writes `profile_bento`, `profile_bento_layout`, and the matching `profile_*_bento` rows with the `db` executor, then returns `getPublicProfileBentoPageByPageId(db, ownedPage.id)`. That makes `POST /api/app/profile-page/bento/sync` response equal to a committed read of the same tables the public `/v2/[handle]` page uses.
 
 The ordered collection helpers were also changed to persist the explicit payload positions. This matters when the client sends an array whose order differs from the `position` fields:
 
@@ -171,6 +176,10 @@ Removing timestamp-based verification retries also explains the duplicate reques
 - The final flow does not need those requests because the Sync response itself is now a committed-read result.
 
 ## Prevention
+- Treat this as a hard contract for all profile-page persistence code, not as a one-off bug fix.
+- Any profile-page mutation that rebase client/editor state must return a committed DB snapshot read through `db`, not `tx`.
+- Do not introduce `db.transaction(async (tx) => ... return get...By...(tx, ...))` in profile-page sync paths. If atomicity is needed later, prove the response with a second normal DB read after the transaction has finished.
+- When adding a new profile-page child table, add a regression test that prevents transaction-local response construction for that sync path. Current guardrail: `src/lib/profile-page/__test__/profile-page-cache-regression.test.ts`.
 - Do not treat a mutation response as proof of persistence if it is assembled from inside the same transaction that performed the writes.
 - For persistence-sensitive mutations, return either:
   - the direct result of the committed write when the database guarantees it, or
@@ -186,6 +195,7 @@ Removing timestamp-based verification retries also explains the duplicate reques
   - Sync payload
   - Sync response
   - `GET /api/app/profile-page` response after Sync
+  - `/v2/[handle]` or `getPublicProfileBentoPage(handle)` response after Bento Sync
   - direct DB state
   - whether the Sync response was built from `tx` or from a normal `db` read
 
@@ -218,6 +228,7 @@ Useful manual API verification:
    - `profile_social_links.position` for social order
    - `profile_link_items.position` for link order
    - `profile_text_box_items.position` and `blockPosition` for text boxes
+   - `profile_bento`, `profile_bento_layout`, and `profile_*_bento` for `/v2/[handle]` bento items
 
 Verification from the fix:
 

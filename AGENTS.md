@@ -29,3 +29,11 @@
 - 파일을 분리할 때는 역할에 맞는 폴더를 우선한다. 훅은 `/src/hooks`, 재사용 UI는 `/src/components`, 렌더링과 무관한 유틸리티와 설정은 `/src/lib` 아래의 기능별 하위 폴더에 둔다.
 - 바렐 패턴은 사용하지 않는다. 단순 재수출만 담당하는 `index.ts`나 forwarding 파일을 만들지 말고, 사용하는 쪽에서 실제 구현 파일을 직접 import한다.
 - React/Next.js 코드를 작성, 수정, 리팩터링할 때는 `$vercel-composition-patterns`와 `$vercel-react-best-practices` 스킬을 먼저 확인하고 적용한다.
+
+### Profile page persistence contract
+- `profile-page` 저장/동기화 기능을 추가하거나 수정할 때는 `docs/solutions/logic-errors/profile-page-draft-sync-persistence-regression-2026-04-27.md`를 먼저 확인한다.
+- `src/lib/profile-page/mutations.ts`의 저장 API 응답은 draft, payload, optimistic state, transaction-local read를 근거로 만들지 않는다. 저장이 끝난 뒤 `db` executor로 정상 read path를 다시 읽은 committed DB snapshot만 성공 응답으로 반환한다.
+- profile-page 계열 mutation에서 `db.transaction(async (tx) => ... return readWithTx(tx))` 패턴으로 성공 응답을 만들지 않는다. transaction 내부 read는 커밋된 DB 상태의 증거가 아니다.
+- `/api/app/profile-page/sync`와 `/api/app/profile-page/bento/sync`처럼 editor store를 rebase하는 route는 반드시 `cache: "no-store"`/no-store response와 committed-read response 의미를 유지한다.
+- `profile_bento`, `profile_bento_layout`, `profile_*_bento`를 포함한 새 profile-page child table을 추가하면 schema, validation, mutation write, committed read helper, editor payload, public/preview renderer, regression test를 함께 갱신한다.
+- 저장 관련 변경 후에는 최소 `bun test src/lib/profile-page/__test__/profile-page-cache-regression.test.ts`와 변경 파일 대상 `bun x biome check ...`를 실행한다. transaction-local response를 금지하는 회귀 테스트를 우회하거나 삭제하지 않는다.

@@ -21,6 +21,9 @@ import type {
   ProfileBentoLayout,
 } from "@/lib/profile-page/types";
 
+type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+type DbExecutor = typeof db | DbTransaction;
+
 const toPlaylistProvider = (provider: string): PlaylistProvider => provider as PlaylistProvider;
 
 export const getOwnedProfilePage = async (userId: string) => {
@@ -253,8 +256,11 @@ const toLayoutMap = (
   return layoutsByBentoId;
 };
 
-export const getPublicProfileBentoPage = async (handle: string) => {
-  const page = await db
+export const getPublicProfileBentoPageByPageId = async (
+  executor: DbExecutor,
+  profilePageId: string
+) => {
+  const page = await executor
     .select({
       id: profilePages.id,
       handle: profilePages.handle,
@@ -270,7 +276,7 @@ export const getPublicProfileBentoPage = async (handle: string) => {
     })
     .from(profilePages)
     .innerJoin(users, eq(profilePages.userId, users.id))
-    .where(eq(profilePages.handle, handle))
+    .where(eq(profilePages.id, profilePageId))
     .limit(1)
     .then((rows) => rows[0] ?? null);
 
@@ -278,7 +284,7 @@ export const getPublicProfileBentoPage = async (handle: string) => {
     return null;
   }
 
-  const bentos = await db
+  const bentos = await executor
     .select({
       id: profileBentos.id,
       type: profileBentos.type,
@@ -295,7 +301,7 @@ export const getPublicProfileBentoPage = async (handle: string) => {
 
   const bentoIds = bentos.map((bento) => bento.id);
   const [layouts, linkBentos, textBentos, playlistBentos, sectionBentos] = await Promise.all([
-    db
+    executor
       .select({
         bentoId: profileBentoLayouts.bentoId,
         breakpoint: profileBentoLayouts.breakpoint,
@@ -306,10 +312,16 @@ export const getPublicProfileBentoPage = async (handle: string) => {
       })
       .from(profileBentoLayouts)
       .where(inArray(profileBentoLayouts.bentoId, bentoIds)),
-    db.select().from(profileLinkBentos).where(inArray(profileLinkBentos.bentoId, bentoIds)),
-    db.select().from(profileTextBentos).where(inArray(profileTextBentos.bentoId, bentoIds)),
-    db.select().from(profilePlaylistBentos).where(inArray(profilePlaylistBentos.bentoId, bentoIds)),
-    db.select().from(profileSectionBentos).where(inArray(profileSectionBentos.bentoId, bentoIds)),
+    executor.select().from(profileLinkBentos).where(inArray(profileLinkBentos.bentoId, bentoIds)),
+    executor.select().from(profileTextBentos).where(inArray(profileTextBentos.bentoId, bentoIds)),
+    executor
+      .select()
+      .from(profilePlaylistBentos)
+      .where(inArray(profilePlaylistBentos.bentoId, bentoIds)),
+    executor
+      .select()
+      .from(profileSectionBentos)
+      .where(inArray(profileSectionBentos.bentoId, bentoIds)),
   ]);
 
   const layoutsByBentoId = toLayoutMap(layouts);
@@ -418,6 +430,23 @@ export const getPublicProfileBentoPage = async (handle: string) => {
     page,
     bento,
   };
+};
+
+export const getPublicProfileBentoPage = async (handle: string) => {
+  const page = await db
+    .select({
+      id: profilePages.id,
+    })
+    .from(profilePages)
+    .where(eq(profilePages.handle, handle))
+    .limit(1)
+    .then((rows) => rows[0] ?? null);
+
+  if (!page) {
+    return null;
+  }
+
+  return getPublicProfileBentoPageByPageId(db, page.id);
 };
 
 export const getPublicProfilePageSocialImage = async (handle: string) => {

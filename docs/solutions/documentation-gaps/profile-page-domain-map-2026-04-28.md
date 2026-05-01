@@ -27,6 +27,7 @@ Profile page의 truth source는 DB의 `profile_page` 계열 테이블이다.
 | Social links | `profileSocialLinks` | `SocialLink`, `DraftSocialLink` |
 | Link items | `profileLinkItems` | `LinkItem`, `DraftLinkItem` |
 | Text boxes | `profileTextBoxItems` | `TextBoxItem`, `DraftTextBoxItem` |
+| Bento v2 items | `profileBentos`, `profileBentoLayouts`, `profileLinkBentos`, `profileTextBentos`, `profilePlaylistBentos`, `profileSectionBentos` | `ProfileBentoItem`, `PublicProfileBentoPageData` |
 
 읽기 경로는 두 개로 나뉜다.
 
@@ -42,6 +43,12 @@ Public read:
 /:handle
   -> getPublicProfilePage(handle)
   -> PublicProfilePage
+
+Bento v2 read:
+/v2/:handle
+  -> getPublicProfileBentoPage(handle)
+  -> getPublicProfileBentoPageByPageId(db, page.id)
+  -> ProfileBentoPage
 ```
 
 쓰기 경로는 draft 전체 동기화를 중심으로 본다.
@@ -54,7 +61,17 @@ Editor draft
   -> syncProfilePageDraft(userId, values)
   -> normal DB read after writes
   -> query invalidation and store rebase
+
+Bento v2 editor
+  -> ProfileBentoInteractiveGrid current payload
+  -> POST /api/app/profile-page/bento/sync
+  -> profileBentoSyncSchema
+  -> syncProfileBentoDraft(userId, values)
+  -> normal DB read with getPublicProfileBentoPageByPageId(db, ownedPage.id)
+  -> local editor rebase from committed response
 ```
+
+Profile-page sync responses must never be assembled from draft state or a transaction-local read. If a route rebase client/editor state, the response must be a committed DB snapshot read through `db` after writes complete. See `docs/solutions/logic-errors/profile-page-draft-sync-persistence-regression-2026-04-27.md`.
 
 이미지 업로드는 저장소 업로드와 DB column finalize가 둘 다 끝나야 persisted 상태로 본다.
 
@@ -80,6 +97,7 @@ Profile page는 draft, React Query cache, browser fetch cache, DB state, public 
 ## When to Apply
 - `src/components/section/profile-page/profile-page-editor-store.ts`를 바꿀 때
 - `src/lib/profile-page/mutations.ts`의 sync 또는 reorder helper를 바꿀 때
+- `/api/app/profile-page/bento/sync`, `profile_bento`, `profile_bento_layout`, `profile_*_bento`를 바꿀 때
 - 이미지 업로드, S3 cleanup, cache-busting URL을 바꿀 때
 - 공개 페이지와 editor preview가 다르게 보이는 문제를 디버깅할 때
 
@@ -93,6 +111,17 @@ Sync 성공 조건은 네트워크 응답만으로 판단하지 않는다. 안�
 4. 직접 DB row 확인
 5. editor store가 response로 rebase되는지 확인
 6. 공개 페이지 revalidate 대상 확인
+```
+
+Bento v2 저장 문제는 `profile_bento` parent row만 보지 말고 type-specific child table도 같이 확인한다.
+
+```text
+1. POST /api/app/profile-page/bento/sync payload 확인
+2. route response 확인
+3. getPublicProfileBentoPage(handle) 정상 read 확인
+4. 직접 DB에서 profile_bento, profile_bento_layout, profile_link_bento, profile_text_bento, profile_playlist_bento, profile_section_bento 확인
+5. response가 getPublicProfileBentoPageByPageId(db, ownedPage.id) 결과인지 확인
+6. transaction-local read 또는 optimistic payload로 response를 만들지 않았는지 확인
 ```
 
 이미지 URL 비교는 전체 URL 문자열보다 object key를 기준으로 한다. 같은 object라도 `?v=` 값이 바뀔 수 있기 때문이다.

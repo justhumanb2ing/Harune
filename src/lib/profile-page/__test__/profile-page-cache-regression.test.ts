@@ -68,4 +68,18 @@ describe("profile page cache regression", () => {
     expect(source.includes('from "react"')).toBe(false);
     expect(source.includes("cache(async")).toBe(false);
   });
+
+  test("bento sync response is built from a committed DB read", () => {
+    const source = readFileSync(join(process.cwd(), "src/lib/profile-page/mutations.ts"), "utf8");
+    const start = source.indexOf("export const syncProfileBentoDraft");
+    const end = source.indexOf("export const syncProfilePageDraft");
+    const bentoSyncSource = source.slice(start, end);
+
+    expect(bentoSyncSource.includes("db.transaction")).toBe(false);
+    expect(
+      bentoSyncSource.includes(
+        "const nextData = await getPublicProfileBentoPageByPageId(db, ownedPage.id);"
+      )
+    ).toBe(true);
+  });
 });

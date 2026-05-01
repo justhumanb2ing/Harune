@@ -13,7 +13,7 @@ import {
   profileTextBentos,
   profileTextBoxItems,
 } from "@/db/schema/profile-page";
-import { getPublicProfileBentoPage } from "@/lib/profile-page/queries";
+import { getPublicProfileBentoPageByPageId } from "@/lib/profile-page/queries";
 import { getS3ObjectKeyFromPublicUrl } from "@/lib/s3/config";
 import { deletePublicS3Object } from "@/lib/s3/delete-object";
 import type {
@@ -1139,46 +1139,46 @@ export const syncProfileBentoDraft = async ({
   const ownedPage = await getOwnedPageOrThrow(userId);
   const now = new Date();
 
-  await db.transaction(async (tx) => {
-    const existingBentos = await tx
-      .select({
-        id: profileBentos.id,
-      })
-      .from(profileBentos)
-      .where(eq(profileBentos.profilePageId, ownedPage.id));
-    const existingIds = new Set(existingBentos.map((item) => item.id));
-    const nextIds = new Set(values.bento.map((item) => item.id));
+  const existingBentos = await db
+    .select({
+      id: profileBentos.id,
+    })
+    .from(profileBentos)
+    .where(eq(profileBentos.profilePageId, ownedPage.id));
+  const existingIds = new Set(existingBentos.map((item) => item.id));
+  const nextIds = new Set(values.bento.map((item) => item.id));
 
-    for (const item of existingBentos) {
-      if (!nextIds.has(item.id)) {
-        await tx.delete(profileBentos).where(eq(profileBentos.id, item.id));
-      }
+  for (const item of existingBentos) {
+    if (!nextIds.has(item.id)) {
+      await db.delete(profileBentos).where(eq(profileBentos.id, item.id));
     }
+  }
 
-    for (const item of values.bento) {
-      if (existingIds.has(item.id)) {
-        await tx
-          .update(profileBentos)
-          .set({
-            type: item.type,
-            updatedAt: now,
-          })
-          .where(and(eq(profileBentos.id, item.id), eq(profileBentos.profilePageId, ownedPage.id)));
-      } else {
-        await tx.insert(profileBentos).values({
-          id: item.id,
-          profilePageId: ownedPage.id,
+  for (const item of values.bento) {
+    if (existingIds.has(item.id)) {
+      await db
+        .update(profileBentos)
+        .set({
           type: item.type,
           updatedAt: now,
-        });
-      }
-
-      await deleteBentoContent(tx, item.id);
-      await insertBentoContent({ tx, item, now });
+        })
+        .where(and(eq(profileBentos.id, item.id), eq(profileBentos.profilePageId, ownedPage.id)));
+    } else {
+      await db.insert(profileBentos).values({
+        id: item.id,
+        profilePageId: ownedPage.id,
+        type: item.type,
+        updatedAt: now,
+      });
     }
-  });
 
-  const nextData = await getPublicProfileBentoPage(ownedPage.handle);
+    await deleteBentoContent(db, item.id);
+    await insertBentoContent({ tx: db, item, now });
+  }
+
+  await db.update(profilePages).set({ updatedAt: now }).where(eq(profilePages.id, ownedPage.id));
+
+  const nextData = await getPublicProfileBentoPageByPageId(db, ownedPage.id);
 
   if (!nextData) {
     throw new ProfilePageError("Profile page not found.", 404);

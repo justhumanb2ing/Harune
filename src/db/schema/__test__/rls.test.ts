@@ -6,10 +6,16 @@ import { coupons } from "@/db/schema/coupons";
 import { creditTransactions } from "@/db/schema/credits";
 import { plans } from "@/db/schema/plans";
 import {
+  profileBentoLayouts,
+  profileBentos,
+  profileLinkBentos,
   profileLinkItems,
   profilePages,
+  profilePlaylistBentos,
   profilePlaylistItems,
+  profileSectionBentos,
   profileSocialLinks,
+  profileTextBentos,
   profileTextBoxItems,
 } from "@/db/schema/profile-page";
 import { authAccounts, authJwks, authSessions, authVerifications, users } from "@/db/schema/user";
@@ -29,6 +35,10 @@ const baseMigrationSql = readFileSync(
 );
 const playlistMigrationSql = readFileSync(
   new URL("../../../../drizzle/0011_playlist_bright_harmony.sql", import.meta.url),
+  "utf8"
+);
+const bentoMigrationSql = readFileSync(
+  new URL("../../../../drizzle/0012_brave_colossus.sql", import.meta.url),
   "utf8"
 );
 
@@ -85,6 +95,48 @@ describe("schema RLS configuration", () => {
       "profile_text_box_item_owner_update",
       "profile_text_box_item_owner_delete",
     ]);
+
+    expectPolicies(policyNames(profileBentos), [
+      "profile_bento_public_select",
+      "profile_bento_owner_insert",
+      "profile_bento_owner_update",
+      "profile_bento_owner_delete",
+    ]);
+
+    expectPolicies(policyNames(profileBentoLayouts), [
+      "profile_bento_layout_public_select",
+      "profile_bento_layout_owner_insert",
+      "profile_bento_layout_owner_update",
+      "profile_bento_layout_owner_delete",
+    ]);
+
+    expectPolicies(policyNames(profileLinkBentos), [
+      "profile_link_bento_public_select",
+      "profile_link_bento_owner_insert",
+      "profile_link_bento_owner_update",
+      "profile_link_bento_owner_delete",
+    ]);
+
+    expectPolicies(policyNames(profileTextBentos), [
+      "profile_text_bento_public_select",
+      "profile_text_bento_owner_insert",
+      "profile_text_bento_owner_update",
+      "profile_text_bento_owner_delete",
+    ]);
+
+    expectPolicies(policyNames(profilePlaylistBentos), [
+      "profile_playlist_bento_public_select",
+      "profile_playlist_bento_owner_insert",
+      "profile_playlist_bento_owner_update",
+      "profile_playlist_bento_owner_delete",
+    ]);
+
+    expectPolicies(policyNames(profileSectionBentos), [
+      "profile_section_bento_public_select",
+      "profile_section_bento_owner_insert",
+      "profile_section_bento_owner_update",
+      "profile_section_bento_owner_delete",
+    ]);
   });
 
   test("allows public reads for plans without exposed role writes", () => {
@@ -123,6 +175,28 @@ describe("schema RLS configuration", () => {
     expect(
       playlistMigrationSql.includes(
         'GRANT INSERT, UPDATE, DELETE ON TABLE "profile_playlist_item" TO "authenticated"'
+      )
+    ).toBe(true);
+    expect(bentoMigrationSql.includes('CREATE TABLE "profile_bento"')).toBe(true);
+    expect(bentoMigrationSql.includes('CREATE TABLE "profile_bento_layout"')).toBe(true);
+    expect(bentoMigrationSql.includes('CREATE TABLE "profile_link_bento"')).toBe(true);
+    expect(bentoMigrationSql.includes('CREATE TABLE "profile_text_bento"')).toBe(true);
+    expect(bentoMigrationSql.includes('CREATE TABLE "profile_playlist_bento"')).toBe(true);
+    expect(bentoMigrationSql.includes('CREATE TABLE "profile_section_bento"')).toBe(true);
+    expect(bentoMigrationSql.includes('CREATE TABLE "profile_playlist_item"')).toBe(false);
+    expect(
+      bentoMigrationSql.includes(
+        'REVOKE ALL ON TABLE "profile_bento", "profile_bento_layout", "profile_link_bento", "profile_text_bento", "profile_playlist_bento", "profile_section_bento" FROM "anon", "authenticated"'
+      )
+    ).toBe(true);
+    expect(
+      bentoMigrationSql.includes(
+        'GRANT SELECT ON TABLE "profile_bento", "profile_bento_layout", "profile_link_bento", "profile_text_bento", "profile_playlist_bento", "profile_section_bento" TO "anon", "authenticated"'
+      )
+    ).toBe(true);
+    expect(
+      bentoMigrationSql.includes(
+        'GRANT INSERT, UPDATE, DELETE ON TABLE "profile_bento", "profile_bento_layout", "profile_link_bento", "profile_text_bento", "profile_playlist_bento", "profile_section_bento" TO "authenticated"'
       )
     ).toBe(true);
     expect(baseMigrationSql.includes("IF to_regclass('public.coupon') IS NOT NULL THEN")).toBe(

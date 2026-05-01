@@ -35,7 +35,7 @@ export function GridResizeControls({
   trailingControl,
 }: GridResizeControlsProps) {
   return (
-    <div className="grid-action absolute -bottom-1.5 left-1/2 z-10 flex -translate-x-1/2 translate-y-1/2 flex-nowrap items-center justify-center gap-1 rounded-lg bg-foreground/95 p-1 opacity-0 shadow-float backdrop-blur-sm transition-opacity group-hover/item:opacity-100 focus-within:opacity-100">
+    <div className="grid-action absolute -bottom-1.5 left-1/2 z-40 flex -translate-x-1/2 translate-y-1/2 flex-nowrap items-center justify-center gap-1 rounded-lg bg-foreground/95 p-1 opacity-0 shadow-float backdrop-blur-sm transition-opacity group-hover/item:opacity-100 focus-within:opacity-100">
       <ToggleGroup
         aria-label={`Resize ${item.label}`}
         className="flex-nowrap justify-center"

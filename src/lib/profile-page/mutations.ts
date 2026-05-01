@@ -1,16 +1,24 @@
 import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import {
+  profileBentoLayouts,
+  profileBentos,
+  profileLinkBentos,
   profileLinkItems,
   profilePages,
+  profilePlaylistBentos,
   profilePlaylistItems,
+  profileSectionBentos,
   profileSocialLinks,
+  profileTextBentos,
   profileTextBoxItems,
 } from "@/db/schema/profile-page";
+import { getPublicProfileBentoPage } from "@/lib/profile-page/queries";
 import { getS3ObjectKeyFromPublicUrl } from "@/lib/s3/config";
 import { deletePublicS3Object } from "@/lib/s3/delete-object";
 import type {
   LinkItemInput,
+  ProfileBentoSyncValues,
   ProfilePageSyncValues,
   ProfilePageUpdateValues,
   SocialLinkInput,
@@ -1041,6 +1049,142 @@ const syncTextBoxItems = async ({
       updatedAt: now,
     });
   }
+};
+
+const deleteBentoContent = async (tx: DbExecutor, bentoId: string) => {
+  await tx.delete(profileBentoLayouts).where(eq(profileBentoLayouts.bentoId, bentoId));
+  await tx.delete(profileLinkBentos).where(eq(profileLinkBentos.bentoId, bentoId));
+  await tx.delete(profileTextBentos).where(eq(profileTextBentos.bentoId, bentoId));
+  await tx.delete(profilePlaylistBentos).where(eq(profilePlaylistBentos.bentoId, bentoId));
+  await tx.delete(profileSectionBentos).where(eq(profileSectionBentos.bentoId, bentoId));
+};
+
+const insertBentoContent = async ({
+  tx,
+  item,
+  now,
+}: {
+  tx: DbExecutor;
+  item: ProfileBentoSyncValues["bento"][number];
+  now: Date;
+}) => {
+  await tx.insert(profileBentoLayouts).values([
+    {
+      bentoId: item.id,
+      breakpoint: "desktop",
+      x: item.layout.desktop.x,
+      y: item.layout.desktop.y,
+      w: item.layout.desktop.w,
+      h: item.layout.desktop.h,
+      updatedAt: now,
+    },
+    {
+      bentoId: item.id,
+      breakpoint: "compact",
+      x: item.layout.compact.x,
+      y: item.layout.compact.y,
+      w: item.layout.compact.w,
+      h: item.layout.compact.h,
+      updatedAt: now,
+    },
+  ]);
+
+  if (item.type === "link") {
+    await tx.insert(profileLinkBentos).values({
+      bentoId: item.id,
+      title: item.content.title,
+      description: item.content.description || null,
+      favicon: item.content.favicon || null,
+      thumbnail: item.content.thumbnail || null,
+      url: item.content.url,
+      updatedAt: now,
+    });
+    return;
+  }
+
+  if (item.type === "text") {
+    await tx.insert(profileTextBentos).values({
+      bentoId: item.id,
+      content: item.content.content,
+      updatedAt: now,
+    });
+    return;
+  }
+
+  if (item.type === "playlist") {
+    await tx.insert(profilePlaylistBentos).values({
+      bentoId: item.id,
+      title: item.content.title,
+      provider: item.content.provider,
+      url: item.content.url,
+      content: item.content.content,
+      updatedAt: now,
+    });
+    return;
+  }
+
+  await tx.insert(profileSectionBentos).values({
+    bentoId: item.id,
+    title: item.content.title,
+  });
+};
+
+export const syncProfileBentoDraft = async ({
+  userId,
+  values,
+}: {
+  userId: string;
+  values: ProfileBentoSyncValues;
+}) => {
+  const ownedPage = await getOwnedPageOrThrow(userId);
+  const now = new Date();
+
+  await db.transaction(async (tx) => {
+    const existingBentos = await tx
+      .select({
+        id: profileBentos.id,
+      })
+      .from(profileBentos)
+      .where(eq(profileBentos.profilePageId, ownedPage.id));
+    const existingIds = new Set(existingBentos.map((item) => item.id));
+    const nextIds = new Set(values.bento.map((item) => item.id));
+
+    for (const item of existingBentos) {
+      if (!nextIds.has(item.id)) {
+        await tx.delete(profileBentos).where(eq(profileBentos.id, item.id));
+      }
+    }
+
+    for (const item of values.bento) {
+      if (existingIds.has(item.id)) {
+        await tx
+          .update(profileBentos)
+          .set({
+            type: item.type,
+            updatedAt: now,
+          })
+          .where(and(eq(profileBentos.id, item.id), eq(profileBentos.profilePageId, ownedPage.id)));
+      } else {
+        await tx.insert(profileBentos).values({
+          id: item.id,
+          profilePageId: ownedPage.id,
+          type: item.type,
+          updatedAt: now,
+        });
+      }
+
+      await deleteBentoContent(tx, item.id);
+      await insertBentoContent({ tx, item, now });
+    }
+  });
+
+  const nextData = await getPublicProfileBentoPage(ownedPage.handle);
+
+  if (!nextData) {
+    throw new ProfilePageError("Profile page not found.", 404);
+  }
+
+  return nextData;
 };
 
 export const syncProfilePageDraft = async ({

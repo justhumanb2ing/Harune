@@ -70,7 +70,7 @@ export function isAuthPage(pathname: string) {
 export function isAuthRequiredPage(pathname: string) {
   return (
     AUTH_REQUIRED_PAGE_PREFIXES.some((prefix) => hasPathPrefix(pathname, prefix)) ||
-    isVersionedHandleAppPath(pathname)
+    isHandleAnalyticsPath(pathname)
   );
 }
 
@@ -78,22 +78,24 @@ export function hasPathPrefix(pathname: string, prefix: string) {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
 }
 
-export function isVersionedHandleAppPath(pathname: string) {
-  const [, version, handle, area] = pathname.split("/");
+export function isHandleAnalyticsPath(pathname: string) {
+  const [, handle, area] = pathname.split("/");
 
-  return version === "v1" && Boolean(handle) && (area === "app" || area === "analytics");
+  return Boolean(handle) && !isReservedPublicSegment(handle) && area === "analytics";
 }
 
 function getLegacyHandleAppPath(pathname: string) {
-  const [, handle, area, ...restSegments] = pathname.split("/");
+  const [, handle, area] = pathname.split("/");
 
-  if (!handle || handle === "api" || handle === "v1" || (area !== "app" && area !== "analytics")) {
+  if (!handle || isReservedPublicSegment(handle) || (area !== "app" && area !== "analytics")) {
     return null;
   }
 
-  const restPath = restSegments.length > 0 ? `/${restSegments.join("/")}` : "";
+  return area === "app" ? `/${handle}` : null;
+}
 
-  return `/v1/${handle}/${area}${restPath}`;
+function isReservedPublicSegment(value: string) {
+  return value === "api";
 }
 
 export function createSignInUrl(requestUrl: URL) {

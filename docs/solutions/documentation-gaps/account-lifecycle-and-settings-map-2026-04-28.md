@@ -16,17 +16,16 @@ tags: [account, settings, sign-out, delete-account, sidebar, session]
 # Account lifecycle and settings context map
 
 ## Context
-로그인 후 사용자는 앱 내부 sidebar/settings 패널에서 현재 페이지 확인, analytics 이동, 로그아웃, 계정 삭제를 수행한다. 기존 문서는 인증과 route 보호를 설명하지만, 계정 생명주기 기능이 사용자에게 어떻게 노출되고 어떤 데이터를 정리하는지는 별도로 정리되어 있지 않았다.
+로그인 후 사용자는 공개 프로필 owner footer의 settings popover에서 현재 페이지 관리, analytics 이동, 로그아웃, 계정 삭제를 수행한다. 기존 문서는 인증과 route 보호를 설명하지만, 계정 생명주기 기능이 사용자에게 어떻게 노출되고 어떤 데이터를 정리하는지는 별도로 정리되어 있지 않았다.
 
 ## Guidance
-앱 내부 shell의 주요 사용자 기능은 다음과 같다.
+owner profile surface의 주요 사용자 기능은 다음과 같다.
 
 | Feature | UI/route | Behavior |
 |---|---|---|
-| Section navigation | Sidebar `Section` | `/{handle}/app`으로 이동 |
-| Analytics navigation | Sidebar `Analytics` | `/{handle}/analytics`로 이동 |
-| Current page button | App header/sidebar | 현재 공개 페이지 URL 표시/이동 |
-| Settings panel | Sidebar expanded state | 사용자 page name/image/handle 표시 |
+| Public page navigation | Owner footer `My Page` | `/{handle}`로 이동 |
+| Analytics navigation | Owner footer `Analytics` | `/{handle}/analytics`로 이동 |
+| Settings panel | Owner settings popover | 사용자 page name/image/handle 표시 |
 | Log out | Settings action | Better Auth signOut, app query clear, `/sign-in` 이동 |
 | Delete account | Settings alert dialog | Better Auth deleteUser, app query clear, `/sign-in` 이동 |
 
@@ -34,8 +33,8 @@ tags: [account, settings, sign-out, delete-account, sidebar, session]
 
 | File | Responsibility |
 |---|---|
-| `src/components/sections/sidebar.tsx` | 앱 navigation, settings panel, sign out, delete account |
-| `src/components/layout/current-page-button.tsx` | 현재 public page URL 표시 |
+| `src/components/profile-page/v2/profile-bento-page.tsx` | owner footer navigation |
+| `src/components/profile-page/v2/profile-bento-owner-setting-popover.tsx` | settings panel, sign out, delete account |
 | `src/lib/auth-client.ts` | Better Auth React client |
 | `src/auth.ts` | delete user hook과 session/coupon cleanup |
 | `src/lib/react-query/app-cache.ts` | authenticated app query clear/invalidate |
@@ -86,7 +85,7 @@ app_user
 삭제 경고 문구는 “account, profile page, links, analytics credits, active sessions”를 제거한다고 말한다. 실제 DB cascade와 외부 analytics/storage cleanup 범위가 이 문구와 맞는지 기능 변경 때마다 확인해야 한다.
 
 ## When to Apply
-- Sidebar settings UI나 app navigation을 바꿀 때
+- owner settings UI나 profile navigation을 바꿀 때
 - Better Auth deleteUser hook을 바꿀 때
 - profile page, coupon, session foreign key를 바꿀 때
 - 계정 삭제 후 남는 storage object나 analytics data 처리 정책을 정할 때
@@ -103,12 +102,12 @@ app_user
 6. query cache가 clear되고 /sign-in으로 이동하는지
 ```
 
-Sidebar navigation 문제를 디버깅할 때:
+Owner navigation 문제를 디버깅할 때:
 
 ```text
 1. useUser()가 profilePage.handle을 갖고 있는지
-2. handle 없을 때 /post-sign-in fallback으로 가는지
-3. active route 판정이 pathname과 href prefix를 맞게 비교하는지
+2. handle 없을 때 /api/join 또는 /create fallback으로 가는지
+3. owner footer 링크가 /{handle}과 /{handle}/analytics를 가리키는지
 4. expanded panel이 route change 또는 Escape로 닫히는지
 ```
 

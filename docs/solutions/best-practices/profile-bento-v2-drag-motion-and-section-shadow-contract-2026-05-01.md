@@ -1,23 +1,23 @@
 ---
-title: Profile bento v2 drag motion and section shadow contract
+title: Profile bento drag motion and section shadow contract
 date: 2026-05-01
 category: best-practices
-module: profile-page-v2
+module: profile-page
 problem_type: interaction_contract
 component: frontend
 severity: high
 applies_when:
-  - `/v2/[handle]` bento grid drag interaction을 수정할 때
+  - `/[handle]` bento grid drag interaction을 수정할 때
   - section item의 visual height, shadow, hover, focus 상태를 수정할 때
   - drag 중 input/textarea hover, selection, action UI 노출 문제를 수정할 때
-tags: [profile-page, bento, v2, drag-motion, section, shadow, react-grid-layout]
+tags: [profile-page, bento, drag-motion, section, shadow, react-grid-layout]
 ---
 
-# Profile bento v2 drag motion and section shadow contract
+# Profile bento drag motion and section shadow contract
 
 ## Context
 
-`/v2/[handle]` owner editor의 bento grid는 velocity 기반 drag motion을 사용한다. 사용자가 item을 좌우로 흔들며 drag할 때 item이 pointer velocity에 반응해 rotate/x motion을 보여야 한다.
+`/[handle]` owner editor의 bento grid는 velocity 기반 drag motion을 사용한다. 사용자가 item을 좌우로 흔들며 drag할 때 item이 pointer velocity에 반응해 rotate/x motion을 보여야 한다.
 
 Section item은 React Grid Layout 상으로는 h=2 영역을 예약하지만, 시각적으로는 h=1 높이만 보인다. 이 item의 shadow는 보이는 h=1 item body에만 적용되어야 한다.
 
@@ -27,7 +27,7 @@ Section item은 React Grid Layout 상으로는 h=2 영역을 예약하지만, �
 
 - Drag 중 velocity motion은 유지한다.
 - `useGridDragMotion`의 `cardRotate`와 `cardX`는 실제 editor item body에 연결되어야 한다.
-- `/v2/[handle]` owner editor에서 실제 렌더링되는 item shell은 `motion.div`여야 한다.
+- `/[handle]` owner editor에서 실제 렌더링되는 item shell은 `motion.div`여야 한다.
 - Drag 중 active item은 `rotate: cardRotate`, `x: cardX`를 적용해야 한다.
 - Section item은 hover, 내부 input focus, drag 상태에서 `shadow-float`를 표시해야 한다.
 - Section item의 `shadow-float`는 h=2 RGL wrapper가 아니라 h=1로 보이는 item body에 적용해야 한다.
@@ -55,7 +55,7 @@ Drag motion 때문에 pointer가 내부 input/textarea를 스치면서 생기는
 
 ## Implementation Notes
 
-현재 `/v2/[handle]` owner editor의 실제 drag item body는 `ProfileBentoInteractiveGrid` 내부의 `ProfileBentoGridShell`이다.
+현재 `/[handle]` owner editor의 실제 drag item body는 `ProfileBentoInteractiveGrid` 내부의 `ProfileBentoGridShell`이다.
 
 이 파일에서 velocity motion과 section shadow contract를 유지해야 한다.
 

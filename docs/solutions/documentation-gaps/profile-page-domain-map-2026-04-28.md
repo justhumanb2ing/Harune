@@ -39,13 +39,8 @@ GET /api/app/profile-page
   -> profilePageQueryOptions()
   -> editor provider/store
 
-Public read:
+Public bento read:
 /:handle
-  -> getPublicProfilePage(handle)
-  -> PublicProfilePage
-
-Bento v2 read:
-/v2/:handle
   -> getPublicProfileBentoPage(handle)
   -> getPublicProfileBentoPageByPageId(db, page.id)
   -> ProfileBentoPage
@@ -62,7 +57,7 @@ Editor draft
   -> normal DB read after writes
   -> query invalidation and store rebase
 
-Bento v2 editor
+Bento editor
   -> ProfileBentoInteractiveGrid current payload
   -> POST /api/app/profile-page/bento/sync
   -> profileBentoSyncSchema
@@ -95,7 +90,7 @@ select local file
 Profile page는 draft, React Query cache, browser fetch cache, DB state, public page cache가 동시에 얽힌다. 캐시를 고쳐도 DB write가 실패하면 문제가 남고, DB write가 맞아도 editor store rebase가 틀리면 사용자는 실패로 본다. 문제를 좁힐 때는 “현재 보고 있는 값이 draft인지, 캐시인지, 정상 DB 재조회인지”를 먼저 분리한다.
 
 ## When to Apply
-- `src/components/section/profile-page/profile-page-editor-store.ts`를 바꿀 때
+- `src/hooks/profile-page-editor-store.ts`를 바꿀 때
 - `src/lib/profile-page/mutations.ts`의 sync 또는 reorder helper를 바꿀 때
 - `/api/app/profile-page/bento/sync`, `profile_bento`, `profile_bento_layout`, `profile_*_bento`를 바꿀 때
 - 이미지 업로드, S3 cleanup, cache-busting URL을 바꿀 때

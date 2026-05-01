@@ -27,11 +27,11 @@ Landing page /
   -> /sign-up or authenticated app redirect
   -> /sign-up?handle={handle}
   -> Better Auth sign-up
-  -> /post-sign-in?handle={handle}
+  -> /api/join?handle={handle}
   -> no profile page: /create?handle={handle}
   -> complete onboarding
   -> /create/success
-  -> /{handle}/app
+  -> /{handle}
 ```
 
 기존 사용자는 더 짧게 이동한다.
@@ -40,7 +40,7 @@ Landing page /
 /login
   -> unauthenticated: /sign-in
   -> authenticated: resolveAuthenticatedAppRedirect(userId)
-  -> /{handle}/app or /create
+  -> /{handle} or /create
 ```
 
 주요 파일은 다음과 같다.
@@ -49,11 +49,10 @@ Landing page /
 |---|---|
 | `src/app/(website-layout)/page.tsx` | 공개 랜딩과 `/join` CTA |
 | `src/components/auth/sign-up-handle-form.tsx` | handle 입력, 정규화, availability check |
-| `src/app/join/route.ts` | 비로그인 사용자는 `/sign-up`, 로그인 사용자는 앱 redirect |
-| `src/app/login/route.ts` | 비로그인 사용자는 `/sign-in`, 로그인 사용자는 앱 redirect |
+| `src/app/api/join/route.ts` | 비로그인 사용자는 `/sign-in`, 로그인 사용자는 app redirect |
 | `src/app/(auth)/sign-in/page.tsx` | 로그인 화면, Google 사용 가능 여부, OAuth error 표시 |
 | `src/app/(auth)/sign-up/page.tsx` | 회원가입 화면, handle/callback forwarding |
-| `src/app/post-sign-in/page.tsx` | 인증 후 `/create` 또는 `/{handle}/app` 결정 |
+| `src/lib/auth/app-redirect.ts` | 인증 후 `/create` 또는 `/{handle}` 결정 |
 | `src/app/(in-app)/create/page.tsx` | profile page가 없는 사용자만 온보딩 진입 |
 | `src/components/auth/onboarding-form.tsx` | handle, profile, social links 3단계 생성 폼 |
 | `src/app/api/app/create/route.ts` | 사용자 최초 profile page 생성 |
@@ -80,7 +79,7 @@ submit onboarding
 ## Why This Matters
 신규 사용자 funnel은 인증, handle availability, S3 upload, DB 생성이 한 번에 엮인다. 실패 지점을 잘못 해석하면 사용자는 계정은 있는데 페이지가 없거나, storage object만 생기고 profile page row는 없는 상태가 될 수 있다.
 
-`handle`은 `/sign-up`, `/sign-in`, `/post-sign-in`, `/create`를 통과하면서 query string으로 이어진다. 이 연결을 끊으면 사용자가 랜딩에서 고른 handle이 온보딩에 전달되지 않는다.
+`handle`은 `/sign-up`, `/sign-in`, `/api/join`, `/create`를 통과하면서 query string으로 이어진다. 이 연결을 끊으면 사용자가 랜딩에서 고른 handle이 온보딩에 전달되지 않는다.
 
 ## When to Apply
 - 랜딩 CTA, `/join`, `/login` 라우트를 바꿀 때
@@ -94,9 +93,9 @@ submit onboarding
 ```text
 1. /join이 /sign-up으로 보내는지 확인
 2. handle query가 /sign-up 또는 /sign-in에 남는지 확인
-3. AuthForm callbackUrl이 /post-sign-in?...인지 확인
+3. AuthForm callbackUrl이 /api/join?...인지 확인
 4. resolveAuthenticatedAppRedirect가 profile page 유무를 맞게 판단하는지 확인
-5. /create가 이미 page 있는 사용자를 /{handle}/app으로 보내는지 확인
+5. /create가 이미 page 있는 사용자를 /{handle}로 보내는지 확인
 ```
 
 온보딩 생성 실패를 디버깅할 때:

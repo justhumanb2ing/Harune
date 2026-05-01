@@ -19,7 +19,6 @@ const reservedHandles = new Set([
   "sign-up",
   "subscribe",
   "terms",
-  "v1",
 ]);
 
 export const normalizeHandle = (value: string) => value.trim().toLowerCase();

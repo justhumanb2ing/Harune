@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { PublicProfilePage } from "@/components/profile-page/live-page/live-page";
+import { auth } from "@/auth";
+import { ProfileBentoPage } from "@/components/profile-page/v2/profile-bento-page";
 import { WebPageJsonLd } from "@/components/site-instrumentation/structured-data";
 import { appConfig } from "@/lib/config";
-import { getPublicProfilePage } from "@/lib/profile-page/queries";
+import {
+  getOwnedProfilePage,
+  getProfilePageEditorData,
+  getPublicProfileBentoPage,
+} from "@/lib/profile-page/queries";
+import type { ProfilePageData } from "@/lib/profile-page/types";
 import { absoluteUrl, createPageMetadata } from "@/lib/seo";
 
 type HandlePageProps = {
@@ -14,39 +20,75 @@ type HandlePageProps = {
 
 export const dynamic = "force-dynamic";
 
+const toSerializableProfilePageData = (
+  data: Awaited<ReturnType<typeof getProfilePageEditorData>>
+) =>
+  data
+    ? ({
+        page: {
+          id: data.page.id,
+          handle: data.page.handle,
+          linkBlockPosition: data.page.linkBlockPosition,
+          location: data.page.location,
+          name: data.page.name,
+          role: data.page.role,
+          bio: data.page.bio,
+          image: data.page.image,
+          backgroundImage: data.page.backgroundImage,
+        },
+        socialLinks: data.socialLinks,
+        linkItems: data.linkItems,
+        playlistItems: data.playlistItems,
+        textBoxItems: data.textBoxItems,
+      } satisfies ProfilePageData)
+    : null;
+
 export async function generateMetadata({ params }: HandlePageProps): Promise<Metadata> {
   const { handle } = await params;
-  const owner = await getPublicProfilePage(handle);
+  const data = await getPublicProfileBentoPage(handle);
 
-  if (!owner?.handle) {
+  if (!data?.page.handle) {
     return {};
   }
 
+  const title = `${data.page.name || data.page.userName || data.page.handle}`;
+
   return createPageMetadata({
-    path: `/${owner.handle}`,
-    title: `${owner.name || owner.userName || owner.handle} on ${appConfig.projectName}`,
-    description: owner.bio || `Visit @${owner.handle}'s page.`,
-    imageAlt: `${owner.name || owner.userName || owner.handle} on ${appConfig.projectName}`,
-    imagePath: `/${owner.handle}/opengraph-image`,
-    twitterImagePath: `/${owner.handle}/twitter-image`,
+    path: `/${data.page.handle}`,
+    title,
+    description: data.page.bio || `Visit @${data.page.handle}'s page.`,
+    imageAlt: title,
+    imagePath: `/${data.page.handle}/opengraph-image`,
+    twitterImagePath: `/${data.page.handle}/twitter-image`,
   });
 }
 
 export default async function HandlePage({ params }: HandlePageProps) {
   const { handle } = await params;
-  const owner = await getPublicProfilePage(handle);
+  const [data, session] = await Promise.all([getPublicProfileBentoPage(handle), auth()]);
 
-  if (!owner?.handle) {
+  if (!data?.page.handle) {
     notFound();
   }
+
+  const [editorData, viewerProfilePage] = session?.user?.id
+    ? await Promise.all([
+        getProfilePageEditorData(session.user.id, data.page.handle).then(
+          toSerializableProfilePageData
+        ),
+        getOwnedProfilePage(session.user.id),
+      ])
+    : [null, null];
+  const isOwner = editorData?.page.id === data.page.id;
+  const title = `${data.page.name || data.page.userName || data.page.handle} on ${appConfig.projectName}`;
 
   return (
     <>
       <WebPageJsonLd
-        id={absoluteUrl(`/${owner.handle}`)}
-        description={owner.bio || `Visit @${owner.handle}'s page.`}
-        title={`${owner.name || owner.userName || owner.handle} on ${appConfig.projectName}`}
-        lastUpdated={owner.updatedAt}
+        id={absoluteUrl(`/${data.page.handle}`)}
+        description={data.page.bio || `Visit @${data.page.handle}'s page.`}
+        title={title}
+        lastUpdated={data.page.updatedAt}
         isAccessibleForFree
         publisher={{
           "@type": "Organization",
@@ -55,25 +97,16 @@ export default async function HandlePage({ params }: HandlePageProps) {
         }}
         about={{
           "@type": "Thing",
-          name: owner.handle,
+          name: data.page.handle,
         }}
       />
-      <main className="mx-auto min-h-lvh max-w-lg">
-        <PublicProfilePage
-          profilePageId={owner.id}
-          backgroundImage={owner.backgroundImage}
-          handle={owner.handle}
-          name={owner.name}
-          bio={owner.bio}
-          image={owner.image}
-          linkBlockPosition={owner.linkBlockPosition}
-          linkItems={owner.linkItems}
-          playlistItems={owner.playlistItems}
-          location={owner.location}
-          socialLinks={owner.socialLinks}
-          role={owner.role}
-          textBoxItems={owner.textBoxItems}
-          userName={owner.userName}
+      <main className="min-h-lvh bg-background">
+        <ProfileBentoPage
+          page={data.page}
+          bento={data.bento}
+          editorData={editorData}
+          isOwner={isOwner}
+          viewerProfilePage={viewerProfilePage}
         />
       </main>
     </>

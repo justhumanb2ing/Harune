@@ -35,7 +35,7 @@ Better Auth remains the source of truth for users and sessions. Supabase RLS use
 - `app_user`, Better Auth internals, JWKS, credit ledger, and coupon tables are RLS-enabled with no exposed-role policies by default.
 - Public profile tables allow `anon` and `authenticated` reads. Authenticated writes require the JWT `sub` to match the owning `app_user.id`.
 - `plans` allows public reads and keeps writes server-only.
-- Next.js route guards and API checks still stay in place. RLS is the database defense layer, not the `/[handle]/app` UX or API authorization controller.
+- Next.js route guards and API checks still stay in place. RLS is the database defense layer, not the `/[handle]` UX or API authorization controller.
 - Do not put service-role or secret database credentials in client code. Browser Supabase clients must use only a publishable key plus a Better Auth JWT access token.
 
 ### Core Schema

@@ -20,7 +20,7 @@ tags: [profile-page, sync, db-persistence, transaction, ordering, cache]
 # Profile page draft sync persistence regression
 
 ## Problem
-Profile page Sync could report success and return the changed editor data even though a later refresh, API read, or direct DB inspection still showed the previous values. The issue affected the full draft sync surface: profile fields, social links, link items, text box items, deletion, ordering, and later the `/v2/[handle]` bento sync surface.
+Profile page Sync could report success and return the changed editor data even though a later refresh, API read, or direct DB inspection still showed the previous values. The issue affected the full draft sync surface: profile fields, social links, link items, text box items, deletion, ordering, and later the `/[handle]` bento sync surface.
 
 The confusing part was that the network payload and network response were both correct. For example, after swapping `mail` and `x`, the payload and response could show `mail.position = 2` and `x.position = 1`, but the committed DB state still had the old order.
 
@@ -98,7 +98,7 @@ return nextData;
 
 This changes the meaning of a successful Sync response. It now means the server performed the writes and a subsequent normal DB read observed the saved state.
 
-The same rule applies to Bento v2. `syncProfileBentoDraft()` must not return a response assembled from `tx`. It writes `profile_bento`, `profile_bento_layout`, and the matching `profile_*_bento` rows with the `db` executor, then returns `getPublicProfileBentoPageByPageId(db, ownedPage.id)`. That makes `POST /api/app/profile-page/bento/sync` response equal to a committed read of the same tables the public `/v2/[handle]` page uses.
+The same rule applies to Bento. `syncProfileBentoDraft()` must not return a response assembled from `tx`. It writes `profile_bento`, `profile_bento_layout`, and the matching `profile_*_bento` rows with the `db` executor, then returns `getPublicProfileBentoPageByPageId(db, ownedPage.id)`. That makes `POST /api/app/profile-page/bento/sync` response equal to a committed read of the same tables the public `/[handle]` page uses.
 
 The ordered collection helpers were also changed to persist the explicit payload positions. This matters when the client sends an array whose order differs from the `position` fields:
 
@@ -128,12 +128,10 @@ position: textBoxItem.position
 
 Then the editor draft and rendering paths were hardened so persisted `position` remains the source of truth:
 
-- `src/components/section/profile-page/profile-page-editor-store.ts`
+- `src/hooks/profile-page-editor-store.ts`
   - `createDraftData` sorts `socialLinks`, `linkItems`, and `textBoxItems` by `position` before rebuilding draft arrays.
-- `src/components/section/profile-page/profile-page-renderer.tsx`
-  - renderer sorts visible social links, link items, and text boxes by `position`.
-- `src/components/section/profile-page/public-profile-page.tsx`
-  - public page rendering uses the same defensive ordering.
+- `src/components/profile-page/v2/profile-bento-readonly-grid.tsx`
+  - public bento rendering uses persisted bento layout ordering.
 
 The previous verification retry path was removed from `use-profile-page-editor.ts`. Sync now sends one request:
 
@@ -195,7 +193,7 @@ Removing timestamp-based verification retries also explains the duplicate reques
   - Sync payload
   - Sync response
   - `GET /api/app/profile-page` response after Sync
-  - `/v2/[handle]` or `getPublicProfileBentoPage(handle)` response after Bento Sync
+  - `/[handle]` or `getPublicProfileBentoPage(handle)` response after Bento Sync
   - direct DB state
   - whether the Sync response was built from `tx` or from a normal `db` read
 
@@ -228,12 +226,12 @@ Useful manual API verification:
    - `profile_social_links.position` for social order
    - `profile_link_items.position` for link order
    - `profile_text_box_items.position` and `blockPosition` for text boxes
-   - `profile_bento`, `profile_bento_layout`, and `profile_*_bento` for `/v2/[handle]` bento items
+   - `profile_bento`, `profile_bento_layout`, and `profile_*_bento` for `/[handle]` bento items
 
 Verification from the fix:
 
-- `bun x biome check src/lib/profile-page/mutations.ts src/components/section/profile-page/use-profile-page-editor.ts src/components/section/profile-page/profile-page-editor-store.ts src/components/section/profile-page/profile-page-editor-store.test.ts src/components/section/profile-page/profile-page-renderer.tsx src/components/section/profile-page/public-profile-page.tsx src/app/api/app/profile-page/sync/route.ts src/app/api/app/profile-page/route.ts src/components/section/profile-page/change-handle-button.tsx`
-- `bun test src/components/section/profile-page/profile-page-editor-store.test.ts src/lib/profile-page/profile-page-sync-schema.test.ts src/lib/profile-page/profile-page-cache-regression.test.ts`
+- `bun x biome check src/lib/profile-page/mutations.ts src/hooks/use-profile-page-editor.ts src/hooks/profile-page-editor-store.ts src/components/profile-page/v2/profile-bento-readonly-grid.tsx src/app/api/app/profile-page/sync/route.ts src/app/api/app/profile-page/route.ts src/components/profile-page/editor-block/change-handle-button.tsx`
+- `bun test src/lib/profile-page/__test__/profile-page-sync-schema.test.ts src/lib/profile-page/__test__/profile-page-cache-regression.test.ts`
 - `bun x tsc --noEmit`
 - Local API verification confirmed that Sync response and immediate `GET /api/app/profile-page` both returned the changed profile values and social order.
 
@@ -246,10 +244,9 @@ Verification from the fix:
 Relevant code paths:
 
 - `src/lib/profile-page/mutations.ts`
-- `src/components/section/profile-page/use-profile-page-editor.ts`
-- `src/components/section/profile-page/profile-page-editor-store.ts`
-- `src/components/section/profile-page/profile-page-renderer.tsx`
-- `src/components/section/profile-page/public-profile-page.tsx`
+- `src/hooks/use-profile-page-editor.ts`
+- `src/hooks/profile-page-editor-store.ts`
+- `src/components/profile-page/v2/profile-bento-readonly-grid.tsx`
 - `src/app/api/app/profile-page/sync/route.ts`
 - `src/app/api/app/profile-page/route.ts`
-- `src/components/section/profile-page/change-handle-button.tsx`
+- `src/components/profile-page/editor-block/change-handle-button.tsx`

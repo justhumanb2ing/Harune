@@ -19,9 +19,8 @@ const routes = [
   "/sign-in",
   "/sign-up",
   "/create",
-  `/v1/${handle}/app`,
-  `/v1/${handle}/analytics`,
   `/${handle}`,
+  `/${handle}/analytics`,
   "/api/app/me",
   "/api/app/profile-page",
 ] as const;

@@ -16,13 +16,13 @@ tags: [analytics, umami, observability, profile-page, sentry]
 # Analytics and observability context map
 
 ## Context
-분석 기능은 공개 프로필 페이지의 조회와 클릭을 Umami로 수집하고, 인앱 `/analytics` 화면에서 현재 사용자의 profile page id 기준으로 요약한다. 핵심은 가변 handle이 아니라 stable `profile_page.id`를 analytics path로 쓰는 것이다.
+분석 기능은 공개 프로필 페이지의 조회와 클릭을 Umami로 수집하고, `/{handle}/analytics` 화면에서 현재 사용자의 profile page id 기준으로 요약한다. 핵심은 가변 handle이 아니라 stable `profile_page.id`를 analytics path로 쓰는 것이다.
 
 ## Guidance
 수집 경로는 다음과 같다.
 
 ```text
-PublicProfilePage
+ProfileBentoPage
   -> ProfilePageAnalyticsTracker
   -> trackProfilePagePageView(profilePageId)
   -> window.umami.track(...)
@@ -99,7 +99,7 @@ analytics URL: /_analytics/profile-page/{same-profile-page-id}
 ```text
 1. 전역 Umami script가 삽입됐는지
 2. window.umami가 존재하는지
-3. profilePageId가 PublicProfilePage까지 전달되는지
+3. profilePageId가 ProfileBentoPage까지 전달되는지
 4. synthetic analytics path가 같은지
 5. server Umami API env가 있는지
 6. timezone header fallback이 정상인지

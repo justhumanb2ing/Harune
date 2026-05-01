@@ -31,8 +31,8 @@ Network request
 
 `src/proxy.ts`는 다음 역할을 맡는다.
 
-- `/app`, `/plan` 같은 legacy path를 `/post-sign-in`으로 보낸다.
-- 인증 페이지에 이미 session signal이 있으면 `/post-sign-in`으로 보낸다.
+- `/app`, `/plan` 같은 legacy path를 `/api/join`으로 보낸다.
+- 인증 페이지에 이미 session signal이 있으면 `/api/join`으로 보낸다.
 - 보호 페이지에 session signal이 없으면 `/sign-in?callbackUrl=...`로 보낸다.
 - full session validation은 하지 않는다.
 
@@ -42,7 +42,7 @@ Network request
 |---|---|
 | `src/auth.ts` | Better Auth 서버 설정과 `auth()` wrapper |
 | `src/lib/auth/withAuthRequired.ts` | API route의 실제 session 검증과 lazy context 제공 |
-| `src/app/post-sign-in/page.tsx` | 로그인 후 onboarding 또는 `/:handle/app`으로 이동 |
+| `src/app/api/join/route.ts` | 로그인 후 onboarding 또는 `/:handle`로 이동 |
 | `src/lib/auth/app-redirect.ts` | 보유 profile page 기준 app redirect 계산 |
 | `src/lib/auth/app-redirect-paths.ts` | callback/next path 안전성 제한 |
 
@@ -62,7 +62,7 @@ Proxy의 cookie signal은 UX 힌트이지 권한 증명이 아니다. 이 값을
 
 ## When to Apply
 - `src/proxy.ts` matcher를 바꿀 때
-- `/sign-in`, `/sign-up`, `/post-sign-in`, `/create`, `/:handle/app` 이동을 바꿀 때
+- `/sign-in`, `/sign-up`, `/api/join`, `/create`, `/:handle` 이동을 바꿀 때
 - `src/lib/react-query/*`, `src/lib/users/*query-options*`, `src/lib/profile-page/*query-options*`를 바꿀 때
 - 성능 개선을 위해 prefetch 또는 hydration 범위를 조정할 때
 
@@ -71,10 +71,10 @@ Proxy의 cookie signal은 UX 힌트이지 권한 증명이 아니다. 이 값을
 
 ```text
 authenticated user
-  -> /post-sign-in
+  -> /api/join
   -> resolveAuthenticatedAppRedirect(userId, next, handle)
   -> no profile page: /create
-  -> has profile page: /{handle}/app
+  -> has profile page: /{handle}
 ```
 
 보호 API는 proxy에 의존하지 않고 route handler에서 확인한다.

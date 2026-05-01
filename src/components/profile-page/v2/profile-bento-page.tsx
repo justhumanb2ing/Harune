@@ -5,6 +5,7 @@ import { ProfileBentoProfileMotion } from "@/components/profile-page/v2/profile-
 import { ProfileBentoInteractiveGrid } from "@/components/profile-page/v2/profile-bento-interactive-grid";
 import { ProfileBentoOwnerSettingPopover } from "@/components/profile-page/v2/profile-bento-owner-setting-popover";
 import { ProfileBentoProfileEditor } from "@/components/profile-page/v2/profile-bento-profile-editor";
+import { PROFILE_BENTO_PROFILE_SHELL_CLASS } from "@/components/profile-page/v2/profile-bento-profile-shell";
 import { ProfileBentoReadonlyGrid } from "@/components/profile-page/v2/profile-bento-readonly-grid";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -23,11 +24,13 @@ type ProfileBentoViewerProfilePage = {
   name: string | null;
 };
 
+const isDeploymentEnvironment = process.env.VERCEL === "1" || Boolean(process.env.VERCEL_ENV);
+
 function ProfileBentoProfileAside({ page }: Pick<PublicProfileBentoPageData, "page">) {
   const displayName = page.name ?? page.userName ?? page.handle;
 
   return (
-    <ProfileBentoProfileMotion className="flex w-[380px] max-w-full shrink-0 flex-col xl:sticky xl:top-[var(--v2-page-top-offset)] xl:min-w-[20rem] xl:w-[700px] xl:shrink">
+    <ProfileBentoProfileMotion className={PROFILE_BENTO_PROFILE_SHELL_CLASS}>
       <div className="flex flex-col gap-8 overflow-hidden">
         <div className="flex px-4">
           <div className="relative flex size-32 items-center justify-center overflow-hidden rounded-full bg-secondary xl:size-44">
@@ -72,10 +75,12 @@ function ProfileBentoProfileAside({ page }: Pick<PublicProfileBentoPageData, "pa
 function ProfileBentoFooterAction({
   className,
   isOwner,
+  ownerHandle,
   viewerProfilePage,
 }: {
   className?: string;
   isOwner: boolean;
+  ownerHandle: string;
   viewerProfilePage: ProfileBentoViewerProfilePage | null;
 }) {
   return (
@@ -83,16 +88,22 @@ function ProfileBentoFooterAction({
       {isOwner ? (
         <>
           <ProfileBentoOwnerSettingPopover />
-          <Button
-            nativeButton={false}
-            variant="ghost"
-            className="px-2 font-normal"
-            render={
-              <Link href="#" className="text-neutral-500">
-                Analytics
-              </Link>
-            }
-          />
+          {isDeploymentEnvironment ? (
+            <Button variant="ghost" className="px-2 font-normal" disabled type="button">
+              Analytics
+            </Button>
+          ) : (
+            <Button
+              nativeButton={false}
+              variant="ghost"
+              className="px-2 font-normal"
+              render={
+                <Link href={`/${ownerHandle}/analytics`} className="text-neutral-500">
+                  Analytics
+                </Link>
+              }
+            />
+          )}
         </>
       ) : viewerProfilePage ? (
         <Button
@@ -100,7 +111,7 @@ function ProfileBentoFooterAction({
           variant="ghost"
           className="px-1 font-normal"
           render={
-            <Link className="flex-row items-center gap-1" href={`/v2/${viewerProfilePage.handle}`}>
+            <Link className="flex-row items-center gap-1" href={`/${viewerProfilePage.handle}`}>
               <Avatar size="sm">
                 <AvatarImage
                   src={viewerProfilePage.image ?? undefined}
@@ -150,6 +161,7 @@ export function ProfileBentoPage({
       <ProfileBentoFooterAction
         className="w-full py-16 md:fixed md:bottom-12 md:left-12 md:z-30 md:w-auto md:justify-start md:p-0"
         isOwner={isOwner}
+        ownerHandle={page.handle}
         viewerProfilePage={viewerProfilePage}
       />
     </section>

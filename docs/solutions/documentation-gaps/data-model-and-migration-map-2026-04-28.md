@@ -92,7 +92,7 @@ Profile page persistence 검증은 아래 순서가 안전하다.
 src/db/schema/core/profile-page.ts
 src/lib/profile-page/types.ts
 src/components/icon/*
-src/components/section/profile-page/use-profile-page-editor.ts
+src/hooks/use-profile-page-editor.ts
 src/lib/validations/profile-page.schema.ts
 ```
 

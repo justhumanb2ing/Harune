@@ -41,7 +41,7 @@ Browser
 | `src/app/(in-app)` | 로그인 후 앱 내부 화면 | 편집기, 분석, 구독 화면 변경 |
 | `src/app/(public-profile)` | 공개 핸들 페이지와 소셜 이미지 | 공개 프로필 렌더링, OG/Twitter 이미지 변경 |
 | `src/app/(website-layout)` | 공개 랜딩/정책/마케팅 페이지 | 랜딩, 정책, 공개 콘텐츠 변경 |
-| `src/components/section/profile-page` | 프로필 페이지 편집기와 공개 렌더러 | 페이지 빌더 UI, draft, preview 변경 |
+| `src/components/profile-page` | 프로필 페이지 편집기와 공개 렌더러 | 페이지 빌더 UI, draft, public profile 변경 |
 | `src/components/ui` | shadcn/base UI 계층 | 공용 UI primitive 변경 |
 | `src/lib` | 도메인 로직과 외부 연동 | 비즈니스 규칙, API helper, 캐시 정책 변경 |
 | `src/db/schema` | Drizzle schema 진입점 | 테이블/인덱스/관계 변경 |
@@ -53,7 +53,7 @@ Browser
 | Module | Key files | Notes |
 |---|---|---|
 | Auth | `src/auth.ts`, `src/proxy.ts`, `src/lib/auth/*` | Better Auth, cookie-signal proxy, protected API validation |
-| Profile page | `src/lib/profile-page/*`, `src/components/section/profile-page/*` | 제품의 핵심 편집/공개 렌더링 도메인 |
+| Profile page | `src/lib/profile-page/*`, `src/components/profile-page/*` | 제품의 핵심 편집/공개 렌더링 도메인 |
 | Analytics | `src/lib/analytics/*`, `src/components/analytics/*` | Umami 기반 공개 프로필 조회/클릭 수집 |
 | Payments | `src/lib/paddle/*`, `src/lib/dodopayments/*`, `src/lib/stripe/*` | 여러 결제 provider가 공존 |
 | Credits | `src/lib/credits/*`, `src/lib/inngest/functions/expire-credits.ts` | 현재 `enableCredits = false`, 기능은 준비 상태 |
@@ -72,8 +72,8 @@ Browser
 프로필 편집기 변경은 보통 아래 파일군을 함께 확인한다.
 
 ```text
-src/app/(in-app)/[handle]/app/*
-src/components/section/profile-page/*
+src/app/(public-profile)/[handle]/*
+src/components/profile-page/*
 src/lib/profile-page/*
 src/app/api/app/profile-page/*
 src/db/schema/core/profile-page.ts
@@ -84,7 +84,7 @@ src/db/schema/core/profile-page.ts
 ```text
 src/proxy.ts
 src/lib/auth/proxy-auth-boundary.ts
-src/app/post-sign-in/page.tsx
+src/app/api/join/route.ts
 src/lib/auth/app-redirect.ts
 src/lib/auth/withAuthRequired.ts
 ```

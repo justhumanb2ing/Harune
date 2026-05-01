@@ -54,23 +54,23 @@ describe("proxy auth boundary", () => {
     }
   });
 
-  test("redirects legacy handle app pages to the versioned namespace", () => {
+  test("redirects legacy handle app pages to the current profile page", () => {
     const decision = decide("/demo/app/links?mode=edit", true);
 
     expect(decision.kind).toBe("redirect");
     if (decision.kind === "redirect") {
-      expect(decision.url.pathname).toBe("/v1/demo/app/links");
+      expect(decision.url.pathname).toBe("/demo");
       expect(decision.url.searchParams.get("mode")).toBe("edit");
     }
   });
 
-  test("redirects missing session on protected app pages to sign-in callback", () => {
-    const decision = decide("/v1/demo/app/links?mode=edit");
+  test("redirects missing session on protected analytics pages to sign-in callback", () => {
+    const decision = decide("/demo/analytics?range=7d");
 
     expect(decision.kind).toBe("redirect");
     if (decision.kind === "redirect") {
       expect(decision.url.pathname).toBe("/sign-in");
-      expect(decision.url.searchParams.get("callbackUrl")).toBe("/v1/demo/app/links?mode=edit");
+      expect(decision.url.searchParams.get("callbackUrl")).toBe("/demo/analytics?range=7d");
     }
   });
 
@@ -92,6 +92,6 @@ describe("proxy auth boundary", () => {
   });
 
   test("allows session-cookie signal through to protected pages for page-level validation", () => {
-    expect(decide("/v1/demo/analytics", true)).toEqual({ kind: "next" });
+    expect(decide("/demo/analytics", true)).toEqual({ kind: "next" });
   });
 });

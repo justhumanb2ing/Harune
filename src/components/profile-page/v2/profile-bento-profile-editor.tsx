@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useProfilePageEditor } from "@/hooks/use-profile-page-editor";
 import { PROFILE_IMAGE_ACCEPT } from "@/lib/profile-page/image-upload";
 import { ProfileBentoProfileMotion } from "./profile-bento-entry-motion";
+import { PROFILE_BENTO_PROFILE_SHELL_CLASS } from "./profile-bento-profile-shell";
 
 export function ProfileBentoProfileEditor() {
   const editor = useProfilePageEditor();
@@ -16,7 +17,7 @@ export function ProfileBentoProfileEditor() {
   }
 
   return (
-    <ProfileBentoProfileMotion className="flex w-[380px] max-w-full shrink-0 flex-col xl:sticky xl:top-[var(--v2-page-top-offset)] xl:min-w-[20rem] xl:w-[700px] xl:shrink">
+    <ProfileBentoProfileMotion className={PROFILE_BENTO_PROFILE_SHELL_CLASS}>
       <div className="flex flex-col gap-8 overflow-hidden">
         <div className="flex px-4">
           <div className="group/profile-image relative">

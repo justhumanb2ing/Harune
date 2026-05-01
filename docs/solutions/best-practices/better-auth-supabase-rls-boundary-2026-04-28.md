@@ -18,7 +18,7 @@ tags: [better-auth, supabase, rls, jwt, drizzle, authorization]
 ## Context
 Harune은 Better Auth를 사용자와 세션의 원천으로 사용하고, Drizzle/PostgreSQL 스키마를 앱 서버에서 직접 다룬다. Supabase RLS를 추가할 때 핵심은 Better Auth를 Supabase Auth로 바꾸는 것이 아니라, Supabase exposed role이 DB에 직접 접근하는 경우에만 Better Auth JWT를 row policy의 입력으로 쓰는 것이다.
 
-이번 구현은 `auth()`, `withAuthRequired`, `/:handle/app` route guard를 제거하지 않고 유지했다. RLS는 DB row 접근 방어층이고, 앱 라우팅/redirect/API error contract는 Next.js와 Better Auth 경계가 계속 담당한다.
+이번 구현은 `auth()`, `withAuthRequired`, owner-only `/:handle/analytics` route guard를 제거하지 않고 유지했다. RLS는 DB row 접근 방어층이고, 앱 라우팅/redirect/API error contract는 Next.js와 Better Auth 경계가 계속 담당한다.
 
 ## Guidance
 Better Auth + Supabase RLS는 세 층으로 나누어 설계한다.
@@ -101,7 +101,7 @@ END $$;
 ```
 
 ## Why This Matters
-RLS를 추가했다고 앱 레벨 권한 코드를 제거하면 UX와 보안 책임이 섞인다. 예를 들어 `/:handle/app`은 단순히 row가 보이는지 확인하는 화면이 아니라, signed-in user의 canonical handle, onboarding redirect, unauthorized API contract를 결정한다. RLS deny result만 보고 이 결정을 대체하면 사용자는 빈 화면이나 모호한 DB error를 보게 되고, 서버 API의 계약도 깨진다.
+RLS를 추가했다고 앱 레벨 권한 코드를 제거하면 UX와 보안 책임이 섞인다. 예를 들어 `/:handle/analytics`는 단순히 row가 보이는지 확인하는 화면이 아니라, signed-in user의 ownership, canonical handle redirect, unauthorized API contract를 결정한다. RLS deny result만 보고 이 결정을 대체하면 사용자는 빈 화면이나 모호한 DB error를 보게 되고, 서버 API의 계약도 깨진다.
 
 반대로 RLS 없이 프론트나 route handler만 믿으면 Supabase Data API, future browser client, 운영 도구 실수 같은 경로에서 DB row가 방어되지 않는다. Better Auth JWT subject와 SQL privilege를 함께 묶으면 앱 UX와 DB least privilege가 각각 자기 역할을 하게 된다.
 

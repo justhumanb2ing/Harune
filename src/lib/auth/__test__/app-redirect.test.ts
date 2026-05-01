@@ -5,7 +5,7 @@ import { getSafeRedirectPath, resolveAppRedirectPath } from "@/lib/auth/app-redi
 describe("app redirect helpers", () => {
   test("keeps internal callback paths", () => {
     expect(getSafeRedirectPath("/create")).toBe("/create");
-    expect(getSafeRedirectPath("/v1/demo/app?tab=links")).toBe("/v1/demo/app?tab=links");
+    expect(getSafeRedirectPath("/demo/analytics?range=7d")).toBe("/demo/analytics?range=7d");
   });
 
   test("normalizes missing and external callback paths to the app entry fallback", () => {
@@ -15,10 +15,11 @@ describe("app redirect helpers", () => {
   });
 
   test("resolves legacy app paths against the owned handle", () => {
-    expect(resolveAppRedirectPath("/app", "demo")).toBe("/v1/demo/app");
-    expect(resolveAppRedirectPath("/app/settings", "demo")).toBe("/v1/demo/app/settings");
-    expect(resolveAppRedirectPath("/demo/app/settings?tab=links", "demo")).toBe(
-      "/v1/demo/app/settings?tab=links"
+    expect(resolveAppRedirectPath("/app", "demo")).toBe("/demo");
+    expect(resolveAppRedirectPath("/app/settings", "demo")).toBe("/demo");
+    expect(resolveAppRedirectPath("/demo/app/settings?tab=links", "demo")).toBe("/demo");
+    expect(resolveAppRedirectPath("/demo/analytics?range=7d", "demo")).toBe(
+      "/demo/analytics?range=7d"
     );
   });
 });

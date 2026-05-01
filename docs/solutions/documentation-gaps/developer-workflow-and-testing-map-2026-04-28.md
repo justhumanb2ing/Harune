@@ -53,7 +53,7 @@ bun run script scripts/measure-route-entry.ts
 | Area | Tests |
 |---|---|
 | Auth redirect/password | `src/lib/auth/*.test.ts`, `src/lib/validations/auth.schema.test.ts` |
-| Profile editor/store/cache/upload | `src/components/section/profile-page/*.test.ts`, `src/lib/profile-page/*.test.ts` |
+| Profile editor/store/cache/upload | `src/hooks/*.test.ts`, `src/lib/profile-page/__test__/*.test.ts` |
 | Analytics | `src/lib/analytics/*.test.ts` |
 | React Query app cache | `src/lib/react-query/app-cache.test.ts`, `src/lib/users/me-query-options.test.ts` |
 | Website content source | `src/app/*source.test.ts` |
@@ -74,9 +74,8 @@ Biome 규칙은 일부 항목을 warn으로 두고 있다. `noUnusedImports`는 
 Profile page sync 관련 변경 후 최소 검증:
 
 ```bash
-bun test src/lib/profile-page/profile-page-sync-schema.test.ts
-bun test src/lib/profile-page/profile-page-cache-regression.test.ts
-bun test src/components/section/profile-page/profile-page-editor-store.test.ts
+bun test src/lib/profile-page/__test__/profile-page-sync-schema.test.ts
+bun test src/lib/profile-page/__test__/profile-page-cache-regression.test.ts
 bun run lint
 ```
 

@@ -2,7 +2,7 @@
 title: React Grid Layout responsive grid prototype
 date: 2026-04-30
 category: best-practices
-module: website-layout-v2
+module: profile-page
 problem_type: implementation_note
 component: frontend
 severity: medium
@@ -16,7 +16,7 @@ tags: [react-grid-layout, responsive-grid, drag-and-drop, resizing, prototype]
 # React Grid Layout responsive grid prototype
 
 ## Context
-`src/app/(website-layout)/v2/grid-test.tsx` is a client-side prototype for validating `react-grid-layout` v2 behavior before applying the pattern to a production block editor surface.
+`src/components/profile-page/v2/profile-bento-interactive-grid.tsx` is the production client-side surface that applies the validated `react-grid-layout` v2 behavior.
 
 The prototype intentionally uses the v2 API:
 
@@ -532,11 +532,11 @@ This makes the lower half of the `h:2` placeholder visible and hides the upper h
 For focused validation of this prototype:
 
 ```bash
-bunx biome check 'src/app/(website-layout)/v2/grid-test.tsx'
+bun x biome check 'src/components/profile-page/v2/profile-bento-interactive-grid.tsx'
 ```
 
 ```bash
-bunx tsc --noEmit --pretty false --skipLibCheck --jsx react-jsx --moduleResolution bundler --module esnext --target es2022 --lib dom,dom.iterable,es2022 --types react,react-dom 'src/app/(website-layout)/v2/grid-test.tsx'
+bun x tsc --noEmit --pretty false --skipLibCheck --jsx react-jsx --moduleResolution bundler --module esnext --target es2022 --lib dom,dom.iterable,es2022 --types react,react-dom 'src/components/profile-page/v2/profile-bento-interactive-grid.tsx'
 ```
 
 Whole-repo TypeScript can fail on unrelated baseline test matcher typings, so use file-level checks for this prototype unless the repo baseline is cleaned up.

@@ -58,7 +58,7 @@ public/users/{userId}/profile-page/background
 ```
 
 ## Why This Matters
-Canonical URL, sitemap URL, robots sitemap URL이 서로 다른 helper를 쓰면 검색엔진이 서로 다른 사이트로 인식할 수 있다. 공개 profile URL은 handle 기반이지만, robots는 인앱 `/{handle}/app`과 `/{handle}/analytics`를 막아야 한다.
+Canonical URL, sitemap URL, robots sitemap URL이 서로 다른 helper를 쓰면 검색엔진이 서로 다른 사이트로 인식할 수 있다. 공개 profile URL은 `/{handle}`이고, robots는 private `/{handle}/analytics`와 legacy `/{handle}/app`을 막아야 한다.
 
 Media URL은 `?v=` cache version을 포함할 수 있다. 저장소 object key 비교와 공개 URL 문자열 비교를 혼동하면 cleanup 또는 no-op upload 판단이 틀어진다.
 

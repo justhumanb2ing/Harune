@@ -139,8 +139,8 @@ Cache-related hardening should accompany the persistence fix:
 
 - use `cache: "no-store"` for client profile-page and me queries
 - mark profile-page/me API routes and profile pages with `dynamic = "force-dynamic"`
-- remove React `cache()` around `getPublicProfilePage`
-- revalidate both the public profile path and section editor path after sync
+- avoid React `cache()` around public profile DB reads
+- revalidate the public profile path after sync
 
 ## Why This Works
 The core invariant becomes explicit: a profile-page image slot maps to one storage object and one DB column.

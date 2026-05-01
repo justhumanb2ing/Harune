@@ -34,7 +34,7 @@ export function GridResizeControls({
   return (
     <ToggleGroup
       aria-label={`Resize ${item.label}`}
-      className="grid-action absolute -bottom-1.5 left-1/2 z-10 rounded-lg! max-w-[calc(100%-1.5rem)] -translate-x-1/2 translate-y-1/2 flex-nowrap justify-center shadow-float bg-foreground/95 p-1 opacity-0  backdrop-blur-sm transition-opacity group-hover/item:opacity-100 focus-within:opacity-100"
+      className="grid-action absolute -bottom-1.5 left-1/2 z-10 rounded-lg!  -translate-x-1/2 translate-y-1/2 flex-nowrap justify-center shadow-float bg-foreground/95 p-1 opacity-0  backdrop-blur-sm transition-opacity group-hover/item:opacity-100 focus-within:opacity-100"
       onValueChange={(nextValue) => {
         const nextOption = options.find((option) => option.id === nextValue[0]);
 

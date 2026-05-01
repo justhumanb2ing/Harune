@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { PlaylistIframe } from "@/components/profile-page/playlist-iframe";
 import { COLS } from "@/lib/grid/grid-config";
 import type {
@@ -34,12 +35,27 @@ function ProfileBentoCard({ item }: { item: ProfileBentoItem }) {
         target="_blank"
       >
         {item.content.thumbnail ? (
-          <img alt="" className="h-24 w-full shrink-0 object-cover" src={item.content.thumbnail} />
+          <div className="relative h-24 w-full shrink-0 overflow-hidden">
+            <Image
+              alt=""
+              className="object-cover"
+              fill
+              sizes="(min-width: 1024px) 25vw, 50vw"
+              src={item.content.thumbnail}
+            />
+          </div>
         ) : null}
         <div className="flex min-h-0 flex-1 flex-col gap-2 p-4">
           <div className="flex min-w-0 items-center gap-2">
             {item.content.favicon ? (
-              <img alt="" className="size-5 shrink-0 rounded-sm" src={item.content.favicon} />
+              <Image
+                alt=""
+                className="shrink-0 rounded-sm"
+                height={20}
+                src={item.content.favicon}
+                unoptimized
+                width={20}
+              />
             ) : null}
             <h2 className="truncate font-medium text-sm">{item.content.title}</h2>
           </div>
@@ -108,11 +124,27 @@ export function ProfileBentoPage({ page, bento }: ProfileBentoPageProps) {
     <section className="mx-auto min-h-lvh w-full max-w-5xl px-4 py-8">
       <header className="mb-8 flex flex-col gap-5">
         {page.backgroundImage ? (
-          <img alt="" className="h-44 w-full rounded-lg object-cover" src={page.backgroundImage} />
+          <div className="relative h-44 w-full overflow-hidden rounded-lg">
+            <Image
+              alt=""
+              className="object-cover"
+              fill
+              priority
+              sizes="(min-width: 1024px) 1024px, 100vw"
+              src={page.backgroundImage}
+            />
+          </div>
         ) : null}
         <div className="flex items-center gap-4">
           {page.image ? (
-            <img alt={displayName} className="size-20 rounded-full object-cover" src={page.image} />
+            <Image
+              alt={displayName}
+              className="size-20 rounded-full object-cover"
+              height={80}
+              priority={!page.backgroundImage}
+              src={page.image}
+              width={80}
+            />
           ) : null}
           <div className="min-w-0">
             <h1 className="truncate font-semibold text-3xl tracking-tight">{displayName}</h1>

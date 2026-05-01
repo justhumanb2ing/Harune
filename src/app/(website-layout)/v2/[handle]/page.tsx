@@ -4,7 +4,11 @@ import { auth } from "@/auth";
 import { ProfileBentoPage } from "@/components/profile-page/v2/profile-bento-page";
 import { WebPageJsonLd } from "@/components/site-instrumentation/structured-data";
 import { appConfig } from "@/lib/config";
-import { getProfilePageEditorData, getPublicProfileBentoPage } from "@/lib/profile-page/queries";
+import {
+  getOwnedProfilePage,
+  getProfilePageEditorData,
+  getPublicProfileBentoPage,
+} from "@/lib/profile-page/queries";
 import type { ProfilePageData } from "@/lib/profile-page/types";
 import { absoluteUrl, createPageMetadata } from "@/lib/seo";
 
@@ -67,11 +71,14 @@ export default async function V2HandlePage({ params }: V2HandlePageProps) {
     notFound();
   }
 
-  const editorData = session?.user?.id
-    ? toSerializableProfilePageData(
-        await getProfilePageEditorData(session.user.id, data.page.handle)
-      )
-    : null;
+  const [editorData, viewerProfilePage] = session?.user?.id
+    ? await Promise.all([
+        getProfilePageEditorData(session.user.id, data.page.handle).then(
+          toSerializableProfilePageData
+        ),
+        getOwnedProfilePage(session.user.id),
+      ])
+    : [null, null];
   const isOwner = editorData?.page.id === data.page.id;
   const title = `${data.page.name || data.page.userName || data.page.handle} on ${appConfig.projectName}`;
 
@@ -99,6 +106,7 @@ export default async function V2HandlePage({ params }: V2HandlePageProps) {
           bento={data.bento}
           editorData={editorData}
           isOwner={isOwner}
+          viewerProfilePage={viewerProfilePage}
         />
       </main>
     </>

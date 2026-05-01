@@ -48,7 +48,6 @@ export function ProfileBentoOwnerSettingPopover() {
           onSuccess: () => {
             clearAuthenticatedAppQueries(queryClient);
             setIsOpen(false);
-            router.push("/sign-in");
             router.refresh();
           },
         },

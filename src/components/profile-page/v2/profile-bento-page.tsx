@@ -26,34 +26,44 @@ function ProfileBentoProfileAside({ page }: Pick<PublicProfileBentoPageData, "pa
   const displayName = page.name ?? page.userName ?? page.handle;
 
   return (
-    <aside className="flex w-[380px] max-w-full shrink-0 flex-col items-center gap-5 text-center xl:sticky xl:top-[var(--v2-page-top-offset)] xl:min-w-[20rem] xl:w-[700px] xl:shrink xl:items-start xl:text-left">
-      <div className="flex items-center justify-center gap-4 xl:flex-col xl:items-start xl:justify-start">
-        {page.image ? (
-          <Image
-            alt={displayName}
-            className="size-32 rounded-full object-cover xl:size-44"
-            height={176}
-            priority
-            src={page.image}
-            width={176}
-          />
-        ) : null}
-        <div className="min-w-0">
-          <h1 className="whitespace-pre-line font-semibold text-3xl tracking-tight">
+    <aside className="flex w-[380px] max-w-full shrink-0 flex-col xl:sticky xl:top-[var(--v2-page-top-offset)] xl:min-w-[20rem] xl:w-[700px] xl:shrink">
+      <div className="flex flex-col gap-12 overflow-hidden">
+        <div className="flex px-4">
+          <div className="relative flex size-32 items-center justify-center overflow-hidden rounded-full bg-secondary xl:size-44">
+            {page.image ? (
+              <Image
+                alt={displayName}
+                className="size-full object-cover"
+                height={176}
+                priority
+                src={page.image}
+                width={176}
+              />
+            ) : (
+              <span className="flex size-full flex-col items-center justify-center gap-2 rounded-full text-muted-foreground">
+                <span className="font-semibold text-lg">Avatar</span>
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-5 p-4 pt-0">
+          <h1 className="min-h-8 whitespace-pre-line break-all p-0 font-bold text-4xl! xl:text-5xl!">
             {displayName}
           </h1>
-          {page.role || page.location ? (
-            <p className="mt-1 text-muted-foreground text-sm">
-              {[page.role, page.location].filter(Boolean).join(" / ")}
-            </p>
-          ) : null}
+
+          {page.bio ? (
+            <p className="min-h-24 whitespace-pre-line break-all p-0 text-lg!">{page.bio}</p>
+          ) : (
+            <p className="min-h-24 p-0 text-lg! text-muted-foreground">Bio</p>
+          )}
+
+          <div className="flex flex-col gap-2 text-neutral-500">
+            <p className="h-fit p-0 text-base!">{page.role || "What do you do?"}</p>
+            <p className="h-fit p-0 text-base!">{page.location || "Where are you based?"}</p>
+          </div>
         </div>
       </div>
-      {page.bio ? (
-        <p className="max-w-2xl whitespace-pre-line text-muted-foreground text-sm leading-6">
-          {page.bio}
-        </p>
-      ) : null}
     </aside>
   );
 }
@@ -93,7 +103,11 @@ function ProfileBentoFooterAction({
         <Button
           nativeButton={false}
           variant="ghost"
-          render={<Link href="/sign-in">create my page</Link>}
+          render={
+            <Link href="/sign-in" className="text-neutral-500">
+              create my page
+            </Link>
+          }
         />
       )}
     </footer>
@@ -121,7 +135,7 @@ export function ProfileBentoPage({
         <ProfileBentoReadonlyGrid bento={bento} />
       )}
       <ProfileBentoFooterAction
-        className="w-full pb-4 xl:fixed xl:bottom-12 xl:left-12 xl:z-30 xl:w-auto xl:justify-start xl:p-0"
+        className="w-full py-16 xl:fixed xl:bottom-12 xl:left-12 xl:z-30 xl:w-auto xl:justify-start xl:p-0"
         isOwner={isOwner}
         viewerProfilePage={viewerProfilePage}
       />

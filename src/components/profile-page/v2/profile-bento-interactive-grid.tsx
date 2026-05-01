@@ -17,7 +17,10 @@ import { toast } from "sonner";
 import type { GridCardMotionPhase } from "@/components/grid/grid-card";
 import { ResponsiveGridCanvas } from "@/components/grid/responsive-grid-canvas";
 import { ProfileBentoGridActions } from "@/components/profile-page/v2/profile-bento-grid-actions";
-import { ProfileBentoEditableContentCard } from "@/components/profile-page/v2/profile-bento-grid-card";
+import {
+  getProfileBentoLinkSize,
+  ProfileBentoEditableContentCard,
+} from "@/components/profile-page/v2/profile-bento-grid-card";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -922,12 +925,20 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
           getItemMotionPhase={getItemMotionPhase}
           renderItem={(gridItem) => {
             const item = bentoById.get(gridItem.id);
+            const activeLayout =
+              layouts[activeBreakpoint]?.find((layoutItem) => layoutItem.i === gridItem.id) ??
+              item?.layout[activeBreakpoint];
+            const layoutSize = activeLayout
+              ? getProfileBentoLinkSize(activeLayout.w, activeLayout.h)
+              : undefined;
 
             return item ? (
               <ProfileBentoEditableContentCard
+                activeBreakpoint={activeBreakpoint}
                 autoFocus={focusItemId === item.id}
                 isLoading={loadingLinkItemIds.has(item.id)}
                 item={item}
+                layoutSize={layoutSize}
                 onChange={updateItem}
                 onFocusReady={() => {
                   setFocusItemId((current) => (current === item.id ? null : current));

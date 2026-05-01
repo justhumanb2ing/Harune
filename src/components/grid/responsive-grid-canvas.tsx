@@ -30,6 +30,7 @@ type ResponsiveGridCanvasProps = {
   onResizeItem: (id: string, breakpoint: GridBreakpoint, option: ResizeOption) => void;
   onResizeStart: (newItem: LayoutItem | null | undefined) => void;
   onResizeStop: () => void;
+  readOnly?: boolean;
   getItemMotionPhase?: (id: string) => GridCardMotionPhase | undefined;
   renderItem?: (item: GridItem) => ReactNode;
   renderTrailingResizeControl?: (item: GridItem) => ReactNode;
@@ -54,6 +55,7 @@ export function ResponsiveGridCanvas({
   onResizeItem,
   onResizeStart,
   onResizeStop,
+  readOnly = false,
   getItemMotionPhase,
   renderItem,
   renderTrailingResizeControl,
@@ -76,7 +78,7 @@ export function ResponsiveGridCanvas({
       cols={COLS}
       compactor={fastVerticalCompactor}
       containerPadding={GRID_PADDING}
-      dragConfig={{ bounded: false, cancel: ".grid-action", enabled: true }}
+      dragConfig={{ bounded: false, cancel: ".grid-action", enabled: !readOnly }}
       layouts={layouts}
       margin={GRID_MARGIN}
       maxRows={48}
@@ -120,6 +122,7 @@ export function ResponsiveGridCanvas({
               onMotionComplete={onItemMotionComplete}
               onRemove={onRemoveItem}
               onResize={onResizeItem}
+              readOnly={readOnly}
               shouldReduceMotion={shouldReduceMotion}
               trailingResizeControl={renderTrailingResizeControl?.(item)}
             >

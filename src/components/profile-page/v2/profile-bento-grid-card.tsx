@@ -3,7 +3,11 @@ import Image from "next/image";
 import type { CSSProperties } from "react";
 import { useEffect, useRef } from "react";
 import { PlaylistIframe } from "@/components/profile-page/playlist-iframe";
+import type { GridBreakpoint, ResizeOptionId } from "@/lib/grid/grid-types";
 import type { ProfileBentoItem } from "@/lib/profile-page/types";
+import { cn } from "@/lib/utils";
+
+type ProfileBentoLinkSize = ResizeOptionId;
 
 export function ProfileBentoEditableGridCard({ item }: { item: ProfileBentoItem }) {
   return <ProfileBentoGridCardContent item={item} preventNavigation />;
@@ -11,14 +15,18 @@ export function ProfileBentoEditableGridCard({ item }: { item: ProfileBentoItem 
 
 export function ProfileBentoEditableContentCard({
   autoFocus = false,
+  activeBreakpoint = "desktop",
   isLoading = false,
   item,
+  layoutSize,
   onChange,
   onFocusReady,
 }: {
   autoFocus?: boolean;
+  activeBreakpoint?: GridBreakpoint;
   isLoading?: boolean;
   item: ProfileBentoItem;
+  layoutSize?: ProfileBentoLinkSize;
   onChange: (item: ProfileBentoItem) => void;
   onFocusReady?: () => void;
 }) {
@@ -28,44 +36,12 @@ export function ProfileBentoEditableContentCard({
 
   if (item.type === "link") {
     return (
-      <article className="grid-action flex size-full min-h-0 flex-col gap-2 overflow-hidden rounded-lg p-3">
-        <input
-          aria-label="Link title"
-          className="w-full bg-transparent font-medium text-sm outline-none placeholder:text-muted-foreground"
-          onChange={(event) => {
-            onChange({
-              ...item,
-              content: { ...item.content, title: event.target.value },
-            });
-          }}
-          placeholder="Link title"
-          value={item.content.title}
-        />
-        <input
-          aria-label="Link URL"
-          className="w-full bg-transparent text-muted-foreground text-xs outline-none placeholder:text-muted-foreground"
-          onChange={(event) => {
-            onChange({
-              ...item,
-              content: { ...item.content, url: event.target.value },
-            });
-          }}
-          placeholder="https://example.com"
-          value={item.content.url}
-        />
-        <textarea
-          aria-label="Link description"
-          className="min-h-0 flex-1 resize-none bg-transparent text-sm leading-6 outline-none placeholder:text-muted-foreground"
-          onChange={(event) => {
-            onChange({
-              ...item,
-              content: { ...item.content, description: event.target.value },
-            });
-          }}
-          placeholder="Description"
-          value={item.content.description ?? ""}
-        />
-      </article>
+      <EditableLinkBento
+        activeBreakpoint={activeBreakpoint}
+        item={item}
+        layoutSize={layoutSize}
+        onChange={onChange}
+      />
     );
   }
 
@@ -96,6 +72,316 @@ export function ProfileBentoEditableContentCard({
   }
 
   return <ProfileBentoEditableGridCard item={item} />;
+}
+
+export function getProfileBentoLinkSize(w: number, h: number): ProfileBentoLinkSize {
+  if (w === 2 && h === 1) {
+    return "2x1";
+  }
+
+  if (w === 2 && h === 2) {
+    return "2x2";
+  }
+
+  if (w === 2 && h === 4) {
+    return "2x4";
+  }
+
+  if (w === 1 && h === 4) {
+    return "1x4";
+  }
+
+  return "1x2";
+}
+
+function LinkFavicon({
+  favicon,
+  title,
+  className,
+}: {
+  favicon: string | null;
+  title: string;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-sm",
+        className
+      )}
+    >
+      {favicon ? (
+        <Image
+          alt=""
+          className="size-full object-cover"
+          height={32}
+          src={favicon}
+          unoptimized
+          width={32}
+        />
+      ) : (
+        <span className="size-3 rounded-full bg-secondary" aria-hidden />
+      )}
+      <span className="sr-only">{title ? `${title} favicon` : "Link favicon"}</span>
+    </span>
+  );
+}
+
+function EditableLinkFavicon({
+  favicon,
+  href,
+  title,
+}: {
+  favicon: string | null;
+  href: string;
+  title: string;
+}) {
+  return (
+    <a
+      aria-label={title ? `Open ${title}` : "Open link"}
+      className="grid-action inline-flex size-8 shrink-0 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+      href={href}
+      rel="noreferrer"
+      target="_blank"
+    >
+      <LinkFavicon favicon={favicon} title={title} />
+    </a>
+  );
+}
+
+function LinkTitleInput({
+  item,
+  onChange,
+  className,
+}: {
+  item: Extract<ProfileBentoItem, { type: "link" }>;
+  onChange: (item: ProfileBentoItem) => void;
+  className?: string;
+}) {
+  return (
+    <input
+      aria-label="Link title"
+      className={cn(
+        "grid-action min-h-9 min-w-0 rounded-md bg-transparent px-2 py-1.5 font-medium text-sm outline-none transition-colors placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary truncate",
+        className
+      )}
+      onChange={(event) => {
+        onChange({
+          ...item,
+          content: { ...item.content, title: event.target.value },
+        });
+      }}
+      placeholder="Link title"
+      value={item.content.title}
+    />
+  );
+}
+
+function LinkTitleText({ title, className }: { title: string; className?: string }) {
+  return (
+    <h2
+      className={cn(
+        "min-h-9 min-w-0 truncate rounded-md px-2 py-1.5 font-medium text-sm",
+        className
+      )}
+    >
+      {title}
+    </h2>
+  );
+}
+
+function ReadonlyLinkTitle({ title, className }: { title: string; className?: string }) {
+  return <LinkTitleText title={title} className={className} />;
+}
+
+function LinkThumbnail({ thumbnail, className }: { thumbnail: string | null; className?: string }) {
+  return (
+    <div className={cn("relative overflow-hidden rounded-md bg-muted", className)}>
+      {thumbnail ? (
+        <Image
+          alt=""
+          className="object-cover"
+          fill
+          sizes="(min-width: 1024px) 25vw, 50vw"
+          src={thumbnail}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function LinkUrlText({ url }: { url: string }) {
+  return (
+    <div className="min-w-0 max-w-full px-2 text-muted-foreground text-xs">
+      <p className="min-w-0 max-w-full truncate line-clamp-1">{url}</p>
+    </div>
+  );
+}
+
+function ReadonlyLinkBento({
+  item,
+  layoutSize,
+}: {
+  item: Extract<ProfileBentoItem, { type: "link" }>;
+  layoutSize: ProfileBentoLinkSize;
+}) {
+  if (layoutSize === "2x1") {
+    return (
+      <article className="flex size-full min-h-0 items-center gap-3 overflow-hidden rounded-lg p-3">
+        <LinkFavicon favicon={item.content.favicon} title={item.content.title} />
+        <ReadonlyLinkTitle title={item.content.title} className="flex-1" />
+      </article>
+    );
+  }
+
+  if (layoutSize === "2x2") {
+    return (
+      <article className="flex size-full min-h-0 gap-3 overflow-hidden rounded-lg p-3">
+        <div className="flex min-w-0 flex-1 flex-col justify-between">
+          <div className="flex min-w-0 flex-1 flex-col gap-3">
+            <LinkFavicon favicon={item.content.favicon} title={item.content.title} />
+            <ReadonlyLinkTitle title={item.content.title} className="w-full" />
+          </div>
+          <LinkUrlText url={item.content.url} />
+        </div>
+        <LinkThumbnail thumbnail={item.content.thumbnail} className="h-full w-[46%] shrink-0" />
+      </article>
+    );
+  }
+
+  if (layoutSize === "2x4") {
+    return (
+      <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-3">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-between">
+          <div className="flex min-w-0 flex-1 flex-col gap-3">
+            <LinkFavicon favicon={item.content.favicon} title={item.content.title} />
+            <ReadonlyLinkTitle title={item.content.title} className="w-full" />
+          </div>
+          <LinkUrlText url={item.content.url} />
+        </div>
+        <LinkThumbnail thumbnail={item.content.thumbnail} className="h-[58%] w-full shrink-0" />
+      </article>
+    );
+  }
+
+  if (layoutSize === "1x4") {
+    return (
+      <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-3">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-between">
+          <div className="flex min-w-0 flex-1 flex-col gap-3">
+            <LinkFavicon favicon={item.content.favicon} title={item.content.title} />
+            <ReadonlyLinkTitle title={item.content.title} className="w-full" />
+          </div>
+          <LinkUrlText url={item.content.url} />
+        </div>
+        <LinkThumbnail thumbnail={item.content.thumbnail} className="h-[42%] w-full shrink-0" />
+      </article>
+    );
+  }
+
+  return (
+    <article className="flex size-full min-h-0 flex-col gap-3 overflow-hidden rounded-lg p-3">
+      <LinkFavicon favicon={item.content.favicon} title={item.content.title} />
+      <ReadonlyLinkTitle title={item.content.title} className="w-full" />
+    </article>
+  );
+}
+
+function EditableLinkBento({
+  activeBreakpoint,
+  item,
+  layoutSize,
+  onChange,
+}: {
+  activeBreakpoint: GridBreakpoint;
+  item: Extract<ProfileBentoItem, { type: "link" }>;
+  layoutSize?: ProfileBentoLinkSize;
+  onChange: (item: ProfileBentoItem) => void;
+}) {
+  const activeLayout = item.layout[activeBreakpoint];
+  const size = layoutSize ?? getProfileBentoLinkSize(activeLayout.w, activeLayout.h);
+
+  if (size === "2x1") {
+    return (
+      <article className="flex size-full min-h-0 items-center gap-3 overflow-hidden rounded-lg p-3">
+        <EditableLinkFavicon
+          favicon={item.content.favicon}
+          href={item.content.url}
+          title={item.content.title}
+        />
+        <LinkTitleInput item={item} onChange={onChange} className="flex-1" />
+      </article>
+    );
+  }
+
+  if (size === "2x2") {
+    return (
+      <article className="flex size-full min-h-0 gap-3 overflow-hidden rounded-lg p-3">
+        <div className="flex min-w-0 flex-1 flex-col justify-between">
+          <div className="flex min-w-0 flex-1 flex-col gap-3">
+            <EditableLinkFavicon
+              favicon={item.content.favicon}
+              href={item.content.url}
+              title={item.content.title}
+            />
+            <LinkTitleInput item={item} onChange={onChange} className="w-full" />
+          </div>
+          <LinkUrlText url={item.content.url} />
+        </div>
+
+        <LinkThumbnail thumbnail={item.content.thumbnail} className="h-full w-[46%] shrink-0" />
+      </article>
+    );
+  }
+
+  if (size === "2x4") {
+    return (
+      <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-3">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-between">
+          <div className="flex min-w-0 flex-1 flex-col gap-3">
+            <EditableLinkFavicon
+              favicon={item.content.favicon}
+              href={item.content.url}
+              title={item.content.title}
+            />
+            <LinkTitleInput item={item} onChange={onChange} className="w-full" />
+          </div>
+          <LinkUrlText url={item.content.url} />
+        </div>
+        <LinkThumbnail thumbnail={item.content.thumbnail} className="h-[58%] w-full shrink-0" />
+      </article>
+    );
+  }
+
+  if (size === "1x4") {
+    return (
+      <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-3">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-between">
+          <div className="flex min-w-0 flex-1 flex-col gap-3">
+            <EditableLinkFavicon
+              favicon={item.content.favicon}
+              href={item.content.url}
+              title={item.content.title}
+            />
+            <LinkTitleInput item={item} onChange={onChange} className="w-full" />
+          </div>
+          <LinkUrlText url={item.content.url} />
+        </div>
+        <LinkThumbnail thumbnail={item.content.thumbnail} className="h-[42%] w-full shrink-0" />
+      </article>
+    );
+  }
+
+  return (
+    <article className="flex size-full min-h-0 flex-col gap-3 overflow-hidden rounded-lg p-3">
+      <EditableLinkFavicon
+        favicon={item.content.favicon}
+        href={item.content.url}
+        title={item.content.title}
+      />
+      <LinkTitleInput item={item} onChange={onChange} className="w-full" />
+    </article>
+  );
 }
 
 function ProfileBentoLinkSkeleton() {
@@ -299,57 +585,48 @@ function EditableMediaBento({
   );
 }
 
-export function ProfileBentoGridCard({ item }: { item: ProfileBentoItem }) {
-  return <ProfileBentoGridCardContent item={item} />;
+export function ProfileBentoGridCard({
+  activeBreakpoint,
+  item,
+  layoutSize,
+}: {
+  activeBreakpoint?: GridBreakpoint;
+  item: ProfileBentoItem;
+  layoutSize?: ProfileBentoLinkSize;
+}) {
+  return (
+    <ProfileBentoGridCardContent
+      activeBreakpoint={activeBreakpoint}
+      item={item}
+      layoutSize={layoutSize}
+    />
+  );
 }
 
 function ProfileBentoGridCardContent({
+  activeBreakpoint = "desktop",
   item,
+  layoutSize,
   preventNavigation = false,
 }: {
+  activeBreakpoint?: GridBreakpoint;
   item: ProfileBentoItem;
+  layoutSize?: ProfileBentoLinkSize;
   preventNavigation?: boolean;
 }) {
   if (item.type === "link") {
+    const activeLayout = item.layout[activeBreakpoint];
+    const size = layoutSize ?? getProfileBentoLinkSize(activeLayout.w, activeLayout.h);
+
     return (
       <a
-        className="relative flex size-full min-h-0 flex-col overflow-hidden rounded-lg transition-colors hover:bg-muted/40"
+        className="relative block size-full min-h-0 overflow-hidden rounded-lg"
         href={item.content.url}
         onClick={preventNavigation ? (event) => event.preventDefault() : undefined}
         rel="noreferrer"
         target="_blank"
       >
-        {item.content.thumbnail ? (
-          <div className="relative h-24 w-full shrink-0 overflow-hidden">
-            <Image
-              alt=""
-              className="object-cover"
-              fill
-              sizes="(min-width: 1024px) 25vw, 50vw"
-              src={item.content.thumbnail}
-            />
-          </div>
-        ) : null}
-        <div className="flex min-h-0 flex-1 flex-col gap-2 p-4">
-          <div className="flex min-w-0 items-center gap-2">
-            {item.content.favicon ? (
-              <Image
-                alt=""
-                className="shrink-0 rounded-sm"
-                height={20}
-                src={item.content.favicon}
-                unoptimized
-                width={20}
-              />
-            ) : null}
-            <h2 className="truncate font-medium text-sm">{item.content.title}</h2>
-          </div>
-          {item.content.description ? (
-            <p className="line-clamp-3 text-muted-foreground text-sm leading-6">
-              {item.content.description}
-            </p>
-          ) : null}
-        </div>
+        <ReadonlyLinkBento item={item} layoutSize={size} />
       </a>
     );
   }

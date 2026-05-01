@@ -1,20 +1,15 @@
 "use client";
 
+import { useMotionValue } from "motion/react";
 import type { CSSProperties } from "react";
 import { useMemo } from "react";
-import { Responsive, useContainerWidth } from "react-grid-layout";
-import { fastVerticalCompactor } from "react-grid-layout/extras";
-import {
-  BREAKPOINTS,
-  COLS,
-  GRID_MARGIN,
-  GRID_PADDING,
-  getGridRowHeight,
-} from "@/lib/grid/grid-config";
+import { useContainerWidth } from "react-grid-layout";
+import { ResponsiveGridCanvas } from "@/components/grid/responsive-grid-canvas";
+import { BREAKPOINTS, getGridRowHeight } from "@/lib/grid/grid-config";
 import type { GridBreakpoint } from "@/lib/grid/grid-types";
 import type { ProfileBentoItem } from "@/lib/profile-page/types";
-import { ProfileBentoGridCard } from "./profile-bento-grid-card";
-import { toBentoGridLayouts } from "./profile-bento-grid-model";
+import { getProfileBentoLinkSize, ProfileBentoGridCard } from "./profile-bento-grid-card";
+import { toBentoGridItem, toBentoGridLayouts } from "./profile-bento-grid-model";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
@@ -29,7 +24,11 @@ export function ProfileBentoReadonlyGrid({ bento }: ProfileBentoReadonlyGridProp
   });
   const activeBreakpoint: GridBreakpoint = width > BREAKPOINTS.desktop ? "desktop" : "compact";
   const layouts = useMemo(() => toBentoGridLayouts(bento), [bento]);
+  const gridItems = useMemo(() => bento.map(toBentoGridItem), [bento]);
+  const bentoById = useMemo(() => new Map(bento.map((item) => [item.id, item] as const)), [bento]);
   const rowHeight = getGridRowHeight(width, activeBreakpoint);
+  const cardRotate = useMotionValue(0);
+  const cardX = useMotionValue(0);
   const gridStyle = {
     "--thin-item-visible-height": `${Math.round(rowHeight * 0.75)}px`,
   } as CSSProperties;
@@ -37,7 +36,10 @@ export function ProfileBentoReadonlyGrid({ bento }: ProfileBentoReadonlyGridProp
   if (!mounted) {
     return (
       <section className="min-w-0 flex-1 xl:w-[56rem] xl:flex-none">
-        <div className="h-96 w-[380px] max-w-full rounded-2xl border border-black/10 xl:w-full" />
+        <div
+          className="h-96 w-[380px] max-w-full rounded-2xl border border-black/10 xl:w-full"
+          ref={containerRef}
+        />
       </section>
     );
   }
@@ -49,36 +51,40 @@ export function ProfileBentoReadonlyGrid({ bento }: ProfileBentoReadonlyGridProp
         ref={containerRef}
         style={gridStyle}
       >
-        <Responsive<GridBreakpoint>
-          autoSize
-          breakpoints={BREAKPOINTS}
-          className="rounded-2xl"
-          cols={COLS}
-          compactor={fastVerticalCompactor}
-          containerPadding={GRID_PADDING}
-          dragConfig={{ bounded: false, enabled: false }}
+        <ResponsiveGridCanvas
+          activeBreakpoint={activeBreakpoint}
+          activeDragItemId={null}
+          cardRotate={cardRotate}
+          cardX={cardX}
+          items={gridItems}
           layouts={layouts}
-          margin={GRID_MARGIN}
-          maxRows={48}
-          resizeConfig={{ enabled: false }}
+          mounted={mounted}
+          onDrag={() => {}}
+          onDragStart={() => {}}
+          onDragStop={() => {}}
+          onLayoutChange={() => {}}
+          onRemoveItem={() => {}}
+          onResizeItem={() => {}}
+          onResizeStart={() => {}}
+          onResizeStop={() => {}}
+          readOnly
           rowHeight={rowHeight}
           width={width}
-        >
-          {bento.map((item) => (
-            <div
-              className={`overflow-visible rounded-xl ${item.type === "section" ? "flex items-end" : ""}`}
-              key={item.id}
-            >
-              <div
-                className={`relative flex w-full flex-col justify-between rounded-xl bg-white p-2 shadow-float ${item.type === "section" ? "h-[var(--thin-item-visible-height)]" : "h-full"}`}
-              >
-                <div className="min-h-0 flex-1">
-                  <ProfileBentoGridCard item={item} />
-                </div>
-              </div>
-            </div>
-          ))}
-        </Responsive>
+          renderItem={(gridItem) => {
+            const item = bentoById.get(gridItem.id);
+
+            return item ? (
+              <ProfileBentoGridCard
+                activeBreakpoint={activeBreakpoint}
+                item={item}
+                layoutSize={getProfileBentoLinkSize(
+                  item.layout[activeBreakpoint].w,
+                  item.layout[activeBreakpoint].h
+                )}
+              />
+            ) : null;
+          }}
+        />
       </div>
     </section>
   );

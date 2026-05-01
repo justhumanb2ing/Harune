@@ -204,7 +204,7 @@ function createMediaBentoFromFile(
       objectKey: "",
       href: null,
       alt: fileName,
-      caption: fileName,
+      caption: "",
     },
   };
 }

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
   return (
-    <main className="h-full flex items-center justify-center">
+    <main className="flex min-h-lvh items-center justify-center">
       <section className="flex flex-col items-center gap-10">
         <header className="flex flex-col items-center gap-1">
           <h2 className="text-xl font-bold">This space doesn’t exist</h2>

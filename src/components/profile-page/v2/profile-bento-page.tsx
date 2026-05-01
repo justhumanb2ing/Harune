@@ -53,9 +53,9 @@ function ProfileBentoProfileAside({ page }: Pick<PublicProfileBentoPageData, "pa
           </h1>
 
           {page.bio ? (
-            <p className="min-h-24 whitespace-pre-line break-all p-0 text-lg!">{page.bio}</p>
+            <p className="min-h-8 whitespace-pre-line break-all p-0 text-lg!">{page.bio}</p>
           ) : (
-            <p className="min-h-24 p-0 text-lg! text-muted-foreground">Bio</p>
+            <p className="min-h-8 p-0 text-lg! text-muted-foreground">Bio</p>
           )}
 
           <div className="flex flex-col gap-2 text-neutral-500">

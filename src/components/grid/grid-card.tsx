@@ -1,3 +1,4 @@
+import { TrashIcon } from "lucide-react";
 import { type MotionValue, motion } from "motion/react";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -5,6 +6,7 @@ import { GridResizeControls } from "@/components/grid/grid-resize-controls";
 import { THIN_PLACEHOLDER_ITEM_ID } from "@/lib/grid/grid-config";
 import { getResizeOptionId, getResizeOptionsForItem } from "@/lib/grid/grid-layout-utils";
 import type { GridBreakpoint, GridItem, GridLayouts, ResizeOption } from "@/lib/grid/grid-types";
+import { Button } from "../ui/button";
 
 export type GridCardMotionPhase = "entering" | "exiting";
 
@@ -131,13 +133,13 @@ export function GridCard({
             {shouldShowActions ? (
               <button
                 aria-label={`Remove ${item.label}`}
-                className="grid-action rounded-full bg-stone-100 px-2 py-1 text-[10px] text-stone-500 transition-colors hover:bg-red-50 hover:text-red-600"
+                className="pointer-events-none absolute -top-3 -right-3 z-10 size-9 cursor-pointer rounded-full border-[0.5px] border-border bg-background px-2 py-1 text-[10px] text-black opacity-0 shadow-sm transition-opacity hover:bg-secondary group-hover/item:pointer-events-auto group-hover/item:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 grid-action"
                 onClick={() => {
                   onRemove(item.id);
                 }}
                 type="button"
               >
-                Remove
+                <TrashIcon className="size-5 stroke-3" />
               </button>
             ) : null}
           </div>
@@ -146,16 +148,17 @@ export function GridCard({
       )}
       {children && shouldShowActions ? (
         <div className="flex items-start justify-between gap-3">
-          <button
+          <Button
+            size="icon-lg"
             aria-label={`Remove ${item.label}`}
-            className="grid-action absolute top-3 right-3 rounded-full bg-stone-100 px-2 py-1 text-[10px] text-stone-500 opacity-0 transition-opacity hover:bg-red-50 hover:text-red-600 group-hover/item:opacity-100 focus-visible:opacity-100"
+            className="pointer-events-none absolute -top-3 -right-3 z-10 size-9 cursor-pointer rounded-full border-[0.5px] border-border bg-background px-2 py-1 text-[10px] text-black opacity-0 shadow-sm transition-opacity hover:bg-secondary group-hover/item:pointer-events-auto group-hover/item:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 grid-action"
             onClick={() => {
               onRemove(item.id);
             }}
             type="button"
           >
-            Remove
-          </button>
+            <TrashIcon className="size-4 stroke-3" />
+          </Button>
         </div>
       ) : null}
       {shouldShowActions && resizeOptions.length > 0 ? (

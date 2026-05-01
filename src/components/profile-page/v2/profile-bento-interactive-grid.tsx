@@ -10,6 +10,7 @@ import { ProfileBentoGridActions } from "@/components/profile-page/v2/profile-be
 import { ProfileBentoEditableContentCard } from "@/components/profile-page/v2/profile-bento-grid-card";
 import { Button } from "@/components/ui/button";
 import { useGridDragMotion } from "@/hooks/use-grid-drag-motion";
+import { useProfilePageEditor } from "@/hooks/use-profile-page-editor";
 import { BREAKPOINTS, COLS, GRID_MARGIN, getGridRowHeight } from "@/lib/grid/grid-config";
 import { normalizeLayouts } from "@/lib/grid/grid-layout-utils";
 import type { GridBreakpoint, GridLayouts, ResizeOption } from "@/lib/grid/grid-types";
@@ -54,6 +55,7 @@ const createPayloadSnapshot = (items: ProfileBentoItem[], layouts: GridLayouts) 
 const EXIT_MOTION_REMOVE_DELAY_MS = 190;
 
 export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoInteractiveGridProps) {
+  const profileEditor = useProfilePageEditor();
   const { width, containerRef, mounted } = useContainerWidth({
     initialWidth: 864,
     measureBeforeMount: true,
@@ -87,6 +89,9 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   const currentPayload = useMemo(() => createPayload(bento, layouts), [bento, layouts]);
   const currentSnapshot = useMemo(() => JSON.stringify(currentPayload), [currentPayload]);
   const isDirty = currentSnapshot !== savedSnapshot;
+  const hasProfileChanges = profileEditor.hasUnsyncedChanges;
+  const isSaving = isPending || profileEditor.isSyncing;
+  const canSave = isDirty || hasProfileChanges;
   const isSectionDragActive =
     activeDragItemId !== null && itemTypeById.get(activeDragItemId) === "section";
   const rowHeight = getGridRowHeight(width, activeBreakpoint);
@@ -224,30 +229,36 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   };
 
   const save = () => {
-    if (!isDirty || isPending) {
+    if (!canSave || isSaving) {
       return;
     }
 
     startTransition(async () => {
       try {
-        const response = await apiFetch<PublicProfileBentoPageData>(
-          "/api/app/profile-page/bento/sync",
-          {
-            method: "POST",
-            cache: "no-store",
-            headers: {
-              "Content-Type": "application/json",
-              "Cache-Control": "no-store",
-            },
-            body: JSON.stringify(currentPayload),
-          }
-        );
-        const nextLayouts = toBentoGridLayouts(response.bento);
+        if (hasProfileChanges) {
+          await profileEditor.handleSync();
+        }
 
-        setBento(response.bento);
-        setLayouts(nextLayouts);
-        setSavedSnapshot(createPayloadSnapshot(response.bento, nextLayouts));
-        toast("Bento synced");
+        if (isDirty) {
+          const response = await apiFetch<PublicProfileBentoPageData>(
+            "/api/app/profile-page/bento/sync",
+            {
+              method: "POST",
+              cache: "no-store",
+              headers: {
+                "Content-Type": "application/json",
+                "Cache-Control": "no-store",
+              },
+              body: JSON.stringify(currentPayload),
+            }
+          );
+          const nextLayouts = toBentoGridLayouts(response.bento);
+
+          setBento(response.bento);
+          setLayouts(nextLayouts);
+          setSavedSnapshot(createPayloadSnapshot(response.bento, nextLayouts));
+          toast("Bento synced");
+        }
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Failed to sync bento", {
           description: getApiErrorDescription(error),
@@ -260,8 +271,8 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     <section className="relative flex min-w-0 flex-1 flex-col items-center gap-4 pb-28 xl:w-[56rem] xl:flex-none xl:items-stretch">
       <header className="fixed bottom-6 left-1/2 z-30 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border bg-background/90 p-2 shadow-xs backdrop-blur">
         <ProfileBentoGridActions onAddItem={addItem} />
-        <Button aria-busy={isPending} disabled={!isDirty || isPending} onClick={save} type="button">
-          Save
+        <Button aria-busy={isSaving} disabled={!canSave || isSaving} onClick={save} type="button">
+          {isSaving ? "Saving" : "Save"}
         </Button>
       </header>
 

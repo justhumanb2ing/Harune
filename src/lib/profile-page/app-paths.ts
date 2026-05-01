@@ -1,4 +1,5 @@
 const PROFILE_APP_VERSION_SEGMENT = "v1";
+const PROFILE_PUBLIC_VERSION_SEGMENT = "v2";
 
 export function getProfileAppPath(handle: string, suffix = "") {
   return `/${PROFILE_APP_VERSION_SEGMENT}/${handle}/app${suffix}`;
@@ -11,7 +12,10 @@ export function getProfileAnalyticsPath(handle: string) {
 export function getProfileRouteHandle(pathname: string) {
   const segments = pathname.split("/").filter(Boolean);
 
-  if (segments[0] === PROFILE_APP_VERSION_SEGMENT) {
+  if (
+    segments[0] === PROFILE_APP_VERSION_SEGMENT ||
+    segments[0] === PROFILE_PUBLIC_VERSION_SEGMENT
+  ) {
     return segments[1] ?? "";
   }
 

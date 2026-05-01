@@ -29,6 +29,7 @@ export const POST = withAuthRequired(async (req, context) => {
     });
 
     revalidatePath(`/${data.page.handle}`);
+    revalidatePath(`/v2/${data.page.handle}`);
     revalidatePath(getProfileAppPath(data.page.handle));
 
     return NextResponse.json(data, { headers: noStoreHeaders });

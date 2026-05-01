@@ -4,7 +4,8 @@ import { auth } from "@/auth";
 import { ProfileBentoPage } from "@/components/profile-page/v2/profile-bento-page";
 import { WebPageJsonLd } from "@/components/site-instrumentation/structured-data";
 import { appConfig } from "@/lib/config";
-import { getOwnedProfilePageByHandle, getPublicProfileBentoPage } from "@/lib/profile-page/queries";
+import { getProfilePageEditorData, getPublicProfileBentoPage } from "@/lib/profile-page/queries";
+import type { ProfilePageData } from "@/lib/profile-page/types";
 import { absoluteUrl, createPageMetadata } from "@/lib/seo";
 
 type V2HandlePageProps = {
@@ -15,6 +16,29 @@ type V2HandlePageProps = {
 
 export const dynamic = "force-dynamic";
 
+const toSerializableProfilePageData = (
+  data: Awaited<ReturnType<typeof getProfilePageEditorData>>
+) =>
+  data
+    ? ({
+        page: {
+          id: data.page.id,
+          handle: data.page.handle,
+          linkBlockPosition: data.page.linkBlockPosition,
+          location: data.page.location,
+          name: data.page.name,
+          role: data.page.role,
+          bio: data.page.bio,
+          image: data.page.image,
+          backgroundImage: data.page.backgroundImage,
+        },
+        socialLinks: data.socialLinks,
+        linkItems: data.linkItems,
+        playlistItems: data.playlistItems,
+        textBoxItems: data.textBoxItems,
+      } satisfies ProfilePageData)
+    : null;
+
 export async function generateMetadata({ params }: V2HandlePageProps): Promise<Metadata> {
   const { handle } = await params;
   const data = await getPublicProfileBentoPage(handle);
@@ -23,7 +47,7 @@ export async function generateMetadata({ params }: V2HandlePageProps): Promise<M
     return {};
   }
 
-  const title = `${data.page.name || data.page.userName || data.page.handle} on ${appConfig.projectName}`;
+  const title = `${data.page.name || data.page.userName || data.page.handle}`;
 
   return createPageMetadata({
     path: `/v2/${data.page.handle}`,
@@ -43,10 +67,12 @@ export default async function V2HandlePage({ params }: V2HandlePageProps) {
     notFound();
   }
 
-  const ownedPage = session?.user?.id
-    ? await getOwnedProfilePageByHandle(session.user.id, data.page.handle)
+  const editorData = session?.user?.id
+    ? toSerializableProfilePageData(
+        await getProfilePageEditorData(session.user.id, data.page.handle)
+      )
     : null;
-  const isOwner = ownedPage?.id === data.page.id;
+  const isOwner = editorData?.page.id === data.page.id;
   const title = `${data.page.name || data.page.userName || data.page.handle} on ${appConfig.projectName}`;
 
   return (
@@ -68,7 +94,12 @@ export default async function V2HandlePage({ params }: V2HandlePageProps) {
         }}
       />
       <main className="min-h-lvh bg-background">
-        <ProfileBentoPage page={data.page} bento={data.bento} isOwner={isOwner} />
+        <ProfileBentoPage
+          page={data.page}
+          bento={data.bento}
+          editorData={editorData}
+          isOwner={isOwner}
+        />
       </main>
     </>
   );

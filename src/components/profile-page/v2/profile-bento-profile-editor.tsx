@@ -81,7 +81,7 @@ export function ProfileBentoProfileEditor() {
             aria-label="Name"
             autoComplete="off"
             maxLength={100}
-            className="min-h-8 resize-none overflow-hidden border-0 text-4xl! xl:text-5xl! p-0 font-bold focus-visible:ring-0 rounded-none break-all"
+            className="min-h-8 resize-none overflow-hidden border-0 text-4xl! xl:text-5xl! p-0! font-bold focus-visible:ring-0 rounded-none break-all"
           />
 
           <Textarea
@@ -90,7 +90,7 @@ export function ProfileBentoProfileEditor() {
             onChange={(event) => editor.setProfileField("bio", event.target.value)}
             placeholder="Bio"
             aria-label="Bio"
-            className="min-h-8 resize-none overflow-hidden border-0 p-0 text-lg! break-all rounded-none focus-visible:ring-0"
+            className="min-h-8 resize-none overflow-hidden border-0 p-0! text-lg! break-all rounded-none focus-visible:ring-0"
           />
 
           <div className="flex flex-col gap-2 text-neutral-500">
@@ -101,7 +101,7 @@ export function ProfileBentoProfileEditor() {
               placeholder="What do you do?"
               aria-label="Role"
               autoComplete="off"
-              className="h-fit border-0 text-base! p-0 focus-visible:ring-0 rounded-none"
+              className="h-fit border-0 text-base! p-0! focus-visible:ring-0 rounded-none"
             />
             <Input
               id="v2-profile-page-location"
@@ -110,7 +110,7 @@ export function ProfileBentoProfileEditor() {
               placeholder="Where are you based?"
               aria-label="Location"
               autoComplete="off"
-              className="h-fit border-0 text-base! p-0 focus-visible:ring-0 rounded-none"
+              className="h-fit border-0 text-base! p-0! focus-visible:ring-0 rounded-none"
             />
           </div>
         </div>

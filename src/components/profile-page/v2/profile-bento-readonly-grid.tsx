@@ -33,17 +33,6 @@ export function ProfileBentoReadonlyGrid({ bento }: ProfileBentoReadonlyGridProp
     "--thin-item-visible-height": `${Math.round(rowHeight * 0.75)}px`,
   } as CSSProperties;
 
-  if (!mounted) {
-    return (
-      <section className="min-w-0 flex-1 xl:w-[56rem] xl:flex-none">
-        <div
-          className="h-96 w-[380px] max-w-full rounded-2xl border border-black/10 xl:w-full"
-          ref={containerRef}
-        />
-      </section>
-    );
-  }
-
   return (
     <section className="min-w-0 flex-1 xl:w-[56rem] xl:flex-none">
       <div

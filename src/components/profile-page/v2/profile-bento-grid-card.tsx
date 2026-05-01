@@ -162,7 +162,7 @@ function LinkTitleInput({
     <input
       aria-label="Link title"
       className={cn(
-        "grid-action min-h-9 min-w-0 rounded-md bg-transparent px-2 py-1.5 font-medium text-sm outline-none transition-colors placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary truncate",
+        "grid-action min-h-9 min-w-0 rounded-md bg-transparent px-0 py-1.5 font-medium text-sm outline-none transition-colors placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary truncate",
         className
       )}
       onChange={(event) => {
@@ -181,7 +181,7 @@ function LinkTitleText({ title, className }: { title: string; className?: string
   return (
     <h2
       className={cn(
-        "min-h-9 min-w-0 truncate rounded-md px-2 py-1.5 font-medium text-sm",
+        "min-h-9 min-w-0 truncate rounded-md px-0 py-1.5 font-medium text-sm",
         className
       )}
     >
@@ -496,13 +496,13 @@ function EditableSectionBento({
     <span className="grid-action inline-grid h-full min-w-40 max-w-full overflow-hidden rounded-lg hover:bg-secondary focus-within:bg-secondary">
       <span
         aria-hidden
-        className="invisible col-start-1 row-start-1 min-w-40 max-w-full overflow-hidden whitespace-pre px-4 font-bold text-xl tracking-tight"
+        className="invisible col-start-1 row-start-1 min-w-40 max-w-full overflow-hidden whitespace-pre font-bold text-xl tracking-tight"
       >
         {item.content.title}
       </span>
       <input
         aria-label="Section title"
-        className="col-start-1 row-start-1 h-full w-full min-w-40 max-w-full bg-transparent px-4 font-bold text-xl tracking-tight outline-none placeholder:text-muted-foreground truncate"
+        className="col-start-1 row-start-1 h-full w-full min-w-40 max-w-full bg-transparent font-bold text-xl tracking-tight outline-none placeholder:text-muted-foreground truncate"
         onChange={(event) => {
           onChange({
             ...item,
@@ -672,8 +672,8 @@ function ProfileBentoGridCardContent({
   }
 
   return (
-    <section className="relative flex size-full items-center rounded-lg bg-muted px-4">
-      <h2 className="font-semibold text-lg tracking-tight">{item.content.title}</h2>
+    <section className="relative flex size-full items-center rounded-lg">
+      <h2 className="truncate font-bold text-xl tracking-tight">{item.content.title}</h2>
     </section>
   );
 }
@@ -720,9 +720,9 @@ function ReadonlyTextBento({ content }: { content: string }) {
   }, []);
 
   return (
-    <article className="relative size-full overflow-hidden rounded-lg p-4" ref={containerRef}>
+    <article className="relative size-full overflow-hidden rounded-lg p-3 py-1" ref={containerRef}>
       <p
-        className="overflow-hidden whitespace-pre-line break-words text-sm leading-6"
+        className="overflow-hidden whitespace-pre-line break-words text-lg font-medium leading-relaxed"
         ref={textRef}
         style={
           {

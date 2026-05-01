@@ -157,12 +157,12 @@ export function ProfileBentoOwnerSettingPopover() {
         <Button
           type="button"
           variant="ghost"
-          className="px-2 font-normal"
+          className="px-2 font-normal text-neutral-500"
           aria-expanded={isOpen}
           aria-controls="v2-owner-setting-popover"
           onClick={() => setIsOpen((current) => !current)}
         >
-          setting
+          Setting
         </Button>
 
         <AnimatePresence initial={false}>
@@ -181,7 +181,7 @@ export function ProfileBentoOwnerSettingPopover() {
               }}
               className="-translate-x-1/2 absolute bottom-full left-1/2 mb-3 w-52 origin-bottom overflow-hidden rounded-2xl bg-background shadow-brand-small border border-border/40 p-2 xl:left-0 xl:translate-x-0 xl:origin-bottom-left"
             >
-              <div className="space-y-1 mb-10">
+              <div className="mb-10 flex flex-col gap-1">
                 <Button
                   variant="ghost"
                   className="h-16 w-full flex-col items-start gap-1 rounded-lg px-4 font-normal text-muted-foreground hover:bg-transparent hover:text-muted-foreground"
@@ -198,7 +198,7 @@ export function ProfileBentoOwnerSettingPopover() {
                     side: "none",
                   }}
                   panelSideOffset={12}
-                  triggerClassName="h-11 rounded-md py-0 active:!translate-y-0"
+                  triggerClassName="h-16! rounded-md"
                 />
               </div>
 

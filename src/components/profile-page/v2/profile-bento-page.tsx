@@ -78,9 +78,21 @@ function ProfileBentoFooterAction({
   viewerProfilePage: ProfileBentoViewerProfilePage | null;
 }) {
   return (
-    <footer className={cn("flex justify-center", className)}>
+    <footer className={cn("flex items-center justify-center gap-2", className)}>
       {isOwner ? (
-        <ProfileBentoOwnerSettingPopover />
+        <>
+          <ProfileBentoOwnerSettingPopover />
+          <Button
+            nativeButton={false}
+            variant="ghost"
+            className="px-2 font-normal"
+            render={
+              <Link href="#" className="text-neutral-500">
+                Analytics
+              </Link>
+            }
+          />
+        </>
       ) : viewerProfilePage ? (
         <Button
           nativeButton={false}

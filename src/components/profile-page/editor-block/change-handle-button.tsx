@@ -8,6 +8,7 @@ import type { MeResponse } from "@/app/api/app/me/types";
 import {
   Popover,
   PopoverPanel,
+  type PopoverPanelProps,
   PopoverTrigger,
 } from "@/components/ui/animate-ui/components/base/popover";
 import { Button } from "@/components/ui/button";
@@ -26,8 +27,23 @@ import { profilePageQueryOptions } from "@/lib/profile-page/query-options";
 import type { ProfilePageData } from "@/lib/profile-page/types";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
+import { cn } from "@/lib/utils";
 
-export function ChangeHandleButton() {
+type ChangeHandleButtonProps = {
+  panelAlign?: PopoverPanelProps["align"];
+  panelCollisionAvoidance?: PopoverPanelProps["collisionAvoidance"];
+  panelSide?: PopoverPanelProps["side"];
+  panelSideOffset?: PopoverPanelProps["sideOffset"];
+  triggerClassName?: string;
+};
+
+export function ChangeHandleButton({
+  panelAlign = "center",
+  panelCollisionAvoidance,
+  panelSide = "right",
+  panelSideOffset = 16,
+  triggerClassName,
+}: ChangeHandleButtonProps = {}) {
   const pathname = usePathname();
   const queryClient = useQueryClient();
   const routeHandle = getProfileRouteHandle(pathname);
@@ -114,17 +130,22 @@ export function ChangeHandleButton() {
           <Button
             type="button"
             variant="ghost"
-            className="w-full justify-start px-4 py-6 font-normal"
+            className={cn(
+              "h-16! w-full gap-1 flex-col rounded-lg! items-start px-4 py-6 font-normal",
+              triggerClassName
+            )}
             disabled={profilePageQuery.isLoading || !profilePageData}
           >
-            Change handle
+            <span>Change handle</span>
+            <span className="text-xs text-neutral-600">/{handleDraft}</span>
           </Button>
         }
       />
       <PopoverPanel
-        align="center"
-        side="right"
-        sideOffset={16}
+        align={panelAlign}
+        collisionAvoidance={panelCollisionAvoidance}
+        side={panelSide}
+        sideOffset={panelSideOffset}
         data-setting-box-popover=""
         className="w-[var(--anchor-width)] min-w-80 gap-0 overflow-hidden rounded-2xl p-1 border-border/40 shadow-brand-small!"
       >

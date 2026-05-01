@@ -12,19 +12,24 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type DeleteAccountDialogProps = {
+  disabled?: boolean;
   isDeleting: boolean;
   onConfirm: () => void;
   onOpenChange: (open: boolean) => void;
   open: boolean;
+  triggerClassName?: string;
 };
 
 export function DeleteAccountDialog({
+  disabled,
   isDeleting,
   onConfirm,
   onOpenChange,
   open,
+  triggerClassName,
 }: DeleteAccountDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -33,8 +38,11 @@ export function DeleteAccountDialog({
           <Button
             type="button"
             variant="ghost"
-            disabled={isDeleting}
-            className="flex w-full items-center justify-start gap-2 px-4 py-6 font-normal text-muted-foreground"
+            disabled={disabled || isDeleting}
+            className={cn(
+              "flex w-full items-center justify-start gap-2 px-4 py-6 font-normal text-muted-foreground",
+              triggerClassName
+            )}
           >
             <span>Delete Account</span>
           </Button>

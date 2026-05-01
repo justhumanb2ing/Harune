@@ -1,9 +1,10 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useContainerWidth } from "react-grid-layout";
 import { toast } from "sonner";
+import type { GridCardMotionPhase } from "@/components/grid/grid-card";
 import { ResponsiveGridCanvas } from "@/components/grid/responsive-grid-canvas";
 import { ProfileBentoGridActions } from "@/components/profile-page/v2/profile-bento-grid-actions";
 import { ProfileBentoEditableContentCard } from "@/components/profile-page/v2/profile-bento-grid-card";
@@ -50,6 +51,8 @@ const createPayload = (items: ProfileBentoItem[], layouts: GridLayouts) => ({
 const createPayloadSnapshot = (items: ProfileBentoItem[], layouts: GridLayouts) =>
   JSON.stringify(createPayload(items, layouts));
 
+const EXIT_MOTION_REMOVE_DELAY_MS = 190;
+
 export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoInteractiveGridProps) {
   const { width, containerRef, mounted } = useContainerWidth({
     initialWidth: 864,
@@ -60,6 +63,11 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   const [savedSnapshot, setSavedSnapshot] = useState(() =>
     createPayloadSnapshot(initialBento, toBentoGridLayouts(initialBento))
   );
+  const [itemMotionPhaseById, setItemMotionPhaseById] = useState<
+    Record<string, GridCardMotionPhase>
+  >({});
+  const [focusItemId, setFocusItemId] = useState<string | null>(null);
+  const removeTimerByIdRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const [isPending, startTransition] = useTransition();
   const {
     activeDragItemId,
@@ -106,22 +114,90 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     };
   }, [isDirty]);
 
+  useEffect(() => {
+    const removeTimerById = removeTimerByIdRef.current;
+
+    return () => {
+      for (const timer of Object.values(removeTimerById)) {
+        clearTimeout(timer);
+      }
+    };
+  }, []);
+
   const addItem = (type: CreatableBentoType) => {
     const liveBento = mergeLayoutsIntoBento(bento, layouts);
     const nextItem = createAutoBentoItem(type, liveBento);
     const nextBento = [...liveBento, nextItem];
 
+    setItemMotionPhaseById((current) => ({ ...current, [nextItem.id]: "entering" }));
+    setFocusItemId(type === "text" || type === "section" ? nextItem.id : null);
     setBento(nextBento);
     setLayouts(toBentoGridLayouts(nextBento));
   };
 
-  const removeItem = (id: string) => {
+  const removeItemFromGrid = useCallback((id: string) => {
     setBento((currentItems) => currentItems.filter((item) => item.id !== id));
     setLayouts((currentLayouts) => ({
       desktop: (currentLayouts.desktop ?? []).filter((item) => item.i !== id),
       compact: (currentLayouts.compact ?? []).filter((item) => item.i !== id),
     }));
+  }, []);
+
+  const removeItem = (id: string) => {
+    if (removeTimerByIdRef.current[id]) {
+      return;
+    }
+
+    if (focusItemId === id) {
+      setFocusItemId(null);
+    }
+
+    setItemMotionPhaseById((current) =>
+      current[id] === "exiting" ? current : { ...current, [id]: "exiting" }
+    );
+    removeTimerByIdRef.current[id] = setTimeout(() => {
+      delete removeTimerByIdRef.current[id];
+      removeItemFromGrid(id);
+      setItemMotionPhaseById((current) => {
+        if (!current[id]) {
+          return current;
+        }
+
+        const next = { ...current };
+        delete next[id];
+        return next;
+      });
+    }, EXIT_MOTION_REMOVE_DELAY_MS);
   };
+
+  const completeItemMotion = useCallback(
+    (id: string, phase: GridCardMotionPhase) => {
+      if (phase === "exiting" && removeTimerByIdRef.current[id]) {
+        clearTimeout(removeTimerByIdRef.current[id]);
+        delete removeTimerByIdRef.current[id];
+      }
+
+      setItemMotionPhaseById((current) => {
+        if (current[id] !== phase) {
+          return current;
+        }
+
+        const next = { ...current };
+        delete next[id];
+        return next;
+      });
+
+      if (phase === "exiting") {
+        removeItemFromGrid(id);
+      }
+    },
+    [removeItemFromGrid]
+  );
+
+  const getItemMotionPhase = useCallback(
+    (id: string) => itemMotionPhaseById[id],
+    [itemMotionPhaseById]
+  );
 
   const updateItem = (nextItem: ProfileBentoItem) => {
     setBento((currentItems) =>
@@ -215,6 +291,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
           onDrag={updateDragPointer}
           onDragStart={startDrag}
           onDragStop={stopDrag}
+          onItemMotionComplete={completeItemMotion}
           onLayoutChange={(nextLayouts) => {
             setLayouts(normalizeLayouts(nextLayouts, itemTypeById));
           }}
@@ -222,11 +299,19 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
           onResizeItem={resizeItem}
           onResizeStart={startResize}
           onResizeStop={stopResize}
+          getItemMotionPhase={getItemMotionPhase}
           renderItem={(gridItem) => {
             const item = bentoById.get(gridItem.id);
 
             return item ? (
-              <ProfileBentoEditableContentCard item={item} onChange={updateItem} />
+              <ProfileBentoEditableContentCard
+                autoFocus={focusItemId === item.id}
+                item={item}
+                onChange={updateItem}
+                onFocusReady={() => {
+                  setFocusItemId((current) => (current === item.id ? null : current));
+                }}
+              />
             ) : null;
           }}
           rowHeight={rowHeight}

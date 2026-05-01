@@ -1,9 +1,9 @@
-import type { MotionValue } from "motion/react";
+import { type MotionValue, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 import type { LayoutItem } from "react-grid-layout";
 import { Responsive } from "react-grid-layout";
 import { fastVerticalCompactor } from "react-grid-layout/extras";
-import { GridCard } from "@/components/grid/grid-card";
+import { GridCard, type GridCardMotionPhase } from "@/components/grid/grid-card";
 import {
   BREAKPOINTS,
   COLS,
@@ -24,11 +24,13 @@ type ResponsiveGridCanvasProps = {
   onDrag: (event: Event) => void;
   onDragStart: (newItem: LayoutItem | null | undefined, event: Event) => void;
   onDragStop: () => void;
+  onItemMotionComplete?: (id: string, phase: GridCardMotionPhase) => void;
   onLayoutChange: (layouts: GridLayouts) => void;
   onRemoveItem: (id: string) => void;
   onResizeItem: (id: string, breakpoint: GridBreakpoint, option: ResizeOption) => void;
   onResizeStart: (newItem: LayoutItem | null | undefined) => void;
   onResizeStop: () => void;
+  getItemMotionPhase?: (id: string) => GridCardMotionPhase | undefined;
   renderItem?: (item: GridItem) => ReactNode;
   rowHeight: number;
   width: number;
@@ -45,18 +47,24 @@ export function ResponsiveGridCanvas({
   onDrag,
   onDragStart,
   onDragStop,
+  onItemMotionComplete,
   onLayoutChange,
   onRemoveItem,
   onResizeItem,
   onResizeStart,
   onResizeStop,
+  getItemMotionPhase,
   renderItem,
   rowHeight,
   width,
 }: ResponsiveGridCanvasProps) {
-  if (!mounted) {
-    return <div className="h-96 rounded-[2rem] border border-black/10" />;
-  }
+  const shouldReduceMotion = Boolean(useReducedMotion());
+
+  void mounted;
+
+  // if (!mounted) {
+  //   return <Skeleton className="h-dvh rounded-2xl" />;
+  // }
 
   return (
     <Responsive<GridBreakpoint>
@@ -92,6 +100,7 @@ export function ResponsiveGridCanvas({
         const isSectionItem = item.itemType === "section";
         const isVisuallyThinItem = item.id === THIN_PLACEHOLDER_ITEM_ID || isSectionItem;
         const isDragActive = activeDragItemId === item.id;
+        const motionPhase = getItemMotionPhase?.(item.id);
 
         return (
           <div
@@ -105,8 +114,11 @@ export function ResponsiveGridCanvas({
               isDragActive={isDragActive}
               item={item}
               layouts={layouts}
+              motionPhase={motionPhase}
+              onMotionComplete={onItemMotionComplete}
               onRemove={onRemoveItem}
               onResize={onResizeItem}
+              shouldReduceMotion={shouldReduceMotion}
             >
               {renderItem?.(item)}
             </GridCard>

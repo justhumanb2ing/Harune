@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ProfileBentoGridPlayground } from "@/components/profile-page/v2/profile-bento-grid-playground";
+import { ProfileBentoInteractiveGrid } from "@/components/profile-page/v2/profile-bento-interactive-grid";
 import type { PublicProfileBentoPageData } from "@/lib/profile-page/types";
 
 type ProfileBentoPageProps = PublicProfileBentoPageData;
@@ -49,7 +49,7 @@ export function ProfileBentoPage({ page, bento }: ProfileBentoPageProps) {
         ) : null}
       </aside>
 
-      <ProfileBentoGridPlayground initialBento={bento} />
+      <ProfileBentoInteractiveGrid initialBento={bento} />
     </section>
   );
 }

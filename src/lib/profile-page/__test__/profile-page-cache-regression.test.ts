@@ -82,4 +82,20 @@ describe("profile page cache regression", () => {
       )
     ).toBe(true);
   });
+
+  test("bento media child table participates in sync write and public read paths", () => {
+    const mutationSource = readFileSync(
+      join(process.cwd(), "src/lib/profile-page/mutations.ts"),
+      "utf8"
+    );
+    const querySource = readFileSync(
+      join(process.cwd(), "src/lib/profile-page/queries.ts"),
+      "utf8"
+    );
+
+    expect(mutationSource.includes("profileMediaBentos")).toBe(true);
+    expect(mutationSource.includes("prepareMediaBentoContent")).toBe(true);
+    expect(querySource.includes("profileMediaBentos")).toBe(true);
+    expect(querySource.includes('item.type === "media"')).toBe(true);
+  });
 });

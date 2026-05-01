@@ -5,6 +5,7 @@ import {
   profileBentos,
   profileLinkBentos,
   profileLinkItems,
+  profileMediaBentos,
   profilePages,
   profilePlaylistBentos,
   profilePlaylistItems,
@@ -13,6 +14,14 @@ import {
   profileTextBentos,
   profileTextBoxItems,
 } from "@/db/schema/profile-page";
+import {
+  copyProfileBentoMediaObject,
+  deleteProfileBentoMediaObject,
+  getProfileBentoMediaObjectKey,
+  getProfileBentoMediaObjectKeyFromUrl,
+  getProfileBentoMediaPublicUrl,
+  isProfileBentoMediaObjectKeyForBento,
+} from "@/lib/profile-page/media-storage";
 import { getPublicProfileBentoPageByPageId } from "@/lib/profile-page/queries";
 import { getS3ObjectKeyFromPublicUrl } from "@/lib/s3/config";
 import { deletePublicS3Object } from "@/lib/s3/delete-object";
@@ -1057,16 +1066,89 @@ const deleteBentoContent = async (tx: DbExecutor, bentoId: string) => {
   await tx.delete(profileTextBentos).where(eq(profileTextBentos.bentoId, bentoId));
   await tx.delete(profilePlaylistBentos).where(eq(profilePlaylistBentos.bentoId, bentoId));
   await tx.delete(profileSectionBentos).where(eq(profileSectionBentos.bentoId, bentoId));
+  await tx.delete(profileMediaBentos).where(eq(profileMediaBentos.bentoId, bentoId));
+};
+
+const prepareMediaBentoContent = async ({
+  item,
+  userId,
+}: {
+  item: Extract<ProfileBentoSyncValues["bento"][number], { type: "media" }>;
+  userId: string;
+}) => {
+  const finalObjectKey = getProfileBentoMediaObjectKey({
+    bentoId: item.id,
+    userId,
+  });
+
+  if (item.content.tempObjectKey) {
+    if (
+      !isProfileBentoMediaObjectKeyForBento({
+        bentoId: item.id,
+        objectKey: item.content.tempObjectKey,
+        userId,
+      })
+    ) {
+      throw new ProfilePageError("Invalid media upload ownership.", 400);
+    }
+
+    if (!item.content.contentHash || !item.content.contentType) {
+      throw new ProfilePageError("Missing media upload metadata.", 400);
+    }
+
+    await copyProfileBentoMediaObject({
+      contentHash: item.content.contentHash,
+      contentType: item.content.contentType,
+      fromObjectKey: item.content.tempObjectKey,
+      mediaType: item.content.mediaType,
+      toObjectKey: finalObjectKey,
+    });
+
+    try {
+      await deleteProfileBentoMediaObject(item.content.tempObjectKey);
+    } catch (error) {
+      console.error("Failed to delete temporary bento media object:", {
+        error,
+        objectKey: item.content.tempObjectKey,
+        userId,
+      });
+    }
+
+    return {
+      objectKey: finalObjectKey,
+      url: getProfileBentoMediaPublicUrl({
+        contentHash: item.content.contentHash,
+        objectKey: finalObjectKey,
+      }),
+    };
+  }
+
+  if (item.content.objectKey !== finalObjectKey) {
+    throw new ProfilePageError("Invalid media object key.", 400);
+  }
+
+  const urlObjectKey = getProfileBentoMediaObjectKeyFromUrl(item.content.url);
+
+  if (urlObjectKey !== item.content.objectKey) {
+    throw new ProfilePageError("Invalid media URL.", 400);
+  }
+
+  return {
+    objectKey: item.content.objectKey,
+    url: item.content.url,
+  };
 };
 
 const insertBentoContent = async ({
   tx,
   item,
   now,
+  userId,
 }: {
   tx: DbExecutor;
   item: ProfileBentoSyncValues["bento"][number];
   now: Date;
+  userId: string;
 }) => {
   await tx.insert(profileBentoLayouts).values([
     {
@@ -1123,6 +1205,22 @@ const insertBentoContent = async ({
     return;
   }
 
+  if (item.type === "media") {
+    const media = await prepareMediaBentoContent({ item, userId });
+
+    await tx.insert(profileMediaBentos).values({
+      bentoId: item.id,
+      mediaType: item.content.mediaType,
+      url: media.url,
+      objectKey: media.objectKey,
+      href: item.content.href,
+      alt: item.content.alt,
+      caption: item.content.caption,
+      updatedAt: now,
+    });
+    return;
+  }
+
   await tx.insert(profileSectionBentos).values({
     bentoId: item.id,
     title: item.content.title,
@@ -1144,6 +1242,13 @@ export const syncProfileBentoDraft = async ({
       id: profileBentos.id,
     })
     .from(profileBentos)
+    .where(eq(profileBentos.profilePageId, ownedPage.id));
+  const existingMediaBentos = await db
+    .select({
+      objectKey: profileMediaBentos.objectKey,
+    })
+    .from(profileMediaBentos)
+    .innerJoin(profileBentos, eq(profileMediaBentos.bentoId, profileBentos.id))
     .where(eq(profileBentos.profilePageId, ownedPage.id));
   const existingIds = new Set(existingBentos.map((item) => item.id));
   const nextIds = new Set(values.bento.map((item) => item.id));
@@ -1173,7 +1278,7 @@ export const syncProfileBentoDraft = async ({
     }
 
     await deleteBentoContent(db, item.id);
-    await insertBentoContent({ tx: db, item, now });
+    await insertBentoContent({ tx: db, item, now, userId });
   }
 
   await db.update(profilePages).set({ updatedAt: now }).where(eq(profilePages.id, ownedPage.id));
@@ -1182,6 +1287,26 @@ export const syncProfileBentoDraft = async ({
 
   if (!nextData) {
     throw new ProfilePageError("Profile page not found.", 404);
+  }
+
+  const nextMediaObjectKeys = new Set(
+    nextData.bento.filter((item) => item.type === "media").map((item) => item.content.objectKey)
+  );
+
+  for (const media of existingMediaBentos) {
+    if (nextMediaObjectKeys.has(media.objectKey)) {
+      continue;
+    }
+
+    try {
+      await deleteProfileBentoMediaObject(media.objectKey);
+    } catch (error) {
+      console.error("Failed to delete replaced bento media object:", {
+        error,
+        objectKey: media.objectKey,
+        userId,
+      });
+    }
   }
 
   return nextData;

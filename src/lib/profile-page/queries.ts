@@ -5,6 +5,7 @@ import {
   profileBentos,
   profileLinkBentos,
   profileLinkItems,
+  profileMediaBentos,
   profilePages,
   profilePlaylistBentos,
   profilePlaylistItems,
@@ -300,35 +301,41 @@ export const getPublicProfileBentoPageByPageId = async (
   }
 
   const bentoIds = bentos.map((bento) => bento.id);
-  const [layouts, linkBentos, textBentos, playlistBentos, sectionBentos] = await Promise.all([
-    executor
-      .select({
-        bentoId: profileBentoLayouts.bentoId,
-        breakpoint: profileBentoLayouts.breakpoint,
-        x: profileBentoLayouts.x,
-        y: profileBentoLayouts.y,
-        w: profileBentoLayouts.w,
-        h: profileBentoLayouts.h,
-      })
-      .from(profileBentoLayouts)
-      .where(inArray(profileBentoLayouts.bentoId, bentoIds)),
-    executor.select().from(profileLinkBentos).where(inArray(profileLinkBentos.bentoId, bentoIds)),
-    executor.select().from(profileTextBentos).where(inArray(profileTextBentos.bentoId, bentoIds)),
-    executor
-      .select()
-      .from(profilePlaylistBentos)
-      .where(inArray(profilePlaylistBentos.bentoId, bentoIds)),
-    executor
-      .select()
-      .from(profileSectionBentos)
-      .where(inArray(profileSectionBentos.bentoId, bentoIds)),
-  ]);
+  const [layouts, linkBentos, textBentos, playlistBentos, sectionBentos, mediaBentos] =
+    await Promise.all([
+      executor
+        .select({
+          bentoId: profileBentoLayouts.bentoId,
+          breakpoint: profileBentoLayouts.breakpoint,
+          x: profileBentoLayouts.x,
+          y: profileBentoLayouts.y,
+          w: profileBentoLayouts.w,
+          h: profileBentoLayouts.h,
+        })
+        .from(profileBentoLayouts)
+        .where(inArray(profileBentoLayouts.bentoId, bentoIds)),
+      executor.select().from(profileLinkBentos).where(inArray(profileLinkBentos.bentoId, bentoIds)),
+      executor.select().from(profileTextBentos).where(inArray(profileTextBentos.bentoId, bentoIds)),
+      executor
+        .select()
+        .from(profilePlaylistBentos)
+        .where(inArray(profilePlaylistBentos.bentoId, bentoIds)),
+      executor
+        .select()
+        .from(profileSectionBentos)
+        .where(inArray(profileSectionBentos.bentoId, bentoIds)),
+      executor
+        .select()
+        .from(profileMediaBentos)
+        .where(inArray(profileMediaBentos.bentoId, bentoIds)),
+    ]);
 
   const layoutsByBentoId = toLayoutMap(layouts);
   const linkByBentoId = new Map(linkBentos.map((item) => [item.bentoId, item] as const));
   const textByBentoId = new Map(textBentos.map((item) => [item.bentoId, item] as const));
   const playlistByBentoId = new Map(playlistBentos.map((item) => [item.bentoId, item] as const));
   const sectionByBentoId = new Map(sectionBentos.map((item) => [item.bentoId, item] as const));
+  const mediaByBentoId = new Map(mediaBentos.map((item) => [item.bentoId, item] as const));
   const bento: ProfileBentoItem[] = [];
 
   for (const item of bentos) {
@@ -402,6 +409,31 @@ export const getPublicProfileBentoPageByPageId = async (
             provider: toPlaylistProvider(content.provider),
             url: content.url,
             content: content.content,
+          },
+        });
+      }
+
+      continue;
+    }
+
+    if (item.type === "media") {
+      const content = mediaByBentoId.get(item.id);
+
+      if (content) {
+        bento.push({
+          id: item.id,
+          type: item.type,
+          layout: {
+            desktop: layout.desktop,
+            compact: layout.compact,
+          },
+          content: {
+            mediaType: content.mediaType,
+            url: content.url,
+            objectKey: content.objectKey,
+            href: content.href,
+            alt: content.alt,
+            caption: content.caption,
           },
         });
       }

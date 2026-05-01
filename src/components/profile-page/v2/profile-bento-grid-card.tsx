@@ -1,3 +1,4 @@
+import { ArrowCircleUpRightIcon } from "@phosphor-icons/react";
 import Image from "next/image";
 import type { CSSProperties } from "react";
 import { useEffect, useRef } from "react";
@@ -88,6 +89,10 @@ export function ProfileBentoEditableContentCard({
         onFocusReady={onFocusReady}
       />
     );
+  }
+
+  if (item.type === "media") {
+    return <EditableMediaBento item={item} onChange={onChange} />;
   }
 
   return <ProfileBentoEditableGridCard item={item} />;
@@ -226,6 +231,74 @@ function EditableSectionBento({
   );
 }
 
+function MediaPreview({ item }: { item: Extract<ProfileBentoItem, { type: "media" }> }) {
+  if (item.content.mediaType === "video") {
+    return (
+      <video
+        autoPlay
+        className="size-full object-cover"
+        loop
+        muted
+        playsInline
+        preload="metadata"
+        src={item.content.url}
+      />
+    );
+  }
+
+  return (
+    <Image
+      alt={item.content.alt}
+      className="object-cover"
+      fill
+      sizes="(min-width: 1024px) 25vw, 100vw"
+      src={item.content.url}
+    />
+  );
+}
+
+function EditableMediaBento({
+  item,
+  onChange,
+}: {
+  item: Extract<ProfileBentoItem, { type: "media" }>;
+  onChange: (item: ProfileBentoItem) => void;
+}) {
+  return (
+    <article className="relative size-full overflow-hidden rounded-xl bg-muted">
+      <MediaPreview item={item} />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent" />
+      <input
+        aria-label="Media caption"
+        className="grid-action absolute bottom-3 left-3 max-w-[calc(100%-4.5rem)] rounded-md bg-black/35 px-2 py-2 font-medium text-sm text-white outline-none backdrop-blur-sm placeholder:text-white/70"
+        onChange={(event) => {
+          onChange({
+            ...item,
+            content: {
+              ...item.content,
+              alt: event.target.value,
+              caption: event.target.value,
+            },
+          });
+        }}
+        placeholder="Caption"
+        value={item.content.caption}
+      />
+      {item.content.href ? (
+        <a
+          aria-label="Open media link"
+          className="grid-action absolute right-3 bottom-3 flex size-8 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm transition-colors hover:bg-black/55"
+          href={item.content.href}
+          rel="noreferrer"
+          target="_blank"
+        >
+          <ArrowCircleUpRightIcon aria-hidden className="size-5" weight="bold" />
+        </a>
+      ) : null}
+    </article>
+  );
+}
+
 export function ProfileBentoGridCard({ item }: { item: ProfileBentoItem }) {
   return <ProfileBentoGridCardContent item={item} />;
 }
@@ -289,6 +362,34 @@ function ProfileBentoGridCardContent({
     return (
       <article className="relative size-full overflow-hidden rounded-lg">
         <PlaylistIframe content={item.content.content} title={item.content.title} />
+      </article>
+    );
+  }
+
+  if (item.type === "media") {
+    return (
+      <article className="relative size-full overflow-hidden rounded-xl bg-muted">
+        <MediaPreview item={item} />
+        {item.content.caption ? (
+          <>
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent" />
+            <p className="pointer-events-none absolute bottom-3 left-3 line-clamp-2 max-w-[calc(100%-4.5rem)] rounded-md bg-black/25 px-2 py-1 font-medium text-sm text-white backdrop-blur-sm">
+              {item.content.caption}
+            </p>
+          </>
+        ) : null}
+        {item.content.href ? (
+          <a
+            aria-label="Open media link"
+            className="absolute right-3 bottom-3 flex size-8 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm transition-colors hover:bg-black/55"
+            href={item.content.href}
+            onClick={preventNavigation ? (event) => event.preventDefault() : undefined}
+            rel="noreferrer"
+            target="_blank"
+          >
+            <ArrowCircleUpRightIcon aria-hidden className="size-5" weight="bold" />
+          </a>
+        ) : null}
       </article>
     );
   }

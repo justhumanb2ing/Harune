@@ -41,12 +41,15 @@ export const profileBentoTypeEnum = pgEnum("profile_bento_type", [
   "text",
   "playlist",
   "section",
+  "media",
 ]);
 
 export const profileBentoBreakpointEnum = pgEnum("profile_bento_breakpoint", [
   "desktop",
   "compact",
 ]);
+
+export const profileMediaTypeEnum = pgEnum("profile_media_type", ["image", "video"]);
 
 export const profilePages = pgTable(
   "profile_page",
@@ -332,6 +335,50 @@ export const profileSectionBentos = pgTable(
       withCheck: isProfileBentoOwner(table.bentoId),
     }),
     pgPolicy("profile_section_bento_owner_delete", {
+      for: "delete",
+      to: authenticatedWriteRole,
+      using: isProfileBentoOwner(table.bentoId),
+    }),
+  ]
+).enableRLS();
+
+export const profileMediaBentos = pgTable(
+  "profile_media_bento",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    bentoId: text("bentoId")
+      .notNull()
+      .references(() => profileBentos.id, { onDelete: "cascade" }),
+    mediaType: profileMediaTypeEnum("mediaType").notNull(),
+    url: text("url").notNull(),
+    objectKey: text("objectKey").notNull(),
+    href: text("href"),
+    alt: text("alt").notNull(),
+    caption: text("caption").notNull().default(""),
+    createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("profile_media_bento_bento_id_idx").on(table.bentoId),
+    pgPolicy("profile_media_bento_public_select", {
+      for: "select",
+      to: exposedReadRoles,
+      using: hasProfileBento(table.bentoId),
+    }),
+    pgPolicy("profile_media_bento_owner_insert", {
+      for: "insert",
+      to: authenticatedWriteRole,
+      withCheck: isProfileBentoOwner(table.bentoId),
+    }),
+    pgPolicy("profile_media_bento_owner_update", {
+      for: "update",
+      to: authenticatedWriteRole,
+      using: isProfileBentoOwner(table.bentoId),
+      withCheck: isProfileBentoOwner(table.bentoId),
+    }),
+    pgPolicy("profile_media_bento_owner_delete", {
       for: "delete",
       to: authenticatedWriteRole,
       using: isProfileBentoOwner(table.bentoId),

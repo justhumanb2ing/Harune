@@ -1,5 +1,6 @@
 "use client";
 
+import { LinkBreakIcon, LinkSimpleIcon } from "@phosphor-icons/react";
 import { motion } from "motion/react";
 import type { CSSProperties } from "react";
 import {
@@ -19,6 +20,7 @@ import { ProfileBentoGridActions } from "@/components/profile-page/v2/profile-be
 import { ProfileBentoEditableContentCard } from "@/components/profile-page/v2/profile-bento-grid-card";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
@@ -30,8 +32,16 @@ import { useProfilePageEditor } from "@/hooks/use-profile-page-editor";
 import { BREAKPOINTS, COLS, GRID_MARGIN, getGridRowHeight } from "@/lib/grid/grid-config";
 import { normalizeLayouts } from "@/lib/grid/grid-layout-utils";
 import type { GridBreakpoint, GridLayouts, ResizeOption } from "@/lib/grid/grid-types";
+import {
+  getProfileBentoMediaFileError,
+  getProfileBentoMediaType,
+  PROFILE_BENTO_MEDIA_ACCEPT,
+  PROFILE_BENTO_MEDIA_MAX_SIZE_BYTES,
+  PROFILE_BENTO_MEDIA_UPLOAD_ROUTE,
+} from "@/lib/profile-page/media-upload";
 import type { ProfileBentoItem, PublicProfileBentoPageData } from "@/lib/profile-page/types";
 import { apiFetch, getApiErrorDescription } from "@/lib/react-query/fetcher";
+import { cn } from "@/lib/utils";
 import {
   type CreatableBentoType,
   createAutoBentoItem,
@@ -79,6 +89,14 @@ type CrawlApiResponse =
       ok: false;
       error: ErrorBody;
     };
+
+type MediaUploadResponse = {
+  contentHash: string;
+  contentType: string;
+  mediaType: "image" | "video";
+  tempObjectKey: string;
+  tempUrl: string;
+};
 
 const createPayload = (items: ProfileBentoItem[], layouts: GridLayouts) => ({
   bento: mergeLayoutsIntoBento(items, layouts).map((item) => {
@@ -156,6 +174,151 @@ function createLinkBentoFromCrawl(
   };
 }
 
+function createMediaBentoFromFile(
+  file: File,
+  previewUrl: string,
+  currentBento: ProfileBentoItem[]
+): Extract<ProfileBentoItem, { type: "media" }> {
+  const nextItem = createAutoBentoItem("media", currentBento);
+
+  if (nextItem.type !== "media") {
+    throw new Error("Expected media bento item.");
+  }
+
+  const mediaType = getProfileBentoMediaType(file.type);
+
+  if (!mediaType) {
+    throw new Error("Unsupported media type.");
+  }
+
+  const fileName = file.name.replace(/\.[^.]+$/, "").trim();
+
+  return {
+    ...nextItem,
+    content: {
+      mediaType,
+      url: previewUrl,
+      objectKey: "",
+      href: null,
+      alt: fileName,
+      caption: fileName,
+    },
+  };
+}
+
+function MediaLinkControl({
+  item,
+  onChange,
+}: {
+  item: Extract<ProfileBentoItem, { type: "media" }>;
+  onChange: (item: ProfileBentoItem) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const inputId = `media-link-${item.id}`;
+  const href = item.content.href ?? "";
+  const Icon = href ? LinkSimpleIcon : LinkBreakIcon;
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const frame = requestAnimationFrame(() => {
+      inputRef.current?.focus();
+      inputRef.current?.setSelectionRange(href.length, href.length);
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [href.length, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+
+      if (
+        !containerRef.current ||
+        !(target instanceof Node) ||
+        containerRef.current.contains(target)
+      ) {
+        return;
+      }
+
+      setIsOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [isOpen]);
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <button
+        aria-controls={isOpen ? inputId : undefined}
+        aria-expanded={isOpen}
+        aria-label={href ? "Edit media link" : "Add media link"}
+        className={cn(
+          "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-primary-foreground hover:text-primary",
+          href ? "bg-primary-foreground text-primary" : "text-primary-foreground"
+        )}
+        onClick={() => setIsOpen((current) => !current)}
+        type="button"
+      >
+        <Icon aria-hidden className="size-4" weight="bold" />
+      </button>
+      {isOpen ? (
+        <div className="absolute right-0 bottom-full mb-2 w-64 rounded-xl border border-white/10 bg-foreground/95 p-1 shadow-float backdrop-blur-sm">
+          <Input
+            aria-label="Media link URL"
+            className="h-9 border-0 bg-black/25 text-primary-foreground placeholder:text-primary-foreground/45 hover:border-white/10 focus-visible:border-white/10 focus-visible:ring-0"
+            id={inputId}
+            onChange={(event) => {
+              const nextHref = event.target.value;
+
+              onChange({
+                ...item,
+                content: {
+                  ...item.content,
+                  href: nextHref.trim().length > 0 ? nextHref : null,
+                },
+              });
+            }}
+            placeholder="https://example.com"
+            ref={inputRef}
+            value={href}
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+async function prepareMediaFile(file: File) {
+  if (!file.type.startsWith("image/") || file.type === "image/gif") {
+    return file;
+  }
+
+  const { default: imageCompression } = await import("browser-image-compression");
+
+  return imageCompression(file, {
+    fileType: file.type,
+    initialQuality: 0.86,
+    maxSizeMB: PROFILE_BENTO_MEDIA_MAX_SIZE_BYTES / 1024 / 1024,
+    maxWidthOrHeight: 1920,
+    useWebWorker: true,
+  });
+}
+
 export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoInteractiveGridProps) {
   const profileEditor = useProfilePageEditor();
   const { width, containerRef, mounted } = useContainerWidth({
@@ -176,10 +339,15 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   const [loadingLinkItemIds, setLoadingLinkItemIds] = useState<ReadonlySet<string>>(
     () => new Set()
   );
+  const [uploadingMediaItemIds, setUploadingMediaItemIds] = useState<ReadonlySet<string>>(
+    () => new Set()
+  );
   const [actionRowWidth, setActionRowWidth] = useState<number | null>(null);
   const actionRowRef = useRef<HTMLDivElement>(null);
   const linkInputRef = useRef<HTMLInputElement>(null);
+  const mediaInputRef = useRef<HTMLInputElement>(null);
   const toolbarRef = useRef<HTMLElement>(null);
+  const mediaObjectUrlsByIdRef = useRef<Record<string, string>>({});
   const removeTimerByIdRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const [isPending, startTransition] = useTransition();
   const {
@@ -202,6 +370,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   const isDirty = currentSnapshot !== savedSnapshot;
   const hasProfileChanges = profileEditor.hasUnsyncedChanges;
   const isCrawlingLink = loadingLinkItemIds.size > 0;
+  const isUploadingMedia = uploadingMediaItemIds.size > 0;
   const isSaving = isPending || profileEditor.isSyncing;
   const canSave = isDirty || hasProfileChanges;
   const isSectionDragActive =
@@ -237,6 +406,10 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     return () => {
       for (const timer of Object.values(removeTimerById)) {
         clearTimeout(timer);
+      }
+
+      for (const objectUrl of Object.values(mediaObjectUrlsByIdRef.current)) {
+        URL.revokeObjectURL(objectUrl);
       }
     };
   }, []);
@@ -311,6 +484,13 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   };
 
   const removeItemFromGrid = useCallback((id: string) => {
+    const objectUrl = mediaObjectUrlsByIdRef.current[id];
+
+    if (objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+      delete mediaObjectUrlsByIdRef.current[id];
+    }
+
     setBento((currentItems) => currentItems.filter((item) => item.id !== id));
     setLayouts((currentLayouts) => ({
       desktop: (currentLayouts.desktop ?? []).filter((item) => item.i !== id),
@@ -336,6 +516,15 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     }
 
     removeLoadingLinkId(id);
+    setUploadingMediaItemIds((current) => {
+      if (!current.has(id)) {
+        return current;
+      }
+
+      const next = new Set(current);
+      next.delete(id);
+      return next;
+    });
 
     if (focusItemId === id) {
       setFocusItemId(null);
@@ -456,6 +645,105 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     }
   };
 
+  const handleMediaFile = async (file: File) => {
+    const initialError = getProfileBentoMediaFileError(file);
+
+    if (initialError) {
+      toast.error(initialError);
+      return;
+    }
+
+    let uploadFile: File;
+
+    try {
+      uploadFile = await prepareMediaFile(file);
+    } catch {
+      toast.error("이미지 압축에 실패했어요.");
+      return;
+    }
+
+    const preparedError = getProfileBentoMediaFileError(uploadFile);
+
+    if (preparedError) {
+      toast.error(preparedError);
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(uploadFile);
+    const liveBento = mergeLayoutsIntoBento(bento, layouts);
+    const placeholderItem = createMediaBentoFromFile(uploadFile, previewUrl, liveBento);
+    const nextBento = [...liveBento, placeholderItem];
+
+    mediaObjectUrlsByIdRef.current[placeholderItem.id] = previewUrl;
+    setUploadingMediaItemIds((current) => new Set(current).add(placeholderItem.id));
+    setItemMotionPhaseById((current) => ({ ...current, [placeholderItem.id]: "entering" }));
+    setFocusItemId(null);
+    setBento(nextBento);
+    setLayouts(toBentoGridLayouts(nextBento));
+
+    try {
+      const formData = new FormData();
+      formData.set("file", uploadFile);
+      formData.set("bentoId", placeholderItem.id);
+
+      const response = await apiFetch<MediaUploadResponse>(PROFILE_BENTO_MEDIA_UPLOAD_ROUTE, {
+        method: "POST",
+        cache: "no-store",
+        headers: {
+          "Cache-Control": "no-store",
+        },
+        body: formData,
+      });
+
+      setBento((currentItems) =>
+        currentItems.map((item) => {
+          if (item.id !== placeholderItem.id || item.type !== "media") {
+            return item;
+          }
+
+          return {
+            ...item,
+            content: {
+              ...item.content,
+              contentHash: response.contentHash,
+              contentType: response.contentType,
+              mediaType: response.mediaType,
+              objectKey: response.tempObjectKey,
+              tempObjectKey: response.tempObjectKey,
+              url: response.tempUrl,
+            },
+          };
+        })
+      );
+      URL.revokeObjectURL(previewUrl);
+      delete mediaObjectUrlsByIdRef.current[placeholderItem.id];
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "미디어 업로드에 실패했어요.", {
+        description: getApiErrorDescription(error),
+      });
+      removeItemFromGrid(placeholderItem.id);
+      setItemMotionPhaseById((current) => {
+        if (!current[placeholderItem.id]) {
+          return current;
+        }
+
+        const next = { ...current };
+        delete next[placeholderItem.id];
+        return next;
+      });
+    } finally {
+      setUploadingMediaItemIds((current) => {
+        if (!current.has(placeholderItem.id)) {
+          return current;
+        }
+
+        const next = new Set(current);
+        next.delete(placeholderItem.id);
+        return next;
+      });
+    }
+  };
+
   const resizeItem = (id: string, breakpoint: GridBreakpoint, option: ResizeOption) => {
     if (itemTypeById.get(id) === "section") {
       return;
@@ -475,7 +763,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   };
 
   const save = () => {
-    if (!canSave || isSaving || isCrawlingLink) {
+    if (!canSave || isSaving || isCrawlingLink || isUploadingMedia) {
       return;
     }
 
@@ -583,15 +871,30 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
         <div className="flex flex-wrap items-center justify-center gap-2" ref={actionRowRef}>
           <ProfileBentoGridActions
             onAddItem={addItem}
+            onRequestMediaInput={() => mediaInputRef.current?.click()}
             onRequestLinkInput={() => setIsLinkInputOpen(true)}
+          />
+          <input
+            accept={PROFILE_BENTO_MEDIA_ACCEPT}
+            className="sr-only"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              event.target.value = "";
+
+              if (file) {
+                void handleMediaFile(file);
+              }
+            }}
+            ref={mediaInputRef}
+            type="file"
           />
           <Button
             aria-busy={isSaving}
-            disabled={!canSave || isSaving || isCrawlingLink}
+            disabled={!canSave || isSaving || isCrawlingLink || isUploadingMedia}
             onClick={save}
             type="button"
           >
-            {isSaving ? "Saving" : "Save"}
+            {isSaving ? "Saving" : isUploadingMedia ? "Uploading" : "Save"}
           </Button>
         </div>
       </motion.header>
@@ -630,6 +933,13 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
                   setFocusItemId((current) => (current === item.id ? null : current));
                 }}
               />
+            ) : null;
+          }}
+          renderTrailingResizeControl={(gridItem) => {
+            const item = bentoById.get(gridItem.id);
+
+            return item?.type === "media" ? (
+              <MediaLinkControl item={item} onChange={updateItem} />
             ) : null;
           }}
           rowHeight={rowHeight}

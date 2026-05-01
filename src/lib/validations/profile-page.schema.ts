@@ -165,11 +165,31 @@ export const profileSectionBentoSyncSchema = profileBentoBaseSchema.extend({
   }),
 });
 
+export const profileMediaBentoSyncSchema = profileBentoBaseSchema.extend({
+  type: z.literal("media"),
+  content: z.object({
+    mediaType: z.enum(["image", "video"]),
+    url: z.string().trim().url("Enter a valid media URL."),
+    objectKey: entityIdSchema,
+    tempObjectKey: z.string().trim().min(1).optional(),
+    contentHash: z
+      .string()
+      .trim()
+      .regex(/^[a-f0-9]{64}$/i)
+      .optional(),
+    contentType: z.string().trim().min(1).optional(),
+    href: z.string().trim().max(2048, "Must be 2048 characters or fewer.").nullable(),
+    alt: z.string().trim().max(160, "Alt text must be 160 characters or fewer."),
+    caption: z.string().trim().max(280, "Caption must be 280 characters or fewer."),
+  }),
+});
+
 export const profileBentoSyncItemSchema = z.discriminatedUnion("type", [
   profileLinkBentoSyncSchema,
   profileTextBentoSyncSchema,
   profilePlaylistBentoSyncSchema,
   profileSectionBentoSyncSchema,
+  profileMediaBentoSyncSchema,
 ]);
 
 export const profileBentoSyncSchema = z

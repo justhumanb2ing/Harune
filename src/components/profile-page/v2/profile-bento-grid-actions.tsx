@@ -1,12 +1,21 @@
+import { ImagePlus, Link, Pilcrow, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { CreatableBentoType } from "./profile-bento-grid-model";
 import { bentoTypeLabels, creatableBentoTypes } from "./profile-bento-grid-model";
 
+const actionIcons = {
+  link: Link,
+  section: Pilcrow,
+  text: Type,
+} satisfies Record<(typeof creatableBentoTypes)[number], typeof Link>;
+
 export function ProfileBentoGridActions({
   onAddItem,
+  onRequestMediaInput,
   onRequestLinkInput,
 }: {
   onAddItem: (type: CreatableBentoType) => void;
+  onRequestMediaInput: () => void;
   onRequestLinkInput: () => void;
 }) {
   return (
@@ -25,9 +34,17 @@ export function ProfileBentoGridActions({
           type="button"
           variant="outline"
         >
-          Add {bentoTypeLabels[type]}
+          {(() => {
+            const Icon = actionIcons[type];
+            return <Icon aria-hidden className="size-4" />;
+          })()}
+          {bentoTypeLabels[type]}
         </Button>
       ))}
+      <Button onClick={onRequestMediaInput} type="button" variant="outline">
+        <ImagePlus aria-hidden className="size-4" />
+        Media
+      </Button>
     </div>
   );
 }

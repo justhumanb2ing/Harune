@@ -69,7 +69,8 @@ export type ProfilePageData = {
   textBoxItems: TextBoxItem[];
 };
 
-export type ProfileBentoType = "link" | "text" | "playlist" | "section";
+export type ProfileBentoType = "link" | "text" | "playlist" | "section" | "media";
+export type ProfileMediaType = "image" | "video";
 
 export type ProfileBentoBreakpoint = "desktop" | "compact";
 
@@ -125,11 +126,29 @@ export type ProfileSectionBento = {
   };
 };
 
+export type ProfileMediaBento = {
+  id: string;
+  type: "media";
+  layout: ProfileBentoLayouts;
+  content: {
+    mediaType: ProfileMediaType;
+    url: string;
+    objectKey: string;
+    tempObjectKey?: string;
+    contentHash?: string;
+    contentType?: string;
+    href: string | null;
+    alt: string;
+    caption: string;
+  };
+};
+
 export type ProfileBentoItem =
   | ProfileLinkBento
   | ProfileTextBento
   | ProfilePlaylistBento
-  | ProfileSectionBento;
+  | ProfileSectionBento
+  | ProfileMediaBento;
 
 export type PublicProfileBentoPageData = {
   page: ProfilePage & {

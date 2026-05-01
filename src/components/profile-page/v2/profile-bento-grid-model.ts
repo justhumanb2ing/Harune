@@ -17,6 +17,7 @@ export const creatableBentoTypes = [
 
 export const bentoTypeLabels = {
   link: "Link",
+  media: "Media",
   section: "Section",
   text: "Text",
 } satisfies Record<CreatableBentoType, string>;
@@ -59,9 +60,11 @@ export const toBentoGridItem = (item: ProfileBentoItem): GridItem => ({
   label:
     item.type === "text"
       ? "Text"
-      : item.type === "section"
-        ? item.content.title
-        : item.content.title,
+      : item.type === "media"
+        ? item.content.caption || "Media"
+        : item.type === "section"
+          ? item.content.title
+          : item.content.title,
   description: item.type,
 });
 
@@ -129,6 +132,22 @@ export function createAutoBentoItem(type: CreatableBentoType, currentItems: Prof
       layout: baseLayout,
       content: {
         title: `New section ${count}`,
+      },
+    } satisfies ProfileBentoItem;
+  }
+
+  if (type === "media") {
+    return {
+      id,
+      type,
+      layout: baseLayout,
+      content: {
+        mediaType: "image",
+        url: "",
+        objectKey: "",
+        href: null,
+        alt: "",
+        caption: "",
       },
     } satisfies ProfileBentoItem;
   }

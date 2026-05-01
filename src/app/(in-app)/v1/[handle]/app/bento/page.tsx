@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { ProfileBentoEditor } from "@/components/profile-page/v2/profile-bento-editor";
+import { ProfileBentoInteractiveGrid } from "@/components/profile-page/v2/profile-bento-interactive-grid";
 import { ProfileLayoutTransition } from "@/components/transition/profile-layout-transition";
 import { getProfileAppPath } from "@/lib/profile-page/app-paths";
 import {
@@ -42,7 +42,7 @@ export default async function BentoEditorPage({ params }: BentoEditorPageProps) 
 
   return (
     <ProfileLayoutTransition id="/app/bento">
-      <ProfileBentoEditor initialData={data} />
+      <ProfileBentoInteractiveGrid initialBento={data.bento} />
     </ProfileLayoutTransition>
   );
 }

@@ -10,6 +10,7 @@ import {
   profileBentos,
   profileLinkBentos,
   profileLinkItems,
+  profileMediaBentos,
   profilePages,
   profilePlaylistBentos,
   profilePlaylistItems,
@@ -39,6 +40,10 @@ const playlistMigrationSql = readFileSync(
 );
 const bentoMigrationSql = readFileSync(
   new URL("../../../../drizzle/0012_brave_colossus.sql", import.meta.url),
+  "utf8"
+);
+const mediaBentoMigrationSql = readFileSync(
+  new URL("../../../../drizzle/0013_loving_deadpool.sql", import.meta.url),
   "utf8"
 );
 
@@ -137,6 +142,13 @@ describe("schema RLS configuration", () => {
       "profile_section_bento_owner_update",
       "profile_section_bento_owner_delete",
     ]);
+
+    expectPolicies(policyNames(profileMediaBentos), [
+      "profile_media_bento_public_select",
+      "profile_media_bento_owner_insert",
+      "profile_media_bento_owner_update",
+      "profile_media_bento_owner_delete",
+    ]);
   });
 
   test("allows public reads for plans without exposed role writes", () => {
@@ -197,6 +209,27 @@ describe("schema RLS configuration", () => {
     expect(
       bentoMigrationSql.includes(
         'GRANT INSERT, UPDATE, DELETE ON TABLE "profile_bento", "profile_bento_layout", "profile_link_bento", "profile_text_bento", "profile_playlist_bento", "profile_section_bento" TO "authenticated"'
+      )
+    ).toBe(true);
+    expect(mediaBentoMigrationSql.includes('CREATE TABLE "profile_media_bento"')).toBe(true);
+    expect(
+      mediaBentoMigrationSql.includes(
+        'CREATE POLICY "profile_media_bento_public_select" ON "profile_media_bento"'
+      )
+    ).toBe(true);
+    expect(
+      mediaBentoMigrationSql.includes(
+        'REVOKE ALL ON TABLE "profile_media_bento" FROM "anon", "authenticated"'
+      )
+    ).toBe(true);
+    expect(
+      mediaBentoMigrationSql.includes(
+        'GRANT SELECT ON TABLE "profile_media_bento" TO "anon", "authenticated"'
+      )
+    ).toBe(true);
+    expect(
+      mediaBentoMigrationSql.includes(
+        'GRANT INSERT, UPDATE, DELETE ON TABLE "profile_media_bento" TO "authenticated"'
       )
     ).toBe(true);
     expect(baseMigrationSql.includes("IF to_regclass('public.coupon') IS NOT NULL THEN")).toBe(

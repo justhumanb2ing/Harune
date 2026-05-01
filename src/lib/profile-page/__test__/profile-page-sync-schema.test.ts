@@ -353,6 +353,59 @@ describe("profile bento sync schema", () => {
     expect(result.success).toBe(true);
   });
 
+  test("accepts media bento upload payloads", () => {
+    const result = profileBentoSyncSchema.safeParse({
+      bento: [
+        {
+          id: "preview:media-1",
+          type: "media",
+          layout: {
+            desktop: { x: 0, y: 0, w: 2, h: 4 },
+            compact: { x: 0, y: 0, w: 2, h: 4 },
+          },
+          content: {
+            mediaType: "image",
+            url: "https://pub.example.com/tmp/users/user-1/profile-page/bento/media",
+            objectKey: "tmp/users/user-1/profile-page/bento/preview%3Amedia-1/upload",
+            tempObjectKey: "tmp/users/user-1/profile-page/bento/preview%3Amedia-1/upload",
+            contentHash: "a".repeat(64),
+            contentType: "image/webp",
+            href: null,
+            alt: "Cover",
+            caption: "Cover",
+          },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  test("accepts arbitrary media bento links", () => {
+    const result = profileBentoSyncSchema.safeParse({
+      bento: [
+        {
+          id: "preview:media-1",
+          type: "media",
+          layout: {
+            desktop: { x: 0, y: 0, w: 2, h: 4 },
+            compact: { x: 0, y: 0, w: 2, h: 4 },
+          },
+          content: {
+            mediaType: "video",
+            url: "https://pub.example.com/public/users/user-1/profile-page/bento/media",
+            objectKey: "public/users/user-1/profile-page/bento/media",
+            href: "not-a-url",
+            alt: "",
+            caption: "",
+          },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+  });
+
   test("rejects resized section bento layouts", () => {
     const result = profileBentoSyncSchema.safeParse({
       bento: [

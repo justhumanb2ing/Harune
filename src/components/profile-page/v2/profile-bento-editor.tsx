@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { ResponsiveGridCanvas } from "@/components/grid/responsive-grid-canvas";
 import { Button } from "@/components/ui/button";
 import { useGridDragMotion } from "@/hooks/use-grid-drag-motion";
-import { BREAKPOINTS, COLS, GRID_MARGIN, ROW_HEIGHT } from "@/lib/grid/grid-config";
+import { BREAKPOINTS, COLS, GRID_MARGIN, getGridRowHeight } from "@/lib/grid/grid-config";
 import { createLayoutItem, normalizeLayouts } from "@/lib/grid/grid-layout-utils";
 import type { GridBreakpoint, GridItem, GridLayouts, ResizeOption } from "@/lib/grid/grid-types";
 import type {
@@ -191,11 +191,12 @@ export function ProfileBentoEditor({ initialData }: ProfileBentoEditorProps) {
   const gridItems = useMemo(() => items.map(toGridItem), [items]);
   const isSectionDragActive =
     activeDragItemId !== null && itemTypeById.get(activeDragItemId) === "section";
-  const gridClassName = `w-full max-w-full [&_.react-draggable-dragging]:z-20! [&_.react-grid-item:not(.react-grid-placeholder)]:z-10 [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none! [&_.react-grid-placeholder]:z-0! [&_.react-grid-placeholder]:rounded-xl! [&_.react-grid-placeholder]:bg-secondary! [&_.react-grid-placeholder]:opacity-100! [&_.react-grid-placeholder]:shadow-[inset_0_1px_6px_rgb(0_0_0_/_0.08),inset_0_-1px_1px_rgb(255_255_255_/_0.8)]! ${isThinPlaceholderActive || isSectionDragActive ? "[&_.react-grid-placeholder]:h-[var(--thin-placeholder-height)]! [&_.react-grid-placeholder]:translate-y-[var(--thin-placeholder-offset)]!" : ""}`;
+  const rowHeight = getGridRowHeight(width, activeBreakpoint);
+  const gridClassName = `w-[380px] max-w-full lg:w-full [&_.react-draggable-dragging]:z-20! [&_.react-grid-item:not(.react-grid-placeholder)]:z-10 [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none! [&_.react-grid-placeholder]:z-0! [&_.react-grid-placeholder]:rounded-xl! [&_.react-grid-placeholder]:bg-secondary! [&_.react-grid-placeholder]:opacity-100! [&_.react-grid-placeholder]:shadow-[inset_0_1px_6px_rgb(0_0_0_/_0.08),inset_0_-1px_1px_rgb(255_255_255_/_0.8)]! ${isThinPlaceholderActive || isSectionDragActive ? "[&_.react-grid-placeholder]:h-[var(--thin-placeholder-height)]! [&_.react-grid-placeholder]:translate-y-[var(--thin-placeholder-offset)]!" : ""}`;
   const gridStyle = {
-    "--thin-placeholder-height": `${ROW_HEIGHT[activeBreakpoint]}px`,
-    "--thin-placeholder-offset": `${ROW_HEIGHT[activeBreakpoint] + GRID_MARGIN[1]}px`,
-    "--thin-item-visible-height": `${ROW_HEIGHT[activeBreakpoint]}px`,
+    "--thin-placeholder-height": `${rowHeight}px`,
+    "--thin-placeholder-offset": `${rowHeight + GRID_MARGIN[1]}px`,
+    "--thin-item-visible-height": `${rowHeight}px`,
   } as CSSProperties;
 
   const addItem = (type: ProfileBentoType) => {
@@ -227,7 +228,7 @@ export function ProfileBentoEditor({ initialData }: ProfileBentoEditorProps) {
     }));
   };
 
-  const resizeItem = (id: string, option: ResizeOption) => {
+  const resizeItem = (id: string, breakpoint: GridBreakpoint, option: ResizeOption) => {
     if (itemTypeById.get(id) === "section") {
       return;
     }
@@ -235,11 +236,9 @@ export function ProfileBentoEditor({ initialData }: ProfileBentoEditorProps) {
     setLayouts((currentLayouts) =>
       normalizeLayouts(
         {
-          desktop: (currentLayouts.desktop ?? []).map((item) =>
-            item.i === id ? { ...item, w: Math.min(option.w, COLS.desktop), h: option.h } : item
-          ),
-          compact: (currentLayouts.compact ?? []).map((item) =>
-            item.i === id ? { ...item, w: Math.min(option.w, COLS.compact), h: option.h } : item
+          ...currentLayouts,
+          [breakpoint]: (currentLayouts[breakpoint] ?? []).map((item) =>
+            item.i === id ? { ...item, w: Math.min(option.w, COLS[breakpoint]), h: option.h } : item
           ),
         },
         itemTypeById
@@ -312,6 +311,7 @@ export function ProfileBentoEditor({ initialData }: ProfileBentoEditorProps) {
             onResizeItem={resizeItem}
             onResizeStart={startResize}
             onResizeStop={stopResize}
+            rowHeight={rowHeight}
             width={width}
           />
         </div>

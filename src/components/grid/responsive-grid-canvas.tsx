@@ -9,7 +9,6 @@ import {
   COLS,
   GRID_MARGIN,
   GRID_PADDING,
-  ROW_HEIGHT,
   THIN_PLACEHOLDER_ITEM_ID,
 } from "@/lib/grid/grid-config";
 import type { GridBreakpoint, GridItem, GridLayouts, ResizeOption } from "@/lib/grid/grid-types";
@@ -27,10 +26,11 @@ type ResponsiveGridCanvasProps = {
   onDragStop: () => void;
   onLayoutChange: (layouts: GridLayouts) => void;
   onRemoveItem: (id: string) => void;
-  onResizeItem: (id: string, option: ResizeOption) => void;
+  onResizeItem: (id: string, breakpoint: GridBreakpoint, option: ResizeOption) => void;
   onResizeStart: (newItem: LayoutItem | null | undefined) => void;
   onResizeStop: () => void;
   renderItem?: (item: GridItem) => ReactNode;
+  rowHeight: number;
   width: number;
 };
 
@@ -51,6 +51,7 @@ export function ResponsiveGridCanvas({
   onResizeStart,
   onResizeStop,
   renderItem,
+  rowHeight,
   width,
 }: ResponsiveGridCanvasProps) {
   if (!mounted) {
@@ -61,7 +62,7 @@ export function ResponsiveGridCanvas({
     <Responsive<GridBreakpoint>
       autoSize
       breakpoints={BREAKPOINTS}
-      className="rounded-[2rem] border border-black/10 shadow-sm"
+      className="rounded-2xl"
       cols={COLS}
       compactor={fastVerticalCompactor}
       containerPadding={GRID_PADDING}
@@ -84,7 +85,7 @@ export function ResponsiveGridCanvas({
       }}
       onResizeStop={onResizeStop}
       resizeConfig={{ enabled: false }}
-      rowHeight={ROW_HEIGHT[activeBreakpoint]}
+      rowHeight={rowHeight}
       width={width}
     >
       {items.map((item) => {

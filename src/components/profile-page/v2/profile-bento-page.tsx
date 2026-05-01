@@ -8,8 +8,8 @@ export function ProfileBentoPage({ page, bento }: ProfileBentoPageProps) {
   const displayName = page.name ?? page.userName ?? page.handle;
 
   return (
-    <section className="mx-auto flex min-h-lvh w-full max-w-7xl flex-col gap-8 px-4 py-8 lg:flex-row lg:items-start">
-      <aside className="flex shrink-0 flex-col gap-5 lg:sticky lg:top-8 lg:w-80">
+    <section className="mx-auto flex min-h-lvh w-full max-w-7xl flex-col items-center gap-8 px-4 py-8 lg:flex-row lg:items-start">
+      <aside className="flex w-[380px] max-w-full shrink-0 flex-col items-center gap-5 text-center lg:sticky lg:top-8 lg:w-80 lg:items-start lg:text-left">
         {page.backgroundImage ? (
           <div className="relative h-44 w-full overflow-hidden rounded-lg">
             <Image
@@ -22,7 +22,7 @@ export function ProfileBentoPage({ page, bento }: ProfileBentoPageProps) {
             />
           </div>
         ) : null}
-        <div className="flex items-center gap-4 lg:flex-col lg:items-start">
+        <div className="flex items-center justify-center gap-4 lg:flex-col lg:items-start lg:justify-start">
           {page.image ? (
             <Image
               alt={displayName}

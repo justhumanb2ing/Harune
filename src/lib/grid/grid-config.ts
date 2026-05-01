@@ -24,8 +24,17 @@ export const RESIZE_OPTIONS: readonly ResizeOption[] = [
   { id: "2x2", w: 2, h: 2 },
   { id: "2x4", w: 2, h: 4, hiddenForItemTypes: ["section"] },
   { id: "2x1", w: 2, h: 1 },
-  { id: "4x1", w: 4, h: 1 },
 ] as const;
+
+export function getGridRowHeight(width: number, breakpoint: GridBreakpoint) {
+  const cols = COLS[breakpoint];
+  const horizontalMargin = GRID_MARGIN[0];
+  const verticalMargin = GRID_MARGIN[1];
+  const horizontalPadding = GRID_PADDING[0] * 2;
+  const columnWidth = (width - horizontalPadding - horizontalMargin * (cols - 1)) / cols;
+
+  return Math.max(1, Math.round((columnWidth - verticalMargin) / 2));
+}
 
 export const BENTO_GRID_SIZE_CONSTRAINTS = {
   link: { minW: 1, maxW: 4, minH: 1, maxH: 4 },

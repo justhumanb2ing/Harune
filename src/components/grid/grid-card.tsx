@@ -13,7 +13,7 @@ type GridCardProps = {
   item: GridItem;
   layouts: GridLayouts;
   onRemove: (id: string) => void;
-  onResize: (id: string, option: ResizeOption) => void;
+  onResize: (id: string, breakpoint: GridBreakpoint, option: ResizeOption) => void;
   children?: ReactNode;
 };
 
@@ -35,7 +35,7 @@ export function GridCard({
 
   return (
     <motion.div
-      className={`group/item relative flex w-full flex-col justify-between rounded-xl border border-black/10 bg-white p-4 shadow-xs cursor-grab pointer-events-auto active:cursor-grabbing ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isDragActive ? "will-change-transform drop-shadow-xs" : ""}`}
+      className={`group/item relative flex w-full flex-col justify-between rounded-xl shadow-float bg-white p-2 cursor-grab pointer-events-auto active:cursor-grabbing ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isDragActive ? "will-change-transform drop-shadow-xs" : ""}`}
       style={{
         rotate: isDragActive ? cardRotate : 0,
         x: isDragActive ? cardX : 0,
@@ -79,7 +79,9 @@ export function GridCard({
       {resizeOptions.length > 0 ? (
         <GridResizeControls
           item={item}
-          onResize={onResize}
+          onResize={(id, option) => {
+            onResize(id, activeBreakpoint, option);
+          }}
           options={resizeOptions}
           selectedOptionId={selectedResizeOption}
         />

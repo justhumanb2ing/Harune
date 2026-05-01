@@ -45,6 +45,7 @@ import {
 import type { ProfileBentoItem, PublicProfileBentoPageData } from "@/lib/profile-page/types";
 import { apiFetch, getApiErrorDescription } from "@/lib/react-query/fetcher";
 import { cn } from "@/lib/utils";
+import { ProfileBentoGridMotion } from "./profile-bento-entry-motion";
 import {
   type CreatableBentoType,
   createAutoBentoItem,
@@ -805,7 +806,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   };
 
   return (
-    <section className="relative flex min-w-0 flex-1 flex-col items-center gap-4 pb-28 xl:w-[56rem] xl:flex-none xl:items-stretch">
+    <ProfileBentoGridMotion className="relative flex min-w-0 flex-1 flex-col items-center gap-4 pb-28 xl:w-[56rem] xl:flex-none xl:items-stretch">
       <motion.header
         className="fixed bottom-6 left-1/2 z-30 flex w-auto -translate-x-1/2 flex-col items-center justify-center rounded-xl border bg-background/90 p-2 shadow-xs backdrop-blur"
         layout
@@ -957,6 +958,6 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
           width={width}
         />
       </div>
-    </section>
+    </ProfileBentoGridMotion>
   );
 }

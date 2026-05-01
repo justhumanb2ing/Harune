@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ProfilePageEditorProvider } from "@/components/profile-page/layout/profile-page-editor-provider";
+import { ProfileBentoProfileMotion } from "@/components/profile-page/v2/profile-bento-entry-motion";
 import { ProfileBentoInteractiveGrid } from "@/components/profile-page/v2/profile-bento-interactive-grid";
 import { ProfileBentoOwnerSettingPopover } from "@/components/profile-page/v2/profile-bento-owner-setting-popover";
 import { ProfileBentoProfileEditor } from "@/components/profile-page/v2/profile-bento-profile-editor";
@@ -26,7 +27,7 @@ function ProfileBentoProfileAside({ page }: Pick<PublicProfileBentoPageData, "pa
   const displayName = page.name ?? page.userName ?? page.handle;
 
   return (
-    <aside className="flex w-[380px] max-w-full shrink-0 flex-col xl:sticky xl:top-[var(--v2-page-top-offset)] xl:min-w-[20rem] xl:w-[700px] xl:shrink">
+    <ProfileBentoProfileMotion className="flex w-[380px] max-w-full shrink-0 flex-col xl:sticky xl:top-[var(--v2-page-top-offset)] xl:min-w-[20rem] xl:w-[700px] xl:shrink">
       <div className="flex flex-col gap-12 overflow-hidden">
         <div className="flex px-4">
           <div className="relative flex size-32 items-center justify-center overflow-hidden rounded-full bg-secondary xl:size-44">
@@ -64,7 +65,7 @@ function ProfileBentoProfileAside({ page }: Pick<PublicProfileBentoPageData, "pa
           </div>
         </div>
       </div>
-    </aside>
+    </ProfileBentoProfileMotion>
   );
 }
 

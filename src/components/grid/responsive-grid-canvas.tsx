@@ -89,8 +89,9 @@ export function ResponsiveGridCanvas({
       width={width}
     >
       {items.map((item) => {
-        const isVisuallyThinItem =
-          item.id === THIN_PLACEHOLDER_ITEM_ID || item.itemType === "section";
+        const isSectionItem = item.itemType === "section";
+        const isVisuallyThinItem = item.id === THIN_PLACEHOLDER_ITEM_ID || isSectionItem;
+        const isDragActive = activeDragItemId === item.id;
 
         return (
           <div
@@ -101,7 +102,7 @@ export function ResponsiveGridCanvas({
               activeBreakpoint={activeBreakpoint}
               cardRotate={cardRotate}
               cardX={cardX}
-              isDragActive={activeDragItemId === item.id}
+              isDragActive={isDragActive}
               item={item}
               layouts={layouts}
               onRemove={onRemoveItem}

@@ -442,6 +442,37 @@ html[data-onboarding-step-transition="back"]::view-transition-new(onboarding-ste
       0 1.5px 2px rgba(0, 0, 0, 0.01),
       0 0.5px 1px rgba(0, 0, 0, 0.008);
   }
+
+  .react-grid-item.react-draggable-dragging input,
+  .react-grid-item.react-draggable-dragging textarea {
+    caret-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .profile-bento-grid-dragging input,
+  .profile-bento-grid-dragging textarea {
+    pointer-events: none;
+    caret-color: transparent;
+    background-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .profile-bento-grid-dragging input:hover,
+  .profile-bento-grid-dragging textarea:hover,
+  .profile-bento-grid-dragging input:focus-visible,
+  .profile-bento-grid-dragging textarea:focus-visible {
+    background-color: transparent;
+  }
+
+  .react-grid-item.react-draggable-dragging input::selection,
+  .react-grid-item.react-draggable-dragging textarea::selection,
+  .profile-bento-grid-dragging input::selection,
+  .profile-bento-grid-dragging textarea::selection {
+    background: transparent;
+    color: inherit;
+  }
 }
 
 @layer components {

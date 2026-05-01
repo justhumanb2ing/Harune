@@ -212,7 +212,7 @@ function LinkThumbnail({ thumbnail, className }: { thumbnail: string | null; cla
 
 function LinkUrlText({ url }: { url: string }) {
   return (
-    <div className="min-w-0 max-w-full px-2 text-muted-foreground text-xs">
+    <div className="min-w-0 max-w-full text-muted-foreground text-xs">
       <p className="min-w-0 max-w-full truncate line-clamp-1">{url}</p>
     </div>
   );

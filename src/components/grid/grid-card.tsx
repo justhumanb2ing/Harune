@@ -87,7 +87,7 @@ export function GridCard({
 
   return (
     <motion.div
-      className={`group/item relative flex w-full flex-col justify-between rounded-xl bg-white p-2 cursor-grab pointer-events-auto active:cursor-grabbing transition-shadow ${shadowClassName} ${dragInteractionClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isDragActive || motionPhase ? "will-change-transform" : ""} ${isDragActive ? "drop-shadow-xs" : ""} ${isExiting ? "pointer-events-none select-none shadow-none" : ""}`}
+      className={`group/item relative flex w-full flex-col justify-between rounded-xl bg-white p-3 cursor-grab pointer-events-auto active:cursor-grabbing transition-shadow ${shadowClassName} ${dragInteractionClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isDragActive || motionPhase ? "will-change-transform" : ""} ${isDragActive ? "drop-shadow-xs" : ""} ${isExiting ? "pointer-events-none select-none shadow-none" : ""}`}
       onBlurCapture={(event) => {
         if (!isSectionItem || event.currentTarget.contains(event.relatedTarget)) {
           return;

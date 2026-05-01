@@ -11,8 +11,8 @@ export function ProfileBentoPage({ page, bento, isOwner }: ProfileBentoPageProps
   const displayName = page.name ?? page.userName ?? page.handle;
 
   return (
-    <section className="mx-auto flex min-h-lvh w-full flex-col items-center gap-8 px-4 py-8 xl:flex-row xl:items-start xl:justify-center xl:gap-[clamp(2rem,calc((100vw-80rem)*0.5+2rem),15rem)]">
-      <aside className="flex w-[380px] max-w-full shrink-0 flex-col items-center gap-5 text-center xl:sticky xl:top-8 xl:min-h-[calc(100lvh-4rem)] xl:min-w-[20rem] xl:w-[700px] xl:shrink xl:items-start xl:text-left">
+    <section className="mx-auto flex min-h-lvh w-full flex-col items-center gap-8 px-4 pb-8 pt-[var(--v2-page-top-offset)] [--v2-page-top-offset:2rem] xl:[--v2-page-top-offset:5rem] xl:flex-row xl:items-stretch xl:justify-center xl:gap-[clamp(2rem,calc((100vw-80rem)*0.5+2rem),15rem)]">
+      <aside className="flex w-[380px] max-w-full shrink-0 flex-col items-center gap-5 text-center xl:sticky xl:top-[var(--v2-page-top-offset)] xl:min-w-[20rem] xl:w-[700px] xl:shrink xl:items-start xl:text-left">
         {page.backgroundImage ? (
           <div className="relative h-44 w-full overflow-hidden rounded-lg">
             <Image

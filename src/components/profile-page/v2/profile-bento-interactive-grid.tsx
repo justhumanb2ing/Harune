@@ -257,25 +257,11 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   };
 
   return (
-    <section className="relative flex min-w-0 flex-1 flex-col items-center gap-4 xl:min-h-[calc(100lvh-4rem)] xl:w-[56rem] xl:flex-none xl:items-stretch">
-      <header className="sticky top-4 z-30 flex w-[380px] max-w-full flex-wrap items-center justify-between gap-3 rounded-xl border bg-background/90 p-2 shadow-xs backdrop-blur xl:w-full">
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <span className="rounded-full bg-foreground px-2 py-1 font-medium text-[10px] text-background uppercase tracking-normal">
-            Editing
-          </span>
-          {isDirty ? (
-            <span className="rounded-full bg-yellow-100 px-2 py-1 font-medium text-[10px] text-yellow-900 uppercase tracking-normal">
-              Unsaved
-            </span>
-          ) : (
-            <span className="rounded-full bg-muted px-2 py-1 font-medium text-[10px] text-muted-foreground uppercase tracking-normal">
-              Saved
-            </span>
-          )}
-          <ProfileBentoGridActions onAddItem={addItem} />
-        </div>
-        <Button disabled={!isDirty || isPending} onClick={save} type="button">
-          {isPending ? "Saving" : isDirty ? "Save" : "Saved"}
+    <section className="relative flex min-w-0 flex-1 flex-col items-center gap-4 pb-28 xl:w-[56rem] xl:flex-none xl:items-stretch">
+      <header className="fixed bottom-6 left-1/2 z-30 flex -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border bg-background/90 p-2 shadow-xs backdrop-blur">
+        <ProfileBentoGridActions onAddItem={addItem} />
+        <Button aria-busy={isPending} disabled={!isDirty || isPending} onClick={save} type="button">
+          Save
         </Button>
       </header>
 

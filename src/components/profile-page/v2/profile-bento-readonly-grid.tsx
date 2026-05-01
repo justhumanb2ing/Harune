@@ -36,14 +36,14 @@ export function ProfileBentoReadonlyGrid({ bento }: ProfileBentoReadonlyGridProp
 
   if (!mounted) {
     return (
-      <section className="min-w-0 flex-1 xl:min-h-[calc(100lvh-4rem)] xl:w-[56rem] xl:flex-none">
+      <section className="min-w-0 flex-1 xl:w-[56rem] xl:flex-none">
         <div className="h-96 w-[380px] max-w-full rounded-2xl border border-black/10 xl:w-full" />
       </section>
     );
   }
 
   return (
-    <section className="min-w-0 flex-1 xl:min-h-[calc(100lvh-4rem)] xl:w-[56rem] xl:flex-none">
+    <section className="min-w-0 flex-1 xl:w-[56rem] xl:flex-none">
       <div
         className="w-[380px] max-w-full xl:w-full [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none!"
         ref={containerRef}

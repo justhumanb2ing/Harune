@@ -17,7 +17,7 @@ export function ProfileBentoProfileEditor() {
 
   return (
     <ProfileBentoProfileMotion className="flex w-[380px] max-w-full shrink-0 flex-col xl:sticky xl:top-[var(--v2-page-top-offset)] xl:min-w-[20rem] xl:w-[700px] xl:shrink">
-      <div className="flex flex-col gap-12 overflow-hidden">
+      <div className="flex flex-col gap-8 overflow-hidden">
         <div className="flex px-4">
           <div className="group/profile-image relative">
             <button
@@ -73,7 +73,7 @@ export function ProfileBentoProfileEditor() {
           />
         </div>
 
-        <div className="flex flex-col gap-5 p-4 pt-0">
+        <div className="flex flex-col gap-3 p-4 pt-0">
           <Textarea
             id="v2-profile-page-name"
             value={editor.profileForm.name}
@@ -91,7 +91,7 @@ export function ProfileBentoProfileEditor() {
             onChange={(event) => editor.setProfileField("bio", event.target.value)}
             placeholder="Bio"
             aria-label="Bio"
-            className="min-h-8 resize-none overflow-hidden border-0 p-0! text-lg! break-all rounded-none focus-visible:ring-0"
+            className="min-h-8 resize-none overflow-hidden border-0 p-0! text-xl! break-all rounded-none focus-visible:ring-0"
           />
 
           <div className="flex flex-col gap-2 text-neutral-500">

@@ -28,7 +28,7 @@ function ProfileBentoProfileAside({ page }: Pick<PublicProfileBentoPageData, "pa
 
   return (
     <ProfileBentoProfileMotion className="flex w-[380px] max-w-full shrink-0 flex-col xl:sticky xl:top-[var(--v2-page-top-offset)] xl:min-w-[20rem] xl:w-[700px] xl:shrink">
-      <div className="flex flex-col gap-12 overflow-hidden">
+      <div className="flex flex-col gap-8 overflow-hidden">
         <div className="flex px-4">
           <div className="relative flex size-32 items-center justify-center overflow-hidden rounded-full bg-secondary xl:size-44">
             {page.image ? (
@@ -48,15 +48,15 @@ function ProfileBentoProfileAside({ page }: Pick<PublicProfileBentoPageData, "pa
           </div>
         </div>
 
-        <div className="flex flex-col gap-5 p-4 pt-0">
+        <div className="flex flex-col gap-3 p-4 pt-0">
           <h1 className="min-h-8 whitespace-pre-line break-all p-0 font-bold text-4xl! xl:text-5xl!">
             {displayName}
           </h1>
 
           {page.bio ? (
-            <p className="min-h-8 whitespace-pre-line break-all p-0 text-lg!">{page.bio}</p>
+            <p className="min-h-8 whitespace-pre-line break-all p-0 text-xl!">{page.bio}</p>
           ) : (
-            <p className="min-h-8 p-0 text-lg! text-muted-foreground">Bio</p>
+            <p className="min-h-8 p-0 text-xl! text-muted-foreground">Bio</p>
           )}
 
           <div className="flex flex-col gap-2 text-neutral-500">
@@ -148,7 +148,7 @@ export function ProfileBentoPage({
         <ProfileBentoReadonlyGrid bento={bento} />
       )}
       <ProfileBentoFooterAction
-        className="w-full py-16 xl:fixed xl:bottom-12 xl:left-12 xl:z-30 xl:w-auto xl:justify-start xl:p-0"
+        className="w-full py-16 md:fixed md:bottom-12 md:left-12 md:z-30 md:w-auto md:justify-start md:p-0"
         isOwner={isOwner}
         viewerProfilePage={viewerProfilePage}
       />

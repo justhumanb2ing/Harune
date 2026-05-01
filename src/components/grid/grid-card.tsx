@@ -81,7 +81,7 @@ export function GridCard({
   const [isSectionPointerActive, setIsSectionPointerActive] = useState(false);
   const [isSectionFocusActive, setIsSectionFocusActive] = useState(false);
   const shouldShowSectionShadow =
-    isSectionItem && (isSectionPointerActive || isSectionFocusActive || isDragActive);
+    isSectionItem && !readOnly && (isSectionPointerActive || isSectionFocusActive || isDragActive);
   const shadowClassName =
     !isSectionItem || shouldShowSectionShadow ? "shadow-float" : "shadow-none";
   const paddingClassName = item.itemType === "media" ? "p-0" : "p-3";
@@ -94,7 +94,7 @@ export function GridCard({
 
   return (
     <motion.div
-      className={`group/item relative flex w-full flex-col justify-between rounded-xl bg-white ${paddingClassName} pointer-events-auto transition-shadow ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} ${shadowClassName} ${dragInteractionClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isDragActive || motionPhase ? "will-change-transform" : ""} ${isDragActive ? "drop-shadow-xs" : ""} ${isExiting ? "pointer-events-none select-none shadow-none" : ""}`}
+      className={`group/item relative flex w-full flex-col justify-between rounded-[1.5rem] bg-white ${paddingClassName} pointer-events-auto transition-shadow ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} ${shadowClassName} ${dragInteractionClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isDragActive || motionPhase ? "will-change-transform" : ""} ${isDragActive ? "drop-shadow-xs" : ""} ${isExiting ? "pointer-events-none select-none shadow-none" : ""}`}
       onBlurCapture={(event) => {
         if (!isSectionItem || event.currentTarget.contains(event.relatedTarget)) {
           return;

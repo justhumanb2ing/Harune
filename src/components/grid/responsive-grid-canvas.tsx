@@ -108,7 +108,7 @@ export function ResponsiveGridCanvas({
 
         return (
           <div
-            className={`overflow-visible rounded-xl ${isVisuallyThinItem ? "flex items-end" : ""} ${item.id === THIN_PLACEHOLDER_ITEM_ID ? "pointer-events-none" : ""}`}
+            className={`overflow-visible rounded-[1.5rem] ${isVisuallyThinItem ? "flex items-end" : ""} ${item.id === THIN_PLACEHOLDER_ITEM_ID ? "pointer-events-none" : ""}`}
             key={item.id}
           >
             <GridCard

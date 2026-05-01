@@ -227,7 +227,7 @@ function ReadonlyLinkBento({
 }) {
   if (layoutSize === "2x1") {
     return (
-      <article className="flex size-full min-h-0 items-center gap-3 overflow-hidden rounded-lg p-3">
+      <article className="flex size-full min-h-0 items-center gap-3 overflow-hidden rounded-lg p-2">
         <LinkFavicon favicon={item.content.favicon} title={item.content.title} />
         <ReadonlyLinkTitle title={item.content.title} className="flex-1" />
       </article>
@@ -236,7 +236,7 @@ function ReadonlyLinkBento({
 
   if (layoutSize === "2x2") {
     return (
-      <article className="flex size-full min-h-0 gap-3 overflow-hidden rounded-lg p-3">
+      <article className="flex size-full min-h-0 gap-3 overflow-hidden rounded-lg p-2">
         <div className="flex min-w-0 flex-1 flex-col justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <LinkFavicon favicon={item.content.favicon} title={item.content.title} />
@@ -251,7 +251,7 @@ function ReadonlyLinkBento({
 
   if (layoutSize === "2x4") {
     return (
-      <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-3">
+      <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-2">
         <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <LinkFavicon favicon={item.content.favicon} title={item.content.title} />
@@ -266,7 +266,7 @@ function ReadonlyLinkBento({
 
   if (layoutSize === "1x4") {
     return (
-      <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-3">
+      <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-2">
         <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <LinkFavicon favicon={item.content.favicon} title={item.content.title} />
@@ -280,7 +280,7 @@ function ReadonlyLinkBento({
   }
 
   return (
-    <article className="flex size-full min-h-0 flex-col gap-3 overflow-hidden rounded-lg p-3">
+    <article className="flex size-full min-h-0 flex-col gap-3 overflow-hidden rounded-lg p-2">
       <LinkFavicon favicon={item.content.favicon} title={item.content.title} />
       <ReadonlyLinkTitle title={item.content.title} className="w-full" />
     </article>
@@ -303,7 +303,7 @@ function EditableLinkBento({
 
   if (size === "2x1") {
     return (
-      <article className="flex size-full min-h-0 items-center gap-3 overflow-hidden rounded-lg p-3">
+      <article className="flex size-full min-h-0 items-center gap-3 overflow-hidden rounded-lg p-2">
         <EditableLinkFavicon
           favicon={item.content.favicon}
           href={item.content.url}
@@ -316,7 +316,7 @@ function EditableLinkBento({
 
   if (size === "2x2") {
     return (
-      <article className="flex size-full min-h-0 gap-3 overflow-hidden rounded-lg p-3">
+      <article className="flex size-full min-h-0 gap-3 overflow-hidden rounded-lg p-2">
         <div className="flex min-w-0 flex-1 flex-col justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <EditableLinkFavicon
@@ -336,7 +336,7 @@ function EditableLinkBento({
 
   if (size === "2x4") {
     return (
-      <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-3">
+      <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-2">
         <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <EditableLinkFavicon
@@ -355,7 +355,7 @@ function EditableLinkBento({
 
   if (size === "1x4") {
     return (
-      <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-3">
+      <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-2">
         <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <EditableLinkFavicon
@@ -373,7 +373,7 @@ function EditableLinkBento({
   }
 
   return (
-    <article className="flex size-full min-h-0 flex-col gap-3 overflow-hidden rounded-lg p-3">
+    <article className="flex size-full min-h-0 flex-col gap-3 overflow-hidden rounded-lg p-2">
       <EditableLinkFavicon
         favicon={item.content.favicon}
         href={item.content.url}
@@ -435,7 +435,7 @@ function EditableTextBento({
   return (
     <textarea
       aria-label="Text content"
-      className="grid-action size-full resize-none rounded-lg bg-transparent p-3 py-1 text-lg font-medium leading-relaxed outline-none placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary"
+      className="grid-action size-full resize-none rounded-lg bg-transparent p-1 text-lg font-medium leading-relaxed outline-none placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary"
       onBlur={(event) => {
         const shouldReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -551,7 +551,7 @@ function EditableMediaBento({
   onChange: (item: ProfileBentoItem) => void;
 }) {
   return (
-    <article className="relative size-full overflow-hidden rounded-xl bg-muted">
+    <article className="relative size-full overflow-hidden rounded-[1.5rem] bg-muted">
       <MediaPreview item={item} />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent" />
       <input
@@ -645,7 +645,7 @@ function ProfileBentoGridCardContent({
 
   if (item.type === "media") {
     return (
-      <article className="relative size-full overflow-hidden rounded-xl bg-muted">
+      <article className="relative size-full overflow-hidden rounded-[1.5rem] bg-muted">
         <MediaPreview item={item} />
         {item.content.caption ? (
           <>
@@ -720,7 +720,7 @@ function ReadonlyTextBento({ content }: { content: string }) {
   }, []);
 
   return (
-    <article className="relative size-full overflow-hidden rounded-lg p-3 py-1" ref={containerRef}>
+    <article className="relative size-full overflow-hidden rounded-lg p-1" ref={containerRef}>
       <p
         className="overflow-hidden whitespace-pre-line break-words text-lg font-medium leading-relaxed"
         ref={textRef}

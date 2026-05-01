@@ -10,6 +10,14 @@ const noStoreHeaders = {
   "Cache-Control": "no-store",
 };
 
+const toValidationDescription = (issues: { message: string; path: PropertyKey[] }[]) =>
+  issues
+    .map((issue) => {
+      const path = issue.path.join(".");
+      return path ? `${path}: ${issue.message}` : issue.message;
+    })
+    .join("\n");
+
 export const POST = withAuthRequired(async (req, context) => {
   try {
     const body = await req.json();
@@ -17,7 +25,10 @@ export const POST = withAuthRequired(async (req, context) => {
 
     if (!validation.success) {
       return NextResponse.json(
-        { error: "Failed to sync bento" },
+        {
+          description: toValidationDescription(validation.error.issues),
+          error: "Failed to sync bento",
+        },
         { headers: noStoreHeaders, status: 400 }
       );
     }

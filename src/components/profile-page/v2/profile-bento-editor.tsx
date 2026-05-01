@@ -15,7 +15,7 @@ import type {
   ProfileBentoType,
   PublicProfileBentoPageData,
 } from "@/lib/profile-page/types";
-import { apiFetch } from "@/lib/react-query/fetcher";
+import { apiFetch, getApiErrorDescription } from "@/lib/react-query/fetcher";
 import { toBentoItemTypeById } from "./profile-bento-grid-model";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -266,7 +266,9 @@ export function ProfileBentoEditor({ initialData }: ProfileBentoEditorProps) {
         setLayouts(toGridLayouts(response.bento));
         toast("Bento synced");
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Failed to sync bento");
+        toast.error(error instanceof Error ? error.message : "Failed to sync bento", {
+          description: getApiErrorDescription(error),
+        });
       }
     });
   };

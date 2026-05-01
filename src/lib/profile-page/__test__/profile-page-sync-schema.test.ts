@@ -333,6 +333,26 @@ describe("profile bento sync schema", () => {
     expect(result.success).toBe(true);
   });
 
+  test("accepts long section bento titles", () => {
+    const result = profileBentoSyncSchema.safeParse({
+      bento: [
+        {
+          id: "draft:section-1",
+          type: "section",
+          layout: {
+            desktop: { x: 0, y: 0, w: 4, h: 2 },
+            compact: { x: 0, y: 0, w: 2, h: 2 },
+          },
+          content: {
+            title: "Featured ".repeat(40).trim(),
+          },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+  });
+
   test("rejects resized section bento layouts", () => {
     const result = profileBentoSyncSchema.safeParse({
       bento: [

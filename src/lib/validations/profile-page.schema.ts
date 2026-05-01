@@ -161,7 +161,7 @@ export const profilePlaylistBentoSyncSchema = profileBentoBaseSchema.extend({
 export const profileSectionBentoSyncSchema = profileBentoBaseSchema.extend({
   type: z.literal("section"),
   content: z.object({
-    title: requiredText("Title", 100),
+    title: z.string().trim().min(1, "Title is required."),
   }),
 });
 

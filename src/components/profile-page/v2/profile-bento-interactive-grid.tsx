@@ -13,7 +13,7 @@ import { BREAKPOINTS, COLS, GRID_MARGIN, getGridRowHeight } from "@/lib/grid/gri
 import { normalizeLayouts } from "@/lib/grid/grid-layout-utils";
 import type { GridBreakpoint, GridLayouts, ResizeOption } from "@/lib/grid/grid-types";
 import type { ProfileBentoItem, PublicProfileBentoPageData } from "@/lib/profile-page/types";
-import { apiFetch } from "@/lib/react-query/fetcher";
+import { apiFetch, getApiErrorDescription } from "@/lib/react-query/fetcher";
 import {
   type CreatableBentoType,
   createAutoBentoItem,
@@ -173,7 +173,9 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
         setSavedSnapshot(createPayloadSnapshot(response.bento, nextLayouts));
         toast("Bento synced");
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Failed to sync bento");
+        toast.error(error instanceof Error ? error.message : "Failed to sync bento", {
+          description: getApiErrorDescription(error),
+        });
       }
     });
   };

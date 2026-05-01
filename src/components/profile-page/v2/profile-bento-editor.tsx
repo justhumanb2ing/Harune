@@ -264,7 +264,7 @@ export function ProfileBentoEditor({ initialData }: ProfileBentoEditorProps) {
 
         setItems(response.bento);
         setLayouts(toGridLayouts(response.bento));
-        toast("Bento synced");
+        toast("Synced");
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Failed to sync bento", {
           description: getApiErrorDescription(error),

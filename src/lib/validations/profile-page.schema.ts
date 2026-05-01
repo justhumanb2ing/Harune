@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BENTO_GRID_SIZE_CONSTRAINTS, COLS } from "@/lib/grid/grid-config";
 import { playlistProviderOrder } from "@/lib/profile-page/playlist";
 import { MAX_SOCIAL_LINKS } from "@/lib/profile-page/types";
 import { handleSchema } from "@/lib/validations/auth.schema";
@@ -111,6 +112,115 @@ export const profilePageSyncTextBoxItemSchema = z.object({
   position: z.number().int().nonnegative(),
   blockPosition: z.number().int().nonnegative(),
 });
+
+const profileBentoLayoutSchema = z.object({
+  x: z.number().int().nonnegative(),
+  y: z.number().int().nonnegative(),
+  w: z.number().int().positive(),
+  h: z.number().int().positive(),
+});
+
+const profileBentoLayoutsSchema = z.object({
+  desktop: profileBentoLayoutSchema,
+  compact: profileBentoLayoutSchema,
+});
+
+const profileBentoBaseSchema = z.object({
+  id: entityIdSchema,
+  layout: profileBentoLayoutsSchema,
+});
+
+export const profileLinkBentoSyncSchema = profileBentoBaseSchema.extend({
+  type: z.literal("link"),
+  content: z.object({
+    title: requiredText("Title", 100),
+    description: z.string().trim().max(280, "Must be 280 characters or fewer."),
+    favicon: z.string().trim().max(2048, "Must be 2048 characters or fewer."),
+    thumbnail: z.string().trim().max(2048, "Must be 2048 characters or fewer."),
+    url: z.string().trim().url("Enter a valid URL."),
+  }),
+});
+
+export const profileTextBentoSyncSchema = profileBentoBaseSchema.extend({
+  type: z.literal("text"),
+  content: z.object({
+    content: z.string().trim().min(1, "Content is required.").max(2000),
+  }),
+});
+
+export const profilePlaylistBentoSyncSchema = profileBentoBaseSchema.extend({
+  type: z.literal("playlist"),
+  content: z.object({
+    title: requiredText("Title", 100),
+    provider: playlistProviderSchema,
+    url: z.string().trim().url("Enter a valid URL."),
+    content: z.string().trim().min(1, "Content is required."),
+  }),
+});
+
+export const profileSectionBentoSyncSchema = profileBentoBaseSchema.extend({
+  type: z.literal("section"),
+  content: z.object({
+    title: requiredText("Title", 100),
+  }),
+});
+
+export const profileBentoSyncItemSchema = z.discriminatedUnion("type", [
+  profileLinkBentoSyncSchema,
+  profileTextBentoSyncSchema,
+  profilePlaylistBentoSyncSchema,
+  profileSectionBentoSyncSchema,
+]);
+
+export const profileBentoSyncSchema = z
+  .object({
+    bento: z.array(profileBentoSyncItemSchema),
+  })
+  .superRefine((value, ctx) => {
+    const bentoIds = new Set<string>();
+
+    for (const [index, item] of value.bento.entries()) {
+      if (bentoIds.has(item.id)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Duplicate bento ids are not allowed.",
+          path: ["bento", index, "id"],
+        });
+      }
+
+      bentoIds.add(item.id);
+
+      for (const breakpoint of ["desktop", "compact"] as const) {
+        const layout = item.layout[breakpoint];
+        const constraints = BENTO_GRID_SIZE_CONSTRAINTS[item.type];
+        const maxW = Math.min(constraints.maxW, COLS[breakpoint]);
+
+        if (layout.x + layout.w > COLS[breakpoint]) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Bento layout exceeds grid columns.",
+            path: ["bento", index, "layout", breakpoint],
+          });
+        }
+
+        if (layout.w < constraints.minW || layout.w > maxW) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Bento width is outside the allowed range.",
+            path: ["bento", index, "layout", breakpoint, "w"],
+          });
+        }
+
+        if (layout.h < constraints.minH || layout.h > constraints.maxH) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Bento height is outside the allowed range.",
+            path: ["bento", index, "layout", breakpoint, "h"],
+          });
+        }
+      }
+    }
+  });
 
 export const profilePageSyncSchema = z
   .object({
@@ -259,3 +369,4 @@ export type TextBoxItemInput = z.infer<typeof textBoxItemInputSchema>;
 export type ReorderItemsInput = z.infer<typeof reorderItemsSchema>;
 export type SocialPlatform = z.infer<typeof socialPlatformSchema>;
 export type ProfilePageSyncValues = z.infer<typeof profilePageSyncSchema>;
+export type ProfileBentoSyncValues = z.infer<typeof profileBentoSyncSchema>;

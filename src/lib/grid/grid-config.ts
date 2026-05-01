@@ -27,6 +27,13 @@ export const RESIZE_OPTIONS: readonly ResizeOption[] = [
   { id: "4x1", w: 4, h: 1 },
 ] as const;
 
+export const BENTO_GRID_SIZE_CONSTRAINTS = {
+  link: { minW: 1, maxW: 4, minH: 1, maxH: 4 },
+  text: { minW: 1, maxW: 4, minH: 1, maxH: 4 },
+  playlist: { minW: 1, maxW: 4, minH: 1, maxH: 4 },
+  section: { minW: 1, maxW: 4, minH: 1, maxH: 2 },
+} as const;
+
 export const THIN_PLACEHOLDER_ITEM_ID = "wide-thin-placeholder";
 
 export const INITIAL_LAYOUTS = {

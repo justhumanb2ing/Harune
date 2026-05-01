@@ -1,7 +1,10 @@
 import { describe, expect, test } from "bun:test";
 
 import { MAX_SOCIAL_LINKS } from "@/lib/profile-page/types";
-import { profilePageSyncSchema } from "@/lib/validations/profile-page.schema";
+import {
+  profileBentoSyncSchema,
+  profilePageSyncSchema,
+} from "@/lib/validations/profile-page.schema";
 
 const validPayload = {
   page: {
@@ -225,6 +228,97 @@ describe("profile page sync schema", () => {
           description: "",
           position: 0,
           blockPosition: 2,
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+  });
+});
+
+const validBentoPayload = {
+  bento: [
+    {
+      id: "draft:link-1",
+      type: "link",
+      layout: {
+        desktop: { x: 0, y: 0, w: 2, h: 2 },
+        compact: { x: 0, y: 0, w: 2, h: 2 },
+      },
+      content: {
+        title: "Docs",
+        description: "",
+        favicon: "",
+        thumbnail: "",
+        url: "https://example.com/docs",
+      },
+    },
+    {
+      id: "draft:text-1",
+      type: "text",
+      layout: {
+        desktop: { x: 2, y: 0, w: 2, h: 2 },
+        compact: { x: 0, y: 2, w: 2, h: 2 },
+      },
+      content: {
+        content: "About",
+      },
+    },
+  ],
+};
+
+describe("profile bento sync schema", () => {
+  test("accepts a valid bento sync payload", () => {
+    const result = profileBentoSyncSchema.safeParse(validBentoPayload);
+
+    expect(result.success).toBe(true);
+  });
+
+  test("rejects duplicate bento ids", () => {
+    const result = profileBentoSyncSchema.safeParse({
+      bento: [validBentoPayload.bento[0], validBentoPayload.bento[0]],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  test("requires both desktop and compact layouts", () => {
+    const result = profileBentoSyncSchema.safeParse({
+      bento: [
+        {
+          ...validBentoPayload.bento[0],
+          layout: {
+            desktop: { x: 0, y: 0, w: 2, h: 2 },
+          },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  test("rejects layouts outside breakpoint columns", () => {
+    const result = profileBentoSyncSchema.safeParse({
+      bento: [
+        {
+          ...validBentoPayload.bento[0],
+          layout: {
+            desktop: { x: 3, y: 0, w: 2, h: 2 },
+            compact: { x: 0, y: 0, w: 2, h: 2 },
+          },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  test("rejects content that does not match the bento type", () => {
+    const result = profileBentoSyncSchema.safeParse({
+      bento: [
+        {
+          ...validBentoPayload.bento[0],
+          type: "text",
         },
       ],
     });

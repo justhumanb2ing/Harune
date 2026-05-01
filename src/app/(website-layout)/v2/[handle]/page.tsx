@@ -1,0 +1,70 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { ProfileBentoPage } from "@/components/profile-page/v2/profile-bento-page";
+import { WebPageJsonLd } from "@/components/site-instrumentation/structured-data";
+import { appConfig } from "@/lib/config";
+import { getPublicProfileBentoPage } from "@/lib/profile-page/queries";
+import { absoluteUrl, createPageMetadata } from "@/lib/seo";
+
+type V2HandlePageProps = {
+  params: Promise<{
+    handle: string;
+  }>;
+};
+
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: V2HandlePageProps): Promise<Metadata> {
+  const { handle } = await params;
+  const data = await getPublicProfileBentoPage(handle);
+
+  if (!data?.page.handle) {
+    return {};
+  }
+
+  const title = `${data.page.name || data.page.userName || data.page.handle} on ${appConfig.projectName}`;
+
+  return createPageMetadata({
+    path: `/v2/${data.page.handle}`,
+    title,
+    description: data.page.bio || `Visit @${data.page.handle}'s page.`,
+    imageAlt: title,
+    imagePath: `/${data.page.handle}/opengraph-image`,
+    twitterImagePath: `/${data.page.handle}/twitter-image`,
+  });
+}
+
+export default async function V2HandlePage({ params }: V2HandlePageProps) {
+  const { handle } = await params;
+  const data = await getPublicProfileBentoPage(handle);
+
+  if (!data?.page.handle) {
+    notFound();
+  }
+
+  const title = `${data.page.name || data.page.userName || data.page.handle} on ${appConfig.projectName}`;
+
+  return (
+    <>
+      <WebPageJsonLd
+        id={absoluteUrl(`/v2/${data.page.handle}`)}
+        description={data.page.bio || `Visit @${data.page.handle}'s page.`}
+        title={title}
+        lastUpdated={data.page.updatedAt}
+        isAccessibleForFree
+        publisher={{
+          "@type": "Organization",
+          name: appConfig.projectName,
+          url: appConfig.url,
+        }}
+        about={{
+          "@type": "Thing",
+          name: data.page.handle,
+        }}
+      />
+      <main className="min-h-lvh bg-background">
+        <ProfileBentoPage page={data.page} bento={data.bento} />
+      </main>
+    </>
+  );
+}

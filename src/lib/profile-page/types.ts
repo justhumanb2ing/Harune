@@ -69,6 +69,76 @@ export type ProfilePageData = {
   textBoxItems: TextBoxItem[];
 };
 
+export type ProfileBentoType = "link" | "text" | "playlist" | "section";
+
+export type ProfileBentoBreakpoint = "desktop" | "compact";
+
+export type ProfileBentoLayout = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+};
+
+export type ProfileBentoLayouts = Record<ProfileBentoBreakpoint, ProfileBentoLayout>;
+
+export type ProfileLinkBento = {
+  id: string;
+  type: "link";
+  layout: ProfileBentoLayouts;
+  content: {
+    title: string;
+    description: string | null;
+    favicon: string | null;
+    thumbnail: string | null;
+    url: string;
+  };
+};
+
+export type ProfileTextBento = {
+  id: string;
+  type: "text";
+  layout: ProfileBentoLayouts;
+  content: {
+    content: string;
+  };
+};
+
+export type ProfilePlaylistBento = {
+  id: string;
+  type: "playlist";
+  layout: ProfileBentoLayouts;
+  content: {
+    title: string;
+    provider: PlaylistProvider;
+    url: string;
+    content: string;
+  };
+};
+
+export type ProfileSectionBento = {
+  id: string;
+  type: "section";
+  layout: ProfileBentoLayouts;
+  content: {
+    title: string;
+  };
+};
+
+export type ProfileBentoItem =
+  | ProfileLinkBento
+  | ProfileTextBento
+  | ProfilePlaylistBento
+  | ProfileSectionBento;
+
+export type PublicProfileBentoPageData = {
+  page: ProfilePage & {
+    updatedAt: Date;
+    userName: string | null;
+  };
+  bento: ProfileBentoItem[];
+};
+
 export type DraftProfilePage = {
   id: string;
   handle: string;

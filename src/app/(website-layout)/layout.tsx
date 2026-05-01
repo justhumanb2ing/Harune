@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type React from "react";
-import { Footer } from "@/components/website/footer";
+import { FooterSlot } from "@/components/website/footer-slot";
 import { seoConfig } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ function WebsiteLayout({ children }: { children: React.ReactNode }) {
       <main className="flex-1 h-full">
         <div className="h-full">{children}</div>
       </main>
-      <Footer />
+      <FooterSlot />
     </div>
   );
 }

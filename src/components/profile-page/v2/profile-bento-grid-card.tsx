@@ -1,36 +1,118 @@
 import Image from "next/image";
 import { PlaylistIframe } from "@/components/profile-page/playlist-iframe";
-import type { GridLayouts } from "@/lib/grid/grid-types";
 import type { ProfileBentoItem } from "@/lib/profile-page/types";
-import { getBentoLayoutLabel, mergeLayoutsIntoBento } from "./profile-bento-grid-model";
 
-function LayoutBadge({ item, layouts }: { item: ProfileBentoItem; layouts: GridLayouts }) {
-  const liveItem = mergeLayoutsIntoBento([item], layouts)[0] ?? item;
-
-  return (
-    <span className="pointer-events-none absolute top-2 right-2 rounded-full bg-background/90 px-2 py-1 font-mono text-[10px] text-muted-foreground shadow-sm">
-      {getBentoLayoutLabel(liveItem)}
-    </span>
-  );
+export function ProfileBentoEditableGridCard({ item }: { item: ProfileBentoItem }) {
+  return <ProfileBentoGridCardContent item={item} preventNavigation />;
 }
 
-export function ProfileBentoGridCard({
+export function ProfileBentoEditableContentCard({
   item,
-  layouts,
+  onChange,
 }: {
   item: ProfileBentoItem;
-  layouts: GridLayouts;
+  onChange: (item: ProfileBentoItem) => void;
+}) {
+  if (item.type === "link") {
+    return (
+      <article className="grid-action flex size-full min-h-0 flex-col gap-2 overflow-hidden rounded-lg p-3">
+        <input
+          aria-label="Link title"
+          className="w-full bg-transparent font-medium text-sm outline-none placeholder:text-muted-foreground"
+          onChange={(event) => {
+            onChange({
+              ...item,
+              content: { ...item.content, title: event.target.value },
+            });
+          }}
+          placeholder="Link title"
+          value={item.content.title}
+        />
+        <input
+          aria-label="Link URL"
+          className="w-full bg-transparent text-muted-foreground text-xs outline-none placeholder:text-muted-foreground"
+          onChange={(event) => {
+            onChange({
+              ...item,
+              content: { ...item.content, url: event.target.value },
+            });
+          }}
+          placeholder="https://example.com"
+          value={item.content.url}
+        />
+        <textarea
+          aria-label="Link description"
+          className="min-h-0 flex-1 resize-none bg-transparent text-sm leading-6 outline-none placeholder:text-muted-foreground"
+          onChange={(event) => {
+            onChange({
+              ...item,
+              content: { ...item.content, description: event.target.value },
+            });
+          }}
+          placeholder="Description"
+          value={item.content.description ?? ""}
+        />
+      </article>
+    );
+  }
+
+  if (item.type === "text") {
+    return (
+      <textarea
+        aria-label="Text content"
+        className="grid-action size-full resize-none rounded-lg bg-transparent p-3 text-sm leading-6 outline-none placeholder:text-muted-foreground"
+        onChange={(event) => {
+          onChange({
+            ...item,
+            content: { content: event.target.value },
+          });
+        }}
+        placeholder="Text"
+        value={item.content.content}
+      />
+    );
+  }
+
+  if (item.type === "section") {
+    return (
+      <input
+        aria-label="Section title"
+        className="grid-action size-full rounded-lg bg-muted px-4 font-semibold text-lg tracking-tight outline-none placeholder:text-muted-foreground"
+        onChange={(event) => {
+          onChange({
+            ...item,
+            content: { title: event.target.value },
+          });
+        }}
+        placeholder="Section title"
+        value={item.content.title}
+      />
+    );
+  }
+
+  return <ProfileBentoEditableGridCard item={item} />;
+}
+
+export function ProfileBentoGridCard({ item }: { item: ProfileBentoItem }) {
+  return <ProfileBentoGridCardContent item={item} />;
+}
+
+function ProfileBentoGridCardContent({
+  item,
+  preventNavigation = false,
+}: {
+  item: ProfileBentoItem;
+  preventNavigation?: boolean;
 }) {
   if (item.type === "link") {
     return (
       <a
         className="relative flex size-full min-h-0 flex-col overflow-hidden rounded-lg transition-colors hover:bg-muted/40"
         href={item.content.url}
-        onClick={(event) => event.preventDefault()}
+        onClick={preventNavigation ? (event) => event.preventDefault() : undefined}
         rel="noreferrer"
         target="_blank"
       >
-        <LayoutBadge item={item} layouts={layouts} />
         {item.content.thumbnail ? (
           <div className="relative h-24 w-full shrink-0 overflow-hidden">
             <Image
@@ -69,7 +151,6 @@ export function ProfileBentoGridCard({
   if (item.type === "text") {
     return (
       <article className="relative size-full overflow-hidden rounded-lg p-4">
-        <LayoutBadge item={item} layouts={layouts} />
         <p className="whitespace-pre-line break-words text-sm leading-6">{item.content.content}</p>
       </article>
     );
@@ -78,7 +159,6 @@ export function ProfileBentoGridCard({
   if (item.type === "playlist") {
     return (
       <article className="relative size-full overflow-hidden rounded-lg">
-        <LayoutBadge item={item} layouts={layouts} />
         <PlaylistIframe content={item.content.content} title={item.content.title} />
       </article>
     );
@@ -86,7 +166,6 @@ export function ProfileBentoGridCard({
 
   return (
     <section className="relative flex size-full items-center rounded-lg bg-muted px-4">
-      <LayoutBadge item={item} layouts={layouts} />
       <h2 className="font-semibold text-lg tracking-tight">{item.content.title}</h2>
     </section>
   );

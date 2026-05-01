@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { auth } from "@/auth";
 import { ProfileBentoPage } from "@/components/profile-page/v2/profile-bento-page";
 import { WebPageJsonLd } from "@/components/site-instrumentation/structured-data";
 import { appConfig } from "@/lib/config";
-import { getPublicProfileBentoPage } from "@/lib/profile-page/queries";
+import { getOwnedProfilePageByHandle, getPublicProfileBentoPage } from "@/lib/profile-page/queries";
 import { absoluteUrl, createPageMetadata } from "@/lib/seo";
 
 type V2HandlePageProps = {
@@ -36,12 +37,16 @@ export async function generateMetadata({ params }: V2HandlePageProps): Promise<M
 
 export default async function V2HandlePage({ params }: V2HandlePageProps) {
   const { handle } = await params;
-  const data = await getPublicProfileBentoPage(handle);
+  const [data, session] = await Promise.all([getPublicProfileBentoPage(handle), auth()]);
 
   if (!data?.page.handle) {
     notFound();
   }
 
+  const ownedPage = session?.user?.id
+    ? await getOwnedProfilePageByHandle(session.user.id, data.page.handle)
+    : null;
+  const isOwner = ownedPage?.id === data.page.id;
   const title = `${data.page.name || data.page.userName || data.page.handle} on ${appConfig.projectName}`;
 
   return (
@@ -63,7 +68,7 @@ export default async function V2HandlePage({ params }: V2HandlePageProps) {
         }}
       />
       <main className="min-h-lvh bg-background">
-        <ProfileBentoPage page={data.page} bento={data.bento} />
+        <ProfileBentoPage page={data.page} bento={data.bento} isOwner={isOwner} />
       </main>
     </>
   );

@@ -44,9 +44,6 @@ export const toProfileBentoLayout = (
   h,
 });
 
-export const getBentoLayoutLabel = (item: ProfileBentoItem) =>
-  `D ${item.layout.desktop.x},${item.layout.desktop.y},${item.layout.desktop.w}x${item.layout.desktop.h} / C ${item.layout.compact.x},${item.layout.compact.y},${item.layout.compact.w}x${item.layout.compact.h}`;
-
 export const toBentoGridLayouts = (bento: ProfileBentoItem[]): GridLayouts =>
   normalizeLayouts(
     {
@@ -65,7 +62,7 @@ export const toBentoGridItem = (item: ProfileBentoItem): GridItem => ({
       : item.type === "section"
         ? item.content.title
         : item.content.title,
-  description: getBentoLayoutLabel(item),
+  description: item.type,
 });
 
 export const mergeLayoutsIntoBento = (items: ProfileBentoItem[], layouts: GridLayouts) => {
@@ -116,8 +113,8 @@ export function createAutoBentoItem(type: CreatableBentoType, currentItems: Prof
       type,
       layout: baseLayout,
       content: {
-        title: `Auto link ${count}`,
-        description: "Generated from the v2 page controls.",
+        title: `New link ${count}`,
+        description: "",
         favicon: "https://www.google.com/s2/favicons?domain=example.com&sz=64",
         thumbnail: `https://picsum.photos/seed/${encodeURIComponent(id)}/640/360`,
         url: `https://example.com/link-${count}`,
@@ -131,7 +128,7 @@ export function createAutoBentoItem(type: CreatableBentoType, currentItems: Prof
       type,
       layout: baseLayout,
       content: {
-        title: `Auto section ${count}`,
+        title: `New section ${count}`,
       },
     } satisfies ProfileBentoItem;
   }
@@ -141,7 +138,7 @@ export function createAutoBentoItem(type: CreatableBentoType, currentItems: Prof
     type,
     layout: baseLayout,
     content: {
-      content: `Auto text ${count}\nGenerated from the v2 page controls.`,
+      content: `New text ${count}`,
     },
   } satisfies ProfileBentoItem;
 }

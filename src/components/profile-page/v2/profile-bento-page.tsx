@@ -1,15 +1,18 @@
 import Image from "next/image";
 import { ProfileBentoInteractiveGrid } from "@/components/profile-page/v2/profile-bento-interactive-grid";
+import { ProfileBentoReadonlyGrid } from "@/components/profile-page/v2/profile-bento-readonly-grid";
 import type { PublicProfileBentoPageData } from "@/lib/profile-page/types";
 
-type ProfileBentoPageProps = PublicProfileBentoPageData;
+type ProfileBentoPageProps = PublicProfileBentoPageData & {
+  isOwner: boolean;
+};
 
-export function ProfileBentoPage({ page, bento }: ProfileBentoPageProps) {
+export function ProfileBentoPage({ page, bento, isOwner }: ProfileBentoPageProps) {
   const displayName = page.name ?? page.userName ?? page.handle;
 
   return (
-    <section className="mx-auto flex min-h-lvh w-full max-w-7xl flex-col items-center gap-8 px-4 py-8 lg:flex-row lg:items-start">
-      <aside className="flex w-[380px] max-w-full shrink-0 flex-col items-center gap-5 text-center lg:sticky lg:top-8 lg:w-80 lg:items-start lg:text-left">
+    <section className="mx-auto flex min-h-lvh w-full max-w-7xl flex-col items-center gap-8 px-4 py-8 xl:flex-row xl:items-start">
+      <aside className="flex w-[380px] max-w-full shrink-0 flex-col items-center gap-5 text-center xl:sticky xl:top-8 xl:w-80 xl:items-start xl:text-left">
         {page.backgroundImage ? (
           <div className="relative h-44 w-full overflow-hidden rounded-lg">
             <Image
@@ -22,7 +25,7 @@ export function ProfileBentoPage({ page, bento }: ProfileBentoPageProps) {
             />
           </div>
         ) : null}
-        <div className="flex items-center justify-center gap-4 lg:flex-col lg:items-start lg:justify-start">
+        <div className="flex items-center justify-center gap-4 xl:flex-col xl:items-start xl:justify-start">
           {page.image ? (
             <Image
               alt={displayName}
@@ -49,7 +52,11 @@ export function ProfileBentoPage({ page, bento }: ProfileBentoPageProps) {
         ) : null}
       </aside>
 
-      <ProfileBentoInteractiveGrid initialBento={bento} />
+      {isOwner ? (
+        <ProfileBentoInteractiveGrid initialBento={bento} />
+      ) : (
+        <ProfileBentoReadonlyGrid bento={bento} />
+      )}
     </section>
   );
 }

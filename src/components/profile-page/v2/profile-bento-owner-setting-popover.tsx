@@ -183,7 +183,6 @@ export function ProfileBentoOwnerSettingPopover() {
             >
               <div className="space-y-1 mb-10">
                 <Button
-                  nativeButton={false}
                   variant="ghost"
                   className="h-16 w-full flex-col items-start gap-1 rounded-lg px-4 font-normal text-muted-foreground hover:bg-transparent hover:text-muted-foreground"
                   disabled

@@ -81,7 +81,7 @@ export function ProfileBentoProfileEditor() {
             aria-label="Name"
             autoComplete="off"
             maxLength={100}
-            className="min-h-8 resize-none border-0 text-4xl xl:text-5xl! p-0 font-bold focus-visible:ring-0 rounded-none break-all"
+            className="min-h-8 resize-none overflow-hidden border-0 text-4xl! xl:text-5xl! p-0 font-bold focus-visible:ring-0 rounded-none break-all"
           />
 
           <Textarea

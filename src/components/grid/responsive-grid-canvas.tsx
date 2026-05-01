@@ -1,4 +1,5 @@
 import type { MotionValue } from "motion/react";
+import type { ReactNode } from "react";
 import type { LayoutItem } from "react-grid-layout";
 import { Responsive } from "react-grid-layout";
 import { fastVerticalCompactor } from "react-grid-layout/extras";
@@ -29,6 +30,7 @@ type ResponsiveGridCanvasProps = {
   onResizeItem: (id: string, option: ResizeOption) => void;
   onResizeStart: (newItem: LayoutItem | null | undefined) => void;
   onResizeStop: () => void;
+  renderItem?: (item: GridItem) => ReactNode;
   width: number;
 };
 
@@ -48,6 +50,7 @@ export function ResponsiveGridCanvas({
   onResizeItem,
   onResizeStart,
   onResizeStop,
+  renderItem,
   width,
 }: ResponsiveGridCanvasProps) {
   if (!mounted) {
@@ -101,7 +104,9 @@ export function ResponsiveGridCanvas({
               layouts={layouts}
               onRemove={onRemoveItem}
               onResize={onResizeItem}
-            />
+            >
+              {renderItem?.(item)}
+            </GridCard>
           </div>
         );
       })}

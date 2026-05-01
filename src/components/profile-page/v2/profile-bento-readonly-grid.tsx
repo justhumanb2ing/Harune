@@ -31,19 +31,19 @@ export function ProfileBentoReadonlyGrid({ bento }: ProfileBentoReadonlyGridProp
   const layouts = useMemo(() => toBentoGridLayouts(bento), [bento]);
   const rowHeight = getGridRowHeight(width, activeBreakpoint);
   const gridStyle = {
-    "--thin-item-visible-height": `${rowHeight}px`,
+    "--thin-item-visible-height": `${Math.round(rowHeight * 0.75)}px`,
   } as CSSProperties;
 
   if (!mounted) {
     return (
-      <section className="min-w-0 flex-1">
+      <section className="min-w-0 flex-1 xl:min-h-[calc(100lvh-4rem)] xl:w-[56rem] xl:flex-none">
         <div className="h-96 w-[380px] max-w-full rounded-2xl border border-black/10 xl:w-full" />
       </section>
     );
   }
 
   return (
-    <section className="min-w-0 flex-1">
+    <section className="min-w-0 flex-1 xl:min-h-[calc(100lvh-4rem)] xl:w-[56rem] xl:flex-none">
       <div
         className="w-[380px] max-w-full xl:w-full [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none!"
         ref={containerRef}

@@ -82,11 +82,12 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   const isSectionDragActive =
     activeDragItemId !== null && itemTypeById.get(activeDragItemId) === "section";
   const rowHeight = getGridRowHeight(width, activeBreakpoint);
+  const thinItemVisibleHeight = Math.round(rowHeight * 0.75);
   const gridClassName = `w-[380px] max-w-full xl:w-full [&_.react-draggable-dragging]:z-20! [&_.react-grid-item:not(.react-grid-placeholder)]:z-10 [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none! [&_.react-grid-placeholder]:z-0! [&_.react-grid-placeholder]:rounded-xl! [&_.react-grid-placeholder]:bg-secondary! [&_.react-grid-placeholder]:opacity-100! [&_.react-grid-placeholder]:shadow-[inset_0_1px_6px_rgb(0_0_0_/_0.08),inset_0_-1px_1px_rgb(255_255_255_/_0.8)]! ${isThinPlaceholderActive || isSectionDragActive ? "[&_.react-grid-placeholder]:h-[var(--thin-placeholder-height)]! [&_.react-grid-placeholder]:translate-y-[var(--thin-placeholder-offset)]!" : ""}`;
   const gridStyle = {
-    "--thin-placeholder-height": `${rowHeight}px`,
-    "--thin-placeholder-offset": `${rowHeight + GRID_MARGIN[1]}px`,
-    "--thin-item-visible-height": `${rowHeight}px`,
+    "--thin-placeholder-height": `${thinItemVisibleHeight}px`,
+    "--thin-placeholder-offset": `${rowHeight * 2 + GRID_MARGIN[1] - thinItemVisibleHeight}px`,
+    "--thin-item-visible-height": `${thinItemVisibleHeight}px`,
   } as CSSProperties;
 
   useEffect(() => {
@@ -178,7 +179,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   };
 
   return (
-    <section className="relative flex min-w-0 flex-1 flex-col items-center gap-4 xl:items-stretch">
+    <section className="relative flex min-w-0 flex-1 flex-col items-center gap-4 xl:min-h-[calc(100lvh-4rem)] xl:w-[56rem] xl:flex-none xl:items-stretch">
       <header className="sticky top-4 z-30 flex w-[380px] max-w-full flex-wrap items-center justify-between gap-3 rounded-xl border bg-background/90 p-2 shadow-xs backdrop-blur xl:w-full">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <span className="rounded-full bg-foreground px-2 py-1 font-medium text-[10px] text-background uppercase tracking-normal">

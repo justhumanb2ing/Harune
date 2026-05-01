@@ -125,7 +125,7 @@ function EditableTextBento({
   return (
     <textarea
       aria-label="Text content"
-      className="grid-action size-full resize-none rounded-lg bg-transparent p-3 text-lg font-medium leading-relaxed outline-none placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary"
+      className="grid-action size-full resize-none rounded-lg bg-transparent p-3 py-1 text-lg font-medium leading-relaxed outline-none placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary"
       onBlur={(event) => {
         const shouldReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -183,19 +183,27 @@ function EditableSectionBento({
   }, [autoFocus, onFocusReady]);
 
   return (
-    <input
-      aria-label="Section title"
-      className="grid-action size-full rounded-lg px-4 font-bold text-xl tracking-tight outline-none placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary"
-      onChange={(event) => {
-        onChange({
-          ...item,
-          content: { title: event.target.value },
-        });
-      }}
-      placeholder="Add a title..."
-      ref={inputRef}
-      value={item.content.title}
-    />
+    <span className="grid-action inline-grid h-full min-w-40 max-w-full overflow-hidden rounded-lg hover:bg-secondary focus-within:bg-secondary">
+      <span
+        aria-hidden
+        className="invisible col-start-1 row-start-1 min-w-40 max-w-full overflow-hidden whitespace-pre px-4 font-bold text-xl tracking-tight"
+      >
+        {item.content.title}
+      </span>
+      <input
+        aria-label="Section title"
+        className="col-start-1 row-start-1 h-full w-full min-w-40 max-w-full bg-transparent px-4 font-bold text-xl tracking-tight outline-none placeholder:text-muted-foreground truncate"
+        onChange={(event) => {
+          onChange({
+            ...item,
+            content: { title: event.target.value },
+          });
+        }}
+        placeholder="Add a title..."
+        ref={inputRef}
+        value={item.content.title}
+      />
+    </span>
   );
 }
 

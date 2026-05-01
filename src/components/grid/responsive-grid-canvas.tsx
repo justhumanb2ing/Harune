@@ -3,7 +3,14 @@ import type { LayoutItem } from "react-grid-layout";
 import { Responsive } from "react-grid-layout";
 import { fastVerticalCompactor } from "react-grid-layout/extras";
 import { GridCard } from "@/components/grid/grid-card";
-import { BREAKPOINTS, COLS, GRID_MARGIN, GRID_PADDING, ROW_HEIGHT } from "@/lib/grid/grid-config";
+import {
+  BREAKPOINTS,
+  COLS,
+  GRID_MARGIN,
+  GRID_PADDING,
+  ROW_HEIGHT,
+  THIN_PLACEHOLDER_ITEM_ID,
+} from "@/lib/grid/grid-config";
 import type { GridBreakpoint, GridItem, GridLayouts, ResizeOption } from "@/lib/grid/grid-types";
 
 type ResponsiveGridCanvasProps = {
@@ -77,19 +84,27 @@ export function ResponsiveGridCanvas({
       rowHeight={ROW_HEIGHT[activeBreakpoint]}
       width={width}
     >
-      {items.map((item) => (
-        <GridCard
-          activeBreakpoint={activeBreakpoint}
-          cardRotate={cardRotate}
-          cardX={cardX}
-          isDragActive={activeDragItemId === item.id}
-          item={item}
-          key={item.id}
-          layouts={layouts}
-          onRemove={onRemoveItem}
-          onResize={onResizeItem}
-        />
-      ))}
+      {items.map((item) => {
+        const isThinPlaceholderItem = item.id === THIN_PLACEHOLDER_ITEM_ID;
+
+        return (
+          <div
+            className={`overflow-visible rounded-xl ${isThinPlaceholderItem ? "pointer-events-none flex items-end" : ""}`}
+            key={item.id}
+          >
+            <GridCard
+              activeBreakpoint={activeBreakpoint}
+              cardRotate={cardRotate}
+              cardX={cardX}
+              isDragActive={activeDragItemId === item.id}
+              item={item}
+              layouts={layouts}
+              onRemove={onRemoveItem}
+              onResize={onResizeItem}
+            />
+          </div>
+        );
+      })}
     </Responsive>
   );
 }

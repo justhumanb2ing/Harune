@@ -1,5 +1,19 @@
 # TODOS
 
+## Hono Profile Page API Migration
+
+### POST Mutation Route Follow-Up
+
+**What:** After the first Hono-backed `handle-availability` route lands, migrate a small POST mutation route such as `links/route.ts`.
+
+**Why:** The first route validates the Hono app, auth middleware, query validation, domain error mapping, and adapter contract. A second POST route should verify JSON body validation and mutation error handling before sync or upload routes move.
+
+**Context:** Keep Better Auth on `toNextJsHandler` and keep playlist out of the migration scope. Do not move profile-page sync or media upload until Hono app tests and adapter route tests prove the contract is stable.
+
+**Effort:** M
+**Priority:** P2
+**Depends on:** `handle-availability` Hono migration and contract tests
+
 ## Profile Page Media Bento
 
 ### Magic Byte Verification for Uploaded Media

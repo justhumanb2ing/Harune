@@ -83,7 +83,7 @@ export function ProfileBentoProfileEditor() {
             aria-label="Name"
             autoComplete="off"
             maxLength={100}
-            className="min-h-8 resize-none overflow-hidden border-0 text-4xl! xl:text-5xl! p-0! font-bold focus-visible:ring-0 rounded-none break-all"
+            className="min-h-8 resize-none overflow-hidden border-0 text-3xl! xl:text-5xl! p-0! font-bold focus-visible:ring-0 rounded-none break-all"
           />
 
           <Textarea
@@ -92,7 +92,7 @@ export function ProfileBentoProfileEditor() {
             onChange={(event) => editor.setProfileField("bio", event.target.value)}
             placeholder="Bio"
             aria-label="Bio"
-            className="min-h-8 resize-none overflow-hidden border-0 p-0! text-xl! break-all rounded-none focus-visible:ring-0"
+            className="min-h-8 resize-none overflow-hidden border-0 p-0! text-lg! xl:text-xl! break-all rounded-none focus-visible:ring-0"
           />
 
           <div className="flex flex-col gap-2 text-neutral-500">

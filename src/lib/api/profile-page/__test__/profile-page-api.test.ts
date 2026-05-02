@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import type { LinkItemInput } from "@/lib/validations/profile-page.schema";
 import { createProfilePageApi } from "../app";
 
 const authenticatedSession = {
@@ -10,7 +11,7 @@ const authenticatedSession = {
 };
 
 describe("profile page Hono API", () => {
-  const validLinkPayload = {
+  const validLinkPayload: LinkItemInput = {
     description: "A useful link",
     favicon: "https://example.com/favicon.ico",
     title: "Example",

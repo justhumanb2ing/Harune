@@ -4,6 +4,7 @@ import { createRootApi } from "../app";
 const authenticatedSession = {
   expires: "2026-05-02T00:00:00.000Z",
   user: {
+    email: "creator@example.com",
     id: "user-1",
   },
 };
@@ -15,13 +16,15 @@ const createTestRootApi = (overrides: Partial<RootApiOptions> = {}) =>
     auth: async () => authenticatedSession,
     fetchUrlMetadata: async (url) => ({
       description: "Description",
+      favicon: null,
       image: null,
-      siteName: "Example",
+      readMode: "head",
+      sitename: "Example",
       title: "Example",
       url,
     }),
     getProfilePageByHandle: async () => null,
-    getSafeRedirectPath: (path) => path,
+    getSafeRedirectPath: (path) => path ?? "/app",
     logger: {
       error: () => {},
     },
@@ -56,7 +59,7 @@ describe("root Hono API", () => {
       },
     });
 
-    const response = await app.request("/api/handles/availability?handle=A");
+    const response = await app.request("/api/handles/availability?handle=bad-handle");
     const body = (await response.json()) as { error: string };
 
     expect(response.status).toBe(400);
@@ -71,8 +74,10 @@ describe("root Hono API", () => {
         calls.push(url);
         return {
           description: null,
+          favicon: null,
           image: "https://example.com/image.png",
-          siteName: "Example",
+          readMode: "head",
+          sitename: "Example",
           title: "Example title",
           url,
         };
@@ -86,8 +91,10 @@ describe("root Hono API", () => {
     expect(response.headers.get("cache-control")).toBe("no-store");
     expect(body).toEqual({
       description: null,
+      favicon: null,
       image: "https://example.com/image.png",
-      siteName: "Example",
+      readMode: "head",
+      sitename: "Example",
       title: "Example title",
       url: "https://example.com/post",
     });

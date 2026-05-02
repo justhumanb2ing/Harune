@@ -110,6 +110,7 @@ export function ResponsiveGridCanvas({
         return (
           <div
             className={`overflow-visible ${radiusClassName} ${isVisuallyThinItem ? "flex items-end" : ""} ${item.id === THIN_PLACEHOLDER_ITEM_ID ? "pointer-events-none" : ""}`}
+            data-profile-bento-grid-item-id={item.id}
             key={item.id}
           >
             <GridCard

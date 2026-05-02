@@ -23,7 +23,7 @@ export const RESIZE_OPTIONS: readonly ResizeOption[] = [
   { id: "1x4", w: 1, h: 4, hiddenForItemTypes: ["section"] },
   { id: "2x2", w: 2, h: 2 },
   { id: "2x4", w: 2, h: 4, hiddenForItemTypes: ["section"] },
-  { id: "2x1", w: 2, h: 1, hiddenForItemTypes: ["media", "playlist", "section"] },
+  { id: "2x1", w: 2, h: 1, hiddenForItemTypes: ["map", "media", "playlist", "section"] },
 ] as const;
 
 export function getGridRowHeight(width: number, breakpoint: GridBreakpoint) {
@@ -42,6 +42,7 @@ export const BENTO_GRID_SIZE_CONSTRAINTS = {
   playlist: { minW: 1, maxW: 4, minH: 1, maxH: 4 },
   section: { minW: 4, maxW: 4, minH: 2, maxH: 2 },
   media: { minW: 1, maxW: 4, minH: 1, maxH: 4 },
+  map: { minW: 1, maxW: 4, minH: 2, maxH: 4 },
 } as const;
 
 export const THIN_PLACEHOLDER_ITEM_ID = "wide-thin-placeholder";

@@ -11,12 +11,14 @@ export type CreatableBentoType = Exclude<ProfileBentoType, "playlist">;
 
 export const creatableBentoTypes = [
   "link",
+  "map",
   "text",
   "section",
 ] as const satisfies readonly CreatableBentoType[];
 
 export const bentoTypeLabels = {
   link: "Link",
+  map: "Map",
   media: "Media",
   section: "Section",
   text: "Text",
@@ -60,11 +62,13 @@ export const toBentoGridItem = (item: ProfileBentoItem): GridItem => ({
   label:
     item.type === "text"
       ? "Text"
-      : item.type === "media"
-        ? item.content.caption || "Media"
-        : item.type === "section"
-          ? item.content.title
-          : item.content.title,
+      : item.type === "map"
+        ? item.content.caption || "Map"
+        : item.type === "media"
+          ? item.content.caption || "Media"
+          : item.type === "section"
+            ? item.content.title
+            : item.content.title,
   description: item.type,
 });
 
@@ -148,6 +152,24 @@ export function createAutoBentoItem(type: CreatableBentoType, currentItems: Prof
         href: null,
         alt: "",
         caption: "",
+      },
+    } satisfies ProfileBentoItem;
+  }
+
+  if (type === "map") {
+    const latitude = 37.5665;
+    const longitude = 126.978;
+
+    return {
+      id,
+      type,
+      layout: baseLayout,
+      content: {
+        latitude,
+        longitude,
+        zoom: 13,
+        caption: "",
+        url: `https://www.google.com/maps?q=${latitude},${longitude}`,
       },
     } satisfies ProfileBentoItem;
   }

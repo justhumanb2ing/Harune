@@ -1,10 +1,11 @@
-import { ImagePlus, Link, Pilcrow, Type } from "lucide-react";
+import { ImagePlus, Link, MapPin, Pilcrow, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { CreatableBentoType } from "./profile-bento-grid-model";
 import { bentoTypeLabels, creatableBentoTypes } from "./profile-bento-grid-model";
 
 const actionIcons = {
   link: Link,
+  map: MapPin,
   section: Pilcrow,
   text: Type,
 } satisfies Record<(typeof creatableBentoTypes)[number], typeof Link>;

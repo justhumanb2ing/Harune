@@ -84,9 +84,10 @@ export function GridCard({
     isSectionItem && !readOnly && (isSectionPointerActive || isSectionFocusActive || isDragActive);
   const shadowClassName =
     !isSectionItem || shouldShowSectionShadow ? "shadow-float" : "shadow-none";
-  const paddingClassName = item.itemType === "media" ? "p-0" : "p-3";
+  const isFullBleedItem = item.itemType === "media" || item.itemType === "map";
+  const paddingClassName = isFullBleedItem ? "p-0" : "p-3";
   const radiusClassName = isVisuallyThinItem ? "rounded-lg" : "rounded-[1.5rem]";
-  const bevelClassName = item.itemType === "media" ? "surface-bevel" : "";
+  const bevelClassName = isFullBleedItem ? "surface-bevel" : "";
   const dragInteractionClassName = isDragActive
     ? "select-none [&_.grid-action]:pointer-events-none [&_.grid-action]:select-none [&_.grid-action]:!bg-transparent [&_.grid-action:focus-within]:!bg-transparent [&_.grid-action:hover]:!bg-transparent [&_input]:pointer-events-none [&_input]:select-none [&_input]:!bg-transparent [&_textarea]:pointer-events-none [&_textarea]:select-none [&_textarea]:!bg-transparent"
     : "";

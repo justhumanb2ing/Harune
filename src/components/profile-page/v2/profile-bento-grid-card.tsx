@@ -1,35 +1,45 @@
 import { ArrowCircleUpRightIcon } from "@phosphor-icons/react";
 import Image from "next/image";
 import type { CSSProperties } from "react";
-import { useEffect, useRef } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { PlaylistIframe } from "@/components/profile-page/playlist-iframe";
+import {
+  Map as BentoMap,
+  MapControls,
+  MapMarker,
+  type MapViewport,
+  MarkerContent,
+} from "@/components/ui/map";
 import type { GridBreakpoint, ResizeOptionId } from "@/lib/grid/grid-types";
 import type { ProfileBentoItem } from "@/lib/profile-page/types";
 import { cn } from "@/lib/utils";
 
 type ProfileBentoLinkSize = ResizeOptionId;
-
-export function ProfileBentoEditableGridCard({ item }: { item: ProfileBentoItem }) {
-  return <ProfileBentoGridCardContent item={item} preventNavigation />;
-}
-
-export function ProfileBentoEditableContentCard({
-  autoFocus = false,
-  activeBreakpoint = "desktop",
-  isLoading = false,
-  item,
-  layoutSize,
-  onChange,
-  onFocusReady,
-}: {
+type ProfileBentoEditableContentCardProps = {
   autoFocus?: boolean;
   activeBreakpoint?: GridBreakpoint;
   isLoading?: boolean;
   item: ProfileBentoItem;
   layoutSize?: ProfileBentoLinkSize;
+  mapInteractionEnabled?: boolean;
   onChange: (item: ProfileBentoItem) => void;
   onFocusReady?: () => void;
-}) {
+};
+
+export function ProfileBentoEditableGridCard({ item }: { item: ProfileBentoItem }) {
+  return <ProfileBentoGridCardContent item={item} preventNavigation />;
+}
+
+export const ProfileBentoEditableContentCard = memo(function ProfileBentoEditableContentCard({
+  autoFocus = false,
+  activeBreakpoint = "desktop",
+  isLoading = false,
+  item,
+  layoutSize,
+  mapInteractionEnabled = false,
+  onChange,
+  onFocusReady,
+}: ProfileBentoEditableContentCardProps) {
   if (isLoading) {
     return <ProfileBentoLinkSkeleton />;
   }
@@ -71,7 +81,31 @@ export function ProfileBentoEditableContentCard({
     return <EditableMediaBento item={item} onChange={onChange} />;
   }
 
+  if (item.type === "map") {
+    return (
+      <EditableMapBento
+        isInteractionEnabled={mapInteractionEnabled}
+        item={item}
+        onChange={onChange}
+      />
+    );
+  }
+
   return <ProfileBentoEditableGridCard item={item} />;
+}, areProfileBentoEditableContentCardPropsEqual);
+
+function areProfileBentoEditableContentCardPropsEqual(
+  previous: ProfileBentoEditableContentCardProps,
+  next: ProfileBentoEditableContentCardProps
+) {
+  return (
+    previous.activeBreakpoint === next.activeBreakpoint &&
+    previous.autoFocus === next.autoFocus &&
+    previous.isLoading === next.isLoading &&
+    previous.item === next.item &&
+    previous.layoutSize === next.layoutSize &&
+    previous.mapInteractionEnabled === next.mapInteractionEnabled
+  );
 }
 
 export function getProfileBentoLinkSize(w: number, h: number): ProfileBentoLinkSize {
@@ -585,6 +619,193 @@ function EditableMediaBento({
   );
 }
 
+const toGoogleMapsUrl = (latitude: number, longitude: number) =>
+  `https://www.google.com/maps?q=${latitude.toFixed(6)},${longitude.toFixed(6)}`;
+
+const MAP_INTERACTION_OPTIONS = {
+  dragRotate: false,
+  keyboard: false,
+  scrollZoom: false,
+  touchPitch: false,
+} as const;
+
+function MapPulseMarker({ className }: { className?: string }) {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "relative flex size-8 items-center justify-center rounded-full bg-white shadow-[0_8px_24px_rgb(0_0_0_/_0.22)]",
+        className
+      )}
+    >
+      <span className="absolute size-12 rounded-full bg-blue-500 opacity-50 animate-ping [animation-duration:2.4s] -z-10" />
+      <span className="relative size-[24px] rounded-full bg-blue-500 shadow-sm" />
+    </span>
+  );
+}
+
+function CenterMapMarker() {
+  return (
+    <div
+      aria-hidden
+      className="-translate-x-1/2 -translate-y-1/2 pointer-events-none absolute top-1/2 left-1/2 z-20"
+    >
+      <MapPulseMarker />
+    </div>
+  );
+}
+
+function MapPinMarker() {
+  return <MapPulseMarker />;
+}
+
+const LEEVE_MAP_STYLE = "/assets/leeve-mapbox-inspired-carto-maplibre-style.json";
+const LEEVE_MAP_STYLES = {
+  light: LEEVE_MAP_STYLE,
+  dark: LEEVE_MAP_STYLE,
+} as const;
+
+function EditableMapBento({
+  isInteractionEnabled,
+  item,
+  onChange,
+}: {
+  isInteractionEnabled: boolean;
+  item: Extract<ProfileBentoItem, { type: "map" }>;
+  onChange: (item: ProfileBentoItem) => void;
+}) {
+  const [viewport, setViewport] = useState<MapViewport>({
+    bearing: 0,
+    center: [item.content.longitude, item.content.latitude],
+    pitch: 0,
+    zoom: item.content.zoom,
+  });
+
+  const updateLocation = useCallback(
+    (nextViewport: MapViewport) => {
+      const [longitude, latitude] = nextViewport.center;
+
+      setViewport(nextViewport);
+      onChange({
+        ...item,
+        content: {
+          ...item.content,
+          latitude,
+          longitude,
+          zoom: Math.round(nextViewport.zoom),
+          url: toGoogleMapsUrl(latitude, longitude),
+        },
+      });
+    },
+    [item, onChange]
+  );
+
+  return (
+    <article
+      className={cn(
+        "relative size-full overflow-hidden rounded-[1.5rem] border-[3px] border-transparent bg-muted transition-colors duration-200 ease-out",
+        isInteractionEnabled ? "grid-action border-black" : ""
+      )}
+    >
+      <BentoMap
+        className="size-full"
+        styles={LEEVE_MAP_STYLES}
+        onViewportChange={updateLocation}
+        viewport={viewport}
+        {...MAP_INTERACTION_OPTIONS}
+        dragPan={isInteractionEnabled}
+        doubleClickZoom={isInteractionEnabled}
+        touchZoomRotate={isInteractionEnabled}
+      >
+        {isInteractionEnabled ? (
+          <MapControls
+            position="top-right"
+            showLocate
+            showZoom
+            onLocate={({ latitude, longitude }) => {
+              updateLocation({
+                ...viewport,
+                center: [longitude, latitude],
+                zoom: Math.max(viewport.zoom, 14),
+              });
+            }}
+          />
+        ) : null}
+      </BentoMap>
+      <CenterMapMarker />
+      <input
+        aria-label="Map caption"
+        className="grid-action absolute bottom-3 left-3 max-w-[calc(100%-4.5rem)] rounded-md bg-black/35 px-2 py-2 font-medium text-sm text-white outline-none backdrop-blur-sm placeholder:text-white/70"
+        onChange={(event) => {
+          onChange({
+            ...item,
+            content: {
+              ...item.content,
+              caption: event.target.value,
+            },
+          });
+        }}
+        placeholder="Caption"
+        value={item.content.caption}
+      />
+      <a
+        aria-label="Open location in Google Maps"
+        className="grid-action absolute right-3 bottom-3 flex size-8 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm transition-colors hover:bg-black/55"
+        href={item.content.url}
+        rel="noreferrer"
+        target="_blank"
+      >
+        <ArrowCircleUpRightIcon aria-hidden className="size-5" weight="bold" />
+      </a>
+    </article>
+  );
+}
+
+function ReadonlyMapBento({
+  item,
+  preventNavigation,
+}: {
+  item: Extract<ProfileBentoItem, { type: "map" }>;
+  preventNavigation: boolean;
+}) {
+  return (
+    <article className="relative size-full overflow-hidden rounded-[1.5rem] bg-muted">
+      <BentoMap
+        className="size-full"
+        viewport={{
+          center: [item.content.longitude, item.content.latitude],
+          zoom: item.content.zoom,
+        }}
+        {...MAP_INTERACTION_OPTIONS}
+        dragPan={false}
+        doubleClickZoom={false}
+        touchZoomRotate={false}
+      >
+        <MapMarker latitude={item.content.latitude} longitude={item.content.longitude}>
+          <MarkerContent className="pointer-events-none">
+            <MapPinMarker />
+          </MarkerContent>
+        </MapMarker>
+      </BentoMap>
+      {item.content.caption ? (
+        <p className="pointer-events-none absolute bottom-3 left-3 line-clamp-2 max-w-[calc(100%-4.5rem)] rounded-md bg-black/25 px-2 py-1 font-medium text-sm text-white backdrop-blur-sm">
+          {item.content.caption}
+        </p>
+      ) : null}
+      <a
+        aria-label="Open location in Google Maps"
+        className="absolute right-3 bottom-3 flex size-8 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm transition-colors hover:bg-black/55"
+        href={item.content.url}
+        onClick={preventNavigation ? (event) => event.preventDefault() : undefined}
+        rel="noreferrer"
+        target="_blank"
+      >
+        <ArrowCircleUpRightIcon aria-hidden className="size-5" weight="bold" />
+      </a>
+    </article>
+  );
+}
+
 export function ProfileBentoGridCard({
   activeBreakpoint,
   item,
@@ -669,6 +890,10 @@ function ProfileBentoGridCardContent({
         ) : null}
       </article>
     );
+  }
+
+  if (item.type === "map") {
+    return <ReadonlyMapBento item={item} preventNavigation={preventNavigation} />;
   }
 
   return (

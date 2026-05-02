@@ -1,6 +1,7 @@
 "use client";
 
 import { LinkBreakIcon, LinkSimpleIcon } from "@phosphor-icons/react";
+import { ExpandIcon } from "lucide-react";
 import { motion } from "motion/react";
 import type { CSSProperties } from "react";
 import {
@@ -339,6 +340,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   >({});
   const [focusItemId, setFocusItemId] = useState<string | null>(null);
   const [isLinkInputOpen, setIsLinkInputOpen] = useState(false);
+  const [activeMapInteractionItemId, setActiveMapInteractionItemId] = useState<string | null>(null);
   const [linkUrl, setLinkUrl] = useState("");
   const [loadingLinkItemIds, setLoadingLinkItemIds] = useState<ReadonlySet<string>>(
     () => new Set()
@@ -353,6 +355,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   const toolbarRef = useRef<HTMLElement>(null);
   const mediaObjectUrlsByIdRef = useRef<Record<string, string>>({});
   const removeTimerByIdRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const [pendingScrollItemId, setPendingScrollItemId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const {
     activeDragItemId,
@@ -477,11 +480,59 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     };
   }, [isLinkInputOpen]);
 
+  const scrollToGridItem = useCallback(
+    (id: string) => {
+      const grid = containerRef.current;
+      const item = grid?.querySelector<HTMLElement>(
+        `[data-profile-bento-grid-item-id="${CSS.escape(id)}"]`
+      );
+
+      if (!item) {
+        return false;
+      }
+
+      item.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest",
+      });
+      return true;
+    },
+    [containerRef]
+  );
+
+  useEffect(() => {
+    if (!pendingScrollItemId) {
+      return;
+    }
+
+    let attempt = 0;
+    let frame = 0;
+
+    const scroll = () => {
+      attempt += 1;
+
+      if (scrollToGridItem(pendingScrollItemId) || attempt >= 4) {
+        setPendingScrollItemId((current) => (current === pendingScrollItemId ? null : current));
+        return;
+      }
+
+      frame = requestAnimationFrame(scroll);
+    };
+
+    frame = requestAnimationFrame(scroll);
+
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [pendingScrollItemId, scrollToGridItem]);
+
   const addItem = (type: CreatableBentoType) => {
     const liveBento = mergeLayoutsIntoBento(bento, layouts);
     const nextItem = createAutoBentoItem(type, liveBento);
     const nextBento = [...liveBento, nextItem];
 
+    setPendingScrollItemId(nextItem.id);
     setItemMotionPhaseById((current) => ({ ...current, [nextItem.id]: "entering" }));
     setFocusItemId(type === "text" || type === "section" ? nextItem.id : null);
     setBento(nextBento);
@@ -497,6 +548,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     }
 
     setBento((currentItems) => currentItems.filter((item) => item.id !== id));
+    setActiveMapInteractionItemId((current) => (current === id ? null : current));
     setLayouts((currentLayouts) => ({
       desktop: (currentLayouts.desktop ?? []).filter((item) => item.i !== id),
       compact: (currentLayouts.compact ?? []).filter((item) => item.i !== id),
@@ -582,11 +634,11 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     [itemMotionPhaseById]
   );
 
-  const updateItem = (nextItem: ProfileBentoItem) => {
+  const updateItem = useCallback((nextItem: ProfileBentoItem) => {
     setBento((currentItems) =>
       currentItems.map((item) => (item.id === nextItem.id ? nextItem : item))
     );
-  };
+  }, []);
 
   const handleLinkCrawl = async () => {
     const rawUrl = linkUrl.trim();
@@ -607,6 +659,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     const placeholderItem = createLinkBentoSkeleton(rawUrl, liveBento);
     const nextBento = [...liveBento, placeholderItem];
 
+    setPendingScrollItemId(placeholderItem.id);
     setLoadingLinkItemIds((current) => new Set(current).add(placeholderItem.id));
     setItemMotionPhaseById((current) => ({ ...current, [placeholderItem.id]: "entering" }));
     setFocusItemId(null);
@@ -679,6 +732,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     const placeholderItem = createMediaBentoFromFile(uploadFile, previewUrl, liveBento);
     const nextBento = [...liveBento, placeholderItem];
 
+    setPendingScrollItemId(placeholderItem.id);
     mediaObjectUrlsByIdRef.current[placeholderItem.id] = previewUrl;
     setUploadingMediaItemIds((current) => new Set(current).add(placeholderItem.id));
     setItemMotionPhaseById((current) => ({ ...current, [placeholderItem.id]: "entering" }));
@@ -940,7 +994,8 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
                 autoFocus={focusItemId === item.id}
                 isLoading={loadingLinkItemIds.has(item.id)}
                 item={item}
-                layoutSize={layoutSize}
+                layoutSize={item.type === "link" ? layoutSize : undefined}
+                mapInteractionEnabled={activeMapInteractionItemId === item.id}
                 onChange={updateItem}
                 onFocusReady={() => {
                   setFocusItemId((current) => (current === item.id ? null : current));
@@ -953,6 +1008,26 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
 
             return item?.type === "media" ? (
               <MediaLinkControl item={item} onChange={updateItem} />
+            ) : item?.type === "map" ? (
+              <Button
+                aria-label={
+                  activeMapInteractionItemId === item.id
+                    ? "Disable map interaction"
+                    : "Enable map interaction"
+                }
+                aria-pressed={activeMapInteractionItemId === item.id}
+                className="size-8.5 min-h-8 min-w-8 rounded-md text-primary-foreground hover:bg-primary-foreground hover:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary"
+                onClick={() => {
+                  setActiveMapInteractionItemId((current) =>
+                    current === item.id ? null : item.id
+                  );
+                }}
+                size="icon"
+                type="button"
+                variant="ghost"
+              >
+                <ExpandIcon aria-hidden className="size-5 stroke-3" />
+              </Button>
             ) : null;
           }}
           rowHeight={rowHeight}

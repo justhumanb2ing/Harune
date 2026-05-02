@@ -408,6 +408,16 @@ html[data-onboarding-step-transition="back"]::view-transition-new(onboarding-ste
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+  .maplibregl-popup-content {
+    @apply bg-transparent! shadow-none! p-0! rounded-none!;
+  }
+  .maplibregl-popup-tip {
+    @apply hidden!;
+  }
+  .maplibregl-control-container .maplibregl-ctrl-logo,
+  .maplibregl-control-container .maplibregl-ctrl-attrib {
+    display: none;
+  }
 }
 
 @layer utilities {

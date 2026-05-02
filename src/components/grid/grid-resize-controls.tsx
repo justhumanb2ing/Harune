@@ -65,7 +65,7 @@ export function GridResizeControls({
                 aria-hidden
                 className={cn(
                   "stroke-3",
-                  smallResizeOptionIds.has(option.id) ? "size-3.5" : "size-4"
+                  smallResizeOptionIds.has(option.id) ? "size-4" : "size-5"
                 )}
               />
             </ToggleGroupItem>

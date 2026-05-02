@@ -24,4 +24,13 @@ describe("app route adapters", () => {
     expect(source.includes("getMeForUser")).toBe(false);
     expect(source.includes("profileUpdateSchema")).toBe(false);
   });
+
+  test("keeps the analytics route as a thin adapter to the app Hono API", () => {
+    const source = readFileSync(join(process.cwd(), "src/app/api/app/analytics/route.ts"), "utf8");
+
+    expect(source.includes("handleAppApiRequest")).toBe(true);
+    expect(source.includes("withAuthRequired")).toBe(false);
+    expect(source.includes("NextResponse")).toBe(false);
+    expect(source.includes("getProfileAnalyticsResponse")).toBe(false);
+  });
 });

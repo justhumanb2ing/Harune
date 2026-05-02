@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import type { MeResponse } from "@/app/api/app/me/types";
+import type { ProfileAnalyticsResponse } from "@/lib/analytics/types";
 import type { ProfileUpdateValues } from "@/lib/validations/profile.schema";
 import { createAppApi } from "../app";
 
@@ -36,11 +37,20 @@ const defaultMeResponse = {
   },
 } satisfies MeResponse;
 
+const defaultAnalyticsResponse = {
+  profilePageId: "page-1",
+  state: "ready",
+  summaries: {},
+  timezone: "Asia/Seoul",
+} as unknown as ProfileAnalyticsResponse;
+
 type AppApiOptions = Parameters<typeof createAppApi>[0];
 
 const createTestAppApi = (overrides: Partial<AppApiOptions> = {}) =>
   createAppApi({
     auth: async () => authenticatedSession,
+    getOwnedProfilePage: async () => ({ id: "page-1" }),
+    getProfileAnalyticsResponse: async () => defaultAnalyticsResponse,
     getMeForUser: async () => defaultMeResponse,
     logger: {
       error: () => {},
@@ -192,5 +202,40 @@ describe("app Hono API", () => {
     expect(notFoundBody).toEqual({ error: "User not found" });
     expect(unknownErrorResponse.status).toBe(500);
     expect(unknownErrorBody).toEqual({ error: "Failed to update profile" });
+  });
+
+  test("loads profile analytics with the request timezone header", async () => {
+    const calls: Array<{ profilePageId: string | null; timezone?: string | null }> = [];
+    const app = createTestAppApi({
+      getProfileAnalyticsResponse: async (input) => {
+        calls.push(input);
+        return defaultAnalyticsResponse;
+      },
+    });
+
+    const response = await app.request("/analytics", {
+      headers: {
+        "x-vercel-ip-timezone": "Asia/Seoul",
+      },
+    });
+    const body = (await response.json()) as ProfileAnalyticsResponse;
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual(defaultAnalyticsResponse);
+    expect(calls).toEqual([{ profilePageId: "page-1", timezone: "Asia/Seoul" }]);
+  });
+
+  test("maps profile analytics errors to the existing JSON response shape", async () => {
+    const app = createTestAppApi({
+      getProfileAnalyticsResponse: async () => {
+        throw new Error("analytics unavailable");
+      },
+    });
+
+    const response = await app.request("/analytics");
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(500);
+    expect(body).toEqual({ error: "Failed to load profile analytics." });
   });
 });

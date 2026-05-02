@@ -129,6 +129,20 @@ const createTestProfilePageApi = (overrides: Partial<ProfilePageApiOptions> = {}
     revalidatePath: () => {},
     syncProfileBentoDraft: async () => defaultProfileBentoData,
     syncProfilePageDraft: async () => defaultProfilePageData,
+    createS3UploadFields: async () => ({
+      fields: {
+        "Content-Type": "image/png",
+      },
+      url: "https://storage.example.com",
+    }),
+    deletePublicS3Object: async () => true,
+    getMissingS3ConfigKeys: () => [],
+    getPublicS3ObjectUrl: (key) => `https://cdn.example.com/${key}`,
+    getS3ObjectKeyFromPublicUrl: (url) => new URL(url).pathname.replace(/^\/+/, ""),
+    updateProfileImage: async ({ imageKind, imageUrl }) => ({
+      backgroundImage: imageKind === "background" ? imageUrl : null,
+      image: imageKind === "profile" ? imageUrl : null,
+    }),
     updateProfileMetadata: async () => defaultProfilePageData.page,
     updateTextBoxItem: async () => defaultTextBoxItem,
     updateLinkItem: async () => defaultLinkItem,
@@ -1114,5 +1128,147 @@ describe("profile page Hono API", () => {
     expect(unknownErrorResponse.status).toBe(500);
     expect(unknownErrorResponse.headers.get("cache-control")).toBe("no-store");
     expect(unknownErrorBody).toEqual({ error: "Failed to sync bento" });
+  });
+
+  test("creates profile image upload fields with a stable user storage key", async () => {
+    const uploadCalls: Array<{ contentType?: string; maxSize?: number; path: string }> = [];
+    const app = createTestProfilePageApi({
+      createS3UploadFields: async (input) => {
+        uploadCalls.push(input);
+        return {
+          fields: {
+            "Content-Type": input.contentType ?? "",
+          },
+          url: "https://storage.example.com",
+        };
+      },
+      getPublicS3ObjectUrl: (key) => `https://cdn.example.com/${key}`,
+    });
+
+    const response = await app.request("/upload-image", {
+      body: JSON.stringify({
+        fileName: "avatar.png",
+        fileSize: 1024,
+        fileType: "image/png",
+        imageHash: "a".repeat(64),
+        imageKind: "profile",
+      }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    });
+    const body = (await response.json()) as {
+      fields: Record<string, string>;
+      publicUrl: string;
+      url: string;
+    };
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      fields: {
+        "Content-Type": "image/png",
+      },
+      publicUrl: `https://cdn.example.com/public/users/user-1/profile-page/profile?v=${"a".repeat(
+        64
+      )}`,
+      url: "https://storage.example.com",
+    });
+    expect(uploadCalls).toEqual([
+      {
+        contentType: "image/png",
+        maxSize: 5 * 1024 * 1024,
+        path: "public/users/user-1/profile-page/profile",
+      },
+    ]);
+  });
+
+  test("validates profile image upload requests before creating upload fields", async () => {
+    let uploadCallCount = 0;
+    const app = createTestProfilePageApi({
+      createS3UploadFields: async () => {
+        uploadCallCount += 1;
+        return {
+          fields: {},
+          url: "https://storage.example.com",
+        };
+      },
+    });
+
+    const response = await app.request("/upload-image", {
+      body: JSON.stringify({
+        fileName: "avatar.gif",
+        fileSize: 1024,
+        fileType: "image/gif",
+        imageHash: "a".repeat(64),
+        imageKind: "profile",
+      }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    });
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ error: "Upload a JPEG, PNG, WebP, or AVIF image." });
+    expect(uploadCallCount).toBe(0);
+  });
+
+  test("finalizes and deletes profile images for the authenticated user's storage prefix", async () => {
+    const finalizedUrl =
+      "https://cdn.example.com/public/users/user-1/profile-page/background?v=final";
+    const deletedUrls: string[] = [];
+    const updateCalls: Array<{ imageKind: "background" | "profile"; imageUrl: string; userId: string }> =
+      [];
+    const app = createTestProfilePageApi({
+      deletePublicS3Object: async (url) => {
+        deletedUrls.push(url);
+        return true;
+      },
+      getS3ObjectKeyFromPublicUrl: (url) => new URL(url).pathname.replace(/^\/+/, ""),
+      updateProfileImage: async (input) => {
+        updateCalls.push(input);
+        return {
+          backgroundImage: input.imageKind === "background" ? input.imageUrl : null,
+          image: input.imageKind === "profile" ? input.imageUrl : null,
+        };
+      },
+    });
+
+    const finalizeResponse = await app.request("/upload-image", {
+      body: JSON.stringify({
+        imageKind: "background",
+        imageUrl: finalizedUrl,
+      }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "PATCH",
+    });
+    const finalizeBody = (await finalizeResponse.json()) as { imageUrl: string | null };
+    const deleteResponse = await app.request("/upload-image", {
+      body: JSON.stringify({
+        imageUrl: finalizedUrl,
+      }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "DELETE",
+    });
+    const deleteBody = (await deleteResponse.json()) as { success: boolean };
+
+    expect(finalizeResponse.status).toBe(200);
+    expect(finalizeBody).toEqual({ imageUrl: finalizedUrl });
+    expect(updateCalls).toEqual([
+      {
+        imageKind: "background",
+        imageUrl: finalizedUrl,
+        userId: "user-1",
+      },
+    ]);
+    expect(deleteResponse.status).toBe(200);
+    expect(deleteBody).toEqual({ success: true });
+    expect(deletedUrls).toEqual([finalizedUrl]);
   });
 });

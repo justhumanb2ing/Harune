@@ -43,7 +43,6 @@ describe("profile page handle availability route adapter", () => {
       "src/app/api/app/profile-page/social-links/[socialLinkId]/route.ts",
       "src/app/api/app/profile-page/social-links/reorder/route.ts",
       "src/app/api/app/profile-page/playlist/route.ts",
-      "src/app/api/app/profile-page/upload-image/route.ts",
       "src/app/api/app/profile-page/bento/media/upload/route.ts",
     ];
 
@@ -138,5 +137,18 @@ describe("profile page handle availability route adapter", () => {
     expect(source.includes("withAuthRequired")).toBe(false);
     expect(source.includes("NextResponse")).toBe(false);
     expect(source.includes("syncProfileBentoDraft")).toBe(false);
+  });
+
+  test("keeps the profile image upload route as a thin adapter to the profile-page Hono app", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/app/api/app/profile-page/upload-image/route.ts"),
+      "utf8"
+    );
+
+    expect(source.includes("profilePageApi.fetch")).toBe(true);
+    expect(source.includes("withAuthRequired")).toBe(false);
+    expect(source.includes("NextResponse")).toBe(false);
+    expect(source.includes("createS3UploadFields")).toBe(false);
+    expect(source.includes("deletePublicS3Object")).toBe(false);
   });
 });

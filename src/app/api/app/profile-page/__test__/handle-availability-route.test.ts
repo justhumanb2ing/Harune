@@ -22,4 +22,16 @@ describe("profile page handle availability route adapter", () => {
     expect(source.includes("profilePageApi")).toBe(false);
     expect(source.includes("Hono")).toBe(false);
   });
+
+  test("keeps the links POST route as a thin adapter to the profile-page Hono app", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/app/api/app/profile-page/links/route.ts"),
+      "utf8"
+    );
+
+    expect(source.includes("profilePageApi.fetch")).toBe(true);
+    expect(source.includes("withAuthRequired")).toBe(false);
+    expect(source.includes("NextResponse")).toBe(false);
+    expect(source.includes("createLinkItem")).toBe(false);
+  });
 });

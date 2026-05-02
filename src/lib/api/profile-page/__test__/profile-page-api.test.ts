@@ -10,9 +10,21 @@ const authenticatedSession = {
 };
 
 describe("profile page Hono API", () => {
+  const validLinkPayload = {
+    description: "A useful link",
+    favicon: "https://example.com/favicon.ico",
+    title: "Example",
+    url: "https://example.com",
+  };
+
   test("returns the existing unauthorized JSON contract when the session is missing", async () => {
     const app = createProfilePageApi({
       auth: async () => null,
+      createLinkItem: async () => ({
+        ...validLinkPayload,
+        id: "link-1",
+        position: 0,
+      }),
       isHandleAvailableForUser: async () => true,
     });
 
@@ -30,6 +42,11 @@ describe("profile page Hono API", () => {
     let domainCallCount = 0;
     const app = createProfilePageApi({
       auth: async () => authenticatedSession,
+      createLinkItem: async () => ({
+        ...validLinkPayload,
+        id: "link-1",
+        position: 0,
+      }),
       isHandleAvailableForUser: async () => {
         domainCallCount += 1;
         return true;
@@ -58,6 +75,11 @@ describe("profile page Hono API", () => {
     const calls: Array<{ handle: string; userId: string }> = [];
     const app = createProfilePageApi({
       auth: async () => authenticatedSession,
+      createLinkItem: async () => ({
+        ...validLinkPayload,
+        id: "link-1",
+        position: 0,
+      }),
       isHandleAvailableForUser: async (input) => {
         calls.push(input);
         return false;
@@ -75,6 +97,11 @@ describe("profile page Hono API", () => {
   test("maps ProfilePageError and unknown errors to the existing JSON response shapes", async () => {
     const profileErrorApp = createProfilePageApi({
       auth: async () => authenticatedSession,
+      createLinkItem: async () => ({
+        ...validLinkPayload,
+        id: "link-1",
+        position: 0,
+      }),
       isHandleAvailableForUser: async () => {
         throw { message: "Profile page not found.", status: 404 };
       },
@@ -84,6 +111,11 @@ describe("profile page Hono API", () => {
     });
     const unknownErrorApp = createProfilePageApi({
       auth: async () => authenticatedSession,
+      createLinkItem: async () => ({
+        ...validLinkPayload,
+        id: "link-1",
+        position: 0,
+      }),
       isHandleAvailableForUser: async () => {
         throw new Error("database unavailable");
       },
@@ -101,5 +133,103 @@ describe("profile page Hono API", () => {
     expect(profileErrorBody).toEqual({ error: "Profile page not found." });
     expect(unknownErrorResponse.status).toBe(500);
     expect(unknownErrorBody).toEqual({ error: "Failed to check handle availability." });
+  });
+
+  test("creates link items from a validated JSON body", async () => {
+    const calls: Array<{ userId: string; values: typeof validLinkPayload }> = [];
+    const createdLinkItem = {
+      ...validLinkPayload,
+      id: "link-1",
+      position: 0,
+    };
+    const app = createProfilePageApi({
+      auth: async () => authenticatedSession,
+      createLinkItem: async (input) => {
+        calls.push(input);
+        return createdLinkItem;
+      },
+      isHandleAvailableForUser: async () => true,
+    });
+
+    const response = await app.request("/links", {
+      body: JSON.stringify(validLinkPayload),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    });
+    const body = (await response.json()) as { linkItem: typeof createdLinkItem };
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({ linkItem: createdLinkItem });
+    expect(calls).toEqual([{ userId: "user-1", values: validLinkPayload }]);
+  });
+
+  test("validates link item bodies before calling the mutation layer", async () => {
+    let mutationCallCount = 0;
+    const app = createProfilePageApi({
+      auth: async () => authenticatedSession,
+      createLinkItem: async () => {
+        mutationCallCount += 1;
+        return {
+          ...validLinkPayload,
+          id: "link-1",
+          position: 0,
+        };
+      },
+      isHandleAvailableForUser: async () => true,
+    });
+
+    const response = await app.request("/links", {
+      body: JSON.stringify({ ...validLinkPayload, url: "not-a-url" }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    });
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ error: "Enter a valid URL." });
+    expect(mutationCallCount).toBe(0);
+  });
+
+  test("maps link item mutation errors to the existing JSON response shapes", async () => {
+    const profileErrorApp = createProfilePageApi({
+      auth: async () => authenticatedSession,
+      createLinkItem: async () => {
+        throw { message: "Profile page not found.", status: 404 };
+      },
+      isHandleAvailableForUser: async () => true,
+      isProfilePageError: (error): error is { message: string; status: number } => {
+        return typeof error === "object" && error !== null && "status" in error;
+      },
+    });
+    const unknownErrorApp = createProfilePageApi({
+      auth: async () => authenticatedSession,
+      createLinkItem: async () => {
+        throw new Error("database unavailable");
+      },
+      isHandleAvailableForUser: async () => true,
+      logger: {
+        error: () => {},
+      },
+    });
+
+    const profileErrorResponse = await profileErrorApp.request("/links", {
+      body: JSON.stringify(validLinkPayload),
+      method: "POST",
+    });
+    const profileErrorBody = (await profileErrorResponse.json()) as { error: string };
+    const unknownErrorResponse = await unknownErrorApp.request("/links", {
+      body: JSON.stringify(validLinkPayload),
+      method: "POST",
+    });
+    const unknownErrorBody = (await unknownErrorResponse.json()) as { error: string };
+
+    expect(profileErrorResponse.status).toBe(404);
+    expect(profileErrorBody).toEqual({ error: "Profile page not found." });
+    expect(unknownErrorResponse.status).toBe(500);
+    expect(unknownErrorBody).toEqual({ error: "Failed to create link item." });
   });
 });

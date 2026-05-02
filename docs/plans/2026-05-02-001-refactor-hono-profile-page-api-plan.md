@@ -138,28 +138,30 @@ Better Auth boundary:
 ```txt
 CODE PATHS                                                   USER FLOWS
 [+] profile-page handle availability                         [+] Creator edits handle
-  ├── [GAP] unauthenticated request                            ├── [GAP] valid handle shows available/unavailable
+  ├── [DONE] unauthenticated request                           ├── [DONE] valid handle shows available/unavailable
   │     -> 401 JSON contract from auth middleware              ├── [GAP] invalid handle shows validation error
-  ├── [GAP] missing/empty handle query                         ├── [GAP] session expired during handle check
+  ├── [DONE] missing/empty handle query                        ├── [DONE] session expired during handle check
   │     -> 400 { error: "Handle is required." }                └── [GAP] current user's own handle remains available
-  ├── [GAP] invalid/reserved handle query
+  ├── [DONE] invalid/reserved handle query
   │     -> 400 with handleSchema message
-  ├── [GAP] valid handle available
+  ├── [DONE] valid handle available
   │     -> 200 { available: true }
-  ├── [GAP] valid handle owned by current user
+  ├── [DONE] valid handle owned by current user
   │     -> 200 { available: true }
-  ├── [GAP] valid handle owned by another user
+  ├── [DONE] valid handle owned by another user
   │     -> 200 { available: false }
-  ├── [GAP] ProfilePageError from domain layer
+  ├── [DONE] ProfilePageError from domain layer
   │     -> status from error.status + { error }
-  └── [GAP] unknown exception
+  └── [DONE] unknown exception
         -> 500 { error: "Failed to check handle availability." }
 
 Hono app contract
-  ├── [GAP] app.request("/handle-availability?handle=demo")
-  ├── [GAP] adapter route preserves current URL and response shape
-  └── [GAP] Better Auth route /api/auth/[...all] remains untouched
+  ├── [DONE] app.request("/handle-availability?handle=demo")
+  ├── [DONE] adapter route preserves current URL and response shape
+  └── [DONE] Better Auth route /api/auth/[...all] remains untouched
 ```
+
+The remaining user-flow gaps are UI-facing behavior outside this API migration pass. This pass verifies the Hono API contracts and Next route adapter ownership without changing the editor UI.
 
 ### Critical Paths
 
@@ -211,3 +213,12 @@ This pass is complete for the approved scope:
 - `/api/app/profile-page/text/reorder`
 
 The adapter guard tests also assert that the excluded `social-links`, `playlist`, `sync`, `upload-image`, and bento upload/sync route families are not delegated to the profile-page Hono app in this pass.
+
+Final verification for this pass:
+
+- `bun test src/app/api/app/profile-page/__test__ src/lib/api/profile-page/__test__ src/lib/profile-page/__test__`
+- `bun test src/app/api/app/profile-page/__test__/playlist-route.test.ts src/components/icons/__test__/social-platform-icon.test.tsx src/lib/users/__test__/me-query-options.test.ts src/lib/validations/__test__/auth.schema.test.ts`
+- `bun x tsc --noEmit --pretty false --skipLibCheck --project tsconfig.json`
+- `bun run build`
+
+Known non-blocker: `bun run lint` still reports unrelated repository-wide lint findings outside the Hono migration pass.

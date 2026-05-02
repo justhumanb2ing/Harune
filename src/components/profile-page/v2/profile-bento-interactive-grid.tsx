@@ -279,7 +279,7 @@ function MediaLinkControl({
         onClick={() => setIsOpen((current) => !current)}
         type="button"
       >
-        <Icon aria-hidden className="size-4" weight="bold" />
+        <Icon aria-hidden className="size-5" weight="bold" />
       </button>
       {isOpen ? (
         <div className="absolute right-0 bottom-full z-50 mb-2 w-64 rounded-xl border border-white/10 bg-foreground/95 p-1 shadow-float backdrop-blur-sm">

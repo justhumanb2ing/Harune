@@ -2,6 +2,8 @@ import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { users } from "@/db/schema/user";
+import { getProfileAnalyticsResponse } from "@/lib/analytics/profile-page-summary";
+import { getOwnedProfilePage } from "@/lib/profile-page/queries";
 import { getMeForUser } from "@/lib/users/me";
 import type { ProfileUpdateValues } from "@/lib/validations/profile.schema";
 import { toAppApiRequest } from "./adapter";
@@ -27,6 +29,8 @@ const updateUserProfile = async ({
 
 export const appApi = createAppApi({
   auth,
+  getOwnedProfilePage,
+  getProfileAnalyticsResponse,
   getMeForUser,
   updateUserProfile,
 });

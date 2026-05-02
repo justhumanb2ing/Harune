@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import type { MeResponse } from "@/app/api/app/me/types";
 import type { AuthSession } from "@/auth";
+import { normalizeAnalyticsTimezone } from "@/lib/analytics/analytics-ranges";
+import type { ProfileAnalyticsResponse } from "@/lib/analytics/types";
 import { type ProfileUpdateValues, profileUpdateSchema } from "@/lib/validations/profile.schema";
 
 type AuthenticatedSession = NonNullable<
@@ -14,6 +16,11 @@ type AuthenticatedSession = NonNullable<
 
 type AppApiDependencies = {
   auth: () => Promise<AuthSession | null>;
+  getOwnedProfilePage: (userId: string) => Promise<{ id: string } | null>;
+  getProfileAnalyticsResponse: (input: {
+    profilePageId: string | null;
+    timezone?: string | null;
+  }) => Promise<ProfileAnalyticsResponse>;
   getMeForUser: (userId: string) => Promise<MeResponse>;
   logger?: Pick<Console, "error">;
   updateUserProfile: (input: {
@@ -46,6 +53,8 @@ const unauthorizedResponse = () =>
 
 export const createAppApi = ({
   auth: getSession,
+  getOwnedProfilePage,
+  getProfileAnalyticsResponse,
   getMeForUser,
   logger = console,
   updateUserProfile,
@@ -106,6 +115,28 @@ export const createAppApi = ({
     } catch (error) {
       logger.error("Error updating profile:", error);
       return jsonResponse({ error: "Failed to update profile" }, 500);
+    }
+  });
+
+  app.get("/analytics", async (context) => {
+    const session = await getAuthenticatedSession();
+
+    if (!session) {
+      return unauthorizedResponse();
+    }
+
+    try {
+      const timezone = normalizeAnalyticsTimezone(context.req.header("x-vercel-ip-timezone"));
+      const profilePage = await getOwnedProfilePage(session.user.id);
+      const response = await getProfileAnalyticsResponse({
+        profilePageId: profilePage?.id ?? null,
+        timezone,
+      });
+
+      return jsonResponse(response, 200);
+    } catch (error) {
+      logger.error("Failed to load profile analytics:", error);
+      return jsonResponse({ error: "Failed to load profile analytics." }, 500);
     }
   });
 

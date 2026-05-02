@@ -139,6 +139,11 @@ const createTestProfilePageApi = (overrides: Partial<ProfilePageApiOptions> = {}
     getMissingS3ConfigKeys: () => [],
     getPublicS3ObjectUrl: (key) => `https://cdn.example.com/${key}`,
     getS3ObjectKeyFromPublicUrl: (url) => new URL(url).pathname.replace(/^\/+/, ""),
+    getProfileBentoMediaPublicUrl: ({ contentHash, objectKey }) =>
+      `https://media.example.com/${objectKey}?v=${contentHash}`,
+    getTemporaryProfileBentoMediaObjectKey: ({ bentoId, userId }) =>
+      `tmp/users/${userId}/profile-page/bento/${bentoId}/media-temp`,
+    putTemporaryProfileBentoMediaObject: async () => {},
     updateProfileImage: async ({ imageKind, imageUrl }) => ({
       backgroundImage: imageKind === "background" ? imageUrl : null,
       image: imageKind === "profile" ? imageUrl : null,
@@ -1270,5 +1275,67 @@ describe("profile page Hono API", () => {
     expect(deleteResponse.status).toBe(200);
     expect(deleteBody).toEqual({ success: true });
     expect(deletedUrls).toEqual([finalizedUrl]);
+  });
+
+  test("uploads profile bento media to a temporary object and returns the public preview URL", async () => {
+    const putCalls: Array<{ body: Buffer; contentType: string; objectKey: string }> = [];
+    const app = createTestProfilePageApi({
+      getTemporaryProfileBentoMediaObjectKey: ({ bentoId, userId }) =>
+        `tmp/users/${userId}/profile-page/bento/${bentoId}/media-temp`,
+      putTemporaryProfileBentoMediaObject: async (input) => {
+        putCalls.push(input);
+      },
+    });
+    const formData = new FormData();
+    formData.set("bentoId", "bento-1");
+    formData.set("file", new File(["image-bytes"], "work.png", { type: "image/png" }));
+
+    const response = await app.request("/bento/media/upload", {
+      body: formData,
+      method: "POST",
+    });
+    const body = (await response.json()) as {
+      contentHash: string;
+      contentType: string;
+      mediaType: string;
+      tempObjectKey: string;
+      tempUrl: string;
+    };
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(body.contentHash).toMatch(/^[a-f0-9]{64}$/);
+    expect(body.contentType).toBe("image/png");
+    expect(body.mediaType).toBe("image");
+    expect(body.tempObjectKey).toBe("tmp/users/user-1/profile-page/bento/bento-1/media-temp");
+    expect(body.tempUrl).toBe(
+      `https://media.example.com/tmp/users/user-1/profile-page/bento/bento-1/media-temp?v=${body.contentHash}`
+    );
+    expect(putCalls).toHaveLength(1);
+    expect(putCalls[0]?.contentType).toBe("image/png");
+    expect(putCalls[0]?.objectKey).toBe("tmp/users/user-1/profile-page/bento/bento-1/media-temp");
+  });
+
+  test("validates profile bento media upload form data before storing objects", async () => {
+    let putCallCount = 0;
+    const app = createTestProfilePageApi({
+      putTemporaryProfileBentoMediaObject: async () => {
+        putCallCount += 1;
+      },
+    });
+    const formData = new FormData();
+    formData.set("bentoId", "bento-1");
+    formData.set("file", new File(["plain text"], "note.txt", { type: "text/plain" }));
+
+    const response = await app.request("/bento/media/upload", {
+      body: formData,
+      method: "POST",
+    });
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(body).toEqual({ error: "이미지 또는 비디오 파일만 추가할 수 있어요." });
+    expect(putCallCount).toBe(0);
   });
 });

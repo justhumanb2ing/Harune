@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import type {
   LinkItemInput,
+  ProfilePageUpdateValues,
   ReorderItemsInput,
   TextBoxItemInput,
 } from "@/lib/validations/profile-page.schema";
@@ -39,6 +40,31 @@ const defaultTextBoxItem = {
   position: 0,
 };
 
+const validProfilePagePayload: ProfilePageUpdateValues = {
+  backgroundImage: null,
+  bio: "Maker",
+  handle: "demo",
+  image: null,
+  location: "Seoul",
+  name: "Demo",
+  role: "Designer",
+};
+
+const defaultProfilePageData = {
+  linkItems: [defaultLinkItem],
+  page: {
+    ...validProfilePagePayload,
+    backgroundImage: null,
+    id: "page-1",
+    image: null,
+    linkBlockPosition: 0,
+    updatedAt: new Date("2026-05-02T00:00:00.000Z"),
+  },
+  playlistItems: [],
+  socialLinks: [],
+  textBoxItems: [defaultTextBoxItem],
+};
+
 type ProfilePageApiOptions = Parameters<typeof createProfilePageApi>[0];
 
 const createTestProfilePageApi = (overrides: Partial<ProfilePageApiOptions> = {}) =>
@@ -48,9 +74,11 @@ const createTestProfilePageApi = (overrides: Partial<ProfilePageApiOptions> = {}
     createTextBoxItem: async () => defaultTextBoxItem,
     deleteLinkItem: async () => {},
     deleteTextBoxItem: async () => {},
+    getProfilePageEditorData: async () => defaultProfilePageData,
     isHandleAvailableForUser: async () => true,
     reorderLinkItems: async () => {},
     reorderTextBoxItems: async () => {},
+    updateProfileMetadata: async () => defaultProfilePageData.page,
     updateTextBoxItem: async () => defaultTextBoxItem,
     updateLinkItem: async () => defaultLinkItem,
     ...overrides,
@@ -707,5 +735,128 @@ describe("profile page Hono API", () => {
     expect(reorderProfileErrorBody).toEqual({ error: "Ordered IDs do not match current items." });
     expect(reorderUnknownErrorResponse.status).toBe(500);
     expect(reorderUnknownErrorBody).toEqual({ error: "Failed to reorder text box items." });
+  });
+
+  test("reads profile page editor data with the optional handle query", async () => {
+    const calls: Array<{ handle?: string; userId: string }> = [];
+    const app = createTestProfilePageApi({
+      getProfilePageEditorData: async (userId, handle) => {
+        calls.push({ handle, userId });
+        return defaultProfilePageData;
+      },
+    });
+
+    const response = await app.request("/?handle=demo");
+    const body = (await response.json()) as typeof defaultProfilePageData;
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(body).toEqual({
+      ...defaultProfilePageData,
+      page: {
+        ...defaultProfilePageData.page,
+        updatedAt: "2026-05-02T00:00:00.000Z",
+      },
+    });
+    expect(calls).toEqual([{ handle: "demo", userId: "user-1" }]);
+  });
+
+  test("returns the existing not found response when profile page editor data is missing", async () => {
+    const app = createTestProfilePageApi({
+      getProfilePageEditorData: async () => null,
+    });
+
+    const response = await app.request("/");
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(body).toEqual({ error: "Profile page not found." });
+  });
+
+  test("updates profile metadata from a validated JSON body", async () => {
+    const calls: Array<{ userId: string; values: ProfilePageUpdateValues }> = [];
+    const app = createTestProfilePageApi({
+      updateProfileMetadata: async (input) => {
+        calls.push(input);
+        return defaultProfilePageData.page;
+      },
+    });
+
+    const response = await app.request("/", {
+      body: JSON.stringify(validProfilePagePayload),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "PATCH",
+    });
+    const body = (await response.json()) as { page: typeof defaultProfilePageData.page };
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      page: {
+        ...defaultProfilePageData.page,
+        updatedAt: "2026-05-02T00:00:00.000Z",
+      },
+    });
+    expect(calls).toEqual([{ userId: "user-1", values: validProfilePagePayload }]);
+  });
+
+  test("validates profile metadata bodies before calling the mutation layer", async () => {
+    let mutationCallCount = 0;
+    const app = createTestProfilePageApi({
+      updateProfileMetadata: async () => {
+        mutationCallCount += 1;
+        return defaultProfilePageData.page;
+      },
+    });
+
+    const response = await app.request("/", {
+      body: JSON.stringify({ ...validProfilePagePayload, name: "" }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "PATCH",
+    });
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ error: "Name is required." });
+    expect(mutationCallCount).toBe(0);
+  });
+
+  test("maps profile metadata update errors to the existing JSON response shapes", async () => {
+    const profileErrorApp = createTestProfilePageApi({
+      isProfilePageError: (error): error is { message: string; status: number } => {
+        return typeof error === "object" && error !== null && "status" in error;
+      },
+      updateProfileMetadata: async () => {
+        throw { message: "This handle is already taken.", status: 409 };
+      },
+    });
+    const unknownErrorApp = createTestProfilePageApi({
+      logger: {
+        error: () => {},
+      },
+      updateProfileMetadata: async () => {
+        throw new Error("database unavailable");
+      },
+    });
+
+    const profileErrorResponse = await profileErrorApp.request("/", {
+      body: JSON.stringify(validProfilePagePayload),
+      method: "PATCH",
+    });
+    const profileErrorBody = (await profileErrorResponse.json()) as { error: string };
+    const unknownErrorResponse = await unknownErrorApp.request("/", {
+      body: JSON.stringify(validProfilePagePayload),
+      method: "PATCH",
+    });
+    const unknownErrorBody = (await unknownErrorResponse.json()) as { error: string };
+
+    expect(profileErrorResponse.status).toBe(409);
+    expect(profileErrorBody).toEqual({ error: "This handle is already taken." });
+    expect(unknownErrorResponse.status).toBe(500);
+    expect(unknownErrorBody).toEqual({ error: "Failed to update profile page." });
   });
 });

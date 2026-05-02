@@ -3,6 +3,20 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 describe("profile page handle availability route adapter", () => {
+  test("keeps the profile-page metadata route as a thin adapter to the profile-page Hono app", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/app/api/app/profile-page/route.ts"),
+      "utf8"
+    );
+
+    expect(source.includes('dynamic = "force-dynamic"')).toBe(true);
+    expect(source.includes("profilePageApi.fetch")).toBe(true);
+    expect(source.includes("withAuthRequired")).toBe(false);
+    expect(source.includes("NextResponse")).toBe(false);
+    expect(source.includes("getProfilePageEditorData")).toBe(false);
+    expect(source.includes("updateProfileMetadata")).toBe(false);
+  });
+
   test("keeps the Next route as a thin adapter to the profile-page Hono app", () => {
     const source = readFileSync(
       join(process.cwd(), "src/app/api/app/profile-page/handle-availability/route.ts"),

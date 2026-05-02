@@ -3,6 +3,7 @@ import type { MeResponse } from "@/app/api/app/me/types";
 import type { AuthSession } from "@/auth";
 import { normalizeAnalyticsTimezone } from "@/lib/analytics/analytics-ranges";
 import type { ProfileAnalyticsResponse } from "@/lib/analytics/types";
+import { type OnboardingInput, onboardingSchema } from "@/lib/validations/auth.schema";
 import { type ProfileUpdateValues, profileUpdateSchema } from "@/lib/validations/profile.schema";
 
 type AuthenticatedSession = NonNullable<
@@ -16,6 +17,10 @@ type AuthenticatedSession = NonNullable<
 
 type AppApiDependencies = {
   auth: () => Promise<AuthSession | null>;
+  createProfilePage: (input: {
+    userId: string;
+    values: OnboardingInput;
+  }) => Promise<{ handle: string; id: string; name: string }>;
   createS3UploadFields: (input: {
     contentType?: string;
     maxSize?: number;
@@ -29,6 +34,8 @@ type AppApiDependencies = {
   }) => Promise<ProfileAnalyticsResponse>;
   getPublicS3ObjectUrl: (key: string) => string;
   getMeForUser: (userId: string) => Promise<MeResponse>;
+  getProfilePageByHandle: (handle: string) => Promise<{ id: string } | null>;
+  getUserExists: (userId: string) => Promise<boolean>;
   logger?: Pick<Console, "error">;
   updateUserProfile: (input: {
     userId: string;
@@ -60,12 +67,15 @@ const unauthorizedResponse = () =>
 
 export const createAppApi = ({
   auth: getSession,
+  createProfilePage,
   createS3UploadFields,
   getMissingS3ConfigKeys,
   getOwnedProfilePage,
   getProfileAnalyticsResponse,
   getPublicS3ObjectUrl,
   getMeForUser,
+  getProfilePageByHandle,
+  getUserExists,
   logger = console,
   updateUserProfile,
 }: AppApiDependencies) => {
@@ -257,6 +267,51 @@ export const createAppApi = ({
       logger.error("Error creating presigned URL for image upload:", error);
       return jsonResponse({ error: "Failed to create upload URL" }, 500);
     }
+  });
+
+  app.post("/create", async (context) => {
+    const session = await getAuthenticatedSession();
+
+    if (!session) {
+      return unauthorizedResponse();
+    }
+
+    const currentUserExists = await getUserExists(session.user.id);
+
+    if (!currentUserExists) {
+      return jsonResponse({ error: "User not found" }, 404);
+    }
+
+    const body = await context.req.json();
+    const validation = onboardingSchema.safeParse(body);
+
+    if (!validation.success) {
+      return jsonResponse(
+        {
+          error: validation.error.issues[0]?.message ?? "Invalid handle.",
+        },
+        400
+      );
+    }
+
+    const existingOwner = await getProfilePageByHandle(validation.data.handle);
+
+    if (existingOwner) {
+      return jsonResponse({ error: "This handle is already taken." }, 409);
+    }
+
+    const createdPage = await createProfilePage({
+      userId: session.user.id,
+      values: validation.data,
+    });
+
+    return jsonResponse(
+      {
+        page: createdPage,
+        success: true,
+      },
+      200
+    );
   });
 
   return app;

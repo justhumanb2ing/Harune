@@ -6,6 +6,8 @@ import {
   linkItemInputSchema,
   type ReorderItemsInput,
   reorderItemsSchema,
+  type TextBoxItemInput,
+  textBoxItemInputSchema,
 } from "@/lib/validations/profile-page.schema";
 
 type AuthenticatedSession = NonNullable<
@@ -20,7 +22,9 @@ type AuthenticatedSession = NonNullable<
 type ProfilePageApiDependencies = {
   auth: () => Promise<AuthSession | null>;
   createLinkItem: (input: { userId: string; values: LinkItemInput }) => Promise<unknown>;
+  createTextBoxItem: (input: { userId: string; values: TextBoxItemInput }) => Promise<unknown>;
   deleteLinkItem: (input: { linkId: string; userId: string }) => Promise<void>;
+  deleteTextBoxItem: (input: { textBoxId: string; userId: string }) => Promise<void>;
   isHandleAvailableForUser: (input: { handle: string; userId: string }) => Promise<boolean>;
   isProfilePageError?: (error: unknown) => error is { message: string; status: number };
   logger?: Pick<Console, "error">;
@@ -28,10 +32,19 @@ type ProfilePageApiDependencies = {
     orderedIds: ReorderItemsInput["orderedIds"];
     userId: string;
   }) => Promise<void>;
+  reorderTextBoxItems: (input: {
+    orderedIds: ReorderItemsInput["orderedIds"];
+    userId: string;
+  }) => Promise<void>;
   updateLinkItem: (input: {
     linkId: string;
     userId: string;
     values: LinkItemInput;
+  }) => Promise<unknown>;
+  updateTextBoxItem: (input: {
+    textBoxId: string;
+    userId: string;
+    values: TextBoxItemInput;
   }) => Promise<unknown>;
 };
 
@@ -65,12 +78,16 @@ const unauthorizedResponse = () =>
 export const createProfilePageApi = ({
   auth: getSession,
   createLinkItem,
+  createTextBoxItem,
   deleteLinkItem,
+  deleteTextBoxItem,
   isHandleAvailableForUser: checkHandleAvailability,
   isProfilePageError = (_error): _error is { message: string; status: number } => false,
   logger = console,
   reorderLinkItems,
+  reorderTextBoxItems,
   updateLinkItem,
+  updateTextBoxItem,
 }: ProfilePageApiDependencies) => {
   const app = new Hono();
 
@@ -231,6 +248,133 @@ export const createProfilePageApi = ({
 
       logger.error("Failed to delete link item:", error);
       return jsonResponse({ error: "Failed to delete link item." }, 500);
+    }
+  });
+
+  app.post("/text", async (context) => {
+    const session = await getSession();
+
+    if (!isAuthenticatedSession(session)) {
+      return unauthorizedResponse();
+    }
+
+    try {
+      const body = await context.req.json();
+      const validation = textBoxItemInputSchema.safeParse(body);
+
+      if (!validation.success) {
+        return jsonResponse(
+          { error: validation.error.issues[0]?.message ?? "Invalid text box payload." },
+          400
+        );
+      }
+
+      const textBoxItem = await createTextBoxItem({
+        userId: session.user.id,
+        values: validation.data,
+      });
+
+      return jsonResponse({ textBoxItem }, 200);
+    } catch (error) {
+      if (isProfilePageError(error)) {
+        return jsonResponse({ error: error.message }, error.status);
+      }
+
+      logger.error("Failed to create text box item:", error);
+      return jsonResponse({ error: "Failed to create text box item." }, 500);
+    }
+  });
+
+  app.post("/text/reorder", async (context) => {
+    const session = await getSession();
+
+    if (!isAuthenticatedSession(session)) {
+      return unauthorizedResponse();
+    }
+
+    try {
+      const body = await context.req.json();
+      const validation = reorderItemsSchema.safeParse(body);
+
+      if (!validation.success) {
+        return jsonResponse(
+          { error: validation.error.issues[0]?.message ?? "Invalid reorder payload." },
+          400
+        );
+      }
+
+      await reorderTextBoxItems({
+        orderedIds: validation.data.orderedIds,
+        userId: session.user.id,
+      });
+
+      return jsonResponse({ success: true }, 200);
+    } catch (error) {
+      if (isProfilePageError(error)) {
+        return jsonResponse({ error: error.message }, error.status);
+      }
+
+      logger.error("Failed to reorder text box items:", error);
+      return jsonResponse({ error: "Failed to reorder text box items." }, 500);
+    }
+  });
+
+  app.patch("/text/:textBoxId", async (context) => {
+    const session = await getSession();
+
+    if (!isAuthenticatedSession(session)) {
+      return unauthorizedResponse();
+    }
+
+    try {
+      const body = await context.req.json();
+      const validation = textBoxItemInputSchema.safeParse(body);
+
+      if (!validation.success) {
+        return jsonResponse(
+          { error: validation.error.issues[0]?.message ?? "Invalid text box payload." },
+          400
+        );
+      }
+
+      const textBoxItem = await updateTextBoxItem({
+        textBoxId: context.req.param("textBoxId"),
+        userId: session.user.id,
+        values: validation.data,
+      });
+
+      return jsonResponse({ textBoxItem }, 200);
+    } catch (error) {
+      if (isProfilePageError(error)) {
+        return jsonResponse({ error: error.message }, error.status);
+      }
+
+      logger.error("Failed to update text box item:", error);
+      return jsonResponse({ error: "Failed to update text box item." }, 500);
+    }
+  });
+
+  app.delete("/text/:textBoxId", async (context) => {
+    const session = await getSession();
+
+    if (!isAuthenticatedSession(session)) {
+      return unauthorizedResponse();
+    }
+
+    try {
+      await deleteTextBoxItem({
+        textBoxId: context.req.param("textBoxId"),
+        userId: session.user.id,
+      });
+
+      return jsonResponse({ success: true }, 200);
+    } catch (error) {
+      if (isProfilePageError(error)) {
+        return jsonResponse({ error: error.message }, error.status);
+      }
+
+      logger.error("Failed to delete text box item:", error);
+      return jsonResponse({ error: "Failed to delete text box item." }, 500);
     }
   });
 

@@ -1,9 +1,12 @@
 import { Hono } from "hono";
 import type { AuthSession } from "@/auth";
+import { getProfileAppPath } from "@/lib/profile-page/app-paths";
 import { handleSchema } from "@/lib/validations/auth.schema";
 import {
   type LinkItemInput,
   linkItemInputSchema,
+  type ProfilePageSyncValues,
+  profilePageSyncSchema,
   type ProfilePageUpdateValues,
   profilePageUpdateSchema,
   type ReorderItemsInput,
@@ -39,6 +42,11 @@ type ProfilePageApiDependencies = {
     orderedIds: ReorderItemsInput["orderedIds"];
     userId: string;
   }) => Promise<void>;
+  revalidatePath: (path: string) => void;
+  syncProfilePageDraft: (input: {
+    userId: string;
+    values: ProfilePageSyncValues;
+  }) => Promise<{ page: { handle: string } }>;
   updateLinkItem: (input: {
     linkId: string;
     userId: string;
@@ -94,6 +102,8 @@ export const createProfilePageApi = ({
   logger = console,
   reorderLinkItems,
   reorderTextBoxItems,
+  revalidatePath,
+  syncProfilePageDraft,
   updateLinkItem,
   updateProfileMetadata,
   updateTextBoxItem,
@@ -190,6 +200,34 @@ export const createProfilePageApi = ({
         "Failed to check handle availability:",
         "Failed to check handle availability."
       );
+    }
+  });
+
+  app.post("/sync", async (context) => {
+    const session = await getAuthenticatedSession();
+
+    if (!session) {
+      return unauthorizedResponse();
+    }
+
+    try {
+      const body = await context.req.json();
+      const validation = profilePageSyncSchema.safeParse(body);
+
+      if (!validation.success) {
+        return jsonResponse({ error: "Failed to sync" }, 400);
+      }
+
+      const data = await syncProfilePageDraft({
+        userId: session.user.id,
+        values: validation.data,
+      });
+
+      revalidatePath(getProfileAppPath(data.page.handle));
+
+      return jsonResponse(data, 200);
+    } catch (error) {
+      return routeErrorResponse(error, "Failed to sync:", "Failed to sync");
     }
   });
 

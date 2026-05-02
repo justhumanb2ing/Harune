@@ -1,45 +1,5 @@
-import { revalidatePath } from "next/cache";
-import { NextResponse } from "next/server";
-import withAuthRequired from "@/lib/auth/with-auth-required";
-import { getProfileAppPath } from "@/lib/profile-page/app-paths";
-import { ProfilePageError, syncProfilePageDraft } from "@/lib/profile-page/mutations";
-import { profilePageSyncSchema } from "@/lib/validations/profile-page.schema";
+import { profilePageApi } from "@/lib/api/profile-page/server-app";
 
 export const dynamic = "force-dynamic";
 
-const noStoreHeaders = {
-  "Cache-Control": "no-store",
-};
-
-export const POST = withAuthRequired(async (req, context) => {
-  try {
-    const body = await req.json();
-    const validation = profilePageSyncSchema.safeParse(body);
-
-    if (!validation.success) {
-      return NextResponse.json(
-        { error: "Failed to sync" },
-        { headers: noStoreHeaders, status: 400 }
-      );
-    }
-
-    const data = await syncProfilePageDraft({
-      userId: context.session.user.id,
-      values: validation.data,
-    });
-
-    revalidatePath(getProfileAppPath(data.page.handle));
-
-    return NextResponse.json(data, { headers: noStoreHeaders });
-  } catch (error) {
-    if (error instanceof ProfilePageError) {
-      return NextResponse.json(
-        { error: error.message },
-        { headers: noStoreHeaders, status: error.status }
-      );
-    }
-
-    console.error("Failed to sync:", error);
-    return NextResponse.json({ error: "Failed to sync" }, { headers: noStoreHeaders, status: 500 });
-  }
-});
+export const POST = (req: Request) => profilePageApi.fetch(req);

@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import {
   createLinkItem,
@@ -8,6 +9,7 @@ import {
   ProfilePageError,
   reorderLinkItems,
   reorderTextBoxItems,
+  syncProfilePageDraft,
   updateLinkItem,
   updateProfileMetadata,
   updateTextBoxItem,
@@ -26,6 +28,8 @@ export const profilePageApi = createProfilePageApi({
   isProfilePageError: (error): error is ProfilePageError => error instanceof ProfilePageError,
   reorderLinkItems,
   reorderTextBoxItems,
+  revalidatePath,
+  syncProfilePageDraft,
   updateLinkItem,
   updateProfileMetadata,
   updateTextBoxItem,

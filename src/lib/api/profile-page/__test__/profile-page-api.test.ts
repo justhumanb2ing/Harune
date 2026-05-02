@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import type {
   LinkItemInput,
+  ProfileBentoSyncValues,
   ProfilePageUpdateValues,
   ProfilePageSyncValues,
   ReorderItemsInput,
@@ -83,6 +84,35 @@ const validProfilePageSyncPayload: ProfilePageSyncValues = {
   textBoxItems: [],
 };
 
+const validProfileBentoSyncPayload: ProfileBentoSyncValues = {
+  bento: [
+    {
+      content: {
+        description: "",
+        favicon: "",
+        thumbnail: "",
+        title: "Docs",
+        url: "https://example.com/docs",
+      },
+      id: "draft:link-1",
+      layout: {
+        compact: { h: 2, w: 2, x: 0, y: 0 },
+        desktop: { h: 2, w: 2, x: 0, y: 0 },
+      },
+      type: "link",
+    },
+  ],
+};
+
+const defaultProfileBentoData = {
+  bento: validProfileBentoSyncPayload.bento,
+  page: {
+    handle: "demo",
+    id: "page-1",
+    name: "Demo",
+  },
+};
+
 type ProfilePageApiOptions = Parameters<typeof createProfilePageApi>[0];
 
 const createTestProfilePageApi = (overrides: Partial<ProfilePageApiOptions> = {}) =>
@@ -97,6 +127,7 @@ const createTestProfilePageApi = (overrides: Partial<ProfilePageApiOptions> = {}
     reorderLinkItems: async () => {},
     reorderTextBoxItems: async () => {},
     revalidatePath: () => {},
+    syncProfileBentoDraft: async () => defaultProfileBentoData,
     syncProfilePageDraft: async () => defaultProfilePageData,
     updateProfileMetadata: async () => defaultProfilePageData.page,
     updateTextBoxItem: async () => defaultTextBoxItem,
@@ -980,5 +1011,108 @@ describe("profile page Hono API", () => {
     expect(unknownErrorResponse.status).toBe(500);
     expect(unknownErrorResponse.headers.get("cache-control")).toBe("no-store");
     expect(unknownErrorBody).toEqual({ error: "Failed to sync" });
+  });
+
+  test("syncs profile bento drafts from a validated JSON body and revalidates the public path", async () => {
+    const syncCalls: Array<{ userId: string; values: ProfileBentoSyncValues }> = [];
+    const revalidateCalls: string[] = [];
+    const app = createTestProfilePageApi({
+      revalidatePath: (path) => {
+        revalidateCalls.push(path);
+      },
+      syncProfileBentoDraft: async (input) => {
+        syncCalls.push(input);
+        return defaultProfileBentoData;
+      },
+    });
+
+    const response = await app.request("/bento/sync", {
+      body: JSON.stringify(validProfileBentoSyncPayload),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    });
+    const body = (await response.json()) as typeof defaultProfileBentoData;
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(body).toEqual(defaultProfileBentoData);
+    expect(syncCalls).toEqual([{ userId: "user-1", values: validProfileBentoSyncPayload }]);
+    expect(revalidateCalls).toEqual(["/demo"]);
+  });
+
+  test("validates profile bento sync bodies before calling the mutation layer", async () => {
+    let mutationCallCount = 0;
+    const app = createTestProfilePageApi({
+      syncProfileBentoDraft: async () => {
+        mutationCallCount += 1;
+        return defaultProfileBentoData;
+      },
+    });
+
+    const response = await app.request("/bento/sync", {
+      body: JSON.stringify({
+        bento: [
+          {
+            ...validProfileBentoSyncPayload.bento[0],
+            content: {
+              ...validProfileBentoSyncPayload.bento[0].content,
+              url: "not-a-url",
+            },
+          },
+        ],
+      }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    });
+    const body = (await response.json()) as { description: string; error: string };
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(body).toEqual({
+      description: "bento.0.content.url: Enter a valid URL.",
+      error: "Failed to sync bento",
+    });
+    expect(mutationCallCount).toBe(0);
+  });
+
+  test("maps profile bento sync errors to the existing JSON response shapes", async () => {
+    const profileErrorApp = createTestProfilePageApi({
+      isProfilePageError: (error): error is { message: string; status: number } => {
+        return typeof error === "object" && error !== null && "status" in error;
+      },
+      syncProfileBentoDraft: async () => {
+        throw { message: "Profile page not found.", status: 404 };
+      },
+    });
+    const unknownErrorApp = createTestProfilePageApi({
+      logger: {
+        error: () => {},
+      },
+      syncProfileBentoDraft: async () => {
+        throw new Error("database unavailable");
+      },
+    });
+
+    const profileErrorResponse = await profileErrorApp.request("/bento/sync", {
+      body: JSON.stringify(validProfileBentoSyncPayload),
+      method: "POST",
+    });
+    const profileErrorBody = (await profileErrorResponse.json()) as { error: string };
+    const unknownErrorResponse = await unknownErrorApp.request("/bento/sync", {
+      body: JSON.stringify(validProfileBentoSyncPayload),
+      method: "POST",
+    });
+    const unknownErrorBody = (await unknownErrorResponse.json()) as { error: string };
+
+    expect(profileErrorResponse.status).toBe(404);
+    expect(profileErrorResponse.headers.get("cache-control")).toBe("no-store");
+    expect(profileErrorBody).toEqual({ error: "Profile page not found." });
+    expect(unknownErrorResponse.status).toBe(500);
+    expect(unknownErrorResponse.headers.get("cache-control")).toBe("no-store");
+    expect(unknownErrorBody).toEqual({ error: "Failed to sync bento" });
   });
 });

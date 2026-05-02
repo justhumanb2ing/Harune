@@ -10,23 +10,35 @@ const authenticatedSession = {
   },
 };
 
-describe("profile page Hono API", () => {
-  const validLinkPayload: LinkItemInput = {
-    description: "A useful link",
-    favicon: "https://example.com/favicon.ico",
-    title: "Example",
-    url: "https://example.com",
-  };
+const validLinkPayload: LinkItemInput = {
+  description: "A useful link",
+  favicon: "https://example.com/favicon.ico",
+  title: "Example",
+  url: "https://example.com",
+};
 
+const defaultLinkItem = {
+  ...validLinkPayload,
+  id: "link-1",
+  position: 0,
+};
+
+type ProfilePageApiOptions = Parameters<typeof createProfilePageApi>[0];
+
+const createTestProfilePageApi = (overrides: Partial<ProfilePageApiOptions> = {}) =>
+  createProfilePageApi({
+    auth: async () => authenticatedSession,
+    createLinkItem: async () => defaultLinkItem,
+    deleteLinkItem: async () => {},
+    isHandleAvailableForUser: async () => true,
+    updateLinkItem: async () => defaultLinkItem,
+    ...overrides,
+  });
+
+describe("profile page Hono API", () => {
   test("returns the existing unauthorized JSON contract when the session is missing", async () => {
-    const app = createProfilePageApi({
+    const app = createTestProfilePageApi({
       auth: async () => null,
-      createLinkItem: async () => ({
-        ...validLinkPayload,
-        id: "link-1",
-        position: 0,
-      }),
-      isHandleAvailableForUser: async () => true,
     });
 
     const response = await app.request("/handle-availability?handle=demo");
@@ -41,13 +53,8 @@ describe("profile page Hono API", () => {
 
   test("validates the handle query before calling the domain layer", async () => {
     let domainCallCount = 0;
-    const app = createProfilePageApi({
+    const app = createTestProfilePageApi({
       auth: async () => authenticatedSession,
-      createLinkItem: async () => ({
-        ...validLinkPayload,
-        id: "link-1",
-        position: 0,
-      }),
       isHandleAvailableForUser: async () => {
         domainCallCount += 1;
         return true;
@@ -74,13 +81,8 @@ describe("profile page Hono API", () => {
 
   test("checks availability for the authenticated user's normalized handle", async () => {
     const calls: Array<{ handle: string; userId: string }> = [];
-    const app = createProfilePageApi({
+    const app = createTestProfilePageApi({
       auth: async () => authenticatedSession,
-      createLinkItem: async () => ({
-        ...validLinkPayload,
-        id: "link-1",
-        position: 0,
-      }),
       isHandleAvailableForUser: async (input) => {
         calls.push(input);
         return false;
@@ -96,13 +98,8 @@ describe("profile page Hono API", () => {
   });
 
   test("maps ProfilePageError and unknown errors to the existing JSON response shapes", async () => {
-    const profileErrorApp = createProfilePageApi({
+    const profileErrorApp = createTestProfilePageApi({
       auth: async () => authenticatedSession,
-      createLinkItem: async () => ({
-        ...validLinkPayload,
-        id: "link-1",
-        position: 0,
-      }),
       isHandleAvailableForUser: async () => {
         throw { message: "Profile page not found.", status: 404 };
       },
@@ -110,13 +107,8 @@ describe("profile page Hono API", () => {
         return typeof error === "object" && error !== null && "status" in error;
       },
     });
-    const unknownErrorApp = createProfilePageApi({
+    const unknownErrorApp = createTestProfilePageApi({
       auth: async () => authenticatedSession,
-      createLinkItem: async () => ({
-        ...validLinkPayload,
-        id: "link-1",
-        position: 0,
-      }),
       isHandleAvailableForUser: async () => {
         throw new Error("database unavailable");
       },
@@ -143,7 +135,7 @@ describe("profile page Hono API", () => {
       id: "link-1",
       position: 0,
     };
-    const app = createProfilePageApi({
+    const app = createTestProfilePageApi({
       auth: async () => authenticatedSession,
       createLinkItem: async (input) => {
         calls.push(input);
@@ -168,7 +160,7 @@ describe("profile page Hono API", () => {
 
   test("validates link item bodies before calling the mutation layer", async () => {
     let mutationCallCount = 0;
-    const app = createProfilePageApi({
+    const app = createTestProfilePageApi({
       auth: async () => authenticatedSession,
       createLinkItem: async () => {
         mutationCallCount += 1;
@@ -196,7 +188,7 @@ describe("profile page Hono API", () => {
   });
 
   test("maps link item mutation errors to the existing JSON response shapes", async () => {
-    const profileErrorApp = createProfilePageApi({
+    const profileErrorApp = createTestProfilePageApi({
       auth: async () => authenticatedSession,
       createLinkItem: async () => {
         throw { message: "Profile page not found.", status: 404 };
@@ -206,7 +198,7 @@ describe("profile page Hono API", () => {
         return typeof error === "object" && error !== null && "status" in error;
       },
     });
-    const unknownErrorApp = createProfilePageApi({
+    const unknownErrorApp = createTestProfilePageApi({
       auth: async () => authenticatedSession,
       createLinkItem: async () => {
         throw new Error("database unavailable");
@@ -242,7 +234,7 @@ describe("profile page Hono API", () => {
       position: 0,
       title: "Updated",
     };
-    const app = createProfilePageApi({
+    const app = createTestProfilePageApi({
       auth: async () => authenticatedSession,
       createLinkItem: async () => ({
         ...validLinkPayload,
@@ -278,7 +270,7 @@ describe("profile page Hono API", () => {
 
   test("validates link item update bodies before calling the mutation layer", async () => {
     let mutationCallCount = 0;
-    const app = createProfilePageApi({
+    const app = createTestProfilePageApi({
       auth: async () => authenticatedSession,
       createLinkItem: async () => ({
         ...validLinkPayload,
@@ -312,7 +304,7 @@ describe("profile page Hono API", () => {
 
   test("deletes link items from the route param", async () => {
     const calls: Array<{ linkId: string; userId: string }> = [];
-    const app = createProfilePageApi({
+    const app = createTestProfilePageApi({
       auth: async () => authenticatedSession,
       createLinkItem: async () => ({
         ...validLinkPayload,
@@ -336,7 +328,7 @@ describe("profile page Hono API", () => {
   });
 
   test("maps link item update and delete errors to the existing JSON response shapes", async () => {
-    const profileErrorApp = createProfilePageApi({
+    const profileErrorApp = createTestProfilePageApi({
       auth: async () => authenticatedSession,
       createLinkItem: async () => ({
         ...validLinkPayload,
@@ -354,7 +346,7 @@ describe("profile page Hono API", () => {
         throw { message: "Link item not found.", status: 404 };
       },
     });
-    const unknownErrorApp = createProfilePageApi({
+    const unknownErrorApp = createTestProfilePageApi({
       auth: async () => authenticatedSession,
       createLinkItem: async () => ({
         ...validLinkPayload,

@@ -57,6 +57,9 @@ Existing flows to preserve:
 - Create a profile-page scoped Hono app, for example under `src/lib/api/profile-page/`.
 - Add auth middleware that reuses the existing `auth()` wrapper.
 - Migrate `/api/app/profile-page/handle-availability` through the per-route adapter pattern.
+- Migrate `links` create/update/delete/reorder routes.
+- Migrate `text` create/update/delete/reorder routes.
+- Migrate `/api/app/profile-page` metadata read/update route.
 - Add Hono app tests and Next adapter route tests for the migrated route.
 - Preserve the existing request URL and JSON response shapes.
 
@@ -193,3 +196,18 @@ The follow-up migration path for this pass is:
 Keep `social-links` out of this pass even though it has a similar child mutation shape. That route family should move only if a later pass explicitly reopens its UI and contract surface.
 
 Do not move profile-page sync or media upload until the Hono app and adapter tests prove the contract is stable.
+
+## Current Status
+
+This pass is complete for the approved scope:
+
+- `/api/app/profile-page/handle-availability`
+- `/api/app/profile-page`
+- `/api/app/profile-page/links`
+- `/api/app/profile-page/links/[linkId]`
+- `/api/app/profile-page/links/reorder`
+- `/api/app/profile-page/text`
+- `/api/app/profile-page/text/[textBoxId]`
+- `/api/app/profile-page/text/reorder`
+
+The adapter guard tests also assert that the excluded `social-links`, `playlist`, `sync`, `upload-image`, and bento upload/sync route families are not delegated to the profile-page Hono app in this pass.

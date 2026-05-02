@@ -4,6 +4,8 @@
 
 ### POST Mutation Route Follow-Up
 
+Status: completed for this pass.
+
 **What:** After the first Hono-backed `handle-availability` route lands, migrate a small POST mutation route such as `links/route.ts`.
 
 **Why:** The first route validates the Hono app, auth middleware, query validation, domain error mapping, and adapter contract. A second POST route should verify JSON body validation and mutation error handling before sync or upload routes move.
@@ -53,3 +55,5 @@
 **Depends on:** Usage evidence from shipped single media bento
 
 ## Completed
+
+- Hono profile-page API migration pass: `handle-availability`, metadata read/update, links create/update/delete/reorder, and text create/update/delete/reorder now delegate through the profile-page Hono app. `social-links`, `playlist`, `sync`, `upload-image`, and bento upload/sync remain intentionally outside this pass.

@@ -37,6 +37,25 @@ describe("profile page handle availability route adapter", () => {
     expect(source.includes("Hono")).toBe(false);
   });
 
+  test("keeps excluded profile-page route families outside the Hono migration pass", () => {
+    const excludedRoutePaths = [
+      "src/app/api/app/profile-page/social-links/route.ts",
+      "src/app/api/app/profile-page/social-links/[socialLinkId]/route.ts",
+      "src/app/api/app/profile-page/social-links/reorder/route.ts",
+      "src/app/api/app/profile-page/playlist/route.ts",
+      "src/app/api/app/profile-page/sync/route.ts",
+      "src/app/api/app/profile-page/upload-image/route.ts",
+      "src/app/api/app/profile-page/bento/sync/route.ts",
+      "src/app/api/app/profile-page/bento/media/upload/route.ts",
+    ];
+
+    for (const routePath of excludedRoutePaths) {
+      const source = readFileSync(join(process.cwd(), routePath), "utf8");
+
+      expect(source.includes("profilePageApi.fetch")).toBe(false);
+    }
+  });
+
   test("keeps the links POST route as a thin adapter to the profile-page Hono app", () => {
     const source = readFileSync(
       join(process.cwd(), "src/app/api/app/profile-page/links/route.ts"),

@@ -1,53 +1,7 @@
-import { NextResponse } from "next/server";
-import withAuthRequired from "@/lib/auth/with-auth-required";
-import { ProfilePageError, updateProfileMetadata } from "@/lib/profile-page/mutations";
-import { getProfilePageEditorData } from "@/lib/profile-page/queries";
-import { profilePageUpdateSchema } from "@/lib/validations/profile-page.schema";
+import { profilePageApi } from "@/lib/api/profile-page/server-app";
 
 export const dynamic = "force-dynamic";
 
-const noStoreHeaders = {
-  "Cache-Control": "no-store",
-};
+export const GET = (req: Request) => profilePageApi.fetch(req);
 
-export const GET = withAuthRequired(async (_req, context) => {
-  const handle = _req.nextUrl.searchParams.get("handle") ?? undefined;
-  const data = await getProfilePageEditorData(context.session.user.id, handle);
-
-  if (!data) {
-    return NextResponse.json(
-      { error: "Profile page not found." },
-      { headers: noStoreHeaders, status: 404 }
-    );
-  }
-
-  return NextResponse.json(data, { headers: noStoreHeaders });
-});
-
-export const PATCH = withAuthRequired(async (req, context) => {
-  try {
-    const body = await req.json();
-    const validation = profilePageUpdateSchema.safeParse(body);
-
-    if (!validation.success) {
-      return NextResponse.json(
-        { error: validation.error.issues[0]?.message ?? "Invalid profile page payload." },
-        { status: 400 }
-      );
-    }
-
-    const page = await updateProfileMetadata({
-      userId: context.session.user.id,
-      values: validation.data,
-    });
-
-    return NextResponse.json({ page });
-  } catch (error) {
-    if (error instanceof ProfilePageError) {
-      return NextResponse.json({ error: error.message }, { status: error.status });
-    }
-
-    console.error("Failed to update profile page:", error);
-    return NextResponse.json({ error: "Failed to update profile page." }, { status: 500 });
-  }
-});
+export const PATCH = (req: Request) => profilePageApi.fetch(req);

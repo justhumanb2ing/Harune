@@ -9,8 +9,10 @@ import {
   reorderLinkItems,
   reorderTextBoxItems,
   updateLinkItem,
+  updateProfileMetadata,
   updateTextBoxItem,
 } from "@/lib/profile-page/mutations";
+import { getProfilePageEditorData } from "@/lib/profile-page/queries";
 import { createProfilePageApi } from "./app";
 
 export const profilePageApi = createProfilePageApi({
@@ -19,10 +21,12 @@ export const profilePageApi = createProfilePageApi({
   createTextBoxItem,
   deleteLinkItem,
   deleteTextBoxItem,
+  getProfilePageEditorData,
   isHandleAvailableForUser,
   isProfilePageError: (error): error is ProfilePageError => error instanceof ProfilePageError,
   reorderLinkItems,
   reorderTextBoxItems,
   updateLinkItem,
+  updateProfileMetadata,
   updateTextBoxItem,
 });

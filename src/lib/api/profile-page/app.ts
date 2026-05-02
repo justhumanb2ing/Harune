@@ -4,6 +4,8 @@ import { handleSchema } from "@/lib/validations/auth.schema";
 import {
   type LinkItemInput,
   linkItemInputSchema,
+  type ProfilePageUpdateValues,
+  profilePageUpdateSchema,
   type ReorderItemsInput,
   reorderItemsSchema,
   type TextBoxItemInput,
@@ -25,6 +27,7 @@ type ProfilePageApiDependencies = {
   createTextBoxItem: (input: { userId: string; values: TextBoxItemInput }) => Promise<unknown>;
   deleteLinkItem: (input: { linkId: string; userId: string }) => Promise<void>;
   deleteTextBoxItem: (input: { textBoxId: string; userId: string }) => Promise<void>;
+  getProfilePageEditorData: (userId: string, handle?: string) => Promise<unknown | null>;
   isHandleAvailableForUser: (input: { handle: string; userId: string }) => Promise<boolean>;
   isProfilePageError?: (error: unknown) => error is { message: string; status: number };
   logger?: Pick<Console, "error">;
@@ -40,6 +43,10 @@ type ProfilePageApiDependencies = {
     linkId: string;
     userId: string;
     values: LinkItemInput;
+  }) => Promise<unknown>;
+  updateProfileMetadata: (input: {
+    userId: string;
+    values: ProfilePageUpdateValues;
   }) => Promise<unknown>;
   updateTextBoxItem: (input: {
     textBoxId: string;
@@ -81,15 +88,67 @@ export const createProfilePageApi = ({
   createTextBoxItem,
   deleteLinkItem,
   deleteTextBoxItem,
+  getProfilePageEditorData,
   isHandleAvailableForUser: checkHandleAvailability,
   isProfilePageError = (_error): _error is { message: string; status: number } => false,
   logger = console,
   reorderLinkItems,
   reorderTextBoxItems,
   updateLinkItem,
+  updateProfileMetadata,
   updateTextBoxItem,
 }: ProfilePageApiDependencies) => {
   const app = new Hono();
+
+  app.get("/", async (context) => {
+    const session = await getSession();
+
+    if (!isAuthenticatedSession(session)) {
+      return unauthorizedResponse();
+    }
+
+    const data = await getProfilePageEditorData(session.user.id, context.req.query("handle"));
+
+    if (!data) {
+      return jsonResponse({ error: "Profile page not found." }, 404);
+    }
+
+    return jsonResponse(data, 200);
+  });
+
+  app.patch("/", async (context) => {
+    const session = await getSession();
+
+    if (!isAuthenticatedSession(session)) {
+      return unauthorizedResponse();
+    }
+
+    try {
+      const body = await context.req.json();
+      const validation = profilePageUpdateSchema.safeParse(body);
+
+      if (!validation.success) {
+        return jsonResponse(
+          { error: validation.error.issues[0]?.message ?? "Invalid profile page payload." },
+          400
+        );
+      }
+
+      const page = await updateProfileMetadata({
+        userId: session.user.id,
+        values: validation.data,
+      });
+
+      return jsonResponse({ page }, 200);
+    } catch (error) {
+      if (isProfilePageError(error)) {
+        return jsonResponse({ error: error.message }, error.status);
+      }
+
+      logger.error("Failed to update profile page:", error);
+      return jsonResponse({ error: "Failed to update profile page." }, 500);
+    }
+  });
 
   app.get("/handle-availability", async (context) => {
     const session = await getSession();

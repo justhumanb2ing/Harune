@@ -27,7 +27,7 @@ type ProfileBentoViewerProfilePage = {
 const isDeploymentEnvironment = process.env.VERCEL === "1" || Boolean(process.env.VERCEL_ENV);
 
 function ProfileBentoProfileAside({ page }: Pick<PublicProfileBentoPageData, "page">) {
-  const displayName = page.name ?? page.userName ?? page.handle;
+  const imageAlt = page.name ?? page.userName ?? page.handle;
 
   return (
     <ProfileBentoProfileMotion className={PROFILE_BENTO_PROFILE_SHELL_CLASS}>
@@ -36,7 +36,7 @@ function ProfileBentoProfileAside({ page }: Pick<PublicProfileBentoPageData, "pa
           <div className="relative flex size-32 items-center justify-center overflow-hidden rounded-full bg-secondary xl:size-44">
             {page.image ? (
               <Image
-                alt={displayName}
+                alt={imageAlt}
                 className="size-full object-cover"
                 height={176}
                 priority
@@ -52,20 +52,24 @@ function ProfileBentoProfileAside({ page }: Pick<PublicProfileBentoPageData, "pa
         </div>
 
         <div className="flex flex-col gap-3 p-4 pt-0">
-          <h1 className="min-h-8 whitespace-pre-line break-all p-0 font-bold text-4xl! xl:text-5xl!">
-            {displayName}
-          </h1>
+          {page.name ? (
+            <h1 className="min-h-8 whitespace-pre-line break-all p-0 font-bold text-3xl! xl:text-5xl!">
+              {page.name}
+            </h1>
+          ) : null}
 
           {page.bio ? (
-            <p className="min-h-8 whitespace-pre-line break-all p-0 text-xl!">{page.bio}</p>
-          ) : (
-            <p className="min-h-8 p-0 text-xl! text-muted-foreground">Bio</p>
-          )}
+            <p className="min-h-8 whitespace-pre-line break-all p-0 text-lg! xl:text-xl!">
+              {page.bio}
+            </p>
+          ) : null}
 
-          <div className="flex flex-col gap-2 text-neutral-500">
-            <p className="h-fit p-0 text-base!">{page.role || "What do you do?"}</p>
-            <p className="h-fit p-0 text-base!">{page.location || "Where are you based?"}</p>
-          </div>
+          {page.role || page.location ? (
+            <div className="flex flex-col gap-2 text-neutral-500">
+              {page.role ? <p className="h-fit p-0 text-base!">{page.role}</p> : null}
+              {page.location ? <p className="h-fit p-0 text-base!">{page.location}</p> : null}
+            </div>
+          ) : null}
         </div>
       </div>
     </ProfileBentoProfileMotion>

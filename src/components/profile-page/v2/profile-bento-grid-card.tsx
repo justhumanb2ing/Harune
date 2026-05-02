@@ -769,9 +769,10 @@ function ReadonlyMapBento({
   preventNavigation: boolean;
 }) {
   return (
-    <article className="relative size-full overflow-hidden rounded-[1.5rem] bg-muted">
+    <article className="relative size-full overflow-hidden rounded-[1.5rem] border-[3px] border-transparent bg-muted transition-colors duration-200 ease-out">
       <BentoMap
         className="size-full"
+        styles={LEEVE_MAP_STYLES}
         viewport={{
           center: [item.content.longitude, item.content.latitude],
           zoom: item.content.zoom,
@@ -810,16 +811,19 @@ export function ProfileBentoGridCard({
   activeBreakpoint,
   item,
   layoutSize,
+  preventNavigation = false,
 }: {
   activeBreakpoint?: GridBreakpoint;
   item: ProfileBentoItem;
   layoutSize?: ProfileBentoLinkSize;
+  preventNavigation?: boolean;
 }) {
   return (
     <ProfileBentoGridCardContent
       activeBreakpoint={activeBreakpoint}
       item={item}
       layoutSize={layoutSize}
+      preventNavigation={preventNavigation}
     />
   );
 }
@@ -865,16 +869,18 @@ function ProfileBentoGridCardContent({
   }
 
   if (item.type === "media") {
+    const hasBottomOverlay = Boolean(item.content.caption || item.content.href);
+
     return (
       <article className="relative size-full overflow-hidden rounded-[1.5rem] bg-muted">
         <MediaPreview item={item} />
+        {hasBottomOverlay ? (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent" />
+        ) : null}
         {item.content.caption ? (
-          <>
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent" />
-            <p className="pointer-events-none absolute bottom-3 left-3 line-clamp-2 max-w-[calc(100%-4.5rem)] rounded-md bg-black/25 px-2 py-1 font-medium text-sm text-white backdrop-blur-sm">
-              {item.content.caption}
-            </p>
-          </>
+          <p className="pointer-events-none absolute bottom-3 left-3 line-clamp-2 max-w-[calc(100%-4.5rem)] rounded-md bg-black/25 px-2 py-1 font-medium text-sm text-white backdrop-blur-sm">
+            {item.content.caption}
+          </p>
         ) : null}
         {item.content.href ? (
           <a
@@ -897,8 +903,10 @@ function ProfileBentoGridCardContent({
   }
 
   return (
-    <section className="relative flex size-full items-center rounded-lg">
-      <h2 className="truncate font-bold text-xl tracking-tight">{item.content.title}</h2>
+    <section className="relative inline-grid h-full min-w-40 max-w-full overflow-hidden rounded-lg">
+      <h2 className="h-full w-full min-w-40 max-w-full truncate font-bold text-xl tracking-tight">
+        {item.content.title}
+      </h2>
     </section>
   );
 }

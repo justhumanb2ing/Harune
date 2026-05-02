@@ -16,9 +16,13 @@ import "react-resizable/css/styles.css";
 
 type ProfileBentoReadonlyGridProps = {
   bento: ProfileBentoItem[];
+  preventNavigation?: boolean;
 };
 
-export function ProfileBentoReadonlyGrid({ bento }: ProfileBentoReadonlyGridProps) {
+export function ProfileBentoReadonlyGrid({
+  bento,
+  preventNavigation = false,
+}: ProfileBentoReadonlyGridProps) {
   const { width, containerRef, mounted } = useContainerWidth({
     initialWidth: 864,
     measureBeforeMount: true,
@@ -71,6 +75,7 @@ export function ProfileBentoReadonlyGrid({ bento }: ProfileBentoReadonlyGridProp
                   item.layout[activeBreakpoint].w,
                   item.layout[activeBreakpoint].h
                 )}
+                preventNavigation={preventNavigation}
               />
             ) : null;
           }}

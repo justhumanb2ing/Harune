@@ -4,6 +4,7 @@ import {
   deleteLinkItem,
   isHandleAvailableForUser,
   ProfilePageError,
+  reorderLinkItems,
   updateLinkItem,
 } from "@/lib/profile-page/mutations";
 import { createProfilePageApi } from "./app";
@@ -14,5 +15,6 @@ export const profilePageApi = createProfilePageApi({
   deleteLinkItem,
   isHandleAvailableForUser,
   isProfilePageError: (error): error is ProfilePageError => error instanceof ProfilePageError,
+  reorderLinkItems,
   updateLinkItem,
 });

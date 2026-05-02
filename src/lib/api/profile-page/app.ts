@@ -1,7 +1,12 @@
 import { Hono } from "hono";
 import type { AuthSession } from "@/auth";
 import { handleSchema } from "@/lib/validations/auth.schema";
-import { type LinkItemInput, linkItemInputSchema } from "@/lib/validations/profile-page.schema";
+import {
+  type LinkItemInput,
+  linkItemInputSchema,
+  type ReorderItemsInput,
+  reorderItemsSchema,
+} from "@/lib/validations/profile-page.schema";
 
 type AuthenticatedSession = NonNullable<
   AuthSession & {
@@ -19,6 +24,10 @@ type ProfilePageApiDependencies = {
   isHandleAvailableForUser: (input: { handle: string; userId: string }) => Promise<boolean>;
   isProfilePageError?: (error: unknown) => error is { message: string; status: number };
   logger?: Pick<Console, "error">;
+  reorderLinkItems: (input: {
+    orderedIds: ReorderItemsInput["orderedIds"];
+    userId: string;
+  }) => Promise<void>;
   updateLinkItem: (input: {
     linkId: string;
     userId: string;
@@ -60,6 +69,7 @@ export const createProfilePageApi = ({
   isHandleAvailableForUser: checkHandleAvailability,
   isProfilePageError = (_error): _error is { message: string; status: number } => false,
   logger = console,
+  reorderLinkItems,
   updateLinkItem,
 }: ProfilePageApiDependencies) => {
   const app = new Hono();
@@ -128,6 +138,40 @@ export const createProfilePageApi = ({
 
       logger.error("Failed to create link item:", error);
       return jsonResponse({ error: "Failed to create link item." }, 500);
+    }
+  });
+
+  app.post("/links/reorder", async (context) => {
+    const session = await getSession();
+
+    if (!isAuthenticatedSession(session)) {
+      return unauthorizedResponse();
+    }
+
+    try {
+      const body = await context.req.json();
+      const validation = reorderItemsSchema.safeParse(body);
+
+      if (!validation.success) {
+        return jsonResponse(
+          { error: validation.error.issues[0]?.message ?? "Invalid reorder payload." },
+          400
+        );
+      }
+
+      await reorderLinkItems({
+        orderedIds: validation.data.orderedIds,
+        userId: session.user.id,
+      });
+
+      return jsonResponse({ success: true }, 200);
+    } catch (error) {
+      if (isProfilePageError(error)) {
+        return jsonResponse({ error: error.message }, error.status);
+      }
+
+      logger.error("Failed to reorder link items:", error);
+      return jsonResponse({ error: "Failed to reorder link items." }, 500);
     }
   });
 

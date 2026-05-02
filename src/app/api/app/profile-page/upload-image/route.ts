@@ -148,7 +148,7 @@ export const DELETE = withAuthRequired(async (req, context) => {
     const objectKey = getS3ObjectKeyFromPublicUrl(imageUrl);
     const expectedPrefix = `public/users/${context.session.user.id}/profile-page/`;
 
-    if (!objectKey || !objectKey.startsWith(expectedPrefix)) {
+    if (!objectKey?.startsWith(expectedPrefix)) {
       return NextResponse.json({ error: "Invalid profile image URL." }, { status: 400 });
     }
 

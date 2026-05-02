@@ -1,5 +1,5 @@
-import { profilePageApi } from "@/lib/api/profile-page/server-app";
+import { handleProfilePageApiRequest } from "@/lib/api/profile-page/server-app";
 
-export const PATCH = (req: Request) => profilePageApi.fetch(req);
+export const PATCH = (req: Request) => handleProfilePageApiRequest(req);
 
-export const DELETE = (req: Request) => profilePageApi.fetch(req);
+export const DELETE = (req: Request) => handleProfilePageApiRequest(req);

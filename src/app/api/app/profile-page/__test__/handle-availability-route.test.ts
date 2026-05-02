@@ -27,7 +27,7 @@ describe("profile page handle availability route adapter", () => {
     );
 
     expect(source.includes('dynamic = "force-dynamic"')).toBe(true);
-    expect(source.includes("profilePageApi.fetch")).toBe(true);
+    expect(source.includes("handleProfilePageApiRequest")).toBe(true);
     expect(source.includes("withAuthRequired")).toBe(false);
     expect(source.includes("NextResponse")).toBe(false);
     expect(source.includes("getProfilePageEditorData")).toBe(false);
@@ -40,7 +40,7 @@ describe("profile page handle availability route adapter", () => {
       "utf8"
     );
 
-    expect(source.includes("profilePageApi.fetch")).toBe(true);
+    expect(source.includes("handleProfilePageApiRequest")).toBe(true);
     expect(source.includes("withAuthRequired")).toBe(false);
     expect(source.includes("NextResponse")).toBe(false);
     expect(source.includes("isHandleAvailableForUser")).toBe(false);
@@ -65,7 +65,7 @@ describe("profile page handle availability route adapter", () => {
     for (const routePath of excludedRoutePaths) {
       const source = readFileSync(join(process.cwd(), routePath), "utf8");
 
-      expect(source.includes("profilePageApi.fetch")).toBe(false);
+      expect(source.includes("handleProfilePageApiRequest")).toBe(false);
     }
   });
 
@@ -75,7 +75,7 @@ describe("profile page handle availability route adapter", () => {
       "utf8"
     );
 
-    expect(source.includes("profilePageApi.fetch")).toBe(true);
+    expect(source.includes("handleProfilePageApiRequest")).toBe(true);
     expect(source.includes("withAuthRequired")).toBe(false);
     expect(source.includes("NextResponse")).toBe(false);
     expect(source.includes("createLinkItem")).toBe(false);
@@ -87,7 +87,7 @@ describe("profile page handle availability route adapter", () => {
       "utf8"
     );
 
-    expect(source.includes("profilePageApi.fetch")).toBe(true);
+    expect(source.includes("handleProfilePageApiRequest")).toBe(true);
     expect(source.includes("withAuthRequired")).toBe(false);
     expect(source.includes("NextResponse")).toBe(false);
     expect(source.includes("updateLinkItem")).toBe(false);
@@ -100,7 +100,7 @@ describe("profile page handle availability route adapter", () => {
       "utf8"
     );
 
-    expect(source.includes("profilePageApi.fetch")).toBe(true);
+    expect(source.includes("handleProfilePageApiRequest")).toBe(true);
     expect(source.includes("withAuthRequired")).toBe(false);
     expect(source.includes("NextResponse")).toBe(false);
     expect(source.includes("reorderLinkItems")).toBe(false);
@@ -121,7 +121,7 @@ describe("profile page handle availability route adapter", () => {
     );
 
     for (const source of [createSource, itemSource, reorderSource]) {
-      expect(source.includes("profilePageApi.fetch")).toBe(true);
+      expect(source.includes("handleProfilePageApiRequest")).toBe(true);
       expect(source.includes("withAuthRequired")).toBe(false);
       expect(source.includes("NextResponse")).toBe(false);
     }
@@ -137,7 +137,7 @@ describe("profile page handle availability route adapter", () => {
       "utf8"
     );
 
-    expect(source.includes("profilePageApi.fetch")).toBe(true);
+    expect(source.includes("handleProfilePageApiRequest")).toBe(true);
     expect(source.includes("withAuthRequired")).toBe(false);
     expect(source.includes("NextResponse")).toBe(false);
     expect(source.includes("syncProfilePageDraft")).toBe(false);
@@ -149,7 +149,7 @@ describe("profile page handle availability route adapter", () => {
       "utf8"
     );
 
-    expect(source.includes("profilePageApi.fetch")).toBe(true);
+    expect(source.includes("handleProfilePageApiRequest")).toBe(true);
     expect(source.includes("withAuthRequired")).toBe(false);
     expect(source.includes("NextResponse")).toBe(false);
     expect(source.includes("syncProfileBentoDraft")).toBe(false);
@@ -161,7 +161,7 @@ describe("profile page handle availability route adapter", () => {
       "utf8"
     );
 
-    expect(source.includes("profilePageApi.fetch")).toBe(true);
+    expect(source.includes("handleProfilePageApiRequest")).toBe(true);
     expect(source.includes("withAuthRequired")).toBe(false);
     expect(source.includes("NextResponse")).toBe(false);
     expect(source.includes("createS3UploadFields")).toBe(false);
@@ -174,7 +174,7 @@ describe("profile page handle availability route adapter", () => {
       "utf8"
     );
 
-    expect(source.includes("profilePageApi.fetch")).toBe(true);
+    expect(source.includes("handleProfilePageApiRequest")).toBe(true);
     expect(source.includes("withAuthRequired")).toBe(false);
     expect(source.includes("NextResponse")).toBe(false);
     expect(source.includes("putTemporaryProfileBentoMediaObject")).toBe(false);

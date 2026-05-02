@@ -33,6 +33,7 @@ import {
 } from "@/lib/s3/config";
 import createS3UploadFields from "@/lib/s3/create-s3-upload-fields";
 import { deletePublicS3Object } from "@/lib/s3/delete-object";
+import { toProfilePageApiRequest } from "./adapter";
 import { createProfilePageApi } from "./app";
 
 const updateProfileImage = async ({
@@ -89,3 +90,6 @@ export const profilePageApi = createProfilePageApi({
   updateProfileMetadata,
   updateTextBoxItem,
 });
+
+export const handleProfilePageApiRequest = (req: Request) =>
+  profilePageApi.fetch(toProfilePageApiRequest(req));

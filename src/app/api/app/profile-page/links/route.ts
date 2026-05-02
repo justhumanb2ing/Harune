@@ -1,3 +1,3 @@
-import { profilePageApi } from "@/lib/api/profile-page/server-app";
+import { handleProfilePageApiRequest } from "@/lib/api/profile-page/server-app";
 
-export const POST = (req: Request) => profilePageApi.fetch(req);
+export const POST = (req: Request) => handleProfilePageApiRequest(req);

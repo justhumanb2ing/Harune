@@ -43,7 +43,6 @@ describe("profile page handle availability route adapter", () => {
       "src/app/api/app/profile-page/social-links/[socialLinkId]/route.ts",
       "src/app/api/app/profile-page/social-links/reorder/route.ts",
       "src/app/api/app/profile-page/playlist/route.ts",
-      "src/app/api/app/profile-page/sync/route.ts",
       "src/app/api/app/profile-page/upload-image/route.ts",
       "src/app/api/app/profile-page/bento/sync/route.ts",
       "src/app/api/app/profile-page/bento/media/upload/route.ts",
@@ -116,5 +115,17 @@ describe("profile page handle availability route adapter", () => {
     expect(itemSource.includes("updateTextBoxItem")).toBe(false);
     expect(itemSource.includes("deleteTextBoxItem")).toBe(false);
     expect(reorderSource.includes("reorderTextBoxItems")).toBe(false);
+  });
+
+  test("keeps the profile page sync route as a thin adapter to the profile-page Hono app", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/app/api/app/profile-page/sync/route.ts"),
+      "utf8"
+    );
+
+    expect(source.includes("profilePageApi.fetch")).toBe(true);
+    expect(source.includes("withAuthRequired")).toBe(false);
+    expect(source.includes("NextResponse")).toBe(false);
+    expect(source.includes("syncProfilePageDraft")).toBe(false);
   });
 });

@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import type {
   LinkItemInput,
   ProfilePageUpdateValues,
+  ProfilePageSyncValues,
   ReorderItemsInput,
   TextBoxItemInput,
 } from "@/lib/validations/profile-page.schema";
@@ -65,6 +66,23 @@ const defaultProfilePageData = {
   textBoxItems: [defaultTextBoxItem],
 };
 
+const validProfilePageSyncPayload: ProfilePageSyncValues = {
+  linkItems: [],
+  page: {
+    backgroundImage: null,
+    bio: "Maker",
+    handle: "demo",
+    image: null,
+    linkBlockPosition: 0,
+    location: "Seoul",
+    name: "Demo",
+    role: "Designer",
+  },
+  playlistItems: [],
+  socialLinks: [],
+  textBoxItems: [],
+};
+
 type ProfilePageApiOptions = Parameters<typeof createProfilePageApi>[0];
 
 const createTestProfilePageApi = (overrides: Partial<ProfilePageApiOptions> = {}) =>
@@ -78,6 +96,8 @@ const createTestProfilePageApi = (overrides: Partial<ProfilePageApiOptions> = {}
     isHandleAvailableForUser: async () => true,
     reorderLinkItems: async () => {},
     reorderTextBoxItems: async () => {},
+    revalidatePath: () => {},
+    syncProfilePageDraft: async () => defaultProfilePageData,
     updateProfileMetadata: async () => defaultProfilePageData.page,
     updateTextBoxItem: async () => defaultTextBoxItem,
     updateLinkItem: async () => defaultLinkItem,
@@ -858,5 +878,107 @@ describe("profile page Hono API", () => {
     expect(profileErrorBody).toEqual({ error: "This handle is already taken." });
     expect(unknownErrorResponse.status).toBe(500);
     expect(unknownErrorBody).toEqual({ error: "Failed to update profile page." });
+  });
+
+  test("syncs profile page drafts from a validated JSON body and revalidates the public path", async () => {
+    const syncCalls: Array<{ userId: string; values: ProfilePageSyncValues }> = [];
+    const revalidateCalls: string[] = [];
+    const app = createTestProfilePageApi({
+      revalidatePath: (path) => {
+        revalidateCalls.push(path);
+      },
+      syncProfilePageDraft: async (input) => {
+        syncCalls.push(input);
+        return defaultProfilePageData;
+      },
+    });
+
+    const response = await app.request("/sync", {
+      body: JSON.stringify(validProfilePageSyncPayload),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    });
+    const body = (await response.json()) as typeof defaultProfilePageData;
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(body).toEqual({
+      ...defaultProfilePageData,
+      page: {
+        ...defaultProfilePageData.page,
+        updatedAt: "2026-05-02T00:00:00.000Z",
+      },
+    });
+    expect(syncCalls).toEqual([{ userId: "user-1", values: validProfilePageSyncPayload }]);
+    expect(revalidateCalls).toEqual(["/demo"]);
+  });
+
+  test("validates profile page sync bodies before calling the mutation layer", async () => {
+    let mutationCallCount = 0;
+    const app = createTestProfilePageApi({
+      syncProfilePageDraft: async () => {
+        mutationCallCount += 1;
+        return defaultProfilePageData;
+      },
+    });
+
+    const response = await app.request("/sync", {
+      body: JSON.stringify({
+        ...validProfilePageSyncPayload,
+        page: {
+          ...validProfilePageSyncPayload.page,
+          name: "",
+        },
+      }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    });
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(body).toEqual({ error: "Failed to sync" });
+    expect(mutationCallCount).toBe(0);
+  });
+
+  test("maps profile page sync errors to the existing JSON response shapes", async () => {
+    const profileErrorApp = createTestProfilePageApi({
+      isProfilePageError: (error): error is { message: string; status: number } => {
+        return typeof error === "object" && error !== null && "status" in error;
+      },
+      syncProfilePageDraft: async () => {
+        throw { message: "This handle is already taken.", status: 409 };
+      },
+    });
+    const unknownErrorApp = createTestProfilePageApi({
+      logger: {
+        error: () => {},
+      },
+      syncProfilePageDraft: async () => {
+        throw new Error("database unavailable");
+      },
+    });
+
+    const profileErrorResponse = await profileErrorApp.request("/sync", {
+      body: JSON.stringify(validProfilePageSyncPayload),
+      method: "POST",
+    });
+    const profileErrorBody = (await profileErrorResponse.json()) as { error: string };
+    const unknownErrorResponse = await unknownErrorApp.request("/sync", {
+      body: JSON.stringify(validProfilePageSyncPayload),
+      method: "POST",
+    });
+    const unknownErrorBody = (await unknownErrorResponse.json()) as { error: string };
+
+    expect(profileErrorResponse.status).toBe(409);
+    expect(profileErrorResponse.headers.get("cache-control")).toBe("no-store");
+    expect(profileErrorBody).toEqual({ error: "This handle is already taken." });
+    expect(unknownErrorResponse.status).toBe(500);
+    expect(unknownErrorResponse.headers.get("cache-control")).toBe("no-store");
+    expect(unknownErrorBody).toEqual({ error: "Failed to sync" });
   });
 });

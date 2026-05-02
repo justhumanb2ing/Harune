@@ -44,6 +44,15 @@ const jsonResponse = (body: unknown, status: number) => {
   });
 };
 
+const unauthorizedResponse = () =>
+  jsonResponse(
+    {
+      error: "Unauthorized",
+      message: "You are not authorized to perform this action",
+    },
+    401
+  );
+
 export const createProfilePageApi = ({
   auth: getSession,
   createLinkItem,
@@ -59,24 +68,16 @@ export const createProfilePageApi = ({
     const session = await getSession();
 
     if (!isAuthenticatedSession(session)) {
-      return context.json(
-        {
-          error: "Unauthorized",
-          message: "You are not authorized to perform this action",
-        },
-        401,
-        noStoreHeaders
-      );
+      return unauthorizedResponse();
     }
 
     try {
       const validation = handleSchema.safeParse(context.req.query("handle") ?? "");
 
       if (!validation.success) {
-        return context.json(
+        return jsonResponse(
           { error: validation.error.issues[0]?.message ?? "Invalid handle." },
-          400,
-          noStoreHeaders
+          400
         );
       }
 
@@ -85,14 +86,14 @@ export const createProfilePageApi = ({
         userId: session.user.id,
       });
 
-      return context.json({ available }, 200, noStoreHeaders);
+      return jsonResponse({ available }, 200);
     } catch (error) {
       if (isProfilePageError(error)) {
         return jsonResponse({ error: error.message }, error.status);
       }
 
       logger.error("Failed to check handle availability:", error);
-      return context.json({ error: "Failed to check handle availability." }, 500, noStoreHeaders);
+      return jsonResponse({ error: "Failed to check handle availability." }, 500);
     }
   });
 
@@ -100,14 +101,7 @@ export const createProfilePageApi = ({
     const session = await getSession();
 
     if (!isAuthenticatedSession(session)) {
-      return context.json(
-        {
-          error: "Unauthorized",
-          message: "You are not authorized to perform this action",
-        },
-        401,
-        noStoreHeaders
-      );
+      return unauthorizedResponse();
     }
 
     try {
@@ -115,10 +109,9 @@ export const createProfilePageApi = ({
       const validation = linkItemInputSchema.safeParse(body);
 
       if (!validation.success) {
-        return context.json(
+        return jsonResponse(
           { error: validation.error.issues[0]?.message ?? "Invalid link item payload." },
-          400,
-          noStoreHeaders
+          400
         );
       }
 
@@ -127,14 +120,14 @@ export const createProfilePageApi = ({
         values: validation.data,
       });
 
-      return context.json({ linkItem }, 200, noStoreHeaders);
+      return jsonResponse({ linkItem }, 200);
     } catch (error) {
       if (isProfilePageError(error)) {
         return jsonResponse({ error: error.message }, error.status);
       }
 
       logger.error("Failed to create link item:", error);
-      return context.json({ error: "Failed to create link item." }, 500, noStoreHeaders);
+      return jsonResponse({ error: "Failed to create link item." }, 500);
     }
   });
 
@@ -142,14 +135,7 @@ export const createProfilePageApi = ({
     const session = await getSession();
 
     if (!isAuthenticatedSession(session)) {
-      return context.json(
-        {
-          error: "Unauthorized",
-          message: "You are not authorized to perform this action",
-        },
-        401,
-        noStoreHeaders
-      );
+      return unauthorizedResponse();
     }
 
     try {
@@ -157,10 +143,9 @@ export const createProfilePageApi = ({
       const validation = linkItemInputSchema.safeParse(body);
 
       if (!validation.success) {
-        return context.json(
+        return jsonResponse(
           { error: validation.error.issues[0]?.message ?? "Invalid link item payload." },
-          400,
-          noStoreHeaders
+          400
         );
       }
 
@@ -170,14 +155,14 @@ export const createProfilePageApi = ({
         values: validation.data,
       });
 
-      return context.json({ linkItem }, 200, noStoreHeaders);
+      return jsonResponse({ linkItem }, 200);
     } catch (error) {
       if (isProfilePageError(error)) {
         return jsonResponse({ error: error.message }, error.status);
       }
 
       logger.error("Failed to update link item:", error);
-      return context.json({ error: "Failed to update link item." }, 500, noStoreHeaders);
+      return jsonResponse({ error: "Failed to update link item." }, 500);
     }
   });
 
@@ -185,14 +170,7 @@ export const createProfilePageApi = ({
     const session = await getSession();
 
     if (!isAuthenticatedSession(session)) {
-      return context.json(
-        {
-          error: "Unauthorized",
-          message: "You are not authorized to perform this action",
-        },
-        401,
-        noStoreHeaders
-      );
+      return unauthorizedResponse();
     }
 
     try {
@@ -201,14 +179,14 @@ export const createProfilePageApi = ({
         userId: session.user.id,
       });
 
-      return context.json({ success: true }, 200, noStoreHeaders);
+      return jsonResponse({ success: true }, 200);
     } catch (error) {
       if (isProfilePageError(error)) {
         return jsonResponse({ error: error.message }, error.status);
       }
 
       logger.error("Failed to delete link item:", error);
-      return context.json({ error: "Failed to delete link item." }, 500, noStoreHeaders);
+      return jsonResponse({ error: "Failed to delete link item." }, 500);
     }
   });
 

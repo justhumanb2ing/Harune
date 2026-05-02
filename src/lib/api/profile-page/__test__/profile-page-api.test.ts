@@ -2,8 +2,8 @@ import { describe, expect, test } from "bun:test";
 import type {
   LinkItemInput,
   ProfileBentoSyncValues,
-  ProfilePageUpdateValues,
   ProfilePageSyncValues,
+  ProfilePageUpdateValues,
   ReorderItemsInput,
   TextBoxItemInput,
 } from "@/lib/validations/profile-page.schema";
@@ -1230,8 +1230,11 @@ describe("profile page Hono API", () => {
     const finalizedUrl =
       "https://cdn.example.com/public/users/user-1/profile-page/background?v=final";
     const deletedUrls: string[] = [];
-    const updateCalls: Array<{ imageKind: "background" | "profile"; imageUrl: string; userId: string }> =
-      [];
+    const updateCalls: Array<{
+      imageKind: "background" | "profile";
+      imageUrl: string;
+      userId: string;
+    }> = [];
     const app = createTestProfilePageApi({
       deletePublicS3Object: async (url) => {
         deletedUrls.push(url);
@@ -1310,7 +1313,7 @@ describe("profile page Hono API", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toBe("no-store");
-    expect(body.contentHash).toMatch(/^[a-f0-9]{64}$/);
+    expect(/^[a-f0-9]{64}$/.test(body.contentHash)).toBe(true);
     expect(body.contentType).toBe("image/png");
     expect(body.mediaType).toBe("image");
     expect(body.tempObjectKey).toBe("tmp/users/user-1/profile-page/bento/bento-1/media-temp");

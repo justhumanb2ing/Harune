@@ -8,9 +8,9 @@ Status: completed for this pass.
 
 **What:** After the first Hono-backed `handle-availability` route lands, migrate a small POST mutation route such as `links/route.ts`.
 
-**Why:** The first route validates the Hono app, auth middleware, query validation, domain error mapping, and adapter contract. A second POST route should verify JSON body validation and mutation error handling before sync or upload routes move.
+**Why:** The first route validates the Hono app, auth middleware, query validation, domain error mapping, and adapter contract. Follow-up routes verify JSON body validation, mutation error handling, committed-read sync behavior, and upload contracts.
 
-**Context:** Keep Better Auth on `toNextJsHandler` and keep playlist and social-links out of the migration scope. Do not move profile-page sync or media upload until Hono app tests and adapter route tests prove the contract is stable. After links/text route families, move only the `/api/app/profile-page` metadata read/update route in this pass.
+**Context:** Keep Better Auth on `toNextJsHandler` and keep playlist and social-links out of the migration scope. Profile-page metadata, links, text, sync, bento sync, profile image upload, and bento media upload are now routed through the profile-page Hono app with contract tests and adapter guard tests.
 
 **Effort:** M
 **Priority:** P2
@@ -56,4 +56,4 @@ Status: completed for this pass.
 
 ## Completed
 
-- Hono profile-page API migration pass: `handle-availability`, metadata read/update, links create/update/delete/reorder, and text create/update/delete/reorder now delegate through the profile-page Hono app. `social-links`, `playlist`, `sync`, `upload-image`, and bento upload/sync remain intentionally outside this pass.
+- Hono profile-page API migration pass: `handle-availability`, metadata read/update, links create/update/delete/reorder, text create/update/delete/reorder, sync, bento sync, profile image upload, and bento media upload now delegate through the profile-page Hono app. `social-links` and `playlist` remain intentionally outside this pass.

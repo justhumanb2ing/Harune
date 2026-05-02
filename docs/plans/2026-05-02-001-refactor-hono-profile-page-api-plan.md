@@ -61,6 +61,7 @@ Existing flows to preserve:
 - Migrate `links` create/update/delete/reorder routes.
 - Migrate `text` create/update/delete/reorder routes.
 - Migrate `/api/app/profile-page` metadata read/update route.
+- Migrate profile-page sync and upload routes after the initial Hono app and adapter tests prove the contract is stable.
 - Add Hono app tests and Next adapter route tests for the migrated route.
 - Preserve the existing request URL and JSON response shapes.
 
@@ -71,7 +72,6 @@ Existing flows to preserve:
 - `/api/auth/[...all]` migration. Better Auth stays on its official Next.js handler.
 - `webhooks/*` migration. External provider signatures and SDK contracts stay untouched.
 - `inngest/route.ts` migration.
-- profile-page sync or media upload migration in the first pass.
 - Performance claims beyond no-regression checks.
 
 ## Architecture
@@ -195,10 +195,12 @@ The follow-up migration path for this pass is:
 1. `links` create/update/delete/reorder routes.
 2. `text` create/update/delete/reorder routes.
 3. `/api/app/profile-page` metadata read/update route.
+4. `/api/app/profile-page/sync` and `/api/app/profile-page/bento/sync`.
+5. `/api/app/profile-page/upload-image` and `/api/app/profile-page/bento/media/upload`.
 
 Keep `social-links` out of this pass even though it has a similar child mutation shape. That route family should move only if a later pass explicitly reopens its UI and contract surface.
 
-Do not move profile-page sync or media upload until the Hono app and adapter tests prove the contract is stable.
+`playlist` also remains excluded because it is not currently used and should not be recreated in Hono during this migration.
 
 ### Future `src/server` Migration Criteria
 
@@ -240,8 +242,12 @@ This pass is complete for the approved scope:
 - `/api/app/profile-page/text`
 - `/api/app/profile-page/text/[textBoxId]`
 - `/api/app/profile-page/text/reorder`
+- `/api/app/profile-page/sync`
+- `/api/app/profile-page/bento/sync`
+- `/api/app/profile-page/upload-image`
+- `/api/app/profile-page/bento/media/upload`
 
-The adapter guard tests also assert that the excluded `social-links`, `playlist`, `sync`, `upload-image`, and bento upload/sync route families are not delegated to the profile-page Hono app in this pass.
+The adapter guard tests also assert that the excluded `social-links` and `playlist` route families are not delegated to the profile-page Hono app in this pass.
 
 Final verification for this pass:
 

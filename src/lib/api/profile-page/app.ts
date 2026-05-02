@@ -1,28 +1,28 @@
 import { Hono } from "hono";
 import type { AuthSession } from "@/auth";
-import {
-  getProfileBentoMediaFileError,
-  getProfileBentoMediaType,
-} from "@/lib/profile-page/media-upload";
-import type { ProfileMediaType } from "@/lib/profile-page/types";
+import { getProfileAppPath } from "@/lib/profile-page/app-paths";
 import {
   getProfileImageFileError,
   getProfileImageKind,
   getProfileImageObjectKey,
   PROFILE_IMAGE_MAX_SIZE_BYTES,
-  withProfileImageCacheVersion,
   type ProfileImageKind,
+  withProfileImageCacheVersion,
 } from "@/lib/profile-page/image-upload";
-import { getProfileAppPath } from "@/lib/profile-page/app-paths";
+import {
+  getProfileBentoMediaFileError,
+  getProfileBentoMediaType,
+} from "@/lib/profile-page/media-upload";
+import type { ProfileMediaType } from "@/lib/profile-page/types";
 import { handleSchema } from "@/lib/validations/auth.schema";
 import {
   type LinkItemInput,
   linkItemInputSchema,
   type ProfileBentoSyncValues,
-  profileBentoSyncSchema,
   type ProfilePageSyncValues,
-  profilePageSyncSchema,
   type ProfilePageUpdateValues,
+  profileBentoSyncSchema,
+  profilePageSyncSchema,
   profilePageUpdateSchema,
   type ReorderItemsInput,
   reorderItemsSchema,
@@ -349,7 +349,10 @@ export const createProfilePageApi = ({
       }
 
       if (!body.fileName || !body.fileType || !body.fileSize) {
-        return jsonResponse({ error: "Missing required fields: fileName, fileType, fileSize" }, 400);
+        return jsonResponse(
+          { error: "Missing required fields: fileName, fileType, fileSize" },
+          400
+        );
       }
 
       const imageError = getProfileImageFileError({

@@ -233,4 +233,172 @@ describe("profile page Hono API", () => {
     expect(unknownErrorResponse.status).toBe(500);
     expect(unknownErrorBody).toEqual({ error: "Failed to create link item." });
   });
+
+  test("updates link items from a validated JSON body and route param", async () => {
+    const calls: Array<{ linkId: string; userId: string; values: LinkItemInput }> = [];
+    const updatedLinkItem = {
+      ...validLinkPayload,
+      id: "link-1",
+      position: 0,
+      title: "Updated",
+    };
+    const app = createProfilePageApi({
+      auth: async () => authenticatedSession,
+      createLinkItem: async () => ({
+        ...validLinkPayload,
+        id: "link-1",
+        position: 0,
+      }),
+      isHandleAvailableForUser: async () => true,
+      updateLinkItem: async (input) => {
+        calls.push(input);
+        return updatedLinkItem;
+      },
+    });
+
+    const response = await app.request("/links/link-1", {
+      body: JSON.stringify({ ...validLinkPayload, title: "Updated" }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "PATCH",
+    });
+    const body = (await response.json()) as { linkItem: typeof updatedLinkItem };
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({ linkItem: updatedLinkItem });
+    expect(calls).toEqual([
+      {
+        linkId: "link-1",
+        userId: "user-1",
+        values: { ...validLinkPayload, title: "Updated" },
+      },
+    ]);
+  });
+
+  test("validates link item update bodies before calling the mutation layer", async () => {
+    let mutationCallCount = 0;
+    const app = createProfilePageApi({
+      auth: async () => authenticatedSession,
+      createLinkItem: async () => ({
+        ...validLinkPayload,
+        id: "link-1",
+        position: 0,
+      }),
+      isHandleAvailableForUser: async () => true,
+      updateLinkItem: async () => {
+        mutationCallCount += 1;
+        return {
+          ...validLinkPayload,
+          id: "link-1",
+          position: 0,
+        };
+      },
+    });
+
+    const response = await app.request("/links/link-1", {
+      body: JSON.stringify({ ...validLinkPayload, url: "not-a-url" }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "PATCH",
+    });
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ error: "Enter a valid URL." });
+    expect(mutationCallCount).toBe(0);
+  });
+
+  test("deletes link items from the route param", async () => {
+    const calls: Array<{ linkId: string; userId: string }> = [];
+    const app = createProfilePageApi({
+      auth: async () => authenticatedSession,
+      createLinkItem: async () => ({
+        ...validLinkPayload,
+        id: "link-1",
+        position: 0,
+      }),
+      deleteLinkItem: async (input) => {
+        calls.push(input);
+      },
+      isHandleAvailableForUser: async () => true,
+    });
+
+    const response = await app.request("/links/link-1", {
+      method: "DELETE",
+    });
+    const body = (await response.json()) as { success: boolean };
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({ success: true });
+    expect(calls).toEqual([{ linkId: "link-1", userId: "user-1" }]);
+  });
+
+  test("maps link item update and delete errors to the existing JSON response shapes", async () => {
+    const profileErrorApp = createProfilePageApi({
+      auth: async () => authenticatedSession,
+      createLinkItem: async () => ({
+        ...validLinkPayload,
+        id: "link-1",
+        position: 0,
+      }),
+      deleteLinkItem: async () => {
+        throw { message: "Link item not found.", status: 404 };
+      },
+      isHandleAvailableForUser: async () => true,
+      isProfilePageError: (error): error is { message: string; status: number } => {
+        return typeof error === "object" && error !== null && "status" in error;
+      },
+      updateLinkItem: async () => {
+        throw { message: "Link item not found.", status: 404 };
+      },
+    });
+    const unknownErrorApp = createProfilePageApi({
+      auth: async () => authenticatedSession,
+      createLinkItem: async () => ({
+        ...validLinkPayload,
+        id: "link-1",
+        position: 0,
+      }),
+      deleteLinkItem: async () => {
+        throw new Error("database unavailable");
+      },
+      isHandleAvailableForUser: async () => true,
+      logger: {
+        error: () => {},
+      },
+      updateLinkItem: async () => {
+        throw new Error("database unavailable");
+      },
+    });
+
+    const updateProfileErrorResponse = await profileErrorApp.request("/links/link-1", {
+      body: JSON.stringify(validLinkPayload),
+      method: "PATCH",
+    });
+    const updateProfileErrorBody = (await updateProfileErrorResponse.json()) as { error: string };
+    const updateUnknownErrorResponse = await unknownErrorApp.request("/links/link-1", {
+      body: JSON.stringify(validLinkPayload),
+      method: "PATCH",
+    });
+    const updateUnknownErrorBody = (await updateUnknownErrorResponse.json()) as { error: string };
+    const deleteProfileErrorResponse = await profileErrorApp.request("/links/link-1", {
+      method: "DELETE",
+    });
+    const deleteProfileErrorBody = (await deleteProfileErrorResponse.json()) as { error: string };
+    const deleteUnknownErrorResponse = await unknownErrorApp.request("/links/link-1", {
+      method: "DELETE",
+    });
+    const deleteUnknownErrorBody = (await deleteUnknownErrorResponse.json()) as { error: string };
+
+    expect(updateProfileErrorResponse.status).toBe(404);
+    expect(updateProfileErrorBody).toEqual({ error: "Link item not found." });
+    expect(updateUnknownErrorResponse.status).toBe(500);
+    expect(updateUnknownErrorBody).toEqual({ error: "Failed to update link item." });
+    expect(deleteProfileErrorResponse.status).toBe(404);
+    expect(deleteProfileErrorBody).toEqual({ error: "Link item not found." });
+    expect(deleteUnknownErrorResponse.status).toBe(500);
+    expect(deleteUnknownErrorBody).toEqual({ error: "Failed to delete link item." });
+  });
 });

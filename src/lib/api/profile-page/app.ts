@@ -5,6 +5,8 @@ import { handleSchema } from "@/lib/validations/auth.schema";
 import {
   type LinkItemInput,
   linkItemInputSchema,
+  type ProfileBentoSyncValues,
+  profileBentoSyncSchema,
   type ProfilePageSyncValues,
   profilePageSyncSchema,
   type ProfilePageUpdateValues,
@@ -46,6 +48,10 @@ type ProfilePageApiDependencies = {
   syncProfilePageDraft: (input: {
     userId: string;
     values: ProfilePageSyncValues;
+  }) => Promise<{ page: { handle: string } }>;
+  syncProfileBentoDraft: (input: {
+    userId: string;
+    values: ProfileBentoSyncValues;
   }) => Promise<{ page: { handle: string } }>;
   updateLinkItem: (input: {
     linkId: string;
@@ -103,6 +109,7 @@ export const createProfilePageApi = ({
   reorderLinkItems,
   reorderTextBoxItems,
   revalidatePath,
+  syncProfileBentoDraft,
   syncProfilePageDraft,
   updateLinkItem,
   updateProfileMetadata,
@@ -121,6 +128,13 @@ export const createProfilePageApi = ({
     logger.error(logMessage, error);
     return jsonResponse({ error: responseMessage }, 500);
   };
+  const toValidationDescription = (issues: { message: string; path: PropertyKey[] }[]) =>
+    issues
+      .map((issue) => {
+        const path = issue.path.join(".");
+        return path ? `${path}: ${issue.message}` : issue.message;
+      })
+      .join("\n");
 
   app.get("/", async (context) => {
     const session = await getAuthenticatedSession();
@@ -228,6 +242,40 @@ export const createProfilePageApi = ({
       return jsonResponse(data, 200);
     } catch (error) {
       return routeErrorResponse(error, "Failed to sync:", "Failed to sync");
+    }
+  });
+
+  app.post("/bento/sync", async (context) => {
+    const session = await getAuthenticatedSession();
+
+    if (!session) {
+      return unauthorizedResponse();
+    }
+
+    try {
+      const body = await context.req.json();
+      const validation = profileBentoSyncSchema.safeParse(body);
+
+      if (!validation.success) {
+        return jsonResponse(
+          {
+            description: toValidationDescription(validation.error.issues),
+            error: "Failed to sync bento",
+          },
+          400
+        );
+      }
+
+      const data = await syncProfileBentoDraft({
+        userId: session.user.id,
+        values: validation.data,
+      });
+
+      revalidatePath(getProfileAppPath(data.page.handle));
+
+      return jsonResponse(data, 200);
+    } catch (error) {
+      return routeErrorResponse(error, "Failed to sync bento:", "Failed to sync bento");
     }
   });
 

@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import type { MeResponse } from "@/app/api/app/me/types";
 import type { ProfileUpdateValues } from "@/lib/validations/profile.schema";
 import { createAppApi } from "../app";
 
@@ -15,7 +16,7 @@ const defaultMeResponse = {
   profilePage: null,
   user: {
     createdAt: new Date("2026-05-02T00:00:00.000Z"),
-    credits: 0,
+    credits: {},
     dodoCustomerId: null,
     dodoSubscriptionId: null,
     email: "creator@example.com",
@@ -33,7 +34,7 @@ const defaultMeResponse = {
     stripeSubscriptionId: null,
     updatedAt: new Date("2026-05-02T00:00:00.000Z"),
   },
-};
+} satisfies MeResponse;
 
 type AppApiOptions = Parameters<typeof createAppApi>[0];
 
@@ -44,10 +45,10 @@ const createTestAppApi = (overrides: Partial<AppApiOptions> = {}) =>
     logger: {
       error: () => {},
     },
-    updateUserProfile: async ({ image, name }) => ({
+    updateUserProfile: async ({ values }) => ({
       ...defaultMeResponse.user,
-      image: image ?? null,
-      name,
+      image: values.image ?? null,
+      name: values.name,
     }),
     ...overrides,
   });
@@ -162,7 +163,7 @@ describe("app Hono API", () => {
 
     expect(response.status).toBe(400);
     expect(body.error).toBe("Validation failed");
-    expect(body.details.length).toBeGreaterThan(0);
+    expect(body.details.length > 0).toBe(true);
     expect(mutationCallCount).toBe(0);
   });
 

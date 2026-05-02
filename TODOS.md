@@ -8,7 +8,7 @@
 
 **Why:** The first route validates the Hono app, auth middleware, query validation, domain error mapping, and adapter contract. A second POST route should verify JSON body validation and mutation error handling before sync or upload routes move.
 
-**Context:** Keep Better Auth on `toNextJsHandler` and keep playlist out of the migration scope. Do not move profile-page sync or media upload until Hono app tests and adapter route tests prove the contract is stable.
+**Context:** Keep Better Auth on `toNextJsHandler` and keep playlist and social-links out of the migration scope. Do not move profile-page sync or media upload until Hono app tests and adapter route tests prove the contract is stable. After links/text route families, move only the `/api/app/profile-page` metadata read/update route in this pass.
 
 **Effort:** M
 **Priority:** P2

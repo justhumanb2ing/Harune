@@ -63,6 +63,7 @@ Existing flows to preserve:
 ### NOT in Scope
 
 - `playlist` route migration. It is intentionally excluded for now.
+- `social-links` route migration. It is intentionally excluded from this pass.
 - `/api/auth/[...all]` migration. Better Auth stays on its official Next.js handler.
 - `webhooks/*` migration. External provider signatures and SDK contracts stay untouched.
 - `inngest/route.ts` migration.
@@ -182,5 +183,13 @@ request
 ## Follow-Up
 
 After `handle-availability` lands with contract tests, migrate a small POST mutation route such as `links/route.ts` to verify JSON body validation and mutation error handling.
+
+The follow-up migration path for this pass is:
+
+1. `links` create/update/delete/reorder routes.
+2. `text` create/update/delete/reorder routes.
+3. `/api/app/profile-page` metadata read/update route.
+
+Keep `social-links` out of this pass even though it has a similar child mutation shape. That route family should move only if a later pass explicitly reopens its UI and contract surface.
 
 Do not move profile-page sync or media upload until the Hono app and adapter tests prove the contract is stable.

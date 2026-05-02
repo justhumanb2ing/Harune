@@ -411,6 +411,31 @@ html[data-onboarding-step-transition="back"]::view-transition-new(onboarding-ste
 }
 
 @layer utilities {
+  .surface-bevel {
+    position: relative;
+  }
+
+  .surface-bevel::before,
+  .surface-bevel::after {
+    position: absolute;
+    pointer-events: none;
+    content: "";
+    border-style: solid;
+    border-width: 1px;
+    border-radius: inherit;
+  }
+
+  .surface-bevel::before {
+    inset: 0;
+    border-color: color-mix(in oklch, var(--foreground) 18%, transparent);
+  }
+
+  .surface-bevel::after {
+    inset: 1px;
+    border-color: rgb(255 255 255 / 40%);
+    mask-image: linear-gradient(to bottom, black, transparent);
+  }
+
   .scrollbar-hidden {
     -ms-overflow-style: none;
     scrollbar-width: none;

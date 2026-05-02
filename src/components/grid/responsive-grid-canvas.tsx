@@ -105,10 +105,11 @@ export function ResponsiveGridCanvas({
         const isVisuallyThinItem = item.id === THIN_PLACEHOLDER_ITEM_ID || isSectionItem;
         const isDragActive = activeDragItemId === item.id;
         const motionPhase = getItemMotionPhase?.(item.id);
+        const radiusClassName = isVisuallyThinItem ? "rounded-lg" : "rounded-[1.5rem]";
 
         return (
           <div
-            className={`overflow-visible rounded-[1.5rem] ${isVisuallyThinItem ? "flex items-end" : ""} ${item.id === THIN_PLACEHOLDER_ITEM_ID ? "pointer-events-none" : ""}`}
+            className={`overflow-visible ${radiusClassName} ${isVisuallyThinItem ? "flex items-end" : ""} ${item.id === THIN_PLACEHOLDER_ITEM_ID ? "pointer-events-none" : ""}`}
             key={item.id}
           >
             <GridCard

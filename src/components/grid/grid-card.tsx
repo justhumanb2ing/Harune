@@ -85,6 +85,8 @@ export function GridCard({
   const shadowClassName =
     !isSectionItem || shouldShowSectionShadow ? "shadow-float" : "shadow-none";
   const paddingClassName = item.itemType === "media" ? "p-0" : "p-3";
+  const radiusClassName = isVisuallyThinItem ? "rounded-lg" : "rounded-[1.5rem]";
+  const bevelClassName = item.itemType === "media" ? "surface-bevel" : "";
   const dragInteractionClassName = isDragActive
     ? "select-none [&_.grid-action]:pointer-events-none [&_.grid-action]:select-none [&_.grid-action]:!bg-transparent [&_.grid-action:focus-within]:!bg-transparent [&_.grid-action:hover]:!bg-transparent [&_input]:pointer-events-none [&_input]:select-none [&_input]:!bg-transparent [&_textarea]:pointer-events-none [&_textarea]:select-none [&_textarea]:!bg-transparent"
     : "";
@@ -94,7 +96,7 @@ export function GridCard({
 
   return (
     <motion.div
-      className={`group/item relative flex w-full flex-col justify-between rounded-[1.5rem] bg-white ${paddingClassName} pointer-events-auto transition-shadow ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} ${shadowClassName} ${dragInteractionClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isDragActive || motionPhase ? "will-change-transform" : ""} ${isDragActive ? "drop-shadow-xs" : ""} ${isExiting ? "pointer-events-none select-none shadow-none" : ""}`}
+      className={`group/item relative flex w-full flex-col justify-between ${radiusClassName} bg-white ${paddingClassName} pointer-events-auto transition-shadow ${bevelClassName} ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} ${shadowClassName} ${dragInteractionClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isDragActive || motionPhase ? "will-change-transform" : ""} ${isDragActive ? "drop-shadow-xs" : ""} ${isExiting ? "pointer-events-none select-none shadow-none" : ""}`}
       onBlurCapture={(event) => {
         if (!isSectionItem || event.currentTarget.contains(event.relatedTarget)) {
           return;

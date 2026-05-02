@@ -39,10 +39,8 @@ describe("onboarding schema", () => {
     if (!result.success) {
       throw new Error("Expected onboarding schema to accept empty optional fields.");
     }
-    expect(result.data).toMatchObject({
-      role: undefined,
-      location: undefined,
-    });
+    expect(result.data.role).toBe(undefined);
+    expect(result.data.location).toBe(undefined);
   });
 
   test("rejects optional role and location over 100 characters", () => {

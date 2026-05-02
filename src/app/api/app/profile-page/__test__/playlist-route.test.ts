@@ -44,8 +44,8 @@ describe("playlist route handler", () => {
     expect(body).toEqual(upstreamPayload);
     expect(response.headers.get("cache-control")).toBe("no-store");
     expect(fetchCalls).toHaveLength(1);
-    expect(String(fetchCalls[0]?.input)).toContain("https://iframe.bybu.cc/iframely");
-    expect(String(fetchCalls[0]?.input)).toContain("url=https%3A%2F%2Fexample.com");
+    expect(String(fetchCalls[0]?.input).includes("https://iframe.bybu.cc/iframely")).toBe(true);
+    expect(String(fetchCalls[0]?.input).includes("url=https%3A%2F%2Fexample.com")).toBe(true);
   });
 
   test("rejects invalid urls before fetching upstream", async () => {

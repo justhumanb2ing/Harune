@@ -33,4 +33,22 @@ describe("app route adapters", () => {
     expect(source.includes("NextResponse")).toBe(false);
     expect(source.includes("getProfileAnalyticsResponse")).toBe(false);
   });
+
+  test("keeps app upload routes as thin adapters to the app Hono API", () => {
+    const avatarSource = readFileSync(
+      join(process.cwd(), "src/app/api/app/me/upload-avatar/route.ts"),
+      "utf8"
+    );
+    const inputImageSource = readFileSync(
+      join(process.cwd(), "src/app/api/app/upload-input-images/route.ts"),
+      "utf8"
+    );
+
+    for (const source of [avatarSource, inputImageSource]) {
+      expect(source.includes("handleAppApiRequest")).toBe(true);
+      expect(source.includes("withAuthRequired")).toBe(false);
+      expect(source.includes("NextResponse")).toBe(false);
+      expect(source.includes("createS3UploadFields")).toBe(false);
+    }
+  });
 });

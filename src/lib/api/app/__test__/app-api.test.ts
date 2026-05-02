@@ -49,8 +49,16 @@ type AppApiOptions = Parameters<typeof createAppApi>[0];
 const createTestAppApi = (overrides: Partial<AppApiOptions> = {}) =>
   createAppApi({
     auth: async () => authenticatedSession,
+    createS3UploadFields: async ({ contentType }) => ({
+      fields: {
+        "Content-Type": contentType ?? "",
+      },
+      url: "https://storage.example.com",
+    }),
+    getMissingS3ConfigKeys: () => [],
     getOwnedProfilePage: async () => ({ id: "page-1" }),
     getProfileAnalyticsResponse: async () => defaultAnalyticsResponse,
+    getPublicS3ObjectUrl: (key) => `https://cdn.example.com/${key}`,
     getMeForUser: async () => defaultMeResponse,
     logger: {
       error: () => {},
@@ -237,5 +245,146 @@ describe("app Hono API", () => {
 
     expect(response.status).toBe(500);
     expect(body).toEqual({ error: "Failed to load profile analytics." });
+  });
+
+  test("creates avatar upload fields for authenticated users", async () => {
+    const uploadCalls: Array<{ contentType?: string; maxSize?: number; path: string }> = [];
+    const app = createTestAppApi({
+      createS3UploadFields: async (input) => {
+        uploadCalls.push(input);
+        return {
+          fields: {
+            "Content-Type": input.contentType ?? "",
+          },
+          url: "https://storage.example.com",
+        };
+      },
+      getPublicS3ObjectUrl: (key) => `https://cdn.example.com/${key}`,
+    });
+
+    const response = await app.request("/me/upload-avatar", {
+      body: JSON.stringify({
+        fileName: "avatar.png",
+        fileSize: 1024,
+        fileType: "image/png",
+      }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    });
+    const body = (await response.json()) as {
+      fields: Record<string, string>;
+      publicUrl: string;
+      url: string;
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.fields).toEqual({ "Content-Type": "image/png" });
+    expect(body.publicUrl.startsWith("https://cdn.example.com/public/users/user-1/avatars/")).toBe(
+      true
+    );
+    expect(body.url).toBe("https://storage.example.com");
+    expect(uploadCalls).toHaveLength(1);
+    expect(uploadCalls[0]?.contentType).toBe("image/png");
+    expect(uploadCalls[0]?.maxSize).toBe(5 * 1024 * 1024);
+    expect(uploadCalls[0]?.path.startsWith("public/users/user-1/avatars/")).toBe(true);
+  });
+
+  test("validates avatar upload requests before creating upload fields", async () => {
+    let uploadCallCount = 0;
+    const app = createTestAppApi({
+      createS3UploadFields: async () => {
+        uploadCallCount += 1;
+        return { fields: {}, url: "https://storage.example.com" };
+      },
+    });
+
+    const response = await app.request("/me/upload-avatar", {
+      body: JSON.stringify({
+        fileName: "avatar.txt",
+        fileSize: 1024,
+        fileType: "text/plain",
+      }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    });
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ error: "Only image files are allowed for avatars" });
+    expect(uploadCallCount).toBe(0);
+  });
+
+  test("creates generic input image upload fields for authenticated users", async () => {
+    const uploadCalls: Array<{ contentType?: string; maxSize?: number; path: string }> = [];
+    const app = createTestAppApi({
+      createS3UploadFields: async (input) => {
+        uploadCalls.push(input);
+        return {
+          fields: {
+            "Content-Type": input.contentType ?? "",
+          },
+          url: "https://storage.example.com",
+        };
+      },
+    });
+
+    const response = await app.request("/upload-input-images", {
+      body: JSON.stringify({
+        fileName: "input.webp",
+        fileSize: 2048,
+        fileType: "image/webp",
+      }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    });
+    const body = (await response.json()) as {
+      fields: Record<string, string>;
+      url: string;
+    };
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      fields: {
+        "Content-Type": "image/webp",
+      },
+      url: "https://storage.example.com",
+    });
+    expect(uploadCalls).toHaveLength(1);
+    expect(uploadCalls[0]?.contentType).toBe("image/webp");
+    expect(uploadCalls[0]?.maxSize).toBe(2048);
+    expect(uploadCalls[0]?.path.startsWith("public/users/user-1/images/")).toBe(true);
+  });
+
+  test("validates generic input image upload requests before creating upload fields", async () => {
+    let uploadCallCount = 0;
+    const app = createTestAppApi({
+      createS3UploadFields: async () => {
+        uploadCallCount += 1;
+        return { fields: {}, url: "https://storage.example.com" };
+      },
+    });
+
+    const response = await app.request("/upload-input-images", {
+      body: JSON.stringify({
+        fileName: "input.txt",
+        fileSize: 2048,
+        fileType: "text/plain",
+      }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    });
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ error: "Only image files are allowed" });
+    expect(uploadCallCount).toBe(0);
   });
 });

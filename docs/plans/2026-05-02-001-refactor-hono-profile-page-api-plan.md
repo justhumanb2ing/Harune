@@ -16,6 +16,7 @@ Approved decisions:
 - Do not migrate `playlist` routes in this pass because they are not currently used.
 - First migration target: `/api/app/profile-page/handle-availability`.
 - Use profile-page scoped helpers, not a global internal API framework.
+- Do not move Hono implementation into `src/server` during this pass. `src/server` is a future option only if Hono grows beyond a profile-page slice into an app-wide API composition layer.
 - Keep Better Auth architecture unchanged. `/api/auth/[...all]` stays on `toNextJsHandler(betterAuthServer)`.
 - Treat Hono as a DX, contract, middleware, validation, and testability improvement. Do not claim performance wins without measurement.
 - Add full contract tests for the first Hono route.
@@ -198,6 +199,34 @@ The follow-up migration path for this pass is:
 Keep `social-links` out of this pass even though it has a similar child mutation shape. That route family should move only if a later pass explicitly reopens its UI and contract surface.
 
 Do not move profile-page sync or media upload until the Hono app and adapter tests prove the contract is stable.
+
+### Future `src/server` Migration Criteria
+
+Do not move the current profile-page Hono implementation from `src/lib/api/profile-page/` to `src/server` just to match another repository layout.
+
+`src/server` becomes appropriate only when Hono stops being a feature-local profile-page API slice and becomes an app-wide API composition layer. Reconsider the folder boundary when at least several of these conditions are true:
+
+- Hono routes expand beyond `/api/app/profile-page/**` into multiple API domains.
+- `auth`, `db`, validation, error response, no-store headers, and logging middleware are repeated across those domains.
+- Feature-local folders such as `src/lib/api/profile-page/` no longer describe ownership clearly.
+- Multiple Hono apps, for example profile-page, analytics, admin, and upload APIs, need one shared factory or typed context.
+- Contract tests benefit from a shared `createFactory` setup instead of per-feature dependency injection.
+
+If those conditions are met, prefer a dedicated server boundary such as:
+
+```txt
+src/server/
+  hono-factory.ts
+  middleware/
+    auth.ts
+    db.ts
+    errors.ts
+  apps/
+    profile-page.ts
+    analytics.ts
+```
+
+Even after that migration, `src/app/api/**/route.ts` should keep public URL ownership unless a separate routing migration explicitly changes the Next.js route contract.
 
 ## Current Status
 

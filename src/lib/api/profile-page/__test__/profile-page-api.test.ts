@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { LinkItemInput } from "@/lib/validations/profile-page.schema";
+import type { LinkItemInput, ReorderItemsInput } from "@/lib/validations/profile-page.schema";
 import { createProfilePageApi } from "../app";
 
 const authenticatedSession = {
@@ -31,6 +31,7 @@ const createTestProfilePageApi = (overrides: Partial<ProfilePageApiOptions> = {}
     createLinkItem: async () => defaultLinkItem,
     deleteLinkItem: async () => {},
     isHandleAvailableForUser: async () => true,
+    reorderLinkItems: async () => {},
     updateLinkItem: async () => defaultLinkItem,
     ...overrides,
   });
@@ -392,5 +393,87 @@ describe("profile page Hono API", () => {
     expect(deleteProfileErrorBody).toEqual({ error: "Link item not found." });
     expect(deleteUnknownErrorResponse.status).toBe(500);
     expect(deleteUnknownErrorBody).toEqual({ error: "Failed to delete link item." });
+  });
+
+  test("reorders link items from a validated JSON body", async () => {
+    const calls: Array<{ orderedIds: string[]; userId: string }> = [];
+    const payload: ReorderItemsInput = {
+      orderedIds: ["link-2", "link-1"],
+    };
+    const app = createTestProfilePageApi({
+      reorderLinkItems: async (input) => {
+        calls.push(input);
+      },
+    });
+
+    const response = await app.request("/links/reorder", {
+      body: JSON.stringify(payload),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    });
+    const body = (await response.json()) as { success: boolean };
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({ success: true });
+    expect(calls).toEqual([{ orderedIds: ["link-2", "link-1"], userId: "user-1" }]);
+  });
+
+  test("validates link item reorder bodies before calling the mutation layer", async () => {
+    let mutationCallCount = 0;
+    const app = createTestProfilePageApi({
+      reorderLinkItems: async () => {
+        mutationCallCount += 1;
+      },
+    });
+
+    const response = await app.request("/links/reorder", {
+      body: JSON.stringify({ orderedIds: [] }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    });
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ error: "At least one item is required." });
+    expect(mutationCallCount).toBe(0);
+  });
+
+  test("maps link item reorder errors to the existing JSON response shapes", async () => {
+    const profileErrorApp = createTestProfilePageApi({
+      isProfilePageError: (error): error is { message: string; status: number } => {
+        return typeof error === "object" && error !== null && "status" in error;
+      },
+      reorderLinkItems: async () => {
+        throw { message: "Ordered IDs do not match current items.", status: 400 };
+      },
+    });
+    const unknownErrorApp = createTestProfilePageApi({
+      logger: {
+        error: () => {},
+      },
+      reorderLinkItems: async () => {
+        throw new Error("database unavailable");
+      },
+    });
+
+    const profileErrorResponse = await profileErrorApp.request("/links/reorder", {
+      body: JSON.stringify({ orderedIds: ["link-1"] }),
+      method: "POST",
+    });
+    const profileErrorBody = (await profileErrorResponse.json()) as { error: string };
+    const unknownErrorResponse = await unknownErrorApp.request("/links/reorder", {
+      body: JSON.stringify({ orderedIds: ["link-1"] }),
+      method: "POST",
+    });
+    const unknownErrorBody = (await unknownErrorResponse.json()) as { error: string };
+
+    expect(profileErrorResponse.status).toBe(400);
+    expect(profileErrorBody).toEqual({ error: "Ordered IDs do not match current items." });
+    expect(unknownErrorResponse.status).toBe(500);
+    expect(unknownErrorBody).toEqual({ error: "Failed to reorder link items." });
   });
 });

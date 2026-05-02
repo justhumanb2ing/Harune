@@ -47,4 +47,16 @@ describe("profile page handle availability route adapter", () => {
     expect(source.includes("updateLinkItem")).toBe(false);
     expect(source.includes("deleteLinkItem")).toBe(false);
   });
+
+  test("keeps the links reorder route as a thin adapter to the profile-page Hono app", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/app/api/app/profile-page/links/reorder/route.ts"),
+      "utf8"
+    );
+
+    expect(source.includes("profilePageApi.fetch")).toBe(true);
+    expect(source.includes("withAuthRequired")).toBe(false);
+    expect(source.includes("NextResponse")).toBe(false);
+    expect(source.includes("reorderLinkItems")).toBe(false);
+  });
 });

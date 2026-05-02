@@ -1,5 +1,13 @@
 import { Hono } from "hono";
 import type { AuthSession } from "@/auth";
+import {
+  getProfileImageFileError,
+  getProfileImageKind,
+  getProfileImageObjectKey,
+  PROFILE_IMAGE_MAX_SIZE_BYTES,
+  withProfileImageCacheVersion,
+  type ProfileImageKind,
+} from "@/lib/profile-page/image-upload";
 import { getProfileAppPath } from "@/lib/profile-page/app-paths";
 import { handleSchema } from "@/lib/validations/auth.schema";
 import {
@@ -28,11 +36,20 @@ type AuthenticatedSession = NonNullable<
 
 type ProfilePageApiDependencies = {
   auth: () => Promise<AuthSession | null>;
+  createS3UploadFields: (input: {
+    contentType?: string;
+    maxSize?: number;
+    path: string;
+  }) => Promise<{ fields: Record<string, string>; url: string }>;
   createLinkItem: (input: { userId: string; values: LinkItemInput }) => Promise<unknown>;
   createTextBoxItem: (input: { userId: string; values: TextBoxItemInput }) => Promise<unknown>;
+  deletePublicS3Object: (publicUrl: string) => Promise<unknown>;
   deleteLinkItem: (input: { linkId: string; userId: string }) => Promise<void>;
   deleteTextBoxItem: (input: { textBoxId: string; userId: string }) => Promise<void>;
+  getMissingS3ConfigKeys: () => string[];
   getProfilePageEditorData: (userId: string, handle?: string) => Promise<unknown | null>;
+  getPublicS3ObjectUrl: (key: string) => string;
+  getS3ObjectKeyFromPublicUrl: (publicUrl: string) => string | null;
   isHandleAvailableForUser: (input: { handle: string; userId: string }) => Promise<boolean>;
   isProfilePageError?: (error: unknown) => error is { message: string; status: number };
   logger?: Pick<Console, "error">;
@@ -53,6 +70,11 @@ type ProfilePageApiDependencies = {
     userId: string;
     values: ProfileBentoSyncValues;
   }) => Promise<{ page: { handle: string } }>;
+  updateProfileImage: (input: {
+    imageKind: ProfileImageKind;
+    imageUrl: string;
+    userId: string;
+  }) => Promise<{ backgroundImage: string | null; image: string | null } | null>;
   updateLinkItem: (input: {
     linkId: string;
     userId: string;
@@ -98,11 +120,16 @@ const unauthorizedResponse = () =>
 
 export const createProfilePageApi = ({
   auth: getSession,
+  createS3UploadFields,
   createLinkItem,
   createTextBoxItem,
+  deletePublicS3Object,
   deleteLinkItem,
   deleteTextBoxItem,
+  getMissingS3ConfigKeys,
   getProfilePageEditorData,
+  getPublicS3ObjectUrl,
+  getS3ObjectKeyFromPublicUrl,
   isHandleAvailableForUser: checkHandleAvailability,
   isProfilePageError = (_error): _error is { message: string; status: number } => false,
   logger = console,
@@ -111,6 +138,7 @@ export const createProfilePageApi = ({
   revalidatePath,
   syncProfileBentoDraft,
   syncProfilePageDraft,
+  updateProfileImage,
   updateLinkItem,
   updateProfileMetadata,
   updateTextBoxItem,
@@ -276,6 +304,155 @@ export const createProfilePageApi = ({
       return jsonResponse(data, 200);
     } catch (error) {
       return routeErrorResponse(error, "Failed to sync bento:", "Failed to sync bento");
+    }
+  });
+
+  app.post("/upload-image", async (context) => {
+    const session = await getAuthenticatedSession();
+
+    if (!session) {
+      return unauthorizedResponse();
+    }
+
+    try {
+      const body = (await context.req.json()) as {
+        fileName?: string;
+        fileSize?: number;
+        fileType?: string;
+        imageHash?: string;
+        imageKind?: string;
+      };
+      const missingConfigKeys = getMissingS3ConfigKeys();
+
+      if (missingConfigKeys.length > 0) {
+        return jsonResponse(
+          { error: `S3 storage is not configured: ${missingConfigKeys.join(", ")}` },
+          500
+        );
+      }
+
+      if (!body.fileName || !body.fileType || !body.fileSize) {
+        return jsonResponse({ error: "Missing required fields: fileName, fileType, fileSize" }, 400);
+      }
+
+      const imageError = getProfileImageFileError({
+        size: body.fileSize,
+        type: body.fileType,
+      });
+
+      if (imageError) {
+        return jsonResponse({ error: imageError }, 400);
+      }
+
+      const profileImageKind = getProfileImageKind(body.imageKind);
+
+      if (!profileImageKind) {
+        return jsonResponse({ error: "Invalid profile image kind." }, 400);
+      }
+
+      if (!body.imageHash || !/^[a-f0-9]{64}$/i.test(body.imageHash)) {
+        return jsonResponse({ error: "Invalid profile image hash." }, 400);
+      }
+
+      const s3Path = getProfileImageObjectKey(session.user.id, profileImageKind);
+      const presignedPost = await createS3UploadFields({
+        contentType: body.fileType,
+        maxSize: PROFILE_IMAGE_MAX_SIZE_BYTES,
+        path: s3Path,
+      });
+      const publicUrl = withProfileImageCacheVersion(getPublicS3ObjectUrl(s3Path), body.imageHash);
+
+      return jsonResponse(
+        {
+          fields: presignedPost.fields,
+          publicUrl,
+          url: presignedPost.url,
+        },
+        200
+      );
+    } catch (error) {
+      logger.error("Error creating presigned URL for profile image upload:", error);
+      return jsonResponse({ error: "Failed to create upload URL" }, 500);
+    }
+  });
+
+  app.patch("/upload-image", async (context) => {
+    const session = await getAuthenticatedSession();
+
+    if (!session) {
+      return unauthorizedResponse();
+    }
+
+    try {
+      const body = (await context.req.json()) as {
+        imageKind?: string;
+        imageUrl?: string;
+      };
+      const profileImageKind = getProfileImageKind(body.imageKind);
+
+      if (!profileImageKind || !body.imageUrl) {
+        return jsonResponse({ error: "Invalid profile image payload." }, 400);
+      }
+
+      const objectKey = getS3ObjectKeyFromPublicUrl(body.imageUrl);
+      const expectedKey = getProfileImageObjectKey(session.user.id, profileImageKind);
+
+      if (objectKey !== expectedKey) {
+        return jsonResponse({ error: "Invalid profile image URL." }, 400);
+      }
+
+      const updatedPage = await updateProfileImage({
+        imageKind: profileImageKind,
+        imageUrl: body.imageUrl,
+        userId: session.user.id,
+      });
+
+      if (!updatedPage) {
+        return jsonResponse({ error: "Profile page not found." }, 404);
+      }
+
+      return jsonResponse(
+        {
+          imageUrl:
+            profileImageKind === "background" ? updatedPage.backgroundImage : updatedPage.image,
+        },
+        200
+      );
+    } catch (error) {
+      logger.error("Error finalizing profile image upload:", error);
+      return jsonResponse({ error: "Failed to finalize profile image upload" }, 500);
+    }
+  });
+
+  app.delete("/upload-image", async (context) => {
+    const session = await getAuthenticatedSession();
+
+    if (!session) {
+      return unauthorizedResponse();
+    }
+
+    try {
+      const body = (await context.req.json()) as {
+        imageUrl?: string;
+      };
+
+      if (!body.imageUrl) {
+        return jsonResponse({ error: "Missing required field: imageUrl" }, 400);
+      }
+
+      const objectKey = getS3ObjectKeyFromPublicUrl(body.imageUrl);
+      const expectedPrefix = `public/users/${session.user.id}/profile-page/`;
+
+      if (!objectKey?.startsWith(expectedPrefix)) {
+        return jsonResponse({ error: "Invalid profile image URL." }, 400);
+      }
+
+      await deletePublicS3Object(body.imageUrl);
+
+      return jsonResponse({ success: true }, 200);
+    } catch (error) {
+      logger.error("Error deleting profile image:", error);
+      return jsonResponse({ error: "Failed to delete profile image" }, 500);
     }
   });
 

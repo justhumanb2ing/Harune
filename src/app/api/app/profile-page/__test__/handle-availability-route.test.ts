@@ -9,9 +9,17 @@ describe("profile page handle availability route adapter", () => {
       "utf8"
     );
 
-    expect(source).toContain("profilePageApi.fetch");
-    expect(source).not.toContain("withAuthRequired");
-    expect(source).not.toContain("NextResponse");
-    expect(source).not.toContain("isHandleAvailableForUser");
+    expect(source.includes("profilePageApi.fetch")).toBe(true);
+    expect(source.includes("withAuthRequired")).toBe(false);
+    expect(source.includes("NextResponse")).toBe(false);
+    expect(source.includes("isHandleAvailableForUser")).toBe(false);
+  });
+
+  test("leaves the Better Auth route on its official Next.js handler", () => {
+    const source = readFileSync(join(process.cwd(), "src/app/api/auth/[...all]/route.ts"), "utf8");
+
+    expect(source.includes("toNextJsHandler(betterAuthServer)")).toBe(true);
+    expect(source.includes("profilePageApi")).toBe(false);
+    expect(source.includes("Hono")).toBe(false);
   });
 });

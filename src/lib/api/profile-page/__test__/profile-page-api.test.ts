@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { ProfilePageError } from "@/lib/profile-page/mutations";
 import { createProfilePageApi } from "../app";
 
 const authenticatedSession = {
+  expires: "2026-05-02T00:00:00.000Z",
   user: {
     email: "creator@example.com",
     id: "user-1",
@@ -46,7 +46,9 @@ describe("profile page Hono API", () => {
     expect(missingHandleResponse.status).toBe(400);
     expect(missingHandleBody).toEqual({ error: "Handle is required." });
     expect(invalidHandleResponse.status).toBe(400);
-    expect(invalidHandleBody).toEqual({ error: "Only letters, numbers, and underscores are allowed." });
+    expect(invalidHandleBody).toEqual({
+      error: "Only letters, numbers, and underscores are allowed.",
+    });
     expect(reservedHandleResponse.status).toBe(400);
     expect(reservedHandleBody).toEqual({ error: "This handle is not available." });
     expect(domainCallCount).toBe(0);
@@ -74,7 +76,10 @@ describe("profile page Hono API", () => {
     const profileErrorApp = createProfilePageApi({
       auth: async () => authenticatedSession,
       isHandleAvailableForUser: async () => {
-        throw new ProfilePageError("Profile page not found.", 404);
+        throw { message: "Profile page not found.", status: 404 };
+      },
+      isProfilePageError: (error): error is { message: string; status: number } => {
+        return typeof error === "object" && error !== null && "status" in error;
       },
     });
     const unknownErrorApp = createProfilePageApi({

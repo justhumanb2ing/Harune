@@ -5,7 +5,7 @@ import { toProfilePageApiRequest } from "@/lib/api/profile-page/adapter";
 
 describe("profile page handle availability route adapter", () => {
   test("rewrites Next profile-page API URLs to Hono app-local paths", () => {
-    const request = new Request("http://localhost/api/app/profile-page/sync?draft=1", {
+    const request = new Request("http://localhost/api/app/profile-page/upload-image/?draft=1", {
       body: JSON.stringify({ ok: true }),
       headers: {
         "content-type": "application/json",
@@ -15,7 +15,7 @@ describe("profile page handle availability route adapter", () => {
 
     const honoRequest = toProfilePageApiRequest(request);
 
-    expect(honoRequest.url).toBe("http://localhost/sync?draft=1");
+    expect(honoRequest.url).toBe("http://localhost/upload-image?draft=1");
     expect(honoRequest.method).toBe("POST");
     expect(honoRequest.headers.get("content-type")).toBe("application/json");
   });

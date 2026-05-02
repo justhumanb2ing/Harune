@@ -1,6 +1,5 @@
 import { ArrowCircleUpRightIcon } from "@phosphor-icons/react";
 import Image from "next/image";
-import type { CSSProperties } from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { PlaylistIframe } from "@/components/profile-page/playlist-iframe";
 import {
@@ -912,59 +911,9 @@ function ProfileBentoGridCardContent({
 }
 
 function ReadonlyTextBento({ content }: { content: string }) {
-  const containerRef = useRef<HTMLElement>(null);
-  const textRef = useRef<HTMLParagraphElement>(null);
-  const lineClampRef = useRef(1);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    const text = textRef.current;
-
-    if (!container || !text) {
-      return;
-    }
-
-    const updateLineClamp = () => {
-      const containerStyle = window.getComputedStyle(container);
-      const textStyle = window.getComputedStyle(text);
-      const availableHeight =
-        container.clientHeight -
-        Number.parseFloat(containerStyle.paddingTop) -
-        Number.parseFloat(containerStyle.paddingBottom);
-      const lineHeight = Number.parseFloat(textStyle.lineHeight);
-      const nextLineClamp = Math.max(1, Math.floor(availableHeight / lineHeight));
-
-      if (lineClampRef.current === nextLineClamp) {
-        return;
-      }
-
-      lineClampRef.current = nextLineClamp;
-      text.style.webkitLineClamp = String(nextLineClamp);
-    };
-
-    updateLineClamp();
-
-    const observer = new ResizeObserver(updateLineClamp);
-    observer.observe(container);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
   return (
-    <article className="relative size-full overflow-hidden rounded-lg p-1" ref={containerRef}>
-      <p
-        className="overflow-hidden whitespace-pre-line break-words text-lg font-medium leading-relaxed"
-        ref={textRef}
-        style={
-          {
-            WebkitBoxOrient: "vertical",
-            WebkitLineClamp: lineClampRef.current,
-            display: "-webkit-box",
-          } as CSSProperties
-        }
-      >
+    <article className="relative size-full min-h-0 overflow-y-auto overscroll-contain rounded-lg p-1">
+      <p className="whitespace-pre-line break-words text-lg font-medium leading-relaxed">
         {content}
       </p>
     </article>

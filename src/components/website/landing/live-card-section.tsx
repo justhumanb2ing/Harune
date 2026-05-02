@@ -7,13 +7,13 @@ const demoScreenshots = {
   desktop: {
     alt: "Desktop screenshot of a Harune public profile page",
     height: 1100,
-    src: "/images/demo-page-desktop.png",
+    src: "/images/demo-page-desktop-20260502-1838.png",
     width: 1440,
   },
   mobile: {
     alt: "Mobile screenshot of a Harune public profile page",
     height: 932,
-    src: "/images/demo-page-mobile.png",
+    src: "/images/demo-page-mobile-20260502-1838.png",
     width: 430,
   },
 };
@@ -62,7 +62,8 @@ export default function LiveCardSection() {
           whileInView="visible"
         >
           <h2 className="max-w-full text-balance text-3xl font-semibold leading-tight tracking-normal md:text-5xl">
-            A simple page, just for you.
+            A simple page, just for you
+            <span className="text-indigo-400">.</span>
           </h2>
           <p className="max-w-[42rem] text-pretty text-lg leading-relaxed md:text-2xl">
             Add maps, text, links, images, and videos into one page.

@@ -297,7 +297,10 @@ export function ProfileBentoLandingPreview({ progress }: { progress: MotionValue
         className="pointer-events-none flex max-w-[min(44rem,calc(100vw-2rem))] shrink-0 flex-col items-center gap-3 text-center text-3xl font-semibold leading-tight tracking-normal text-foreground md:gap-4 md:text-5xl"
         style={{ opacity: titleOpacity, y: titleY }}
       >
-        <span>A simple page, just for you.</span>
+        <p>
+          <span>A simple page, just for you</span>
+          <span className="text-indigo-400">.</span>
+        </p>
         <span className="text-xl font-normal">
           Bring your links, socials, and style into one page.
         </span>

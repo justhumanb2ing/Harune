@@ -99,11 +99,23 @@ export const createProfilePageApi = ({
   updateTextBoxItem,
 }: ProfilePageApiDependencies) => {
   const app = new Hono();
+  const getAuthenticatedSession = async () => {
+    const session = await getSession();
+    return isAuthenticatedSession(session) ? session : null;
+  };
+  const routeErrorResponse = (error: unknown, logMessage: string, responseMessage: string) => {
+    if (isProfilePageError(error)) {
+      return jsonResponse({ error: error.message }, error.status);
+    }
+
+    logger.error(logMessage, error);
+    return jsonResponse({ error: responseMessage }, 500);
+  };
 
   app.get("/", async (context) => {
-    const session = await getSession();
+    const session = await getAuthenticatedSession();
 
-    if (!isAuthenticatedSession(session)) {
+    if (!session) {
       return unauthorizedResponse();
     }
 
@@ -117,9 +129,9 @@ export const createProfilePageApi = ({
   });
 
   app.patch("/", async (context) => {
-    const session = await getSession();
+    const session = await getAuthenticatedSession();
 
-    if (!isAuthenticatedSession(session)) {
+    if (!session) {
       return unauthorizedResponse();
     }
 
@@ -141,19 +153,18 @@ export const createProfilePageApi = ({
 
       return jsonResponse({ page }, 200);
     } catch (error) {
-      if (isProfilePageError(error)) {
-        return jsonResponse({ error: error.message }, error.status);
-      }
-
-      logger.error("Failed to update profile page:", error);
-      return jsonResponse({ error: "Failed to update profile page." }, 500);
+      return routeErrorResponse(
+        error,
+        "Failed to update profile page:",
+        "Failed to update profile page."
+      );
     }
   });
 
   app.get("/handle-availability", async (context) => {
-    const session = await getSession();
+    const session = await getAuthenticatedSession();
 
-    if (!isAuthenticatedSession(session)) {
+    if (!session) {
       return unauthorizedResponse();
     }
 
@@ -174,19 +185,18 @@ export const createProfilePageApi = ({
 
       return jsonResponse({ available }, 200);
     } catch (error) {
-      if (isProfilePageError(error)) {
-        return jsonResponse({ error: error.message }, error.status);
-      }
-
-      logger.error("Failed to check handle availability:", error);
-      return jsonResponse({ error: "Failed to check handle availability." }, 500);
+      return routeErrorResponse(
+        error,
+        "Failed to check handle availability:",
+        "Failed to check handle availability."
+      );
     }
   });
 
   app.post("/links", async (context) => {
-    const session = await getSession();
+    const session = await getAuthenticatedSession();
 
-    if (!isAuthenticatedSession(session)) {
+    if (!session) {
       return unauthorizedResponse();
     }
 
@@ -208,19 +218,18 @@ export const createProfilePageApi = ({
 
       return jsonResponse({ linkItem }, 200);
     } catch (error) {
-      if (isProfilePageError(error)) {
-        return jsonResponse({ error: error.message }, error.status);
-      }
-
-      logger.error("Failed to create link item:", error);
-      return jsonResponse({ error: "Failed to create link item." }, 500);
+      return routeErrorResponse(
+        error,
+        "Failed to create link item:",
+        "Failed to create link item."
+      );
     }
   });
 
   app.post("/links/reorder", async (context) => {
-    const session = await getSession();
+    const session = await getAuthenticatedSession();
 
-    if (!isAuthenticatedSession(session)) {
+    if (!session) {
       return unauthorizedResponse();
     }
 
@@ -242,19 +251,18 @@ export const createProfilePageApi = ({
 
       return jsonResponse({ success: true }, 200);
     } catch (error) {
-      if (isProfilePageError(error)) {
-        return jsonResponse({ error: error.message }, error.status);
-      }
-
-      logger.error("Failed to reorder link items:", error);
-      return jsonResponse({ error: "Failed to reorder link items." }, 500);
+      return routeErrorResponse(
+        error,
+        "Failed to reorder link items:",
+        "Failed to reorder link items."
+      );
     }
   });
 
   app.patch("/links/:linkId", async (context) => {
-    const session = await getSession();
+    const session = await getAuthenticatedSession();
 
-    if (!isAuthenticatedSession(session)) {
+    if (!session) {
       return unauthorizedResponse();
     }
 
@@ -277,19 +285,18 @@ export const createProfilePageApi = ({
 
       return jsonResponse({ linkItem }, 200);
     } catch (error) {
-      if (isProfilePageError(error)) {
-        return jsonResponse({ error: error.message }, error.status);
-      }
-
-      logger.error("Failed to update link item:", error);
-      return jsonResponse({ error: "Failed to update link item." }, 500);
+      return routeErrorResponse(
+        error,
+        "Failed to update link item:",
+        "Failed to update link item."
+      );
     }
   });
 
   app.delete("/links/:linkId", async (context) => {
-    const session = await getSession();
+    const session = await getAuthenticatedSession();
 
-    if (!isAuthenticatedSession(session)) {
+    if (!session) {
       return unauthorizedResponse();
     }
 
@@ -301,19 +308,18 @@ export const createProfilePageApi = ({
 
       return jsonResponse({ success: true }, 200);
     } catch (error) {
-      if (isProfilePageError(error)) {
-        return jsonResponse({ error: error.message }, error.status);
-      }
-
-      logger.error("Failed to delete link item:", error);
-      return jsonResponse({ error: "Failed to delete link item." }, 500);
+      return routeErrorResponse(
+        error,
+        "Failed to delete link item:",
+        "Failed to delete link item."
+      );
     }
   });
 
   app.post("/text", async (context) => {
-    const session = await getSession();
+    const session = await getAuthenticatedSession();
 
-    if (!isAuthenticatedSession(session)) {
+    if (!session) {
       return unauthorizedResponse();
     }
 
@@ -335,19 +341,18 @@ export const createProfilePageApi = ({
 
       return jsonResponse({ textBoxItem }, 200);
     } catch (error) {
-      if (isProfilePageError(error)) {
-        return jsonResponse({ error: error.message }, error.status);
-      }
-
-      logger.error("Failed to create text box item:", error);
-      return jsonResponse({ error: "Failed to create text box item." }, 500);
+      return routeErrorResponse(
+        error,
+        "Failed to create text box item:",
+        "Failed to create text box item."
+      );
     }
   });
 
   app.post("/text/reorder", async (context) => {
-    const session = await getSession();
+    const session = await getAuthenticatedSession();
 
-    if (!isAuthenticatedSession(session)) {
+    if (!session) {
       return unauthorizedResponse();
     }
 
@@ -369,19 +374,18 @@ export const createProfilePageApi = ({
 
       return jsonResponse({ success: true }, 200);
     } catch (error) {
-      if (isProfilePageError(error)) {
-        return jsonResponse({ error: error.message }, error.status);
-      }
-
-      logger.error("Failed to reorder text box items:", error);
-      return jsonResponse({ error: "Failed to reorder text box items." }, 500);
+      return routeErrorResponse(
+        error,
+        "Failed to reorder text box items:",
+        "Failed to reorder text box items."
+      );
     }
   });
 
   app.patch("/text/:textBoxId", async (context) => {
-    const session = await getSession();
+    const session = await getAuthenticatedSession();
 
-    if (!isAuthenticatedSession(session)) {
+    if (!session) {
       return unauthorizedResponse();
     }
 
@@ -404,19 +408,18 @@ export const createProfilePageApi = ({
 
       return jsonResponse({ textBoxItem }, 200);
     } catch (error) {
-      if (isProfilePageError(error)) {
-        return jsonResponse({ error: error.message }, error.status);
-      }
-
-      logger.error("Failed to update text box item:", error);
-      return jsonResponse({ error: "Failed to update text box item." }, 500);
+      return routeErrorResponse(
+        error,
+        "Failed to update text box item:",
+        "Failed to update text box item."
+      );
     }
   });
 
   app.delete("/text/:textBoxId", async (context) => {
-    const session = await getSession();
+    const session = await getAuthenticatedSession();
 
-    if (!isAuthenticatedSession(session)) {
+    if (!session) {
       return unauthorizedResponse();
     }
 
@@ -428,12 +431,11 @@ export const createProfilePageApi = ({
 
       return jsonResponse({ success: true }, 200);
     } catch (error) {
-      if (isProfilePageError(error)) {
-        return jsonResponse({ error: error.message }, error.status);
-      }
-
-      logger.error("Failed to delete text box item:", error);
-      return jsonResponse({ error: "Failed to delete text box item." }, 500);
+      return routeErrorResponse(
+        error,
+        "Failed to delete text box item:",
+        "Failed to delete text box item."
+      );
     }
   });
 

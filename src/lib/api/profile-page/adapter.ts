@@ -9,5 +9,9 @@ export const toProfilePageApiRequest = (req: Request) => {
     url.pathname = url.pathname.slice(PROFILE_PAGE_API_PREFIX.length);
   }
 
+  if (url.pathname.length > 1) {
+    url.pathname = url.pathname.replace(/\/+$/, "");
+  }
+
   return new Request(url, req);
 };

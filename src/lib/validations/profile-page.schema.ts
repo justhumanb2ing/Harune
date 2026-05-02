@@ -31,6 +31,22 @@ const nullableUrl = z.preprocess(
   z.string().url("Enter a valid URL.").nullable()
 );
 
+const googleMapsUrlSchema = z
+  .string()
+  .trim()
+  .url("Enter a valid Google Maps URL.")
+  .refine((value) => {
+    const hostname = new URL(value).hostname.toLowerCase();
+
+    return (
+      hostname === "maps.app.goo.gl" ||
+      hostname === "goo.gl" ||
+      hostname === "maps.google.com" ||
+      hostname === "www.google.com" ||
+      hostname.endsWith(".google.com")
+    );
+  }, "Enter a valid Google Maps URL.");
+
 export const socialPlatformSchema = z.enum([
   "x",
   "instagram",
@@ -184,12 +200,24 @@ export const profileMediaBentoSyncSchema = profileBentoBaseSchema.extend({
   }),
 });
 
+export const profileMapBentoSyncSchema = profileBentoBaseSchema.extend({
+  type: z.literal("map"),
+  content: z.object({
+    latitude: z.number().min(-90).max(90),
+    longitude: z.number().min(-180).max(180),
+    zoom: z.number().int().min(1).max(18),
+    caption: z.string().trim().max(280, "Caption must be 280 characters or fewer."),
+    url: googleMapsUrlSchema,
+  }),
+});
+
 export const profileBentoSyncItemSchema = z.discriminatedUnion("type", [
   profileLinkBentoSyncSchema,
   profileTextBentoSyncSchema,
   profilePlaylistBentoSyncSchema,
   profileSectionBentoSyncSchema,
   profileMediaBentoSyncSchema,
+  profileMapBentoSyncSchema,
 ]);
 
 export const profileBentoSyncSchema = z

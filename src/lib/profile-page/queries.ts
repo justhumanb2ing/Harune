@@ -5,6 +5,7 @@ import {
   profileBentos,
   profileLinkBentos,
   profileLinkItems,
+  profileMapBentos,
   profileMediaBentos,
   profilePages,
   profilePlaylistBentos,
@@ -216,7 +217,7 @@ export const getPublicProfileBentoPageByPageId = async (
   }
 
   const bentoIds = bentos.map((bento) => bento.id);
-  const [layouts, linkBentos, textBentos, playlistBentos, sectionBentos, mediaBentos] =
+  const [layouts, linkBentos, textBentos, playlistBentos, sectionBentos, mediaBentos, mapBentos] =
     await Promise.all([
       executor
         .select({
@@ -243,6 +244,7 @@ export const getPublicProfileBentoPageByPageId = async (
         .select()
         .from(profileMediaBentos)
         .where(inArray(profileMediaBentos.bentoId, bentoIds)),
+      executor.select().from(profileMapBentos).where(inArray(profileMapBentos.bentoId, bentoIds)),
     ]);
 
   const layoutsByBentoId = toLayoutMap(layouts);
@@ -251,6 +253,7 @@ export const getPublicProfileBentoPageByPageId = async (
   const playlistByBentoId = new Map(playlistBentos.map((item) => [item.bentoId, item] as const));
   const sectionByBentoId = new Map(sectionBentos.map((item) => [item.bentoId, item] as const));
   const mediaByBentoId = new Map(mediaBentos.map((item) => [item.bentoId, item] as const));
+  const mapByBentoId = new Map(mapBentos.map((item) => [item.bentoId, item] as const));
   const bento: ProfileBentoItem[] = [];
 
   for (const item of bentos) {
@@ -349,6 +352,30 @@ export const getPublicProfileBentoPageByPageId = async (
             href: content.href,
             alt: content.alt,
             caption: content.caption,
+          },
+        });
+      }
+
+      continue;
+    }
+
+    if (item.type === "map") {
+      const content = mapByBentoId.get(item.id);
+
+      if (content) {
+        bento.push({
+          id: item.id,
+          type: item.type,
+          layout: {
+            desktop: layout.desktop,
+            compact: layout.compact,
+          },
+          content: {
+            latitude: content.latitude,
+            longitude: content.longitude,
+            zoom: content.zoom,
+            caption: content.caption,
+            url: content.url,
           },
         });
       }

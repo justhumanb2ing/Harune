@@ -5,6 +5,7 @@ import {
   profileBentos,
   profileLinkBentos,
   profileLinkItems,
+  profileMapBentos,
   profileMediaBentos,
   profilePages,
   profilePlaylistBentos,
@@ -1067,6 +1068,7 @@ const deleteBentoContent = async (tx: DbExecutor, bentoId: string) => {
   await tx.delete(profilePlaylistBentos).where(eq(profilePlaylistBentos.bentoId, bentoId));
   await tx.delete(profileSectionBentos).where(eq(profileSectionBentos.bentoId, bentoId));
   await tx.delete(profileMediaBentos).where(eq(profileMediaBentos.bentoId, bentoId));
+  await tx.delete(profileMapBentos).where(eq(profileMapBentos.bentoId, bentoId));
 };
 
 const prepareMediaBentoContent = async ({
@@ -1216,6 +1218,19 @@ const insertBentoContent = async ({
       href: item.content.href,
       alt: item.content.alt,
       caption: item.content.caption,
+      updatedAt: now,
+    });
+    return;
+  }
+
+  if (item.type === "map") {
+    await tx.insert(profileMapBentos).values({
+      bentoId: item.id,
+      latitude: item.content.latitude,
+      longitude: item.content.longitude,
+      zoom: item.content.zoom,
+      caption: item.content.caption,
+      url: item.content.url,
       updatedAt: now,
     });
     return;

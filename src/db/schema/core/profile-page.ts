@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  doublePrecision,
   index,
   integer,
   pgEnum,
@@ -42,6 +43,7 @@ export const profileBentoTypeEnum = pgEnum("profile_bento_type", [
   "playlist",
   "section",
   "media",
+  "map",
 ]);
 
 export const profileBentoBreakpointEnum = pgEnum("profile_bento_breakpoint", [
@@ -379,6 +381,49 @@ export const profileMediaBentos = pgTable(
       withCheck: isProfileBentoOwner(table.bentoId),
     }),
     pgPolicy("profile_media_bento_owner_delete", {
+      for: "delete",
+      to: authenticatedWriteRole,
+      using: isProfileBentoOwner(table.bentoId),
+    }),
+  ]
+).enableRLS();
+
+export const profileMapBentos = pgTable(
+  "profile_map_bento",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    bentoId: text("bentoId")
+      .notNull()
+      .references(() => profileBentos.id, { onDelete: "cascade" }),
+    latitude: doublePrecision("latitude").notNull(),
+    longitude: doublePrecision("longitude").notNull(),
+    zoom: integer("zoom").notNull(),
+    caption: text("caption").notNull().default(""),
+    url: text("url").notNull(),
+    createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("profile_map_bento_bento_id_idx").on(table.bentoId),
+    pgPolicy("profile_map_bento_public_select", {
+      for: "select",
+      to: exposedReadRoles,
+      using: hasProfileBento(table.bentoId),
+    }),
+    pgPolicy("profile_map_bento_owner_insert", {
+      for: "insert",
+      to: authenticatedWriteRole,
+      withCheck: isProfileBentoOwner(table.bentoId),
+    }),
+    pgPolicy("profile_map_bento_owner_update", {
+      for: "update",
+      to: authenticatedWriteRole,
+      using: isProfileBentoOwner(table.bentoId),
+      withCheck: isProfileBentoOwner(table.bentoId),
+    }),
+    pgPolicy("profile_map_bento_owner_delete", {
       for: "delete",
       to: authenticatedWriteRole,
       using: isProfileBentoOwner(table.bentoId),

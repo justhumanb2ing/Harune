@@ -406,6 +406,78 @@ describe("profile bento sync schema", () => {
     expect(result.success).toBe(true);
   });
 
+  test("accepts map bento payloads", () => {
+    const result = profileBentoSyncSchema.safeParse({
+      bento: [
+        {
+          id: "preview:map-1",
+          type: "map",
+          layout: {
+            desktop: { x: 0, y: 0, w: 2, h: 2 },
+            compact: { x: 0, y: 0, w: 2, h: 2 },
+          },
+          content: {
+            latitude: 37.5665,
+            longitude: 126.978,
+            zoom: 13,
+            caption: "Studio",
+            url: "https://www.google.com/maps?q=37.566500,126.978000",
+          },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  test("rejects map bento payloads outside coordinate bounds", () => {
+    const result = profileBentoSyncSchema.safeParse({
+      bento: [
+        {
+          id: "preview:map-1",
+          type: "map",
+          layout: {
+            desktop: { x: 0, y: 0, w: 2, h: 2 },
+            compact: { x: 0, y: 0, w: 2, h: 2 },
+          },
+          content: {
+            latitude: 91,
+            longitude: 181,
+            zoom: 13,
+            caption: "Studio",
+            url: "https://www.google.com/maps?q=37.566500,126.978000",
+          },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
+  test("rejects non-Google map bento URLs", () => {
+    const result = profileBentoSyncSchema.safeParse({
+      bento: [
+        {
+          id: "preview:map-1",
+          type: "map",
+          layout: {
+            desktop: { x: 0, y: 0, w: 2, h: 2 },
+            compact: { x: 0, y: 0, w: 2, h: 2 },
+          },
+          content: {
+            latitude: 37.5665,
+            longitude: 126.978,
+            zoom: 13,
+            caption: "Studio",
+            url: "https://example.com/maps?q=37.566500,126.978000",
+          },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+  });
+
   test("rejects resized section bento layouts", () => {
     const result = profileBentoSyncSchema.safeParse({
       bento: [

@@ -1,0 +1,2768 @@
+{
+  "id": "aacc2581-8a96-4084-9514-58eac542ac10",
+  "prevId": "67f764c4-a3c6-48a6-9ffb-68f6f4e0362f",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.auth_account": {
+      "name": "auth_account",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "accountId": {
+          "name": "accountId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "providerId": {
+          "name": "providerId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "accessToken": {
+          "name": "accessToken",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "refreshToken": {
+          "name": "refreshToken",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "idToken": {
+          "name": "idToken",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "accessTokenExpiresAt": {
+          "name": "accessTokenExpiresAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "refreshTokenExpiresAt": {
+          "name": "refreshTokenExpiresAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scope": {
+          "name": "scope",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "auth_account_provider_account_idx": {
+          "name": "auth_account_provider_account_idx",
+          "columns": [
+            {
+              "expression": "providerId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "accountId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "auth_account_userId_idx": {
+          "name": "auth_account_userId_idx",
+          "columns": [
+            {
+              "expression": "userId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "auth_account_userId_app_user_id_fk": {
+          "name": "auth_account_userId_app_user_id_fk",
+          "tableFrom": "auth_account",
+          "tableTo": "app_user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.jwks": {
+      "name": "jwks",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "publicKey": {
+          "name": "publicKey",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "privateKey": {
+          "name": "privateKey",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "expiresAt": {
+          "name": "expiresAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.auth_session": {
+      "name": "auth_session",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expiresAt": {
+          "name": "expiresAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ipAddress": {
+          "name": "ipAddress",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "userAgent": {
+          "name": "userAgent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "auth_session_token_idx": {
+          "name": "auth_session_token_idx",
+          "columns": [
+            {
+              "expression": "token",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "auth_session_userId_idx": {
+          "name": "auth_session_userId_idx",
+          "columns": [
+            {
+              "expression": "userId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "auth_session_userId_app_user_id_fk": {
+          "name": "auth_session_userId_app_user_id_fk",
+          "tableFrom": "auth_session",
+          "tableTo": "app_user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "auth_session_token_unique": {
+          "name": "auth_session_token_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "token"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.auth_verification": {
+      "name": "auth_verification",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "identifier": {
+          "name": "identifier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expiresAt": {
+          "name": "expiresAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "auth_verification_identifier_value_idx": {
+          "name": "auth_verification_identifier_value_idx",
+          "columns": [
+            {
+              "expression": "identifier",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "value",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.app_user": {
+      "name": "app_user",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "emailVerified": {
+          "name": "emailVerified",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "emailVerifiedBool": {
+          "name": "emailVerifiedBool",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "image": {
+          "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "credits": {
+          "name": "credits",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
+        },
+        "stripeCustomerId": {
+          "name": "stripeCustomerId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stripeSubscriptionId": {
+          "name": "stripeSubscriptionId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lemonSqueezyCustomerId": {
+          "name": "lemonSqueezyCustomerId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lemonSqueezySubscriptionId": {
+          "name": "lemonSqueezySubscriptionId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dodoCustomerId": {
+          "name": "dodoCustomerId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dodoSubscriptionId": {
+          "name": "dodoSubscriptionId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "paddleCustomerId": {
+          "name": "paddleCustomerId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "paddleSubscriptionId": {
+          "name": "paddleSubscriptionId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "planId": {
+          "name": "planId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "app_user_planId_plans_id_fk": {
+          "name": "app_user_planId_plans_id_fk",
+          "tableFrom": "app_user",
+          "tableTo": "plans",
+          "columnsFrom": [
+            "planId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "app_user_email_unique": {
+          "name": "app_user_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.profile_bento_layout": {
+      "name": "profile_bento_layout",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "bentoId": {
+          "name": "bentoId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "breakpoint": {
+          "name": "breakpoint",
+          "type": "profile_bento_breakpoint",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "x": {
+          "name": "x",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "y": {
+          "name": "y",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "w": {
+          "name": "w",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "h": {
+          "name": "h",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "profile_bento_layout_bento_breakpoint_idx": {
+          "name": "profile_bento_layout_bento_breakpoint_idx",
+          "columns": [
+            {
+              "expression": "bentoId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "breakpoint",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "profile_bento_layout_bento_id_idx": {
+          "name": "profile_bento_layout_bento_id_idx",
+          "columns": [
+            {
+              "expression": "bentoId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "profile_bento_layout_bentoId_profile_bento_id_fk": {
+          "name": "profile_bento_layout_bentoId_profile_bento_id_fk",
+          "tableFrom": "profile_bento_layout",
+          "tableTo": "profile_bento",
+          "columnsFrom": [
+            "bentoId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "profile_bento_layout_public_select": {
+          "name": "profile_bento_layout_public_select",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "anon",
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_bento_layout\".\"bentoId\"\n  )"
+        },
+        "profile_bento_layout_owner_insert": {
+          "name": "profile_bento_layout_owner_insert",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "authenticated"
+          ],
+          "withCheck": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_bento_layout\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_bento_layout_owner_update": {
+          "name": "profile_bento_layout_owner_update",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_bento_layout\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )",
+          "withCheck": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_bento_layout\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_bento_layout_owner_delete": {
+          "name": "profile_bento_layout_owner_delete",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_bento_layout\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.profile_bento": {
+      "name": "profile_bento",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "profilePageId": {
+          "name": "profilePageId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "profile_bento_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "profile_bento_page_id_idx": {
+          "name": "profile_bento_page_id_idx",
+          "columns": [
+            {
+              "expression": "profilePageId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "profile_bento_profilePageId_profile_page_id_fk": {
+          "name": "profile_bento_profilePageId_profile_page_id_fk",
+          "tableFrom": "profile_bento",
+          "tableTo": "profile_page",
+          "columnsFrom": [
+            "profilePageId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "profile_bento_public_select": {
+          "name": "profile_bento_public_select",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "anon",
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n  )"
+        },
+        "profile_bento_owner_insert": {
+          "name": "profile_bento_owner_insert",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "authenticated"
+          ],
+          "withCheck": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_bento_owner_update": {
+          "name": "profile_bento_owner_update",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )",
+          "withCheck": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_bento_owner_delete": {
+          "name": "profile_bento_owner_delete",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.profile_link_bento": {
+      "name": "profile_link_bento",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "bentoId": {
+          "name": "bentoId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "favicon": {
+          "name": "favicon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "thumbnail": {
+          "name": "thumbnail",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "profile_link_bento_bento_id_idx": {
+          "name": "profile_link_bento_bento_id_idx",
+          "columns": [
+            {
+              "expression": "bentoId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "profile_link_bento_bentoId_profile_bento_id_fk": {
+          "name": "profile_link_bento_bentoId_profile_bento_id_fk",
+          "tableFrom": "profile_link_bento",
+          "tableTo": "profile_bento",
+          "columnsFrom": [
+            "bentoId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "profile_link_bento_public_select": {
+          "name": "profile_link_bento_public_select",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "anon",
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_link_bento\".\"bentoId\"\n  )"
+        },
+        "profile_link_bento_owner_insert": {
+          "name": "profile_link_bento_owner_insert",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "authenticated"
+          ],
+          "withCheck": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_link_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_link_bento_owner_update": {
+          "name": "profile_link_bento_owner_update",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_link_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )",
+          "withCheck": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_link_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_link_bento_owner_delete": {
+          "name": "profile_link_bento_owner_delete",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_link_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.profile_link_item": {
+      "name": "profile_link_item",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "profilePageId": {
+          "name": "profilePageId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "favicon": {
+          "name": "favicon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "profile_link_item_page_position_idx": {
+          "name": "profile_link_item_page_position_idx",
+          "columns": [
+            {
+              "expression": "profilePageId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "position",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "profile_link_item_page_id_idx": {
+          "name": "profile_link_item_page_id_idx",
+          "columns": [
+            {
+              "expression": "profilePageId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "profile_link_item_profilePageId_profile_page_id_fk": {
+          "name": "profile_link_item_profilePageId_profile_page_id_fk",
+          "tableFrom": "profile_link_item",
+          "tableTo": "profile_page",
+          "columnsFrom": [
+            "profilePageId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "profile_link_item_public_select": {
+          "name": "profile_link_item_public_select",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "anon",
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_link_item\".\"profilePageId\"\n  )"
+        },
+        "profile_link_item_owner_insert": {
+          "name": "profile_link_item_owner_insert",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "authenticated"
+          ],
+          "withCheck": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_link_item\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_link_item_owner_update": {
+          "name": "profile_link_item_owner_update",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_link_item\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )",
+          "withCheck": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_link_item\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_link_item_owner_delete": {
+          "name": "profile_link_item_owner_delete",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_link_item\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.profile_map_bento": {
+      "name": "profile_map_bento",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "bentoId": {
+          "name": "bentoId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "latitude": {
+          "name": "latitude",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "longitude": {
+          "name": "longitude",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "zoom": {
+          "name": "zoom",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "caption": {
+          "name": "caption",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "profile_map_bento_bento_id_idx": {
+          "name": "profile_map_bento_bento_id_idx",
+          "columns": [
+            {
+              "expression": "bentoId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "profile_map_bento_bentoId_profile_bento_id_fk": {
+          "name": "profile_map_bento_bentoId_profile_bento_id_fk",
+          "tableFrom": "profile_map_bento",
+          "tableTo": "profile_bento",
+          "columnsFrom": [
+            "bentoId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "profile_map_bento_public_select": {
+          "name": "profile_map_bento_public_select",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "anon",
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_map_bento\".\"bentoId\"\n  )"
+        },
+        "profile_map_bento_owner_insert": {
+          "name": "profile_map_bento_owner_insert",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "authenticated"
+          ],
+          "withCheck": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_map_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_map_bento_owner_update": {
+          "name": "profile_map_bento_owner_update",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_map_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )",
+          "withCheck": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_map_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_map_bento_owner_delete": {
+          "name": "profile_map_bento_owner_delete",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_map_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.profile_media_bento": {
+      "name": "profile_media_bento",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "bentoId": {
+          "name": "bentoId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mediaType": {
+          "name": "mediaType",
+          "type": "profile_media_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "objectKey": {
+          "name": "objectKey",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "href": {
+          "name": "href",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "alt": {
+          "name": "alt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "caption": {
+          "name": "caption",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "profile_media_bento_bento_id_idx": {
+          "name": "profile_media_bento_bento_id_idx",
+          "columns": [
+            {
+              "expression": "bentoId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "profile_media_bento_bentoId_profile_bento_id_fk": {
+          "name": "profile_media_bento_bentoId_profile_bento_id_fk",
+          "tableFrom": "profile_media_bento",
+          "tableTo": "profile_bento",
+          "columnsFrom": [
+            "bentoId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "profile_media_bento_public_select": {
+          "name": "profile_media_bento_public_select",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "anon",
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_media_bento\".\"bentoId\"\n  )"
+        },
+        "profile_media_bento_owner_insert": {
+          "name": "profile_media_bento_owner_insert",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "authenticated"
+          ],
+          "withCheck": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_media_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_media_bento_owner_update": {
+          "name": "profile_media_bento_owner_update",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_media_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )",
+          "withCheck": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_media_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_media_bento_owner_delete": {
+          "name": "profile_media_bento_owner_delete",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_media_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.profile_page": {
+      "name": "profile_page",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "handle": {
+          "name": "handle",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "location": {
+          "name": "location",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bio": {
+          "name": "bio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image": {
+          "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "backgroundImage": {
+          "name": "backgroundImage",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "linkBlockPosition": {
+          "name": "linkBlockPosition",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "profile_page_handle_idx": {
+          "name": "profile_page_handle_idx",
+          "columns": [
+            {
+              "expression": "handle",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "profile_page_user_id_idx": {
+          "name": "profile_page_user_id_idx",
+          "columns": [
+            {
+              "expression": "userId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "profile_page_userId_app_user_id_fk": {
+          "name": "profile_page_userId_app_user_id_fk",
+          "tableFrom": "profile_page",
+          "tableTo": "app_user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "profile_page_public_select": {
+          "name": "profile_page_public_select",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "anon",
+            "authenticated"
+          ],
+          "using": "true"
+        },
+        "profile_page_owner_insert": {
+          "name": "profile_page_owner_insert",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "authenticated"
+          ],
+          "withCheck": "nullif(auth.jwt() ->> 'sub', '') = \"profile_page\".\"userId\""
+        },
+        "profile_page_owner_update": {
+          "name": "profile_page_owner_update",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "nullif(auth.jwt() ->> 'sub', '') = \"profile_page\".\"userId\"",
+          "withCheck": "nullif(auth.jwt() ->> 'sub', '') = \"profile_page\".\"userId\""
+        },
+        "profile_page_owner_delete": {
+          "name": "profile_page_owner_delete",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "nullif(auth.jwt() ->> 'sub', '') = \"profile_page\".\"userId\""
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.profile_playlist_bento": {
+      "name": "profile_playlist_bento",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "bentoId": {
+          "name": "bentoId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "profile_playlist_bento_bento_id_idx": {
+          "name": "profile_playlist_bento_bento_id_idx",
+          "columns": [
+            {
+              "expression": "bentoId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "profile_playlist_bento_bentoId_profile_bento_id_fk": {
+          "name": "profile_playlist_bento_bentoId_profile_bento_id_fk",
+          "tableFrom": "profile_playlist_bento",
+          "tableTo": "profile_bento",
+          "columnsFrom": [
+            "bentoId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "profile_playlist_bento_public_select": {
+          "name": "profile_playlist_bento_public_select",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "anon",
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_playlist_bento\".\"bentoId\"\n  )"
+        },
+        "profile_playlist_bento_owner_insert": {
+          "name": "profile_playlist_bento_owner_insert",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "authenticated"
+          ],
+          "withCheck": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_playlist_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_playlist_bento_owner_update": {
+          "name": "profile_playlist_bento_owner_update",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_playlist_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )",
+          "withCheck": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_playlist_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_playlist_bento_owner_delete": {
+          "name": "profile_playlist_bento_owner_delete",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_playlist_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.profile_playlist_item": {
+      "name": "profile_playlist_item",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "profilePageId": {
+          "name": "profilePageId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "blockPosition": {
+          "name": "blockPosition",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "profile_playlist_item_page_position_idx": {
+          "name": "profile_playlist_item_page_position_idx",
+          "columns": [
+            {
+              "expression": "profilePageId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "position",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "profile_playlist_item_page_id_idx": {
+          "name": "profile_playlist_item_page_id_idx",
+          "columns": [
+            {
+              "expression": "profilePageId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "profile_playlist_item_profilePageId_profile_page_id_fk": {
+          "name": "profile_playlist_item_profilePageId_profile_page_id_fk",
+          "tableFrom": "profile_playlist_item",
+          "tableTo": "profile_page",
+          "columnsFrom": [
+            "profilePageId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "profile_playlist_item_public_select": {
+          "name": "profile_playlist_item_public_select",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "anon",
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_playlist_item\".\"profilePageId\"\n  )"
+        },
+        "profile_playlist_item_owner_insert": {
+          "name": "profile_playlist_item_owner_insert",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "authenticated"
+          ],
+          "withCheck": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_playlist_item\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_playlist_item_owner_update": {
+          "name": "profile_playlist_item_owner_update",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_playlist_item\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )",
+          "withCheck": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_playlist_item\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_playlist_item_owner_delete": {
+          "name": "profile_playlist_item_owner_delete",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_playlist_item\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.profile_section_bento": {
+      "name": "profile_section_bento",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "bentoId": {
+          "name": "bentoId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "profile_section_bento_bento_id_idx": {
+          "name": "profile_section_bento_bento_id_idx",
+          "columns": [
+            {
+              "expression": "bentoId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "profile_section_bento_bentoId_profile_bento_id_fk": {
+          "name": "profile_section_bento_bentoId_profile_bento_id_fk",
+          "tableFrom": "profile_section_bento",
+          "tableTo": "profile_bento",
+          "columnsFrom": [
+            "bentoId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "profile_section_bento_public_select": {
+          "name": "profile_section_bento_public_select",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "anon",
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_section_bento\".\"bentoId\"\n  )"
+        },
+        "profile_section_bento_owner_insert": {
+          "name": "profile_section_bento_owner_insert",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "authenticated"
+          ],
+          "withCheck": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_section_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_section_bento_owner_update": {
+          "name": "profile_section_bento_owner_update",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_section_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )",
+          "withCheck": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_section_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_section_bento_owner_delete": {
+          "name": "profile_section_bento_owner_delete",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_section_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.profile_social_link": {
+      "name": "profile_social_link",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "profilePageId": {
+          "name": "profilePageId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "platform": {
+          "name": "platform",
+          "type": "profile_social_platform",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "profile_social_link_page_platform_idx": {
+          "name": "profile_social_link_page_platform_idx",
+          "columns": [
+            {
+              "expression": "profilePageId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "platform",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "profile_social_link_page_position_idx": {
+          "name": "profile_social_link_page_position_idx",
+          "columns": [
+            {
+              "expression": "profilePageId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "position",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "profile_social_link_page_id_idx": {
+          "name": "profile_social_link_page_id_idx",
+          "columns": [
+            {
+              "expression": "profilePageId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "profile_social_link_profilePageId_profile_page_id_fk": {
+          "name": "profile_social_link_profilePageId_profile_page_id_fk",
+          "tableFrom": "profile_social_link",
+          "tableTo": "profile_page",
+          "columnsFrom": [
+            "profilePageId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "profile_social_link_public_select": {
+          "name": "profile_social_link_public_select",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "anon",
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_social_link\".\"profilePageId\"\n  )"
+        },
+        "profile_social_link_owner_insert": {
+          "name": "profile_social_link_owner_insert",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "authenticated"
+          ],
+          "withCheck": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_social_link\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_social_link_owner_update": {
+          "name": "profile_social_link_owner_update",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_social_link\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )",
+          "withCheck": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_social_link\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_social_link_owner_delete": {
+          "name": "profile_social_link_owner_delete",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_social_link\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.profile_text_bento": {
+      "name": "profile_text_bento",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "bentoId": {
+          "name": "bentoId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "profile_text_bento_bento_id_idx": {
+          "name": "profile_text_bento_bento_id_idx",
+          "columns": [
+            {
+              "expression": "bentoId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "profile_text_bento_bentoId_profile_bento_id_fk": {
+          "name": "profile_text_bento_bentoId_profile_bento_id_fk",
+          "tableFrom": "profile_text_bento",
+          "tableTo": "profile_bento",
+          "columnsFrom": [
+            "bentoId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "profile_text_bento_public_select": {
+          "name": "profile_text_bento_public_select",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "anon",
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_text_bento\".\"bentoId\"\n  )"
+        },
+        "profile_text_bento_owner_insert": {
+          "name": "profile_text_bento_owner_insert",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "authenticated"
+          ],
+          "withCheck": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_text_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_text_bento_owner_update": {
+          "name": "profile_text_bento_owner_update",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_text_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )",
+          "withCheck": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_text_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_text_bento_owner_delete": {
+          "name": "profile_text_bento_owner_delete",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_bento\"\n    join \"profile_page\" on \"profile_page\".\"id\" = \"profile_bento\".\"profilePageId\"\n    where \"profile_bento\".\"id\" = \"profile_text_bento\".\"bentoId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.profile_text_box_item": {
+      "name": "profile_text_box_item",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "profilePageId": {
+          "name": "profilePageId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "blockPosition": {
+          "name": "blockPosition",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "profile_text_box_item_page_position_idx": {
+          "name": "profile_text_box_item_page_position_idx",
+          "columns": [
+            {
+              "expression": "profilePageId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "position",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "profile_text_box_item_page_id_idx": {
+          "name": "profile_text_box_item_page_id_idx",
+          "columns": [
+            {
+              "expression": "profilePageId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "profile_text_box_item_profilePageId_profile_page_id_fk": {
+          "name": "profile_text_box_item_profilePageId_profile_page_id_fk",
+          "tableFrom": "profile_text_box_item",
+          "tableTo": "profile_page",
+          "columnsFrom": [
+            "profilePageId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {
+        "profile_text_box_item_public_select": {
+          "name": "profile_text_box_item_public_select",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "anon",
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_text_box_item\".\"profilePageId\"\n  )"
+        },
+        "profile_text_box_item_owner_insert": {
+          "name": "profile_text_box_item_owner_insert",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "authenticated"
+          ],
+          "withCheck": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_text_box_item\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_text_box_item_owner_update": {
+          "name": "profile_text_box_item_owner_update",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_text_box_item\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )",
+          "withCheck": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_text_box_item\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        },
+        "profile_text_box_item_owner_delete": {
+          "name": "profile_text_box_item_owner_delete",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": [
+            "authenticated"
+          ],
+          "using": "exists (\n    select 1\n    from \"profile_page\"\n    where \"profile_page\".\"id\" = \"profile_text_box_item\".\"profilePageId\"\n      and \"profile_page\".\"userId\" = nullif(auth.jwt() ->> 'sub', '')\n  )"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.plans": {
+      "name": "plans",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "codename": {
+          "name": "codename",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "default": {
+          "name": "default",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "requiredCouponCount": {
+          "name": "requiredCouponCount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
+        },
+        "hasOnetimePricing": {
+          "name": "hasOnetimePricing",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "hasMonthlyPricing": {
+          "name": "hasMonthlyPricing",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "hasYearlyPricing": {
+          "name": "hasYearlyPricing",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "monthlyPrice": {
+          "name": "monthlyPrice",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "monthlyPriceAnchor": {
+          "name": "monthlyPriceAnchor",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "monthlyStripePriceId": {
+          "name": "monthlyStripePriceId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "monthlyLemonSqueezyVariantId": {
+          "name": "monthlyLemonSqueezyVariantId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "monthlyDodoProductId": {
+          "name": "monthlyDodoProductId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "monthlyPaddlePriceId": {
+          "name": "monthlyPaddlePriceId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "monthlyPaypalPlanId": {
+          "name": "monthlyPaypalPlanId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "yearlyPrice": {
+          "name": "yearlyPrice",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "yearlyPriceAnchor": {
+          "name": "yearlyPriceAnchor",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "yearlyStripePriceId": {
+          "name": "yearlyStripePriceId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "yearlyLemonSqueezyVariantId": {
+          "name": "yearlyLemonSqueezyVariantId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "yearlyDodoProductId": {
+          "name": "yearlyDodoProductId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "yearlyPaddlePriceId": {
+          "name": "yearlyPaddlePriceId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "yearlyPaypalPlanId": {
+          "name": "yearlyPaypalPlanId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "onetimePrice": {
+          "name": "onetimePrice",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "onetimePriceAnchor": {
+          "name": "onetimePriceAnchor",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "onetimeStripePriceId": {
+          "name": "onetimeStripePriceId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "onetimeLemonSqueezyVariantId": {
+          "name": "onetimeLemonSqueezyVariantId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "onetimeDodoProductId": {
+          "name": "onetimeDodoProductId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "onetimePaddlePriceId": {
+          "name": "onetimePaddlePriceId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "onetimePaypalPlanId": {
+          "name": "onetimePaypalPlanId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "quotas": {
+          "name": "quotas",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "plans_codename_unique": {
+          "name": "plans_codename_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "codename"
+          ]
+        }
+      },
+      "policies": {
+        "plans_public_select": {
+          "name": "plans_public_select",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "anon",
+            "authenticated"
+          ],
+          "using": "true"
+        }
+      },
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    },
+    "public.credit_transactions": {
+      "name": "credit_transactions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "transaction_type": {
+          "name": "transaction_type",
+          "type": "transaction_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "credit_type": {
+          "name": "credit_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount": {
+          "name": "amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payment_id": {
+          "name": "payment_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expiration_date": {
+          "name": "expiration_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "credit_transactions_userId_app_user_id_fk": {
+          "name": "credit_transactions_userId_app_user_id_fk",
+          "tableFrom": "credit_transactions",
+          "tableTo": "app_user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    }
+  },
+  "enums": {
+    "public.profile_bento_breakpoint": {
+      "name": "profile_bento_breakpoint",
+      "schema": "public",
+      "values": [
+        "desktop",
+        "compact"
+      ]
+    },
+    "public.profile_bento_type": {
+      "name": "profile_bento_type",
+      "schema": "public",
+      "values": [
+        "link",
+        "text",
+        "playlist",
+        "section",
+        "media",
+        "map"
+      ]
+    },
+    "public.profile_media_type": {
+      "name": "profile_media_type",
+      "schema": "public",
+      "values": [
+        "image",
+        "video"
+      ]
+    },
+    "public.profile_social_platform": {
+      "name": "profile_social_platform",
+      "schema": "public",
+      "values": [
+        "x",
+        "instagram",
+        "youtube",
+        "linkedin",
+        "github",
+        "threads",
+        "soundcloud",
+        "spotify",
+        "behance",
+        "tiktok",
+        "mail",
+        "apple_music"
+      ]
+    },
+    "public.transaction_type": {
+      "name": "transaction_type",
+      "schema": "public",
+      "values": [
+        "credit",
+        "debit",
+        "expired"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

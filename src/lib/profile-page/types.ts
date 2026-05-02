@@ -69,7 +69,7 @@ export type ProfilePageData = {
   textBoxItems: TextBoxItem[];
 };
 
-export type ProfileBentoType = "link" | "text" | "playlist" | "section" | "media";
+export type ProfileBentoType = "link" | "text" | "playlist" | "section" | "media" | "map";
 export type ProfileMediaType = "image" | "video";
 
 export type ProfileBentoBreakpoint = "desktop" | "compact";
@@ -143,12 +143,26 @@ export type ProfileMediaBento = {
   };
 };
 
+export type ProfileMapBento = {
+  id: string;
+  type: "map";
+  layout: ProfileBentoLayouts;
+  content: {
+    latitude: number;
+    longitude: number;
+    zoom: number;
+    caption: string;
+    url: string;
+  };
+};
+
 export type ProfileBentoItem =
   | ProfileLinkBento
   | ProfileTextBento
   | ProfilePlaylistBento
   | ProfileSectionBento
-  | ProfileMediaBento;
+  | ProfileMediaBento
+  | ProfileMapBento;
 
 export type PublicProfileBentoPageData = {
   page: ProfilePage & {

@@ -51,4 +51,13 @@ describe("app route adapters", () => {
       expect(source.includes("createS3UploadFields")).toBe(false);
     }
   });
+
+  test("keeps the create route as a thin adapter to the app Hono API", () => {
+    const source = readFileSync(join(process.cwd(), "src/app/api/app/create/route.ts"), "utf8");
+
+    expect(source.includes("handleAppApiRequest")).toBe(true);
+    expect(source.includes("withAuthRequired")).toBe(false);
+    expect(source.includes("NextResponse")).toBe(false);
+    expect(source.includes("onboardingSchema")).toBe(false);
+  });
 });

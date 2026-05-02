@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import type { MeResponse } from "@/app/api/app/me/types";
 import type { ProfileAnalyticsResponse } from "@/lib/analytics/types";
+import type { OnboardingInput } from "@/lib/validations/auth.schema";
 import type { ProfileUpdateValues } from "@/lib/validations/profile.schema";
 import { createAppApi } from "../app";
 
@@ -44,6 +45,12 @@ const defaultAnalyticsResponse = {
   timezone: "Asia/Seoul",
 } as unknown as ProfileAnalyticsResponse;
 
+const validOnboardingPayload: OnboardingInput = {
+  handle: "demo",
+  name: "Demo",
+  socialLinks: {},
+};
+
 type AppApiOptions = Parameters<typeof createAppApi>[0];
 
 const createTestAppApi = (overrides: Partial<AppApiOptions> = {}) =>
@@ -60,6 +67,13 @@ const createTestAppApi = (overrides: Partial<AppApiOptions> = {}) =>
     getProfileAnalyticsResponse: async () => defaultAnalyticsResponse,
     getPublicS3ObjectUrl: (key) => `https://cdn.example.com/${key}`,
     getMeForUser: async () => defaultMeResponse,
+    createProfilePage: async () => ({
+      handle: "demo",
+      id: "page-1",
+      name: "Demo",
+    }),
+    getProfilePageByHandle: async () => null,
+    getUserExists: async () => true,
     logger: {
       error: () => {},
     },
@@ -386,5 +400,75 @@ describe("app Hono API", () => {
     expect(response.status).toBe(400);
     expect(body).toEqual({ error: "Only image files are allowed" });
     expect(uploadCallCount).toBe(0);
+  });
+
+  test("creates profile pages from validated onboarding payloads", async () => {
+    const calls: Array<{ userId: string; values: OnboardingInput }> = [];
+    const app = createTestAppApi({
+      createProfilePage: async (input) => {
+        calls.push(input);
+        return {
+          handle: input.values.handle,
+          id: "page-1",
+          name: input.values.name,
+        };
+      },
+    });
+
+    const response = await app.request("/create", {
+      body: JSON.stringify(validOnboardingPayload),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    });
+    const body = (await response.json()) as {
+      page: { handle: string; id: string; name: string };
+      success: boolean;
+    };
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      page: {
+        handle: "demo",
+        id: "page-1",
+        name: "Demo",
+      },
+      success: true,
+    });
+    expect(calls).toEqual([{ userId: "user-1", values: validOnboardingPayload }]);
+  });
+
+  test("preserves onboarding user, validation, and handle conflict errors", async () => {
+    const missingUserApp = createTestAppApi({
+      getUserExists: async () => false,
+    });
+    const invalidPayloadApp = createTestAppApi();
+    const conflictApp = createTestAppApi({
+      getProfilePageByHandle: async () => ({ id: "existing-page" }),
+    });
+
+    const missingUserResponse = await missingUserApp.request("/create", {
+      body: JSON.stringify(validOnboardingPayload),
+      method: "POST",
+    });
+    const missingUserBody = (await missingUserResponse.json()) as { error: string };
+    const invalidPayloadResponse = await invalidPayloadApp.request("/create", {
+      body: JSON.stringify({ ...validOnboardingPayload, name: "" }),
+      method: "POST",
+    });
+    const invalidPayloadBody = (await invalidPayloadResponse.json()) as { error: string };
+    const conflictResponse = await conflictApp.request("/create", {
+      body: JSON.stringify(validOnboardingPayload),
+      method: "POST",
+    });
+    const conflictBody = (await conflictResponse.json()) as { error: string };
+
+    expect(missingUserResponse.status).toBe(404);
+    expect(missingUserBody).toEqual({ error: "User not found" });
+    expect(invalidPayloadResponse.status).toBe(400);
+    expect(invalidPayloadBody).toEqual({ error: "Name is required." });
+    expect(conflictResponse.status).toBe(409);
+    expect(conflictBody).toEqual({ error: "This handle is already taken." });
   });
 });

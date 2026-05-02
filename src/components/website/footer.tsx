@@ -47,12 +47,12 @@ export function Footer() {
                   Changelog
                 </Link>
               </li>
-              <li>
+              {/*<li>
                 <Link href="/roadmap" className="inline-block hover:text-primary">
                   Roadmap
                 </Link>
               </li>
-              {/*<li>
+              <li>
                 <Link href="/privacy" className="inline-block hover:text-primary">
                   Privacy Policy
                 </Link>
@@ -74,13 +74,6 @@ export function Footer() {
               </li>
             </ul>
           </div>
-
-          {/* Brand and Description */}
-          {/* <div className="flex-1">
-            <Link href="/" className="text-5xl font-semibold">
-              {appConfig.projectName}
-            </Link>
-          </div> */}
         </div>
       </div>
     </footer>

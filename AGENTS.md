@@ -37,3 +37,6 @@
 - `/api/app/profile-page/sync`와 `/api/app/profile-page/bento/sync`처럼 editor store를 rebase하는 route는 반드시 `cache: "no-store"`/no-store response와 committed-read response 의미를 유지한다.
 - `profile_bento`, `profile_bento_layout`, `profile_*_bento`를 포함한 새 profile-page child table을 추가하면 schema, validation, mutation write, committed read helper, editor payload, public/preview renderer, regression test를 함께 갱신한다.
 - 저장 관련 변경 후에는 최소 `bun test src/lib/profile-page/__test__/profile-page-cache-regression.test.ts`와 변경 파일 대상 `bun x biome check ...`를 실행한다. transaction-local response를 금지하는 회귀 테스트를 우회하거나 삭제하지 않는다.
+
+### 참고
+- `docs/refs/hono.md` : Hono 프레임워크 관련 참고 자료

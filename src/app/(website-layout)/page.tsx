@@ -26,9 +26,9 @@ export default function WebsiteHomepage() {
       <WebPageStructuredData name={homepageTitle} description={homepageDescription} path="/" />
       <main className="relative h-full">
         <MainHeroSection />
+        <LiveCardSection />
         <HandleCardSection />
         <AnalyticsCardSection />
-        <LiveCardSection />
         <section className="h-[20rem] flex flex-col justify-center items-center">
           <div className="flex flex-col justify-center items-center gap-2">
             <Button

@@ -1,6 +1,11 @@
 import { Hono } from "hono";
 import type { AuthSession } from "@/auth";
 import {
+  getProfileBentoMediaFileError,
+  getProfileBentoMediaType,
+} from "@/lib/profile-page/media-upload";
+import type { ProfileMediaType } from "@/lib/profile-page/types";
+import {
   getProfileImageFileError,
   getProfileImageKind,
   getProfileImageObjectKey,
@@ -46,16 +51,24 @@ type ProfilePageApiDependencies = {
   deletePublicS3Object: (publicUrl: string) => Promise<unknown>;
   deleteLinkItem: (input: { linkId: string; userId: string }) => Promise<void>;
   deleteTextBoxItem: (input: { textBoxId: string; userId: string }) => Promise<void>;
+  getProfileBentoMediaPublicUrl: (input: { contentHash: string; objectKey: string }) => string;
   getMissingS3ConfigKeys: () => string[];
   getProfilePageEditorData: (userId: string, handle?: string) => Promise<unknown | null>;
   getPublicS3ObjectUrl: (key: string) => string;
   getS3ObjectKeyFromPublicUrl: (publicUrl: string) => string | null;
+  getTemporaryProfileBentoMediaObjectKey: (input: { bentoId: string; userId: string }) => string;
+  hashProfileBentoMediaBuffer: (buffer: Buffer) => string;
   isHandleAvailableForUser: (input: { handle: string; userId: string }) => Promise<boolean>;
   isProfilePageError?: (error: unknown) => error is { message: string; status: number };
   logger?: Pick<Console, "error">;
   reorderLinkItems: (input: {
     orderedIds: ReorderItemsInput["orderedIds"];
     userId: string;
+  }) => Promise<void>;
+  putTemporaryProfileBentoMediaObject: (input: {
+    body: Buffer;
+    contentType: string;
+    objectKey: string;
   }) => Promise<void>;
   reorderTextBoxItems: (input: {
     orderedIds: ReorderItemsInput["orderedIds"];
@@ -126,15 +139,19 @@ export const createProfilePageApi = ({
   deletePublicS3Object,
   deleteLinkItem,
   deleteTextBoxItem,
+  getProfileBentoMediaPublicUrl,
   getMissingS3ConfigKeys,
   getProfilePageEditorData,
   getPublicS3ObjectUrl,
   getS3ObjectKeyFromPublicUrl,
+  getTemporaryProfileBentoMediaObjectKey,
+  hashProfileBentoMediaBuffer,
   isHandleAvailableForUser: checkHandleAvailability,
   isProfilePageError = (_error): _error is { message: string; status: number } => false,
   logger = console,
   reorderLinkItems,
   reorderTextBoxItems,
+  putTemporaryProfileBentoMediaObject,
   revalidatePath,
   syncProfileBentoDraft,
   syncProfilePageDraft,
@@ -453,6 +470,66 @@ export const createProfilePageApi = ({
     } catch (error) {
       logger.error("Error deleting profile image:", error);
       return jsonResponse({ error: "Failed to delete profile image" }, 500);
+    }
+  });
+
+  app.post("/bento/media/upload", async (context) => {
+    const session = await getAuthenticatedSession();
+
+    if (!session) {
+      return unauthorizedResponse();
+    }
+
+    try {
+      const formData = await context.req.formData();
+      const file = formData.get("file");
+      const bentoId = formData.get("bentoId");
+
+      if (!(file instanceof File) || typeof bentoId !== "string" || bentoId.trim().length === 0) {
+        return jsonResponse({ error: "Missing required media upload fields." }, 400);
+      }
+
+      const fileError = getProfileBentoMediaFileError(file);
+
+      if (fileError) {
+        return jsonResponse({ error: fileError }, 400);
+      }
+
+      const mediaType = getProfileBentoMediaType(file.type);
+
+      if (!mediaType) {
+        return jsonResponse({ error: "Unsupported media type." }, 400);
+      }
+
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const contentHash = hashProfileBentoMediaBuffer(buffer);
+      const tempObjectKey = getTemporaryProfileBentoMediaObjectKey({
+        bentoId,
+        userId: session.user.id,
+      });
+
+      await putTemporaryProfileBentoMediaObject({
+        body: buffer,
+        contentType: file.type,
+        objectKey: tempObjectKey,
+      });
+
+      return jsonResponse(
+        {
+          contentHash,
+          contentType: file.type,
+          mediaType: mediaType satisfies ProfileMediaType,
+          tempObjectKey,
+          tempUrl: getProfileBentoMediaPublicUrl({
+            contentHash,
+            objectKey: tempObjectKey,
+          }),
+        },
+        200
+      );
+    } catch (error) {
+      logger.error("Failed to upload bento media:", error);
+      return jsonResponse({ error: "Failed to upload media." }, 500);
     }
   });
 

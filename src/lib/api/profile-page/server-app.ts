@@ -5,6 +5,12 @@ import { db } from "@/db";
 import { profilePages } from "@/db/schema/profile-page";
 import type { ProfileImageKind } from "@/lib/profile-page/image-upload";
 import {
+  getProfileBentoMediaPublicUrl,
+  getTemporaryProfileBentoMediaObjectKey,
+  hashProfileBentoMediaBuffer,
+  putTemporaryProfileBentoMediaObject,
+} from "@/lib/profile-page/media-storage";
+import {
   createLinkItem,
   createTextBoxItem,
   deleteLinkItem,
@@ -65,12 +71,16 @@ export const profilePageApi = createProfilePageApi({
   deleteTextBoxItem,
   getMissingS3ConfigKeys,
   getProfilePageEditorData,
+  getProfileBentoMediaPublicUrl,
   getPublicS3ObjectUrl,
   getS3ObjectKeyFromPublicUrl,
+  getTemporaryProfileBentoMediaObjectKey,
+  hashProfileBentoMediaBuffer,
   isHandleAvailableForUser,
   isProfilePageError: (error): error is ProfilePageError => error instanceof ProfilePageError,
   reorderLinkItems,
   reorderTextBoxItems,
+  putTemporaryProfileBentoMediaObject,
   revalidatePath,
   syncProfileBentoDraft,
   syncProfilePageDraft,

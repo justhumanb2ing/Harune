@@ -143,6 +143,12 @@ const createTestProfilePageApi = (overrides: Partial<ProfilePageApiOptions> = {}
       `https://media.example.com/${objectKey}?v=${contentHash}`,
     getTemporaryProfileBentoMediaObjectKey: ({ bentoId, userId }) =>
       `tmp/users/${userId}/profile-page/bento/${bentoId}/media-temp`,
+    hashProfileBentoMediaBuffer: (buffer) =>
+      Array.from(new Uint8Array(buffer))
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join("")
+        .padEnd(64, "0")
+        .slice(0, 64),
     putTemporaryProfileBentoMediaObject: async () => {},
     updateProfileImage: async ({ imageKind, imageUrl }) => ({
       backgroundImage: imageKind === "background" ? imageUrl : null,

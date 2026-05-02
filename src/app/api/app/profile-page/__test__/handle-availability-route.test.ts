@@ -59,4 +59,29 @@ describe("profile page handle availability route adapter", () => {
     expect(source.includes("NextResponse")).toBe(false);
     expect(source.includes("reorderLinkItems")).toBe(false);
   });
+
+  test("keeps the text routes as thin adapters to the profile-page Hono app", () => {
+    const createSource = readFileSync(
+      join(process.cwd(), "src/app/api/app/profile-page/text/route.ts"),
+      "utf8"
+    );
+    const itemSource = readFileSync(
+      join(process.cwd(), "src/app/api/app/profile-page/text/[textBoxId]/route.ts"),
+      "utf8"
+    );
+    const reorderSource = readFileSync(
+      join(process.cwd(), "src/app/api/app/profile-page/text/reorder/route.ts"),
+      "utf8"
+    );
+
+    for (const source of [createSource, itemSource, reorderSource]) {
+      expect(source.includes("profilePageApi.fetch")).toBe(true);
+      expect(source.includes("withAuthRequired")).toBe(false);
+      expect(source.includes("NextResponse")).toBe(false);
+    }
+    expect(createSource.includes("createTextBoxItem")).toBe(false);
+    expect(itemSource.includes("updateTextBoxItem")).toBe(false);
+    expect(itemSource.includes("deleteTextBoxItem")).toBe(false);
+    expect(reorderSource.includes("reorderTextBoxItems")).toBe(false);
+  });
 });

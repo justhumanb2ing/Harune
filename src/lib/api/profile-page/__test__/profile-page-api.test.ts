@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import type { LinkItemInput, ReorderItemsInput } from "@/lib/validations/profile-page.schema";
+import type {
+  LinkItemInput,
+  ReorderItemsInput,
+  TextBoxItemInput,
+} from "@/lib/validations/profile-page.schema";
 import { createProfilePageApi } from "../app";
 
 const authenticatedSession = {
@@ -23,15 +27,31 @@ const defaultLinkItem = {
   position: 0,
 };
 
+const validTextBoxPayload: TextBoxItemInput = {
+  description: "A useful note",
+  title: "Note",
+};
+
+const defaultTextBoxItem = {
+  ...validTextBoxPayload,
+  blockPosition: 1,
+  id: "text-1",
+  position: 0,
+};
+
 type ProfilePageApiOptions = Parameters<typeof createProfilePageApi>[0];
 
 const createTestProfilePageApi = (overrides: Partial<ProfilePageApiOptions> = {}) =>
   createProfilePageApi({
     auth: async () => authenticatedSession,
     createLinkItem: async () => defaultLinkItem,
+    createTextBoxItem: async () => defaultTextBoxItem,
     deleteLinkItem: async () => {},
+    deleteTextBoxItem: async () => {},
     isHandleAvailableForUser: async () => true,
     reorderLinkItems: async () => {},
+    reorderTextBoxItems: async () => {},
+    updateTextBoxItem: async () => defaultTextBoxItem,
     updateLinkItem: async () => defaultLinkItem,
     ...overrides,
   });
@@ -475,5 +495,217 @@ describe("profile page Hono API", () => {
     expect(profileErrorBody).toEqual({ error: "Ordered IDs do not match current items." });
     expect(unknownErrorResponse.status).toBe(500);
     expect(unknownErrorBody).toEqual({ error: "Failed to reorder link items." });
+  });
+
+  test("creates text box items from a validated JSON body", async () => {
+    const calls: Array<{ userId: string; values: TextBoxItemInput }> = [];
+    const app = createTestProfilePageApi({
+      createTextBoxItem: async (input) => {
+        calls.push(input);
+        return defaultTextBoxItem;
+      },
+    });
+
+    const response = await app.request("/text", {
+      body: JSON.stringify(validTextBoxPayload),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    });
+    const body = (await response.json()) as { textBoxItem: typeof defaultTextBoxItem };
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({ textBoxItem: defaultTextBoxItem });
+    expect(calls).toEqual([{ userId: "user-1", values: validTextBoxPayload }]);
+  });
+
+  test("validates text box create bodies before calling the mutation layer", async () => {
+    let mutationCallCount = 0;
+    const app = createTestProfilePageApi({
+      createTextBoxItem: async () => {
+        mutationCallCount += 1;
+        return defaultTextBoxItem;
+      },
+    });
+
+    const response = await app.request("/text", {
+      body: JSON.stringify({ ...validTextBoxPayload, title: "" }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    });
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({ error: "Title is required." });
+    expect(mutationCallCount).toBe(0);
+  });
+
+  test("updates text box items from a validated JSON body and route param", async () => {
+    const calls: Array<{ textBoxId: string; userId: string; values: TextBoxItemInput }> = [];
+    const updatedTextBoxItem = {
+      ...defaultTextBoxItem,
+      title: "Updated",
+    };
+    const app = createTestProfilePageApi({
+      updateTextBoxItem: async (input) => {
+        calls.push(input);
+        return updatedTextBoxItem;
+      },
+    });
+
+    const response = await app.request("/text/text-1", {
+      body: JSON.stringify({ ...validTextBoxPayload, title: "Updated" }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "PATCH",
+    });
+    const body = (await response.json()) as { textBoxItem: typeof updatedTextBoxItem };
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({ textBoxItem: updatedTextBoxItem });
+    expect(calls).toEqual([
+      {
+        textBoxId: "text-1",
+        userId: "user-1",
+        values: { ...validTextBoxPayload, title: "Updated" },
+      },
+    ]);
+  });
+
+  test("deletes text box items from the route param", async () => {
+    const calls: Array<{ textBoxId: string; userId: string }> = [];
+    const app = createTestProfilePageApi({
+      deleteTextBoxItem: async (input) => {
+        calls.push(input);
+      },
+    });
+
+    const response = await app.request("/text/text-1", {
+      method: "DELETE",
+    });
+    const body = (await response.json()) as { success: boolean };
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({ success: true });
+    expect(calls).toEqual([{ textBoxId: "text-1", userId: "user-1" }]);
+  });
+
+  test("reorders text box items from a validated JSON body", async () => {
+    const calls: Array<{ orderedIds: string[]; userId: string }> = [];
+    const app = createTestProfilePageApi({
+      reorderTextBoxItems: async (input) => {
+        calls.push(input);
+      },
+    });
+
+    const response = await app.request("/text/reorder", {
+      body: JSON.stringify({ orderedIds: ["text-2", "text-1"] }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    });
+    const body = (await response.json()) as { success: boolean };
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({ success: true });
+    expect(calls).toEqual([{ orderedIds: ["text-2", "text-1"], userId: "user-1" }]);
+  });
+
+  test("maps text box mutation errors to the existing JSON response shapes", async () => {
+    const profileErrorApp = createTestProfilePageApi({
+      createTextBoxItem: async () => {
+        throw { message: "Profile page not found.", status: 404 };
+      },
+      deleteTextBoxItem: async () => {
+        throw { message: "Text box item not found.", status: 404 };
+      },
+      isProfilePageError: (error): error is { message: string; status: number } => {
+        return typeof error === "object" && error !== null && "status" in error;
+      },
+      reorderTextBoxItems: async () => {
+        throw { message: "Ordered IDs do not match current items.", status: 400 };
+      },
+      updateTextBoxItem: async () => {
+        throw { message: "Text box item not found.", status: 404 };
+      },
+    });
+    const unknownErrorApp = createTestProfilePageApi({
+      createTextBoxItem: async () => {
+        throw new Error("database unavailable");
+      },
+      deleteTextBoxItem: async () => {
+        throw new Error("database unavailable");
+      },
+      logger: {
+        error: () => {},
+      },
+      reorderTextBoxItems: async () => {
+        throw new Error("database unavailable");
+      },
+      updateTextBoxItem: async () => {
+        throw new Error("database unavailable");
+      },
+    });
+
+    const createProfileErrorResponse = await profileErrorApp.request("/text", {
+      body: JSON.stringify(validTextBoxPayload),
+      method: "POST",
+    });
+    const createProfileErrorBody = (await createProfileErrorResponse.json()) as { error: string };
+    const createUnknownErrorResponse = await unknownErrorApp.request("/text", {
+      body: JSON.stringify(validTextBoxPayload),
+      method: "POST",
+    });
+    const createUnknownErrorBody = (await createUnknownErrorResponse.json()) as { error: string };
+    const updateProfileErrorResponse = await profileErrorApp.request("/text/text-1", {
+      body: JSON.stringify(validTextBoxPayload),
+      method: "PATCH",
+    });
+    const updateProfileErrorBody = (await updateProfileErrorResponse.json()) as { error: string };
+    const updateUnknownErrorResponse = await unknownErrorApp.request("/text/text-1", {
+      body: JSON.stringify(validTextBoxPayload),
+      method: "PATCH",
+    });
+    const updateUnknownErrorBody = (await updateUnknownErrorResponse.json()) as { error: string };
+    const deleteProfileErrorResponse = await profileErrorApp.request("/text/text-1", {
+      method: "DELETE",
+    });
+    const deleteProfileErrorBody = (await deleteProfileErrorResponse.json()) as { error: string };
+    const deleteUnknownErrorResponse = await unknownErrorApp.request("/text/text-1", {
+      method: "DELETE",
+    });
+    const deleteUnknownErrorBody = (await deleteUnknownErrorResponse.json()) as { error: string };
+    const reorderProfileErrorResponse = await profileErrorApp.request("/text/reorder", {
+      body: JSON.stringify({ orderedIds: ["text-1"] }),
+      method: "POST",
+    });
+    const reorderProfileErrorBody = (await reorderProfileErrorResponse.json()) as { error: string };
+    const reorderUnknownErrorResponse = await unknownErrorApp.request("/text/reorder", {
+      body: JSON.stringify({ orderedIds: ["text-1"] }),
+      method: "POST",
+    });
+    const reorderUnknownErrorBody = (await reorderUnknownErrorResponse.json()) as { error: string };
+
+    expect(createProfileErrorResponse.status).toBe(404);
+    expect(createProfileErrorBody).toEqual({ error: "Profile page not found." });
+    expect(createUnknownErrorResponse.status).toBe(500);
+    expect(createUnknownErrorBody).toEqual({ error: "Failed to create text box item." });
+    expect(updateProfileErrorResponse.status).toBe(404);
+    expect(updateProfileErrorBody).toEqual({ error: "Text box item not found." });
+    expect(updateUnknownErrorResponse.status).toBe(500);
+    expect(updateUnknownErrorBody).toEqual({ error: "Failed to update text box item." });
+    expect(deleteProfileErrorResponse.status).toBe(404);
+    expect(deleteProfileErrorBody).toEqual({ error: "Text box item not found." });
+    expect(deleteUnknownErrorResponse.status).toBe(500);
+    expect(deleteUnknownErrorBody).toEqual({ error: "Failed to delete text box item." });
+    expect(reorderProfileErrorResponse.status).toBe(400);
+    expect(reorderProfileErrorBody).toEqual({ error: "Ordered IDs do not match current items." });
+    expect(reorderUnknownErrorResponse.status).toBe(500);
+    expect(reorderUnknownErrorBody).toEqual({ error: "Failed to reorder text box items." });
   });
 });

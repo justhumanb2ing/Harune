@@ -244,7 +244,7 @@ export default function AnalyticsCardSection() {
           className="pointer-events-none text-center text-3xl font-semibold tracking-normal text-foreground md:text-5xl"
           variants={headerTextVariants}
         >
-            Key Insights
+          Key Insights
           <span className="text-indigo-400">.</span>
         </motion.p>
         <motion.p

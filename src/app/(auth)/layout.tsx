@@ -14,7 +14,11 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         <div className="relative h-full flex-1 overflow-hidden">
           {/* Replace with Logo */}
           <aside className="absolute top-5 left-5 z-10">
-            <Link href={"/"} aria-label="Close authentication" className="font-extrabold tracking-tighter text-3xl">
+            <Link
+              href={"/"}
+              aria-label="Close authentication"
+              className="font-extrabold tracking-tighter text-3xl"
+            >
               Harune
             </Link>
           </aside>

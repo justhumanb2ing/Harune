@@ -768,7 +768,7 @@ function ReadonlyMapBento({
   preventNavigation: boolean;
 }) {
   return (
-    <article className="relative size-full overflow-hidden rounded-[1.5rem] border-[3px] border-transparent bg-muted transition-colors duration-200 ease-out">
+    <article className="relative size-full overflow-hidden rounded-[1.5rem] bg-muted transition-colors duration-200 ease-out">
       <BentoMap
         className="size-full"
         styles={LEEVE_MAP_STYLES}

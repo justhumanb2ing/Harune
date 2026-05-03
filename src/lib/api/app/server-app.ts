@@ -123,7 +123,15 @@ const createProfilePage = async ({
     throw new Error("Profile page was not found after create.");
   }
 
-  return committedPage;
+  if (committedPage.name === null) {
+    throw new Error("Profile page name was not persisted after create.");
+  }
+
+  return {
+    handle: committedPage.handle,
+    id: committedPage.id,
+    name: committedPage.name,
+  };
 };
 
 export const appApi = createAppApi({

@@ -83,6 +83,19 @@ describe("profile page cache regression", () => {
     expect(committedReadIndex > transactionIndex).toBe(true);
   });
 
+  test("profile sync response is built from a committed DB read", () => {
+    const source = readFileSync(join(process.cwd(), "src/lib/profile/mutations.ts"), "utf8");
+    const start = source.indexOf("export const syncProfilePageDraft");
+    const profileSyncSource = source.slice(start);
+    const transactionIndex = profileSyncSource.indexOf("await db.transaction");
+    const committedReadIndex = profileSyncSource.indexOf(
+      "const nextData = await getProfilePageEditorDataByPageId(db, ownedPage.id);"
+    );
+
+    expect(transactionIndex >= 0).toBe(true);
+    expect(committedReadIndex > transactionIndex).toBe(true);
+  });
+
   test("bento media child table participates in sync write and public read paths", () => {
     const mutationSource = readFileSync(
       join(process.cwd(), "src/lib/profile/mutations.ts"),

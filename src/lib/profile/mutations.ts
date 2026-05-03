@@ -1217,43 +1217,49 @@ export const syncProfilePageDraft = async ({
     throw new ProfilePageError("This handle is already taken.", 409);
   }
 
-  await db
-    .update(profilePages)
-    .set({
-      handle: values.page.handle,
-      linkBlockPosition: values.page.linkBlockPosition,
-      location: values.page.location || null,
-      name: values.page.name,
-      role: values.page.role || null,
-      bio: values.page.bio || null,
-      image: values.page.image,
-      backgroundImage: values.page.backgroundImage,
-      updatedAt: new Date(),
-    })
-    .where(eq(profilePages.id, ownedPage.id));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(profilePages)
+      .set({
+        handle: values.page.handle,
+        linkBlockPosition: values.page.linkBlockPosition,
+        location: values.page.location || null,
+        name: values.page.name,
+        role: values.page.role || null,
+        bio: values.page.bio || null,
+        image: values.page.image,
+        backgroundImage: values.page.backgroundImage,
+        updatedAt: new Date(),
+      })
+      .where(eq(profilePages.id, ownedPage.id));
 
-  await syncSocialLinks({
-    tx: db,
-    profilePageId: ownedPage.id,
-    values: values.socialLinks,
-  });
-  await syncLinkItems({
-    tx: db,
-    profilePageId: ownedPage.id,
-    values: values.linkItems,
-  });
-  await syncPlaylistItems({
-    tx: db,
-    profilePageId: ownedPage.id,
-    values: values.playlistItems,
-  });
-  await syncTextBoxItems({
-    tx: db,
-    profilePageId: ownedPage.id,
-    values: values.textBoxItems,
+    await syncSocialLinks({
+      tx,
+      profilePageId: ownedPage.id,
+      values: values.socialLinks,
+    });
+    await syncLinkItems({
+      tx,
+      profilePageId: ownedPage.id,
+      values: values.linkItems,
+    });
+    await syncPlaylistItems({
+      tx,
+      profilePageId: ownedPage.id,
+      values: values.playlistItems,
+    });
+    await syncTextBoxItems({
+      tx,
+      profilePageId: ownedPage.id,
+      values: values.textBoxItems,
+    });
   });
 
   const nextData = await getProfilePageEditorDataByPageId(db, ownedPage.id);
+
+  if (!nextData) {
+    throw new ProfilePageError("Profile page was not found after sync.", 404);
+  }
 
   if (ownedPage.image && shouldDeleteReplacedProfileImage(ownedPage.image, values.page.image)) {
     try {

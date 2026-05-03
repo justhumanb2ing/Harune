@@ -46,7 +46,7 @@ Leeve의 공개 프로필 페이지를 온보딩 전용 생성 흐름에서 실�
 - `src/db/schema/core/profile-page.ts`: 현재 공개 페이지 메타데이터와 `socialLinks` JSON 구조 정의
 - `src/app/api/app/onboarding/route.ts`: 프로필 페이지 생성 시점과 현재 입력 스키마
 - `src/app/api/handles/availability/route.ts`: 핸들 유효성/중복 검사 패턴
-- `src/app/api/app/me/route.ts`: 인증된 사용자 부트스트랩 응답 형식
+- `src/app/api/me/route.ts`: 인증된 사용자 부트스트랩 응답 형식
 - `src/app/(website-layout)/[handle]/page.tsx`: 공개 페이지 렌더링과 현재 `app_user` 폴백 사용 지점
 - `src/app/(in-app)/(sidebar)/section/profile/page.tsx`: 기존 프로필 편집 UI와 S3 업로드 연결점
 - `src/components/ui/s3-uploader/s3-uploader.tsx`: 이미지 업로드 재사용 컴포넌트
@@ -75,7 +75,7 @@ Leeve의 공개 프로필 페이지를 온보딩 전용 생성 흐름에서 실�
   서버는 여전히 `position` 기반 dense ordering을 유지하고, 클라이언트는 drag-and-drop 상호작용을 `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/modifiers` 위에서 구현한다.
 
 - 편집용 API는 `me` 엔드포인트와 분리한다.
-  `/api/app/me`는 인증된 사용자 부트스트랩 응답으로 유지하고, 공개 페이지 편집은 `/api/app/profile-page/**` 아래 전용 라우트로 분리한다. 이렇게 해야 account profile과 public page profile의 책임이 섞이지 않는다.
+  `/api/me`는 인증된 사용자 부트스트랩 응답으로 유지하고, 공개 페이지 편집은 `/api/profile/**` 아래 전용 라우트로 분리한다. 이렇게 해야 account profile과 public page profile의 책임이 섞이지 않는다.
 
 ## Open Questions
 
@@ -101,7 +101,7 @@ Leeve의 공개 프로필 페이지를 온보딩 전용 생성 흐름에서 실�
 
 ```mermaid
 flowchart LR
-  A["Section Editor (/section)"] --> B["Profile Page API (/api/app/profile-page/**)"]
+  A["Section Editor (/section)"] --> B["Profile Page API (/api/profile/**)"]
   B --> C["profile_page"]
   B --> D["profile_social_link"]
   B --> E["profile_link_item"]
@@ -185,10 +185,10 @@ flowchart LR
 - Create: `src/lib/profile-page/queries.ts`
 - Create: `src/lib/profile-page/mutations.ts`
 - Create: `src/lib/validations/profile-page.schema.ts`
-- Create: `src/app/api/app/profile-page/route.ts`
-- Create: `src/app/api/app/profile-page/social-links/route.ts`
-- Create: `src/app/api/app/profile-page/social-links/[socialLinkId]/route.ts`
-- Create: `src/app/api/app/profile-page/handle-availability/route.ts`
+- Create: `src/app/api/profile/route.ts`
+- Create: `src/app/api/profile/social-links/route.ts`
+- Create: `src/app/api/profile/social-links/[socialLinkId]/route.ts`
+- Create: `src/app/api/profile/handle-availability/route.ts`
 - Test: `src/lib/profile-page/mutations.test.ts`
 - Test: `src/lib/validations/profile-page.schema.test.ts`
 
@@ -224,9 +224,9 @@ flowchart LR
 **Dependencies:** Unit 1, Unit 2
 
 **Files:**
-- Create: `src/app/api/app/profile-page/links/route.ts`
-- Create: `src/app/api/app/profile-page/links/[linkId]/route.ts`
-- Create: `src/app/api/app/profile-page/links/reorder/route.ts`
+- Create: `src/app/api/profile/links/route.ts`
+- Create: `src/app/api/profile/links/[linkId]/route.ts`
+- Create: `src/app/api/profile/links/reorder/route.ts`
 - Modify: `src/lib/profile-page/mutations.ts`
 - Modify: `src/lib/validations/profile-page.schema.ts`
 - Test: `src/lib/profile-page/link-items.test.ts`
@@ -263,9 +263,9 @@ flowchart LR
 **Dependencies:** Unit 1, Unit 2
 
 **Files:**
-- Create: `src/app/api/app/profile-page/text-boxes/route.ts`
-- Create: `src/app/api/app/profile-page/text-boxes/[textBoxId]/route.ts`
-- Create: `src/app/api/app/profile-page/text-boxes/reorder/route.ts`
+- Create: `src/app/api/profile/text-boxes/route.ts`
+- Create: `src/app/api/profile/text-boxes/[textBoxId]/route.ts`
+- Create: `src/app/api/profile/text-boxes/reorder/route.ts`
 - Modify: `src/lib/profile-page/mutations.ts`
 - Modify: `src/lib/validations/profile-page.schema.ts`
 - Test: `src/lib/profile-page/text-box-items.test.ts`
@@ -306,13 +306,13 @@ flowchart LR
 - Create: `src/components/section/social-links-editor.tsx`
 - Create: `src/components/section/link-items-editor.tsx`
 - Create: `src/components/section/text-box-items-editor.tsx`
-- Create: `src/app/api/app/profile-page/upload-image/route.ts`
+- Create: `src/app/api/profile/upload-image/route.ts`
 - Modify: `src/lib/react-query/query-keys.ts`
 - Test: `src/lib/profile-page/editor-state.test.ts`
 
 **Approach:**
 - 현재 placeholder인 `/section/page.tsx`를 메인 편집 화면으로 사용한다.
-- 프로필/배경 이미지 업로드는 저장 대상 route를 `/api/app/profile-page/upload-image`로 분리하고, 사용자별 고정 object key(`profile-page/profile`, `profile-page/background`)와 DB finalize 단계로 `profile_page.image` / `profile_page.backgroundImage` 저장을 보장한다.
+- 프로필/배경 이미지 업로드는 저장 대상 route를 `/api/profile/upload-image`로 분리하고, 사용자별 고정 object key(`profile-page/profile`, `profile-page/background`)와 DB finalize 단계로 `profile_page.image` / `profile_page.backgroundImage` 저장을 보장한다.
 - 컬렉션 편집은 “추가 버튼 + inline form + 저장/삭제 + dnd-kit drag-and-drop” 구조로 시작한다.
 - React Query 캐시는 `me`와 별도 `profile-page` query key를 사용해, 편집기와 사이드바 갱신 범위를 제어한다.
 - 현재 `/section/profile`는 새 편집기의 세부 진입점으로 재사용하거나 `/section`으로 정리한다.
@@ -344,8 +344,8 @@ flowchart LR
 **Files:**
 - Modify: `src/app/api/app/onboarding/route.ts`
 - Modify: `src/lib/validations/auth.schema.ts`
-- Modify: `src/app/api/app/me/route.ts`
-- Modify: `src/app/api/app/me/types.ts`
+- Modify: `src/app/api/me/route.ts`
+- Modify: `src/app/api/me/types.ts`
 - Modify: `src/components/sections/sidebar.tsx`
 - Modify: `src/app/(website-layout)/[handle]/page.tsx`
 - Modify: `src/components/auth/onboarding-form.tsx`
@@ -359,7 +359,7 @@ flowchart LR
 
 **Patterns to follow:**
 - `src/app/(website-layout)/[handle]/page.tsx`
-- `src/app/api/app/me/route.ts`
+- `src/app/api/me/route.ts`
 - `src/components/sections/sidebar.tsx`
 
 **Test scenarios:**
@@ -376,7 +376,7 @@ flowchart LR
 
 ## System-Wide Impact
 
-- **Interaction graph:** 온보딩(`src/app/api/app/onboarding/route.ts`), 인증 사용자 부트스트랩(`src/app/api/app/me/route.ts`), 인앱 편집기(`/section`), 공개 페이지(`[handle]`)가 모두 `profile_page` 계열 읽기 모델을 공유하게 된다.
+- **Interaction graph:** 온보딩(`src/app/api/app/onboarding/route.ts`), 인증 사용자 부트스트랩(`src/app/api/me/route.ts`), 인앱 편집기(`/section`), 공개 페이지(`[handle]`)가 모두 `profile_page` 계열 읽기 모델을 공유하게 된다.
 - **Error propagation:** 핸들 중복, URL 검증 실패, 소유권 위반, reorder payload 불일치는 API 레벨에서 4xx로 반환하고, 편집기는 필드 오류 또는 toast로 노출해야 한다.
 - **State lifecycle risks:** 재정렬/삭제 시 `position` 재색인 누락이 생기면 공개 페이지와 편집기의 순서가 틀어질 수 있다. 컬렉션 mutation은 항상 서버에서 dense ordering을 재보장해야 한다.
 - **API surface parity:** 온보딩과 편집기가 동일한 핸들/URL 검증 규칙을 공유해야 하므로 validation schema를 분산 복제하면 안 된다.
@@ -414,6 +414,6 @@ flowchart LR
 
 - Related code: `src/db/schema/core/profile-page.ts`
 - Related code: `src/app/api/app/onboarding/route.ts`
-- Related code: `src/app/api/app/me/route.ts`
+- Related code: `src/app/api/me/route.ts`
 - Related code: `src/app/(website-layout)/[handle]/page.tsx`
 - Related code: `src/app/(in-app)/(sidebar)/section/profile/page.tsx`

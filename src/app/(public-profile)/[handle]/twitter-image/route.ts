@@ -1,5 +1,5 @@
 import { createProfileSocialImage } from "@/app/(public-profile)/[handle]/_social-image";
-import { getPublicProfilePageSocialImage } from "@/lib/profile-page/queries";
+import { getPublicProfilePageSocialImage } from "@/lib/profile/queries";
 
 type ProfileImageRouteContext = {
   params: Promise<{

@@ -51,7 +51,7 @@ date: 2026-04-23
 - `src/app/(public-profile)/[handle]/page.tsx`: 공개 핸들 페이지 서버 진입점. 이미 `getPublicProfilePage(handle)`로 `profile_page.id`를 읽고 있다.
 - `src/components/section/profile-page/public-profile-page.tsx`: 소셜 링크와 링크 아이템 anchor가 실제 렌더링되는 컴포넌트
 - `src/lib/profile-page/queries.ts`: public page 조회 시 `owner.id`, `socialLinks`, `linkItems`를 함께 가져온다.
-- `src/app/api/app/me/route.ts` / `src/app/api/app/me/types.ts`: 앱 내부에서 현재 사용자의 `profilePage.id`를 가져올 수 있는 기존 계약
+- `src/app/api/me/route.ts` / `src/app/api/me/types.ts`: 앱 내부에서 현재 사용자의 `profilePage.id`를 가져올 수 있는 기존 계약
 - `src/lib/users/queries.ts`: React Query 기반 `meQueryOptions()` 패턴
 - `src/lib/react-query/query-keys.ts`: 앱 내부 query key 등록 위치
 - `src/app/(in-app)/(sidebar)/analytics/page.tsx`: 현재 placeholder 상태의 분석 화면
@@ -94,7 +94,7 @@ date: 2026-04-23
 - `CTR` 계산은 서버 집계 계층에서 수행한다.
   UI마다 같은 공식이 흩어지지 않도록 API 응답에 이미 계산된 `ctr`를 포함한다. 분모가 0이면 `ctr`는 `0`으로 고정한다.
 
-- Umami API 호출은 `/api/app/analytics` 서버 라우트로 캡슐화한다.
+- Umami API 호출은 `/api/analytics` 서버 라우트로 캡슐화한다.
   공식 문서 기준 Cloud는 API key, self-host는 bearer token을 사용한다. 앱은 현재 `cloud.umami.is` 스크립트를 기본값으로 쓰고 있으므로 1차 구현은 Cloud API key 흐름을 우선 지원하되, endpoint를 분리해 self-host 전환 여지를 남긴다.
 
 - 기간별 집계는 `Today`, `7d`, `30d` 각각에 대해 서버에서 병렬 조회한다.
@@ -136,7 +136,7 @@ flowchart LR
   D --> F["profile-social-click event"]
   D --> G["profile-link-click event"]
 
-  H["/analytics page"] --> I["/api/app/analytics?range=today|7d|30d"]
+  H["/analytics page"] --> I["/api/analytics?range=today|7d|30d"]
   I --> J["Resolve current user's profilePage.id"]
   J --> K["Build same stable analytics path"]
   K --> L["Umami events/stats x 3 per range"]
@@ -199,9 +199,9 @@ flowchart LR
 - Create: `src/lib/analytics/analytics-ranges.ts`
 - Create: `src/lib/analytics/profile-page-summary.ts`
 - Modify: `src/env.ts`
-- Create: `src/app/api/app/analytics/route.ts`
+- Create: `src/app/api/analytics/route.ts`
 - Test: `src/lib/analytics/profile-page-summary.test.ts`
-- Test: `src/app/api/app/analytics/route.test.ts`
+- Test: `src/app/api/analytics/route.test.ts`
 
 **Approach:**
 - `env`에 Umami reporting용 server-side 설정을 추가한다. 최소한 API endpoint와 credential이 필요하며, 현재 스크립트 기본값이 Cloud인 점을 감안해 Cloud API key 흐름을 우선 경로로 둔다.
@@ -213,7 +213,7 @@ flowchart LR
 **Execution note:** 외부 API 의존 기능이므로 합성 로직을 route handler에서 바로 쓰지 말고 순수 함수와 client wrapper를 분리해 테스트 가능성을 먼저 확보한다.
 
 **Patterns to follow:**
-- `src/app/api/app/me/route.ts`
+- `src/app/api/me/route.ts`
 - `src/lib/users/queries.ts`
 - `src/env.ts`
 
@@ -227,7 +227,7 @@ flowchart LR
 - Integration: route는 로그인 사용자 본인의 `profilePage.id`만 사용하며 외부에서 임의 page id를 주입할 수 없다.
 
 **Verification:**
-- `/api/app/analytics` 한 곳에서 period summary를 안정적으로 받을 수 있다.
+- `/api/analytics` 한 곳에서 period summary를 안정적으로 받을 수 있다.
 - Umami credential은 클라이언트 번들로 노출되지 않는다.
 
 - [x] **Unit 3: Connect analytics queries to the app shell**
@@ -302,10 +302,10 @@ flowchart LR
 ## System-Wide Impact
 
 - **Interaction graph:** 공개 핸들 페이지 렌더링 계층이 Umami tracker와 직접 연결되고, 앱 내부 `/analytics` 페이지는 `me` 조회와 Umami reporting route를 함께 사용하게 된다.
-- **Error propagation:** Umami 외부 API 실패는 `/api/app/analytics`에서 제어된 응답으로 변환되어야 하며, 공개 페이지의 tracker 실패는 사용자 링크 이동을 막아서는 안 된다.
+- **Error propagation:** Umami 외부 API 실패는 `/api/analytics`에서 제어된 응답으로 변환되어야 하며, 공개 페이지의 tracker 실패는 사용자 링크 이동을 막아서는 안 된다.
 - **State lifecycle risks:** 클릭 이벤트는 페이지 이탈 직전에 발생하므로 전송 helper가 navigation보다 먼저 안전하게 실행되어야 한다.
-- **API surface parity:** `profilePage.id`를 이미 노출 중인 `GET /api/app/me` 계약을 analytics에서도 계속 신뢰하므로, 이 응답 스키마가 바뀌면 analytics도 함께 수정되어야 한다.
-- **Integration coverage:** 공개 페이지 이벤트 payload와 `/api/app/analytics`의 stable path builder가 동일 규칙을 써야 한다. 둘 중 하나라도 어긋나면 수집과 조회가 즉시 분리된다.
+- **API surface parity:** `profilePage.id`를 이미 노출 중인 `GET /api/me` 계약을 analytics에서도 계속 신뢰하므로, 이 응답 스키마가 바뀌면 analytics도 함께 수정되어야 한다.
+- **Integration coverage:** 공개 페이지 이벤트 payload와 `/api/analytics`의 stable path builder가 동일 규칙을 써야 한다. 둘 중 하나라도 어긋나면 수집과 조회가 즉시 분리된다.
 - **Unchanged invariants:** 기존 공개 URL 라우팅은 계속 `/${handle}`을 사용한다. 이번 변경은 방문 URL을 바꾸지 않고 analytics 식별자만 내부적으로 안정화한다.
 
 ## Risks & Dependencies

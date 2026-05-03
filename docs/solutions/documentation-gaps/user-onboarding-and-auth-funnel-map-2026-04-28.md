@@ -55,7 +55,7 @@ Landing page /
 | `src/lib/auth/app-redirect.ts` | 인증 후 `/create` 또는 `/{handle}` 결정 |
 | `src/app/(in-app)/create/page.tsx` | profile page가 없는 사용자만 온보딩 진입 |
 | `src/components/auth/onboarding-form.tsx` | handle, profile, social links 3단계 생성 폼 |
-| `src/app/api/app/create/route.ts` | 사용자 최초 profile page 생성 |
+| `src/app/api/create/route.ts` | 사용자 최초 profile page 생성 |
 
 온보딩 단계는 세 개다.
 
@@ -71,7 +71,7 @@ Landing page /
 submit onboarding
   -> upload selected profile image
   -> upload selected background image
-  -> POST /api/app/create
+  -> POST /api/create
   -> success: invalidate authenticated app queries, /create/success
   -> failure: rollback uploaded images, /create/fail or step error
 ```
@@ -103,8 +103,8 @@ submit onboarding
 ```text
 1. handle availability와 server-side duplicate check가 같은 결과인지
 2. image/background upload 중 어디서 실패했는지
-3. upload 성공 후 /api/app/create가 실패했는지
-4. rollback DELETE /api/app/profile-page/upload-image가 호출됐는지
+3. upload 성공 후 /api/create가 실패했는지
+4. rollback DELETE /api/profile/upload-image가 호출됐는지
 5. 실패 시 /create/fail에 message가 전달됐는지
 ```
 

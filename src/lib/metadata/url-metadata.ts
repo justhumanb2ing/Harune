@@ -10,6 +10,12 @@ export type UrlMetadata = {
 
 const maxHeadBytes = 128 * 1024;
 const fetchTimeoutMs = 8000;
+const metadataFetchHeaders = {
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+  "Accept-Language": "en-US,en;q=0.9",
+  "User-Agent":
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+} satisfies HeadersInit;
 
 const htmlEntityMap: Record<string, string> = {
   amp: "&",
@@ -306,10 +312,7 @@ export async function fetchUrlMetadata(inputUrl: string): Promise<UrlMetadata> {
   const requestedUrl = validateFetchUrl(inputUrl);
   const response = await fetch(requestedUrl, {
     cache: "no-store",
-    headers: {
-      Accept: "text/html,application/xhtml+xml",
-      "User-Agent": "Harune metadata fetcher",
-    },
+    headers: metadataFetchHeaders,
     signal: AbortSignal.timeout(fetchTimeoutMs),
   });
 

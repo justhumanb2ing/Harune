@@ -24,7 +24,7 @@ import {
 } from "@/hooks/use-profile-image-upload";
 import { authClient } from "@/lib/auth-client";
 import { normalizeHandle, validateHandle } from "@/lib/handles";
-import { PROFILE_IMAGE_ACCEPT } from "@/lib/profile-page/image-upload";
+import { PROFILE_IMAGE_ACCEPT } from "@/lib/profile/image-upload";
 import {
   clearAuthenticatedAppQueries,
   invalidateAuthenticatedAppQueries,
@@ -356,25 +356,22 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
     }
 
     try {
-      const response = await apiFetch<{ success: true; page: { handle: string } }>(
-        "/api/app/create",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            handle: pageHandle,
-            image: uploadedImageUrl || undefined,
-            backgroundImage: uploadedBackgroundImageUrl || undefined,
-            name: trimmedName,
-            role,
-            location,
-            bio,
-            socialLinks,
-          }),
-        }
-      );
+      const response = await apiFetch<{ success: true; page: { handle: string } }>("/api/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          handle: pageHandle,
+          image: uploadedImageUrl || undefined,
+          backgroundImage: uploadedBackgroundImageUrl || undefined,
+          name: trimmedName,
+          role,
+          location,
+          bio,
+          socialLinks,
+        }),
+      });
       await invalidateAuthenticatedAppQueries(queryClient);
       router.push(`/create/success?handle=${encodeURIComponent(response.page.handle)}`);
     } catch (submitError) {

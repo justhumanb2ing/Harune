@@ -244,9 +244,8 @@ export default function AnalyticsCardSection() {
           className="pointer-events-none text-center text-3xl font-semibold tracking-normal text-foreground md:text-5xl"
           variants={headerTextVariants}
         >
-          Simple insights
+          Key Insights
           <span className="text-indigo-400">.</span>
-          {/*Simple insights — who visited, what they clicked.*/}
         </motion.p>
         <motion.p
           className="pointer-events-none text-center text-2xl font-normal md:text-3xl"

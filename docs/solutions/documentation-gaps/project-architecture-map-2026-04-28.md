@@ -75,7 +75,7 @@ Browser
 src/app/(public-profile)/[handle]/*
 src/components/profile-page/*
 src/lib/profile-page/*
-src/app/api/app/profile-page/*
+src/app/api/profile/*
 src/db/schema/core/profile-page.ts
 ```
 

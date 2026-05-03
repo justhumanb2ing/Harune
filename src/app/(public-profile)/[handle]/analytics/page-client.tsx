@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { ProfileAnalyticsSummary } from "@/components/profile-page/layout/profile-analytics-summary";
+import { ProfileAnalyticsSummary } from "@/components/profile/layout/profile-analytics-summary";
 import {
   Select,
   SelectContent,

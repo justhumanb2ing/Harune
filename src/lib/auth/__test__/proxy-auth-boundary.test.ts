@@ -87,8 +87,8 @@ describe("proxy auth boundary", () => {
   });
 
   test("leaves app api requests to route handlers for auth JSON", () => {
-    expect(decide("/api/app/me")).toEqual({ kind: "next" });
-    expect(config.matcher.includes("/api/app/:path*")).toBe(false);
+    expect(decide("/api/me")).toEqual({ kind: "next" });
+    expect(config.matcher.includes("/api/:path*")).toBe(false);
   });
 
   test("allows session-cookie signal through to protected pages for page-level validation", () => {

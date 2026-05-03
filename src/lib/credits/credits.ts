@@ -1,7 +1,7 @@
 import { z } from "zod";
-import type { MeResponse } from "@/app/api/app/me/types";
 import type { Quotas } from "@/db/schema/plans";
 import { env } from "@/env";
+import type { MeResponse } from "@/lib/api/app/types";
 import { PlanProvider } from "@/lib/plans/get-subscribe-url";
 import { creditsConfig, creditTypeSchema } from "./config";
 

@@ -64,6 +64,7 @@
     "drizzle-orm": "^0.38.4",
     "embla-carousel-auto-scroll": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
+    "hono": "^4.12.16",
     "inngest": "^4.2.4",
     "input-otp": "^1.4.2",
     "iron-session": "^8.0.4",

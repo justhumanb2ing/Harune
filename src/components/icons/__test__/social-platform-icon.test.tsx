@@ -5,8 +5,9 @@ import { SocialPlatformIcon } from "@/components/icons";
 
 describe("SocialPlatformIcon", () => {
   test("falls back safely for unknown platforms", () => {
-    expect(() =>
-      renderToStaticMarkup(<SocialPlatformIcon platform={"facebook" as never} />)
-    ).not.toThrow();
+    const renderUnknownPlatform = () =>
+      renderToStaticMarkup(<SocialPlatformIcon platform={"facebook" as never} />);
+
+    expect(renderUnknownPlatform()).toBe("");
   });
 });

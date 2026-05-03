@@ -1,5 +1,21 @@
 # TODOS
 
+## Hono Profile Page API Migration
+
+### POST Mutation Route Follow-Up
+
+Status: completed for this pass.
+
+**What:** After the first Hono-backed `handle-availability` route lands, migrate a small POST mutation route such as `links/route.ts`.
+
+**Why:** The first route validates the Hono app, auth middleware, query validation, domain error mapping, and adapter contract. Follow-up routes verify JSON body validation, mutation error handling, committed-read sync behavior, and upload contracts.
+
+**Context:** Keep Better Auth on `toNextJsHandler` and keep playlist and social-links out of the migration scope. Profile-page metadata, links, text, sync, bento sync, profile image upload, and bento media upload are now routed through the profile-page Hono app with contract tests and adapter guard tests.
+
+**Effort:** M
+**Priority:** P2
+**Depends on:** `handle-availability` Hono migration and contract tests
+
 ## Profile Page Media Bento
 
 ### Magic Byte Verification for Uploaded Media
@@ -39,3 +55,5 @@
 **Depends on:** Usage evidence from shipped single media bento
 
 ## Completed
+
+- Hono profile-page API migration pass: `handle-availability`, metadata read/update, links create/update/delete/reorder, text create/update/delete/reorder, sync, bento sync, profile image upload, and bento media upload now delegate through the profile-page Hono app. `social-links` and `playlist` remain intentionally outside this pass.

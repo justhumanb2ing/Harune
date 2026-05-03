@@ -4,9 +4,12 @@ import { fetchUrlMetadata } from "@/lib/metadata/url-metadata";
 describe("fetchUrlMetadata", () => {
   test("extracts open graph metadata and resolves relative URLs", async () => {
     const originalFetch = globalThis.fetch;
+    let requestHeaders: HeadersInit | undefined;
 
-    globalThis.fetch = (async () =>
-      new Response(
+    globalThis.fetch = (async (_input, init) => {
+      requestHeaders = init?.headers;
+
+      return new Response(
         `<!doctype html>
         <html>
           <head>
@@ -25,10 +28,12 @@ describe("fetchUrlMetadata", () => {
             "content-type": "text/html",
           },
         }
-      )) as typeof fetch;
+      );
+    }) as typeof fetch;
 
     try {
       const metadata = await fetchUrlMetadata("https://example.com/post");
+      const headers = new Headers(requestHeaders);
 
       expect(metadata).toEqual({
         title: "OG Title & More",
@@ -39,6 +44,8 @@ describe("fetchUrlMetadata", () => {
         url: "https://example.com/canonical",
         readMode: "head",
       });
+      expect(headers.get("user-agent")).toContain("Mozilla/5.0");
+      expect(headers.get("accept-language")).toBe("en-US,en;q=0.9");
     } finally {
       globalThis.fetch = originalFetch;
     }

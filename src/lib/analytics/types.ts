@@ -55,7 +55,7 @@ export type ProfileAnalyticsResponse =
     }
   | {
       profilePageId: null;
-      state: "no-profile-page";
+      state: "no-profile";
       summaries: ProfileAnalyticsSummaryMap;
       timezone: string;
     }

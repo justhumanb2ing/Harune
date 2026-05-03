@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { uploadProfileImageIfChanged } from "@/lib/profile-page/client-image-upload";
+import { uploadProfileImageIfChanged } from "@/lib/profile/client-image-upload";
 import {
   getProfileImageFileError,
   PROFILE_IMAGE_UPLOAD_ROUTE,
   type ProfileImageKind,
-} from "@/lib/profile-page/image-upload";
+} from "@/lib/profile/image-upload";
 import { apiFetch } from "@/lib/react-query/fetcher";
 
 type ProfileImageUploadState = {

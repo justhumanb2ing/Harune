@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { getProfileAppPath } from "@/lib/profile-page/app-paths";
+import { getProfileAppPath } from "@/lib/profile/app-paths";
 import useUser from "@/lib/users/use-user";
 
 export default function SuccessRedirector() {

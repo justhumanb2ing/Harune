@@ -21,8 +21,8 @@ describe("me query options", () => {
       "utf8"
     );
 
-    expect(source).toContain('import "server-only"');
-    expect(source).not.toContain("@/lib/users/queries");
-    expect(source).toContain("queryKeys.app.me()");
+    expect(source.includes('import "server-only"')).toBe(true);
+    expect(source.includes("@/lib/users/queries")).toBe(false);
+    expect(source.includes("queryKeys.app.me()")).toBe(true);
   });
 });

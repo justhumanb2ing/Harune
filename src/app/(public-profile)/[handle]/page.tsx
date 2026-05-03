@@ -1,15 +1,17 @@
+import { getSessionCookie } from "better-auth/cookies";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
-import { ProfileBentoPage } from "@/components/profile-page/v2/profile-bento-page";
+import { ProfileBentoPage } from "@/components/profile/v2/profile-bento-page";
 import { WebPageJsonLd } from "@/components/site-instrumentation/structured-data";
 import { appConfig } from "@/lib/config";
 import {
   getOwnedProfilePage,
   getProfilePageEditorData,
   getPublicProfileBentoPage,
-} from "@/lib/profile-page/queries";
-import type { ProfilePageData } from "@/lib/profile-page/types";
+} from "@/lib/profile/queries";
+import type { ProfilePageData } from "@/lib/profile/types";
 import { absoluteUrl, createPageMetadata } from "@/lib/seo";
 
 type HandlePageProps = {
@@ -18,7 +20,7 @@ type HandlePageProps = {
   }>;
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 const toSerializableProfilePageData = (
   data: Awaited<ReturnType<typeof getProfilePageEditorData>>
@@ -36,10 +38,6 @@ const toSerializableProfilePageData = (
           image: data.page.image,
           backgroundImage: data.page.backgroundImage,
         },
-        socialLinks: data.socialLinks,
-        linkItems: data.linkItems,
-        playlistItems: data.playlistItems,
-        textBoxItems: data.textBoxItems,
       } satisfies ProfilePageData)
     : null;
 
@@ -65,12 +63,14 @@ export async function generateMetadata({ params }: HandlePageProps): Promise<Met
 
 export default async function HandlePage({ params }: HandlePageProps) {
   const { handle } = await params;
-  const [data, session] = await Promise.all([getPublicProfileBentoPage(handle), auth()]);
+  const data = await getPublicProfileBentoPage(handle);
 
   if (!data?.page.handle) {
     notFound();
   }
 
+  const requestHeaders = await headers();
+  const session = getSessionCookie(requestHeaders) ? await auth() : null;
   const [editorData, viewerProfilePage] = session?.user?.id
     ? await Promise.all([
         getProfilePageEditorData(session.user.id, data.page.handle).then(

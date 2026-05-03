@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { OnboardingSuccess } from "@/components/onboarding/onboarding-success";
 import { db } from "@/db";
-import { profilePages } from "@/db/schema/profile-page";
+import { profilePages } from "@/db/schema/profile";
 
 type OnboardingSuccessPageProps = {
   searchParams: Promise<{

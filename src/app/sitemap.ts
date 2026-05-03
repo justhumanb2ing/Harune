@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { db } from "@/db";
-import { profilePages } from "@/db/schema/profile-page";
+import { profilePages } from "@/db/schema/profile";
 import { isReservedHandle } from "@/lib/handles";
 import { absoluteUrl } from "@/lib/seo";
 

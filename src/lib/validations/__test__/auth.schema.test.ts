@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { MAX_SOCIAL_LINKS } from "@/lib/profile-page/types";
+import { MAX_SOCIAL_LINKS } from "@/lib/profile/types";
 import { onboardingSchema } from "@/lib/validations/auth.schema";
 
 describe("onboarding schema", () => {
@@ -39,10 +39,8 @@ describe("onboarding schema", () => {
     if (!result.success) {
       throw new Error("Expected onboarding schema to accept empty optional fields.");
     }
-    expect(result.data).toMatchObject({
-      role: undefined,
-      location: undefined,
-    });
+    expect(result.data.role).toBe(undefined);
+    expect(result.data.location).toBe(undefined);
   });
 
   test("rejects optional role and location over 100 characters", () => {

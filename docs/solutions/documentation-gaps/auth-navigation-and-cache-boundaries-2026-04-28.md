@@ -80,7 +80,7 @@ authenticated user
 보호 API는 proxy에 의존하지 않고 route handler에서 확인한다.
 
 ```text
-GET /api/app/profile-page
+GET /api/profile
   -> withAuthRequired(...)
   -> context.session.user.id
   -> getProfilePageEditorData(userId)

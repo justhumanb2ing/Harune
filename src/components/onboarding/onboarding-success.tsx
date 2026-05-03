@@ -5,7 +5,7 @@ import Link from "next/link";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
-import { getProfileAppPath } from "@/lib/profile-page/app-paths";
+import { getProfileAppPath } from "@/lib/profile/app-paths";
 
 type OnboardingSuccessProps = {
   handle: string;

@@ -74,11 +74,13 @@ describe("profile page cache regression", () => {
     const start = source.indexOf("export const syncProfileBentoDraft");
     const end = source.indexOf("export const syncProfilePageDraft");
     const bentoSyncSource = source.slice(start, end);
-    const transactionIndex = bentoSyncSource.indexOf("await db.transaction");
+    const reservedDbIndex = bentoSyncSource.indexOf("withReservedDb");
+    const transactionIndex = bentoSyncSource.indexOf("await reservedDb.transaction");
     const committedReadIndex = bentoSyncSource.indexOf(
-      "const nextData = await getPublicProfileBentoPageByPageId(db, ownedPage.id);"
+      "nextData: await getPublicProfileBentoPageByPageId(reservedDb, ownedPage.id),"
     );
 
+    expect(reservedDbIndex >= 0).toBe(true);
     expect(transactionIndex >= 0).toBe(true);
     expect(committedReadIndex > transactionIndex).toBe(true);
   });
@@ -87,11 +89,13 @@ describe("profile page cache regression", () => {
     const source = readFileSync(join(process.cwd(), "src/lib/profile/mutations.ts"), "utf8");
     const start = source.indexOf("export const syncProfilePageDraft");
     const profileSyncSource = source.slice(start);
-    const transactionIndex = profileSyncSource.indexOf("await db.transaction");
+    const reservedDbIndex = profileSyncSource.indexOf("withReservedDb");
+    const transactionIndex = profileSyncSource.indexOf("await reservedDb.transaction");
     const committedReadIndex = profileSyncSource.indexOf(
-      "const nextData = await getProfilePageEditorDataByPageId(db, ownedPage.id);"
+      "return getProfilePageEditorDataByPageId(reservedDb, ownedPage.id);"
     );
 
+    expect(reservedDbIndex >= 0).toBe(true);
     expect(transactionIndex >= 0).toBe(true);
     expect(committedReadIndex > transactionIndex).toBe(true);
   });

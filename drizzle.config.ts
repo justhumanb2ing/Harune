@@ -19,7 +19,7 @@ const modules = new Set(
 
 const schema = [
   "./src/db/schema/core/user.ts",
-  "./src/db/schema/core/profile-page.ts",
+  "./src/db/schema/core/profile.ts",
   "./src/db/schema/core/plans.ts",
   "./src/db/schema/core/credits.ts",
   ...(modules.has("coupons") ? ["./src/db/schema/extensions/coupons.ts"] : []),

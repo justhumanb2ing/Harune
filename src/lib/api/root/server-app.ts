@@ -1,10 +1,9 @@
 import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { profilePages } from "@/db/schema/profile-page";
+import { profilePages } from "@/db/schema/profile";
 import { getSafeRedirectPath, resolveAuthenticatedAppRedirect } from "@/lib/auth/app-redirect";
 import { fetchUrlMetadata } from "@/lib/metadata/url-metadata";
-import { toRootApiRequest } from "./adapter";
 import { createRootApi } from "./app";
 
 const getProfilePageByHandle = async (handle: string) => {
@@ -25,5 +24,3 @@ export const rootApi = createRootApi({
   getSafeRedirectPath,
   resolveAuthenticatedAppRedirect,
 });
-
-export const handleRootApiRequest = (req: Request) => rootApi.fetch(toRootApiRequest(req));

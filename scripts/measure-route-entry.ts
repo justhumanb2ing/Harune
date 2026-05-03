@@ -21,8 +21,8 @@ const routes = [
   "/create",
   `/${handle}`,
   `/${handle}/analytics`,
-  "/api/app/me",
-  "/api/app/profile-page",
+  "/api/me",
+  "/api/profile",
 ] as const;
 
 const measureRoute = async (route: string): Promise<RouteMeasurement> => {

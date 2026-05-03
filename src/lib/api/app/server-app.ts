@@ -1,16 +1,15 @@
 import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { profilePages, profileSocialLinks } from "@/db/schema/profile-page";
+import { profilePages, profileSocialLinks } from "@/db/schema/profile";
 import { users } from "@/db/schema/user";
-import { getProfileAnalyticsResponse } from "@/lib/analytics/profile-page-summary";
-import { getOwnedProfilePage } from "@/lib/profile-page/queries";
+import { getProfileAnalyticsResponse } from "@/lib/analytics/profile-summary";
+import { getOwnedProfilePage } from "@/lib/profile/queries";
 import { getMissingS3ConfigKeys, getPublicS3ObjectUrl } from "@/lib/s3/config";
 import createS3UploadFields from "@/lib/s3/create-s3-upload-fields";
 import { getMeForUser } from "@/lib/users/me";
 import type { OnboardingInput } from "@/lib/validations/auth.schema";
 import type { ProfileUpdateValues } from "@/lib/validations/profile.schema";
-import { toAppApiRequest } from "./adapter";
 import { createAppApi } from "./app";
 
 const updateUserProfile = async ({
@@ -127,5 +126,3 @@ export const appApi = createAppApi({
   getUserExists,
   updateUserProfile,
 });
-
-export const handleAppApiRequest = (req: Request) => appApi.fetch(toAppApiRequest(req));

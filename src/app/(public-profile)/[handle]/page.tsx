@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
-import { ProfileBentoPage } from "@/components/profile-page/v2/profile-bento-page";
+import { ProfileBentoPage } from "@/components/profile/v2/profile-bento-page";
 import { WebPageJsonLd } from "@/components/site-instrumentation/structured-data";
 import { appConfig } from "@/lib/config";
 import {
   getOwnedProfilePage,
   getProfilePageEditorData,
   getPublicProfileBentoPage,
-} from "@/lib/profile-page/queries";
-import type { ProfilePageData } from "@/lib/profile-page/types";
+} from "@/lib/profile/queries";
+import type { ProfilePageData } from "@/lib/profile/types";
 import { absoluteUrl, createPageMetadata } from "@/lib/seo";
 
 type HandlePageProps = {

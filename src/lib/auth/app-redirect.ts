@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { profilePages } from "@/db/schema/profile-page";
+import { profilePages } from "@/db/schema/profile";
 import { getSafeRedirectPath, resolveAppRedirectPath } from "@/lib/auth/app-redirect-paths";
 
 type ResolveAuthenticatedAppRedirectOptions = {

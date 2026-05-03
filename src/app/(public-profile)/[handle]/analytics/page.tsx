@@ -5,8 +5,8 @@ import { AnalyticsPageClient } from "@/app/(public-profile)/[handle]/analytics/p
 import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
-import { getProfileAnalyticsPath, getProfileAppPath } from "@/lib/profile-page/app-paths";
-import { getOwnedProfilePage, getOwnedProfilePageByHandle } from "@/lib/profile-page/queries";
+import { getProfileAnalyticsPath, getProfileAppPath } from "@/lib/profile/app-paths";
+import { getOwnedProfilePage, getOwnedProfilePageByHandle } from "@/lib/profile/queries";
 
 type AnalyticsPageProps = {
   params: Promise<{

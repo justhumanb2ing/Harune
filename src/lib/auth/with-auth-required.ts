@@ -1,11 +1,11 @@
 import { eq } from "drizzle-orm";
 import type { NextRequest, NextResponse } from "next/server";
-import type { MeResponse } from "@/app/api/app/me/types";
 import type { AuthSession } from "@/auth";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { plans } from "@/db/schema/plans";
 import { users } from "@/db/schema/user";
+import type { MeResponse } from "@/lib/api/app/types";
 import { createUnauthorizedResponse } from "@/lib/auth/responses";
 
 type WithManagerHandler = (

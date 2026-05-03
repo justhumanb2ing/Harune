@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { MAX_SOCIAL_LINKS } from "@/lib/profile-page/types";
+import { MAX_SOCIAL_LINKS } from "@/lib/profile/types";
 import { onboardingSchema } from "@/lib/validations/auth.schema";
 
 describe("onboarding schema", () => {

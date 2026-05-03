@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { env } from "@/env";
-import { getProfileAppPath } from "@/lib/profile-page/app-paths";
+import { getProfileAppPath } from "@/lib/profile/app-paths";
 import useUser from "@/lib/users/use-user";
 
 export default function PaddleCheckoutPage() {

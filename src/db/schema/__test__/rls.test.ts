@@ -18,7 +18,7 @@ import {
   profileSocialLinks,
   profileTextBentos,
   profileTextBoxItems,
-} from "@/db/schema/profile-page";
+} from "@/db/schema/profile";
 import { authAccounts, authJwks, authSessions, authVerifications, users } from "@/db/schema/user";
 
 const policyNames = (table: Parameters<typeof getTableConfig>[0]) =>

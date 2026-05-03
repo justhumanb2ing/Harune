@@ -25,7 +25,7 @@ import { SoundcloudLogoSolidIcon } from "@/components/icons/soundcloud-logo-soli
 import { SpotifyIcon } from "@/components/icons/spotify-icon";
 import { TiktokIcon } from "@/components/icons/tiktok-icon";
 import { XTwitterIcon } from "@/components/icons/x-twitter-icon";
-import type { SocialPlatform } from "@/lib/profile-page/types";
+import type { SocialPlatform } from "@/lib/profile/types";
 
 type SocialIconComponent = (props: IconProps) => ReactNode;
 

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import type { MeResponse } from "@/app/api/app/me/types";
 import type { ProfileAnalyticsResponse } from "@/lib/analytics/types";
+import type { MeResponse } from "@/lib/api/app/types";
 import type { OnboardingInput } from "@/lib/validations/auth.schema";
 import type { ProfileUpdateValues } from "@/lib/validations/profile.schema";
 import { createAppApi } from "../app";

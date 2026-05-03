@@ -42,7 +42,7 @@ describe("root Hono API", () => {
       },
     });
 
-    const response = await app.request("/api/handles/availability?handle=demo");
+    const response = await app.request("/api/handle/availability?handle=demo");
     const body = (await response.json()) as { available: boolean };
 
     expect(response.status).toBe(200);
@@ -59,7 +59,7 @@ describe("root Hono API", () => {
       },
     });
 
-    const response = await app.request("/api/handles/availability?handle=bad-handle");
+    const response = await app.request("/api/handle/availability?handle=bad-handle");
     const body = (await response.json()) as { error: string };
 
     expect(response.status).toBe(400);
@@ -84,7 +84,7 @@ describe("root Hono API", () => {
       },
     });
 
-    const response = await app.request("/api/test?url=https%3A%2F%2Fexample.com%2Fpost");
+    const response = await app.request("/api/crawl?url=https%3A%2F%2Fexample.com%2Fpost");
     const body = (await response.json()) as { image: string; title: string; url: string };
 
     expect(response.status).toBe(200);
@@ -114,10 +114,10 @@ describe("root Hono API", () => {
       },
     });
 
-    const missingUrlResponse = await missingUrlApp.request("/api/test");
-    const invalidUrlResponse = await invalidUrlApp.request("/api/test?url=notaurl");
+    const missingUrlResponse = await missingUrlApp.request("/api/crawl");
+    const invalidUrlResponse = await invalidUrlApp.request("/api/crawl?url=notaurl");
     const upstreamErrorResponse = await upstreamErrorApp.request(
-      "/api/test?url=https%3A%2F%2Fexample.com"
+      "/api/crawl?url=https%3A%2F%2Fexample.com"
     );
 
     expect(missingUrlResponse.status).toBe(400);

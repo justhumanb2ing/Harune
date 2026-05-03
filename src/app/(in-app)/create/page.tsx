@@ -4,8 +4,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { OnboardingForm } from "@/components/onboarding/onboarding-form";
 import { db } from "@/db";
-import { profilePages } from "@/db/schema/profile-page";
-import { getProfileAppPath } from "@/lib/profile-page/app-paths";
+import { profilePages } from "@/db/schema/profile";
+import { getProfileAppPath } from "@/lib/profile/app-paths";
 
 type OnboardingPageProps = {
   searchParams: Promise<{

@@ -1,5 +1,3 @@
-"use client";
-
 import type { CSSProperties } from "react";
 import { parsePlaylistIframe } from "@/lib/profile/playlist";
 
@@ -27,7 +25,7 @@ export function PlaylistIframe({ content, title }: PlaylistIframeProps) {
       title={iframe.title || title}
       allow={iframe.allow}
       allowFullScreen={iframe.allowFullScreen}
-      loading={iframe.loading}
+      loading={iframe.loading ?? "lazy"}
       referrerPolicy={iframe.referrerPolicy}
       sandbox={iframe.sandbox}
       style={{ ...defaultIframeStyle, ...iframe.style }}

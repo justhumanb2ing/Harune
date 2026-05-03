@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { profilePages } from "@/db/schema/profile";
@@ -19,7 +19,7 @@ import {
   syncProfilePageDraft,
   updateProfileMetadata,
 } from "@/lib/profile/mutations";
-import { getProfilePageEditorData } from "@/lib/profile/queries";
+import { getProfilePageEditorData, PUBLIC_PROFILE_BENTO_CACHE_TAG } from "@/lib/profile/queries";
 import { createProfileApi } from "./app";
 
 const updateProfileImage = async ({
@@ -60,6 +60,9 @@ export const profileApi = createProfileApi({
   isProfilePageError: (error): error is ProfilePageError => error instanceof ProfilePageError,
   putProfileMediaObject,
   revalidatePath,
+  revalidatePublicProfileCache: () => {
+    revalidateTag(PUBLIC_PROFILE_BENTO_CACHE_TAG, { expire: 0 });
+  },
   syncProfileBentoDraft,
   syncProfilePageDraft,
   updateProfileImage,

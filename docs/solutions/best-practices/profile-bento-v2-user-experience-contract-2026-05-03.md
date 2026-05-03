@@ -83,6 +83,17 @@ Link item의 thumbnail과 favicon 영역은 이미지 유무와 관계없이 같
 - thumbnail 영역이 pointer event를 받으면 grid item drag/resize 시작점과 충돌할 수 있다.
 - 2x1, 2x2, 2x4, 1x4 link item에서 thumbnail/favicon이 있는 경우와 없는 경우 모두 editor/public visual parity와 resize control이 끊기지 않아야 한다.
 
+### Public Render Performance
+
+공개 profile 접근은 링크 공유, 검색, 소셜 인앱 브라우저에서 가장 먼저 체감되는 surface다. 따라서 public readonly route는 아래 contract를 유지한다.
+
+- public readonly grid는 `react-grid-layout`이 계산하는 compact/desktop 좌표, rowHeight, section height, card wrapper를 기준으로 editor와 같은 visual contract를 유지한다. CSS grid로 대체하면 저장된 layout semantics와 short viewport parity가 깨질 수 있다.
+- owner가 자신의 공개 페이지에 접근할 때 readonly surface가 먼저 보인 뒤 editor로 깜빡이며 바뀌면 안 된다. owner 여부는 서버 렌더 전에 결정하고, owner면 첫 HTML부터 editor surface만 렌더한다.
+- anonymous public route는 `auth()`를 호출하지 않는다. session cookie signal이 있을 때만 owner 확인용 auth/editor read를 수행한다.
+- public profile data는 짧은 revalidate cache를 사용하고, profile sync API는 cache tag와 path를 함께 무효화한다.
+- playlist iframe은 저장된 embed HTML에 `loading` attribute가 없어도 기본 lazy loading을 적용한다.
+- media video는 public initial load에서 metadata/body fetch를 강제하지 않도록 `preload="none"`을 기본으로 둔다.
+
 ## Update Rule
 
 UI/UX 개선을 적용했을 때 아래 중 하나라도 해당하면 이 문서를 같은 변경 단위에서 갱신한다.

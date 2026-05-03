@@ -156,7 +156,7 @@ export function ProfileBentoOwnerSettingPopover() {
         <Button
           type="button"
           variant="ghost"
-          className="px-2 font-normal text-neutral-500"
+          className="px-2 min-h-9 font-normal text-neutral-500"
           aria-expanded={isOpen}
           aria-controls="v2-owner-setting-popover"
           onClick={() => setIsOpen((current) => !current)}

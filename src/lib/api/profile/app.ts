@@ -45,6 +45,7 @@ type ProfileApiDependencies = {
     objectKey: string;
   }) => Promise<void>;
   revalidatePath: (path: string) => void;
+  revalidatePublicProfileCache: () => void;
   syncProfilePageDraft: (input: {
     userId: string;
     values: ProfilePageSyncValues;
@@ -77,6 +78,7 @@ export const createProfileApi = ({
   logger = console,
   putProfileMediaObject,
   revalidatePath,
+  revalidatePublicProfileCache,
   syncProfileBentoDraft,
   syncProfilePageDraft,
   updateProfileImage,
@@ -209,6 +211,7 @@ export const createProfileApi = ({
       });
 
       revalidatePath(getProfileAppPath(data.page.handle));
+      revalidatePublicProfileCache();
 
       return jsonResponse(context, data, { noStore: true, status: 200 });
     } catch (error) {
@@ -242,6 +245,7 @@ export const createProfileApi = ({
       });
 
       revalidatePath(getProfileAppPath(data.page.handle));
+      revalidatePublicProfileCache();
 
       return jsonResponse(context, data, { noStore: true, status: 200 });
     } catch (error) {

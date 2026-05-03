@@ -1,4 +1,5 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
+import { unstable_cache } from "next/cache";
 import { db } from "@/db";
 import {
   profileBentoLayouts,
@@ -25,6 +26,7 @@ type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type DbExecutor = typeof db | DbTransaction;
 
 const toPlaylistProvider = (provider: string): PlaylistProvider => provider as PlaylistProvider;
+export const PUBLIC_PROFILE_BENTO_CACHE_TAG = "public-profile-bento-page";
 
 export const getOwnedProfilePage = async (userId: string) => {
   return db
@@ -380,7 +382,7 @@ export const getPublicProfileBentoPageByPageId = async (
   };
 };
 
-export const getPublicProfileBentoPage = async (handle: string) => {
+const getPublicProfileBentoPageUncached = async (handle: string) => {
   const page = await db
     .select({
       id: profilePages.id,
@@ -396,6 +398,15 @@ export const getPublicProfileBentoPage = async (handle: string) => {
 
   return getPublicProfileBentoPageByPageId(db, page.id);
 };
+
+export const getPublicProfileBentoPage = unstable_cache(
+  getPublicProfileBentoPageUncached,
+  [PUBLIC_PROFILE_BENTO_CACHE_TAG],
+  {
+    revalidate: 300,
+    tags: [PUBLIC_PROFILE_BENTO_CACHE_TAG],
+  }
+);
 
 export const getPublicProfilePageSocialImage = async (handle: string) => {
   return db

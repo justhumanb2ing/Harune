@@ -63,11 +63,13 @@ describe("profile page cache regression", () => {
     expect(fetchCalls[0]?.init?.cache).toBe("no-store");
   });
 
-  test("public profile DB reads are not memoized across requests", () => {
+  test("public profile reads use explicit Next data cache instead of React request memoization", () => {
     const source = readFileSync(join(process.cwd(), "src/lib/profile/queries.ts"), "utf8");
 
     expect(source.includes('from "react"')).toBe(false);
     expect(source.includes("cache(async")).toBe(false);
+    expect(source.includes("unstable_cache")).toBe(true);
+    expect(source.includes("PUBLIC_PROFILE_BENTO_CACHE_TAG")).toBe(true);
   });
 
   test("bento sync response is built from a committed DB read", () => {

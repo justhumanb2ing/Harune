@@ -51,7 +51,7 @@ date: 2026-04-22
 - `src/components/section/profile-page/social-links-section-editor.tsx`
 - `src/components/section/profile-page/links-section-editor.tsx`
 - `src/components/section/profile-page/text-boxes-section-editor.tsx`
-- `src/app/api/app/profile-page/route.ts`: 현재 editor GET + profile metadata PATCH 진입점
+- `src/app/api/profile/route.ts`: 현재 editor GET + profile metadata PATCH 진입점
 - `src/lib/profile-page/queries.ts`: profile page editor/public page read 모델
 - `src/lib/profile-page/mutations.ts`: item별 즉시 저장 mutation
 - `src/hooks/use-profile-image-upload.ts`: 로컬 object URL preview와 실제 업로드 분리 패턴
@@ -82,7 +82,7 @@ date: 2026-04-22
   렌더링마다 전체 문서를 deep-compare하지 않고, 액션 시점에 `profile`, `socialLinks`, `linkItems`, `textBoxItems`, `image` 단위 dirty 플래그를 갱신해 `hasUnsyncedChanges`를 만든다.
 
 - Sync는 full-document 단일 엔드포인트로 처리한다.
-  item별 route를 여러 번 호출하는 대신, draft 전체를 한 번에 검증하고 transaction으로 반영하는 `POST /api/app/profile-page/sync` 경로를 도입한다. 이렇게 해야 추가/삭제/정렬/프로필 수정이 한 commit으로 보장된다.
+  item별 route를 여러 번 호출하는 대신, draft 전체를 한 번에 검증하고 transaction으로 반영하는 `POST /api/profile/sync` 경로를 도입한다. 이렇게 해야 추가/삭제/정렬/프로필 수정이 한 commit으로 보장된다.
 
 - 새 아이템은 client temp id를 쓴다.
   Sync 전에도 생성 직후 편집/정렬/삭제가 가능해야 하므로, link/text/social draft 엔트리는 `draft:` prefix 같은 임시 id를 허용하고 Sync 응답에서 실제 DB id로 교체한다.
@@ -91,7 +91,7 @@ date: 2026-04-22
   `src/app/(public-profile)/[handle]/page.tsx`의 presentational markup을 컴포넌트로 추출해 public page와 editor preview가 같은 렌더링 규칙을 따르도록 맞춘다.
 
 - 이미지 선택은 로컬 draft로 유지하되, 업로드 성공 후에는 이미지 컬럼을 즉시 finalize한다.
-  선택 직후에는 object URL만 preview에 반영한다. 사용자가 `Sync`를 누르면 필요한 이미지를 사용자별 고정 object key(`profile-page/profile`, `profile-page/background`)로 업로드하고, 업로드 성공 직후 `PATCH /api/app/profile-page/upload-image`가 `profile_page.image` 또는 `profile_page.backgroundImage`를 저장한다. 이후 full draft sync는 같은 URL을 포함해 전체 편집 상태를 다시 정합화한다.
+  선택 직후에는 object URL만 preview에 반영한다. 사용자가 `Sync`를 누르면 필요한 이미지를 사용자별 고정 object key(`profile-page/profile`, `profile-page/background`)로 업로드하고, 업로드 성공 직후 `PATCH /api/profile/upload-image`가 `profile_page.image` 또는 `profile_page.backgroundImage`를 저장한다. 이후 full draft sync는 같은 URL을 포함해 전체 편집 상태를 다시 정합화한다.
 
 ## Open Questions
 
@@ -120,7 +120,7 @@ date: 2026-04-22
 
 ```mermaid
 flowchart LR
-  A["GET /api/app/profile-page"] --> B["React Query base snapshot"]
+  A["GET /api/profile"] --> B["React Query base snapshot"]
   B --> C["ProfilePageEditorProvider in (sidebar) layout"]
   C --> D["Profile section"]
   C --> E["Social section"]
@@ -128,9 +128,9 @@ flowchart LR
   C --> G["Text section"]
   C --> H["Preview panel + Sync button"]
   H --> I["Upload image if needed"]
-  I --> J["PATCH /api/app/profile-page/upload-image"]
+  I --> J["PATCH /api/profile/upload-image"]
   J --> K["image/backgroundImage finalize"]
-  K --> L["POST /api/app/profile-page/sync"]
+  K --> L["POST /api/profile/sync"]
   L --> M["DB transaction"]
   L --> N["canonical snapshot response"]
   N --> C
@@ -152,8 +152,8 @@ flowchart LR
 - Modify: `src/lib/profile-page/types.ts`
 - Modify: `src/lib/validations/profile-page.schema.ts`
 - Modify: `src/lib/profile-page/mutations.ts`
-- Modify: `src/app/api/app/profile-page/route.ts`
-- Create: `src/app/api/app/profile-page/sync/route.ts`
+- Modify: `src/app/api/profile/route.ts`
+- Create: `src/app/api/profile/sync/route.ts`
 - Test: `src/lib/profile-page/profile-page-sync.test.ts`
 
 **Approach:**
@@ -165,7 +165,7 @@ flowchart LR
 - 이미지 교체는 sync 직전 업로드하되, 업로드 성공 직후 전용 finalize route가 `profile_page.image` / `profile_page.backgroundImage`를 먼저 저장한다. sync route는 같은 URL을 포함한 full draft를 transaction으로 반영해 최종 canonical snapshot을 반환한다.
 
 **Patterns to follow:**
-- `src/app/api/app/profile-page/route.ts`
+- `src/app/api/profile/route.ts`
 - `src/lib/profile-page/mutations.ts`
 - `src/hooks/use-profile-image-upload.ts`
 
@@ -285,7 +285,7 @@ flowchart LR
 - preview는 store의 draft와 `previewImageUrl`을 읽어 public page에 가까운 표시를 즉시 반영한다.
 - public profile route는 presentational 부분을 `profile-page-renderer.tsx` 같은 공유 컴포넌트로 추출해 preview와 중복을 줄인다.
 - `Sync` 버튼은 `hasUnsyncedChanges === false` 또는 `syncStatus === "syncing"`일 때 disabled 처리한다.
-- Sync 클릭 시 필요한 경우 이미지 업로드를 먼저 수행하고, 업로드 결과를 `PATCH /api/app/profile-page/upload-image`로 finalize한 뒤 그 URL을 포함한 full draft를 sync route에 보낸다.
+- Sync 클릭 시 필요한 경우 이미지 업로드를 먼저 수행하고, 업로드 결과를 `PATCH /api/profile/upload-image`로 finalize한 뒤 그 URL을 포함한 full draft를 sync route에 보낸다.
 - 성공 시 canonical snapshot으로 store를 rebase하고 `queryKeys.app.profilePage()`를 갱신하며 `queryKeys.app.me()`를 invalidate한다.
 - 같은 `(sidebar)` 레이아웃 안에서 쓰는 `components/sections/sidebar.tsx`는 provider가 있으면 draft name/handle/image를 우선 사용해 내부 UI 정합성을 맞춘다.
 
@@ -311,7 +311,7 @@ flowchart LR
 - **Interaction graph:** `(sidebar)` layout provider가 section editors, preview panel, sidebar summary를 묶고, 이 provider만 sync route와 React Query를 연결한다.
 - **Error propagation:** Sync 실패는 preview 패널 또는 공통 toast로 surfaced되며, draft는 유지된다. 로컬 편집 오류가 서버 write 실패로 곧바로 전파되지 않는다.
 - **State lifecycle risks:** base와 draft를 섞어 쓰면 dirty 판정이 무너질 수 있으므로, store 내부에서 두 상태를 명확히 분리해야 한다.
-- **API surface parity:** write API는 full sync로 수렴하지만, GET `/api/app/profile-page`와 handle availability는 계속 유지된다.
+- **API surface parity:** write API는 full sync로 수렴하지만, GET `/api/profile`와 handle availability는 계속 유지된다.
 - **Integration coverage:** route 이동 후 draft 유지, preview/summary 정합성, Sync 후 React Query rebase와 `useUser()` invalidation은 단위 테스트만으로 부족할 수 있어 통합 시나리오가 필요하다.
 - **Unchanged invariants:** public page는 Sync 전 draft를 읽지 않는다. persisted profile data의 외부 노출 시점은 여전히 서버 write 이후다.
 

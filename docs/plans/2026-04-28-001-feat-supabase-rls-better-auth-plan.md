@@ -241,7 +241,7 @@ sequenceDiagram
 **Approach:**
 - Enable RLS on `app_user`, `auth_account`, `auth_session`, `auth_verification`, and future `jwks`.
 - Add no `anon` or `authenticated` policies for `auth_account`, `auth_session`, `auth_verification`, and `jwks`.
-- Keep `app_user` closed to exposed roles in the initial rollout. If a future client needs account data, prefer `/api/app/me` or a safe projected view over base table access because the base row contains payment provider IDs and credit snapshot data.
+- Keep `app_user` closed to exposed roles in the initial rollout. If a future client needs account data, prefer `/api/me` or a safe projected view over base table access because the base row contains payment provider IDs and credit snapshot data.
 - Do not allow client-side `insert`, `update`, or `delete` on `app_user`; profile metadata changes should continue through API routes.
 
 **Patterns to follow:**

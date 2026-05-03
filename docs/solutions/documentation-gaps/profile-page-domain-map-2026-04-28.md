@@ -33,7 +33,7 @@ Profile page의 truth source는 DB의 `profile_page` 계열 테이블이다.
 
 ```text
 Editor read:
-GET /api/app/profile-page
+GET /api/profile
   -> withAuthRequired
   -> getProfilePageEditorData(userId)
   -> profilePageQueryOptions()
@@ -51,7 +51,7 @@ Public bento read:
 ```text
 Editor draft
   -> buildSyncPayload(draftData)
-  -> POST /api/app/profile-page/sync
+  -> POST /api/profile/sync
   -> profilePageSyncSchema
   -> syncProfilePageDraft(userId, values)
   -> normal DB read after writes
@@ -59,7 +59,7 @@ Editor draft
 
 Bento editor
   -> ProfileBentoInteractiveGrid current payload
-  -> POST /api/app/profile-page/bento/sync
+  -> POST /api/profile/bento/sync
   -> profileBentoSyncSchema
   -> syncProfileBentoDraft(userId, values)
   -> normal DB read with getPublicProfileBentoPageByPageId(db, ownedPage.id)
@@ -75,7 +75,7 @@ select local file
   -> SHA-256 hash
   -> skip upload if current ?v=hash matches
   -> stable object key public/users/{userId}/profile-page/{profile|background}
-  -> PATCH /api/app/profile-page/upload-image
+  -> PATCH /api/profile/upload-image
   -> update profile_page.image or profile_page.backgroundImage
 ```
 
@@ -92,7 +92,7 @@ Profile page는 draft, React Query cache, browser fetch cache, DB state, public 
 ## When to Apply
 - `src/hooks/profile-page-editor-store.ts`를 바꿀 때
 - `src/lib/profile-page/mutations.ts`의 sync 또는 reorder helper를 바꿀 때
-- `/api/app/profile-page/bento/sync`, `profile_bento`, `profile_bento_layout`, `profile_*_bento`를 바꿀 때
+- `/api/profile/bento/sync`, `profile_bento`, `profile_bento_layout`, `profile_*_bento`를 바꿀 때
 - 이미지 업로드, S3 cleanup, cache-busting URL을 바꿀 때
 - 공개 페이지와 editor preview가 다르게 보이는 문제를 디버깅할 때
 
@@ -100,9 +100,9 @@ Profile page는 draft, React Query cache, browser fetch cache, DB state, public 
 Sync 성공 조건은 네트워크 응답만으로 판단하지 않는다. 안전한 확인 흐름은 아래와 같다.
 
 ```text
-1. POST /api/app/profile-page/sync payload 확인
+1. POST /api/profile/sync payload 확인
 2. route response 확인
-3. GET /api/app/profile-page 정상 read 확인
+3. GET /api/profile 정상 read 확인
 4. 직접 DB row 확인
 5. editor store가 response로 rebase되는지 확인
 6. 공개 페이지 revalidate 대상 확인
@@ -111,7 +111,7 @@ Sync 성공 조건은 네트워크 응답만으로 판단하지 않는다. 안�
 Bento v2 저장 문제는 `profile_bento` parent row만 보지 말고 type-specific child table도 같이 확인한다.
 
 ```text
-1. POST /api/app/profile-page/bento/sync payload 확인
+1. POST /api/profile/bento/sync payload 확인
 2. route response 확인
 3. getPublicProfileBentoPage(handle) 정상 read 확인
 4. 직접 DB에서 profile_bento, profile_bento_layout, profile_link_bento, profile_text_bento, profile_playlist_bento, profile_section_bento 확인

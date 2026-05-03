@@ -12,7 +12,7 @@ symptoms:
 root_cause: missing_workflow_step
 resolution_type: code_fix
 severity: high
-tags: [profile-page, image-upload, s3, db-persistence, cache-invalidation, sync]
+tags: [profile-page, image-upload, r2, db-persistence, cache-invalidation, sync]
 ---
 
 # Profile page image upload URL persistence regression
@@ -23,7 +23,7 @@ Profile page image uploads were able to write files to storage without reliably 
 The upload flow also used UUID object keys, so every replacement created another storage object. A user could accumulate many profile-page image objects even though the product only has two image slots: profile and background.
 
 ## Symptoms
-- Selecting a profile or background image created an object in S3-compatible storage.
+- Selecting a profile or background image created an object in storage.
 - Pressing Sync could still show a success state.
 - Refreshing the editor or public page could show the previous image.
 - `profile_page.backgroundImage` or `profile_page.image` could remain unset or stale after upload.
@@ -31,7 +31,7 @@ The upload flow also used UUID object keys, so every replacement created another
 
 ## What Didn't Work
 - Treating cache invalidation as the complete fix was insufficient. Stale React/Next/React Query reads can make the problem look worse, but they do not guarantee DB persistence after a storage upload.
-- Relying on the later `/api/app/profile-page/sync` request as the only DB write left a gap: storage upload could succeed before the sync request failed, validated a stale draft, or never persisted the image column.
+- Relying on the later `/api/profile/sync` request as the only DB write left a gap: storage upload could succeed before the sync request failed, validated a stale draft, or never persisted the image column.
 - Comparing full public URLs for cleanup was unsafe after introducing cache-busting query strings. The same storage object with a different `?v=` value is not a different object and must not be deleted.
 - UUID object keys were the wrong model for fixed user image slots. They made orphan cleanup hard and allowed unbounded growth.
 
@@ -63,24 +63,27 @@ export async function uploadProfileImageIfChanged({ currentUrl, file, kind }) {
     return currentUrl;
   }
 
-  const uploadedUrl = await uploader.uploadFile(file, {
-    meta: {
-      imageHash,
-      imageKind: kind,
-    },
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("imageHash", imageHash);
+  formData.append("imageKind", kind);
+
+  const uploaded = await apiFetch<{ imageUrl: string }>(PROFILE_IMAGE_UPLOAD_ROUTE, {
+    method: "POST",
+    body: formData,
   });
 
   const finalized = await apiFetch<{ imageUrl: string | null }>(PROFILE_IMAGE_UPLOAD_ROUTE, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ imageKind: kind, imageUrl: uploadedUrl }),
+    body: JSON.stringify({ imageKind: kind, imageUrl: uploaded.imageUrl }),
   });
 
-  return finalized.imageUrl ?? uploadedUrl;
+  return finalized.imageUrl ?? uploaded.imageUrl;
 }
 ```
 
-Third, make `POST /api/app/profile-page/upload-image` create a presigned upload for the stable key, not a UUID key. It must require both `imageKind` and `imageHash`:
+Third, make `POST /api/profile/upload-image` accept the image file as `FormData`, write it server-side to R2 using the stable key, and return the R2 public URL. It must require both `imageKind` and `imageHash`, and the server must verify the submitted hash against the uploaded bytes:
 
 ```ts
 const profileImageKind = getProfileImageKind(imageKind);
@@ -93,14 +96,22 @@ if (!imageHash || !/^[a-f0-9]{64}$/i.test(imageHash)) {
   return NextResponse.json({ error: "Invalid profile image hash." }, { status: 400 });
 }
 
-const s3Path = getProfileImageObjectKey(session.user.id, profileImageKind);
-const publicUrl = withProfileImageCacheVersion(getPublicS3ObjectUrl(s3Path), imageHash);
+const buffer = Buffer.from(await file.arrayBuffer());
+const contentHash = hashProfileMediaBuffer(buffer);
+
+if (contentHash !== imageHash.toLowerCase()) {
+  return NextResponse.json({ error: "Profile image hash mismatch." }, { status: 400 });
+}
+
+const objectKey = getProfileImageObjectKey(session.user.id, profileImageKind);
+await putProfileMediaObject({ body: buffer, contentType: file.type, objectKey });
+const publicUrl = getProfileMediaPublicUrl({ contentHash, objectKey });
 ```
 
-Fourth, finalize immediately after storage upload. `PATCH /api/app/profile-page/upload-image` verifies that the submitted URL belongs to the authenticated user's expected slot, then writes the matching DB column:
+Fourth, finalize immediately after storage upload. `PATCH /api/profile/upload-image` verifies that the submitted URL belongs to the authenticated user's expected slot, then writes the matching DB column:
 
 ```ts
-const objectKey = getS3ObjectKeyFromPublicUrl(imageUrl);
+const objectKey = getProfileMediaObjectKeyFromUrl(imageUrl);
 const expectedKey = getProfileImageObjectKey(context.session.user.id, profileImageKind);
 
 if (objectKey !== expectedKey) {
@@ -116,7 +127,7 @@ await db
   .where(eq(profilePages.userId, context.session.user.id));
 ```
 
-Keep `/api/app/profile-page/sync` as the full draft synchronization path. It still writes `values.page.image` and `values.page.backgroundImage`, but it is no longer the only place that can persist an uploaded image URL.
+Keep `/api/profile/sync` as the full draft synchronization path. It still writes `values.page.image` and `values.page.backgroundImage`, but it is no longer the only place that can persist an uploaded image URL.
 
 Finally, compare storage object keys before deleting replaced images:
 
@@ -126,8 +137,8 @@ const shouldDeleteReplacedProfileImage = (previousUrl: string | null, nextUrl: s
     return false;
   }
 
-  const previousKey = getS3ObjectKeyFromPublicUrl(previousUrl);
-  const nextKey = nextUrl ? getS3ObjectKeyFromPublicUrl(nextUrl) : null;
+  const previousKey = getProfileMediaObjectKeyFromUrl(previousUrl);
+  const nextKey = nextUrl ? getProfileMediaObjectKeyFromUrl(nextUrl) : null;
 
   return !previousKey || previousKey !== nextKey;
 };
@@ -149,7 +160,7 @@ Stable object keys prevent accumulation. Replacing a profile image overwrites `p
 
 The finalize step closes the storage/DB gap. Once storage upload succeeds, the app immediately records the resulting URL into `profile_page.image` or `profile_page.backgroundImage`. The later Sync operation can still persist the full editor draft, but image persistence no longer depends on that broader workflow completing successfully.
 
-Hash comparison prevents redundant writes. If the same file is selected again, the client returns the current URL and never asks S3 for another upload.
+Hash comparison prevents redundant writes. If the same file is selected again, the client returns the current URL and never asks R2 for another upload.
 
 Object-key-based deletion matches the storage model. Query-string changes are cache versions, not distinct objects.
 
@@ -178,8 +189,8 @@ expect(fetchCount).toBe(0);
 ```
 
 ```ts
-expect(fetchCalls[2]?.input).toBe("/api/app/profile-page/upload-image");
-expect(fetchCalls[2]?.init?.method).toBe("PATCH");
+expect(fetchCalls[1]?.input).toBe("/api/profile/upload-image");
+expect(fetchCalls[1]?.init?.method).toBe("PATCH");
 expect(finalizeBody.imageKind).toBe("background");
 expect(finalizeBody.imageUrl.includes("/profile-page/background?v=")).toBe(true);
 ```

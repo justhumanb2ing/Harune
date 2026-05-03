@@ -26,9 +26,9 @@ The confusing part was that the network payload and network response were both c
 
 ## Symptoms
 - Pressing Sync showed a success toast.
-- `POST /api/app/profile-page/sync` payload contained the edited data.
-- `POST /api/app/profile-page/sync` response also contained the edited data.
-- `POST /api/app/profile-page/bento/sync` response could contain a newly added bento item such as `New text 1`, while a direct DB read still only showed the previous `profile_bento` rows.
+- `POST /api/profile/sync` payload contained the edited data.
+- `POST /api/profile/sync` response also contained the edited data.
+- `POST /api/profile/bento/sync` response could contain a newly added bento item such as `New text 1`, while a direct DB read still only showed the previous `profile_bento` rows.
 - Refreshing the editor called the normal profile-page read path and restored the old data.
 - Direct DB inspection still showed the old values.
 - The first sync after starting the dev server could appear to work, while later syncs did not reliably persist.
@@ -52,7 +52,7 @@ return await db.transaction(async (tx) => {
 });
 ```
 
-That made the response look correct because it was assembled inside the same transaction scope as the attempted writes. In the observed runtime, transaction-returned values could diverge from what later committed reads returned. The same pattern was reproduced in another API flow: `/api/app/create` could return a created profile page from inside a transaction, while immediate `/api/app/me` and `/api/app/profile-page` reads still behaved as if the page did not exist.
+That made the response look correct because it was assembled inside the same transaction scope as the attempted writes. In the observed runtime, transaction-returned values could diverge from what later committed reads returned. The same pattern was reproduced in another API flow: `/api/create` could return a created profile page from inside a transaction, while immediate `/api/me` and `/api/profile` reads still behaved as if the page did not exist.
 
 So the answer to "How can the response contain changed values when the DB was not updated?" is:
 
@@ -98,7 +98,7 @@ return nextData;
 
 This changes the meaning of a successful Sync response. It now means the server performed the writes and a subsequent normal DB read observed the saved state.
 
-The same rule applies to Bento. `syncProfileBentoDraft()` must not return a response assembled from `tx`. It writes `profile_bento`, `profile_bento_layout`, and the matching `profile_*_bento` rows with the `db` executor, then returns `getPublicProfileBentoPageByPageId(db, ownedPage.id)`. That makes `POST /api/app/profile-page/bento/sync` response equal to a committed read of the same tables the public `/[handle]` page uses.
+The same rule applies to Bento. `syncProfileBentoDraft()` must not return a response assembled from `tx`. It writes `profile_bento`, `profile_bento_layout`, and the matching `profile_*_bento` rows with the `db` executor, then returns `getPublicProfileBentoPageByPageId(db, ownedPage.id)`. That makes `POST /api/profile/bento/sync` response equal to a committed read of the same tables the public `/[handle]` page uses.
 
 The ordered collection helpers were also changed to persist the explicit payload positions. This matters when the client sends an array whose order differs from the `position` fields:
 
@@ -136,7 +136,7 @@ Then the editor draft and rendering paths were hardened so persisted `position` 
 The previous verification retry path was removed from `use-profile-page-editor.ts`. Sync now sends one request:
 
 ```ts
-const response = await apiFetch<ProfilePageData>("/api/app/profile-page/sync", {
+const response = await apiFetch<ProfilePageData>("/api/profile/sync", {
   method: "POST",
   cache: "no-store",
   headers: {
@@ -162,7 +162,7 @@ The fix removes the misleading success signal.
 
 Before the fix, Sync could return data read through `tx`, which only proved that the transaction-local view had the attempted changes. It did not prove that a later request, refresh, or DB inspection would observe the same state.
 
-After the fix, Sync returns data read through `db` after the writes. That is the same category of read used by `GET /api/app/profile-page`, so a successful response and a refresh now agree.
+After the fix, Sync returns data read through `db` after the writes. That is the same category of read used by `GET /api/profile`, so a successful response and a refresh now agree.
 
 Persisting explicit payload positions also makes reorder operations deterministic. If `mail` is sent with `position: 2` and `x` is sent with `position: 1`, the DB writes those values regardless of array order. Sorting by position on draft creation and render then makes the UI match the persisted source of truth.
 
@@ -192,7 +192,7 @@ Removing timestamp-based verification retries also explains the duplicate reques
 - When debugging "response is correct but refresh is old," immediately compare:
   - Sync payload
   - Sync response
-  - `GET /api/app/profile-page` response after Sync
+  - `GET /api/profile` response after Sync
   - `/[handle]` or `getPublicProfileBentoPage(handle)` response after Bento Sync
   - direct DB state
   - whether the Sync response was built from `tx` or from a normal `db` read
@@ -215,9 +215,9 @@ expect(data.socialLinks.map((item) => item.platform)).toEqual(["x", "mail"]);
 
 Useful manual API verification:
 
-1. Send `POST /api/app/profile-page/sync` with a changed profile field and reordered social links.
+1. Send `POST /api/profile/sync` with a changed profile field and reordered social links.
 2. Confirm the Sync response shows the changed value and expected positions.
-3. Immediately call `GET /api/app/profile-page`.
+3. Immediately call `GET /api/profile`.
 4. Confirm the GET response matches the Sync response.
 5. Refresh the editor.
 6. Confirm the UI still shows the changed values.
@@ -230,10 +230,10 @@ Useful manual API verification:
 
 Verification from the fix:
 
-- `bun x biome check src/lib/profile-page/mutations.ts src/hooks/use-profile-page-editor.ts src/hooks/profile-page-editor-store.ts src/components/profile-page/v2/profile-bento-readonly-grid.tsx src/app/api/app/profile-page/sync/route.ts src/app/api/app/profile-page/route.ts src/components/profile-page/editor-block/change-handle-button.tsx`
+- `bun x biome check src/lib/profile-page/mutations.ts src/hooks/use-profile-page-editor.ts src/hooks/profile-page-editor-store.ts src/components/profile-page/v2/profile-bento-readonly-grid.tsx src/app/api/profile/sync/route.ts src/app/api/profile/route.ts src/components/profile-page/editor-block/change-handle-button.tsx`
 - `bun test src/lib/profile-page/__test__/profile-page-sync-schema.test.ts src/lib/profile-page/__test__/profile-page-cache-regression.test.ts`
 - `bun x tsc --noEmit`
-- Local API verification confirmed that Sync response and immediate `GET /api/app/profile-page` both returned the changed profile values and social order.
+- Local API verification confirmed that Sync response and immediate `GET /api/profile` both returned the changed profile values and social order.
 
 ## Related Issues
 - Related solution doc:
@@ -247,6 +247,6 @@ Relevant code paths:
 - `src/hooks/use-profile-page-editor.ts`
 - `src/hooks/profile-page-editor-store.ts`
 - `src/components/profile-page/v2/profile-bento-readonly-grid.tsx`
-- `src/app/api/app/profile-page/sync/route.ts`
-- `src/app/api/app/profile-page/route.ts`
+- `src/app/api/profile/sync/route.ts`
+- `src/app/api/profile/route.ts`
 - `src/components/profile-page/editor-block/change-handle-button.tsx`

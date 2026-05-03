@@ -16,14 +16,14 @@ Next.js App Router, Better Auth, and TanStack Query usage를 정리해 로그인
 
 현재 앱은 `src/proxy.ts`에서 보호 페이지와 `/api/app/*` 요청마다 `auth()`를 호출한다. 이후 `src/app/(in-app)/(sidebar)/[handle]/app/layout.tsx`, `src/app/(in-app)/(sidebar)/[handle]/analytics/page.tsx`, `src/app/(auth)/post-sign-in/page.tsx`, `src/lib/auth/withAuthRequired.ts`도 다시 세션을 조회한다. 이 구조는 보안상 명확하지만, 페이지 이동과 API 호출의 시작 지점에서 반복적인 세션 조회가 발생해 체감 이동 속도와 서버 부하에 불리하다.
 
-TanStack Query는 이미 `queryOptions`, 서버 prefetch, `HydrationBoundary`를 일부 사용하지만, `/api/app/me`, profile-page, analytics 데이터의 freshness 정책과 서버/클라이언트 초기 데이터 전달 방식이 화면마다 다르다. Link prefetch도 Next.js 기본값에 대부분 맡겨져 있어 앱 내부의 높은 확률 이동과 낮은 확률 이동을 구분하지 못한다.
+TanStack Query는 이미 `queryOptions`, 서버 prefetch, `HydrationBoundary`를 일부 사용하지만, `/api/me`, profile-page, analytics 데이터의 freshness 정책과 서버/클라이언트 초기 데이터 전달 방식이 화면마다 다르다. Link prefetch도 Next.js 기본값에 대부분 맡겨져 있어 앱 내부의 높은 확률 이동과 낮은 확률 이동을 구분하지 못한다.
 
 ## Requirements Trace
 
 - R1. 앱 내부 Link 이동은 사용자가 클릭했을 때 즉시 반응하는 느낌을 줘야 한다.
 - R2. Link prefetch는 Next.js App Router의 자동 prefetch를 활용하되, 서버 비용이 큰 동적/보호 경로와 대량 링크는 무분별하게 prefetch하지 않아야 한다.
 - R3. 인증 보안 경계는 약화하지 않는다. `proxy.ts`에서 빠른 UX용 판별을 하더라도 보호된 페이지와 API route에서는 실제 세션 검증을 유지한다.
-- R4. `/api/app/me`와 profile-page 관련 사용자 데이터는 중복 조회를 줄이고 TanStack Query 캐시와 서버 hydration의 단일한 정책 아래 동작해야 한다.
+- R4. `/api/me`와 profile-page 관련 사용자 데이터는 중복 조회를 줄이고 TanStack Query 캐시와 서버 hydration의 단일한 정책 아래 동작해야 한다.
 - R5. 기존 캐시 회귀 방지 원칙을 유지한다. 프로필 편집처럼 최신성이 중요한 데이터는 브라우저 fetch 캐시와 오래된 클라이언트 캐시에 묶이지 않아야 한다.
 - R6. 리팩토링은 기존 라우트 URL, 로그인 callback, onboarding redirect, 공개 프로필 URL을 깨지 않아야 한다.
 - R7. 모든 앱 라우트는 network 단계에서 1000ms 이내에 진입 가능한 구조여야 한다. 여기서 "진입"은 구현 전 측정 기준으로 navigation/request 시작부터 첫 서버 응답, redirect 결정, 또는 route shell streaming 시작까지의 상한으로 정의하고, 구현 중 Playwright/Network timing으로 검증한다.
@@ -72,7 +72,7 @@ TanStack Query는 이미 `queryOptions`, 서버 prefetch, `HydrationBoundary`를
 | API protection | Proxy와 `withAuthRequired`가 `/api/app/*`에서 중복 세션 검증 | `/api/app/*`의 보안 판단은 `withAuthRequired`를 신뢰하고 proxy의 API 매칭 제거 또는 cookie-only fast reject로 축소 | API request마다 proxy + route handler 이중 조회를 피한다. 인증 실패 응답은 route handler에서 일관된 JSON으로 유지된다. |
 | App shell session | sidebar/app/analytics/post-sign-in에서 각자 `auth()`와 profile lookup 수행 | 앱 내부 서버 layout에서 session/profile bootstrap을 더 명확히 분리하고, 하위 화면은 hydrated query와 shared redirect helper를 사용 | 동일 이동 중 session/profile 조회 경로가 줄고, redirect 규칙이 한 곳에 모인다. |
 | Link movement | 대부분 기본 `<Link>` prefetch에 맡김 | 앱 내부 핵심 nav는 의도적으로 prefetch하고, 외부/낮은 확률/비싼 동적 route는 `prefetch={false}` 또는 hover/focus manual prefetch로 조절 | Next.js 자동 prefetch의 장점은 살리면서 서버 작업 낭비와 auth-heavy prefetch를 줄인다. |
-| Query hydration | 일부 route에서 서버 prefetch 사용, `/api/app/me`는 클라이언트 fetch 중심 | app bootstrap에 필요한 `me`/profile-page query는 서버 hydration 또는 initialData 정책을 통일하고, analytics처럼 비싼 데이터는 route 단위 prefetch 유지 | 첫 화면 skeleton/중복 fetch를 줄이고, query key 단위 invalidation이 더 예측 가능해진다. |
+| Query hydration | 일부 route에서 서버 prefetch 사용, `/api/me`는 클라이언트 fetch 중심 | app bootstrap에 필요한 `me`/profile-page query는 서버 hydration 또는 initialData 정책을 통일하고, analytics처럼 비싼 데이터는 route 단위 prefetch 유지 | 첫 화면 skeleton/중복 fetch를 줄이고, query key 단위 invalidation이 더 예측 가능해진다. |
 | Query freshness | 전역 `staleTime: 60_000`; 중요 query가 일부 no-store | query별 `staleTime`/`gcTime` 정책을 분리: `me`는 짧은 fresh window, editor data는 mutation 후 명시 invalidation, analytics는 route/기간 기준 fresh window | 성능과 최신성 요구가 다른 데이터를 같은 정책으로 묶지 않는다. |
 | Network entry budget | 라우트별 network timing 예산이 명시되어 있지 않음 | 모든 route에 1000ms 진입 예산을 두고 proxy/auth/query prefetch 작업을 이 예산 안에서 배치 | 최적화가 체감 개선으로 이어지는지 측정 가능해지고, auth/query 중복 제거가 명확한 성능 목표에 연결된다. |
 
@@ -96,9 +96,9 @@ TanStack Query는 이미 `queryOptions`, 서버 prefetch, `HydrationBoundary`를
 ## Success Metrics
 
 - `/api/app/*` 요청에서 proxy와 route handler가 모두 full session 조회를 수행하는 중복 경로가 제거된다.
-- 로그인 후 `/:handle/app` 최초 진입에서 sidebar가 `/api/app/me` cold fetch 완료 전까지 빈 사용자 상태를 보여주지 않는다.
+- 로그인 후 `/:handle/app` 최초 진입에서 sidebar가 `/api/me` cold fetch 완료 전까지 빈 사용자 상태를 보여주지 않는다.
 - `/:handle/app` ↔ `/:handle/analytics` 이동은 핵심 nav prefetch 또는 segment loading으로 즉시 반응 상태를 보여준다.
-- 기존 `/api/app/me` 401 JSON, `/sign-in?callbackUrl=...`, `/post-sign-in`, `/app` legacy redirect 동작은 유지된다.
+- 기존 `/api/me` 401 JSON, `/sign-in?callbackUrl=...`, `/post-sign-in`, `/app` legacy redirect 동작은 유지된다.
 - profile-page cache regression 테스트는 계속 통과하며 sync 이후 editor 데이터 최신성은 약화되지 않는다.
 - 보호/공개/auth 주요 라우트의 network entry timing은 local production build 기준 p95 1000ms 이하를 목표로 측정된다.
 
@@ -147,7 +147,7 @@ sequenceDiagram
 
 - [x] **Unit 1: Characterize current auth and cache behavior**
 
-**Goal:** Proxy, protected page, `/api/app/me`, profile-page query의 현재 보안/캐시 contract를 테스트로 고정한다.
+**Goal:** Proxy, protected page, `/api/me`, profile-page query의 현재 보안/캐시 contract를 테스트로 고정한다.
 
 **Requirements:** R3, R5, R6, R7
 
@@ -161,7 +161,7 @@ sequenceDiagram
 - Test: `src/lib/auth/proxy-auth-boundary.test.ts`
 
 **Approach:**
-- 리팩토링 전에 legacy redirect, sign-in callback, auth page redirect, `/api/app/me` unauthorized JSON, profile-page no-store 동작을 테스트로 고정한다.
+- 리팩토링 전에 legacy redirect, sign-in callback, auth page redirect, `/api/me` unauthorized JSON, profile-page no-store 동작을 테스트로 고정한다.
 - `proxy.ts`의 pure helper를 테스트 가능한 형태로 분리하는 것은 허용하되, 이 unit의 목적은 behavior characterization이다.
 
 **Execution note:** Add characterization coverage before changing proxy/session behavior.
@@ -173,7 +173,7 @@ sequenceDiagram
 **Test scenarios:**
 - Happy path: `/app` 요청은 `/post-sign-in`으로 legacy redirect된다.
 - Happy path: 로그인된 사용자가 `/sign-in?callbackUrl=/create`에 접근하면 `/post-sign-in?next=/create` 계열로 redirect된다.
-- Error path: 미인증 `/api/app/me` 요청은 JSON 401 contract를 유지한다.
+- Error path: 미인증 `/api/me` 요청은 JSON 401 contract를 유지한다.
 - Integration: profile-page client query는 `cache: "no-store"`를 유지한다.
 - Edge case: `callbackUrl=//evil.example` 같은 외부 redirect 시도는 내부 fallback으로 정규화된다.
 - Integration: 주요 route의 network timing 측정을 위한 smoke harness가 route별 request start와 first response/redirect timing을 기록한다.
@@ -209,7 +209,7 @@ sequenceDiagram
 - Happy path: session cookie가 없는 보호 page 요청은 `/sign-in?callbackUrl=...`로 redirect된다.
 - Happy path: session cookie가 있는 보호 page 요청은 proxy를 통과하고 page/layout full auth 검증으로 넘어간다.
 - Error path: session cookie가 있지만 실제 session이 만료된 경우 page/layout 또는 API route가 sign-in/401을 처리한다.
-- Integration: `/api/app/me`는 proxy 변경 후에도 `withAuthRequired`에서 401 JSON을 반환한다.
+- Integration: `/api/me`는 proxy 변경 후에도 `withAuthRequired`에서 401 JSON을 반환한다.
 - Edge case: legacy `/plan/*`, `/app/*` redirect는 유지된다. 제거된 `/section` route 호환 redirect는 다시 추가하지 않는다.
 - Integration: proxy에서 처리되는 redirect-only route는 full session validation 없이 1000ms budget 안에서 redirect decision을 반환한다.
 
@@ -254,7 +254,7 @@ sequenceDiagram
 - Happy path: 서버에서 hydrated `me` data가 있으면 `useUser()`는 즉시 user/profilePage를 읽는다.
 - Happy path: server-only `me` query option은 `src/lib/users/queries.ts`를 import하지 않고도 client `meQueryOptions()`와 같은 queryKey/data shape를 생성한다.
 - Happy path: profile-page layout prefetch 결과와 client `profilePageQueryOptions()` queryKey가 같아 중복 cold fetch를 줄인다.
-- Error path: `/api/app/me`가 401이면 client query error가 기존 `ApiError.status`를 유지한다.
+- Error path: `/api/me`가 401이면 client query error가 기존 `ApiError.status`를 유지한다.
 - Integration: profile-page sync 후 `queryKeys.app.profilePage()` invalidation은 editor data를 새로 읽게 한다.
 - Edge case: 사용자가 profilePage가 없으면 `/create` redirect가 유지된다.
 - Integration: `/:handle/app` entry path는 entry-critical `me`/profile shell 데이터만 blocking하고, 나머지 데이터는 hydration 이후 fetch 또는 nested route prefetch로 분리된다.
@@ -396,8 +396,8 @@ sequenceDiagram
 ## Documentation / Operational Notes
 
 - README 업데이트는 필수는 아니지만, 구현 후 `ONBOARDING.md` 또는 개발 문서에 "proxy는 UX redirect, route/page는 보안 검증" 원칙을 짧게 추가하는 것을 검토한다.
-- 성능 검증은 수동 네트워크 패널에서 `/api/app/me`, `/api/app/profile-page`, auth session 조회 호출 수가 이동 전후 어떻게 변했는지 비교한다.
-- 구현 검증에는 주요 route별 network entry timing 표를 포함한다. 최소 대상은 `/`, `/sign-in`, `/sign-up`, `/post-sign-in`, `/create`, `/:handle/app`, `/:handle/analytics`, `/:handle`, `/api/app/me`, `/api/app/profile-page`다.
+- 성능 검증은 수동 네트워크 패널에서 `/api/me`, `/api/profile`, auth session 조회 호출 수가 이동 전후 어떻게 변했는지 비교한다.
+- 구현 검증에는 주요 route별 network entry timing 표를 포함한다. 최소 대상은 `/`, `/sign-in`, `/sign-up`, `/post-sign-in`, `/create`, `/:handle/app`, `/:handle/analytics`, `/:handle`, `/api/me`, `/api/profile`다.
 - 배포 전 로그인, 로그아웃, 회원가입 후 onboarding, profile sync, `/app` legacy redirect, `/sign-in?callbackUrl=...`를 smoke test한다.
 
 ## Sources & References

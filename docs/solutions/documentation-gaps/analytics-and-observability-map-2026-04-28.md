@@ -45,7 +45,7 @@ TrackedProfilePageLink
 조회 경로는 서버 API가 맡는다.
 
 ```text
-GET /api/app/analytics
+GET /api/analytics
   -> withAuthRequired
   -> getOwnedProfilePage(userId)
   -> getProfileAnalyticsResponse(profilePageId, timezone)
@@ -61,7 +61,7 @@ GET /api/app/analytics
 | `src/lib/analytics/profile-page-summary.ts` | Today/7d/30d summary, CTR, top items |
 | `src/lib/analytics/analytics-ranges.ts` | timezone-aware range 계산 |
 | `src/lib/analytics/umami-client.ts` | Umami API 설정과 fetch |
-| `src/app/api/app/analytics/route.ts` | 인증된 분석 API |
+| `src/app/api/analytics/route.ts` | 인증된 분석 API |
 | `src/components/analytics/analytics-script.tsx` | 전역 analytics script 삽입 |
 
 Metric 의미는 다음과 같다.

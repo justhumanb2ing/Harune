@@ -11,10 +11,10 @@ Introduce Hono as a profile-page API composition layer, not as a full Next.js AP
 Approved decisions:
 
 - Start from a new branch: `codex/hono-profile-page-api`.
-- Use a slice-first migration for `/api/app/profile-page/**`.
+- Use a slice-first migration for `/api/profile/**`.
 - Use per-route adapter first. Existing Next.js route files keep URL ownership while delegating to a Hono app.
 - Do not migrate `playlist` routes in this pass because they are not currently used.
-- First migration target: `/api/app/profile-page/handle-availability`.
+- First migration target: `/api/profile/handle-availability`.
 - Use profile-page scoped helpers, not a global internal API framework.
 - Do not move Hono implementation into `src/server` during this pass. `src/server` is a future option only if Hono grows beyond a profile-page slice into an app-wide API composition layer.
 - Keep Better Auth architecture unchanged. `/api/auth/[...all]` stays on `toNextJsHandler(betterAuthServer)`.
@@ -55,12 +55,12 @@ Existing flows to preserve:
 ### In Scope
 
 - Add `hono` as an explicit dependency if Hono is imported directly.
-- Create a profile-page scoped Hono app, for example under `src/lib/api/profile-page/`.
+- Create a profile-page scoped Hono app, for example under `src/lib/api/profile/`.
 - Add auth middleware that reuses the existing `auth()` wrapper.
-- Migrate `/api/app/profile-page/handle-availability` through the per-route adapter pattern.
+- Migrate `/api/profile/handle-availability` through the per-route adapter pattern.
 - Migrate `links` create/update/delete/reorder routes.
 - Migrate `text` create/update/delete/reorder routes.
-- Migrate `/api/app/profile-page` metadata read/update route.
+- Migrate `/api/profile` metadata read/update route.
 - Migrate profile-page sync and upload routes after the initial Hono app and adapter tests prove the contract is stable.
 - Add Hono app tests and Next adapter route tests for the migrated route.
 - Preserve the existing request URL and JSON response shapes.
@@ -82,7 +82,7 @@ Recommended shape:
 Client apiFetch
   |
   v
-/api/app/profile-page/handle-availability
+/api/profile/handle-availability
   |
   v
 Existing Next route.ts owns the URL
@@ -105,7 +105,7 @@ Better Auth boundary:
   -> Better Auth toNextJsHandler
   -> unchanged
 
-/api/app/profile-page/handle-availability
+/api/profile/handle-availability
   -> Next route.ts adapter
   -> profile-page Hono app
   -> existing auth() wrapper
@@ -115,7 +115,7 @@ Better Auth boundary:
 
 ### Affected Pages/Routes
 
-- `/api/app/profile-page/handle-availability` - first Hono-backed profile-page API route; verify auth, query validation, domain errors, unknown errors, and unchanged JSON response shape.
+- `/api/profile/handle-availability` - first Hono-backed profile-page API route; verify auth, query validation, domain errors, unknown errors, and unchanged JSON response shape.
 - `/api/auth/[...all]` - must remain on Better Auth `toNextJsHandler`; verify it is not moved behind Hono.
 
 ### Key Interactions To Verify
@@ -194,9 +194,9 @@ The follow-up migration path for this pass is:
 
 1. `links` create/update/delete/reorder routes.
 2. `text` create/update/delete/reorder routes.
-3. `/api/app/profile-page` metadata read/update route.
-4. `/api/app/profile-page/sync` and `/api/app/profile-page/bento/sync`.
-5. `/api/app/profile-page/upload-image` and `/api/app/profile-page/bento/media/upload`.
+3. `/api/profile` metadata read/update route.
+4. `/api/profile/sync` and `/api/profile/bento/sync`.
+5. `/api/profile/upload-image` and `/api/profile/bento/media/upload`.
 
 Keep `social-links` out of this pass even though it has a similar child mutation shape. That route family should move only if a later pass explicitly reopens its UI and contract surface.
 
@@ -204,13 +204,13 @@ Keep `social-links` out of this pass even though it has a similar child mutation
 
 ### Future `src/server` Migration Criteria
 
-Do not move the current profile-page Hono implementation from `src/lib/api/profile-page/` to `src/server` just to match another repository layout.
+Do not move the current profile-page Hono implementation from `src/lib/api/profile/` to `src/server` just to match another repository layout.
 
 `src/server` becomes appropriate only when Hono stops being a feature-local profile-page API slice and becomes an app-wide API composition layer. Reconsider the folder boundary when at least several of these conditions are true:
 
-- Hono routes expand beyond `/api/app/profile-page/**` into multiple API domains.
+- Hono routes expand beyond `/api/profile/**` into multiple API domains.
 - `auth`, `db`, validation, error response, no-store headers, and logging middleware are repeated across those domains.
-- Feature-local folders such as `src/lib/api/profile-page/` no longer describe ownership clearly.
+- Feature-local folders such as `src/lib/api/profile/` no longer describe ownership clearly.
 - Multiple Hono apps, for example profile-page, analytics, admin, and upload APIs, need one shared factory or typed context.
 - Contract tests benefit from a shared `createFactory` setup instead of per-feature dependency injection.
 
@@ -234,25 +234,25 @@ Even after that migration, `src/app/api/**/route.ts` should keep public URL owne
 
 This pass is complete for the approved scope:
 
-- `/api/app/profile-page/handle-availability`
-- `/api/app/profile-page`
-- `/api/app/profile-page/links`
-- `/api/app/profile-page/links/[linkId]`
-- `/api/app/profile-page/links/reorder`
-- `/api/app/profile-page/text`
-- `/api/app/profile-page/text/[textBoxId]`
-- `/api/app/profile-page/text/reorder`
-- `/api/app/profile-page/sync`
-- `/api/app/profile-page/bento/sync`
-- `/api/app/profile-page/upload-image`
-- `/api/app/profile-page/bento/media/upload`
+- `/api/profile/handle-availability`
+- `/api/profile`
+- `/api/profile/links`
+- `/api/profile/links/[linkId]`
+- `/api/profile/links/reorder`
+- `/api/profile/text`
+- `/api/profile/text/[textBoxId]`
+- `/api/profile/text/reorder`
+- `/api/profile/sync`
+- `/api/profile/bento/sync`
+- `/api/profile/upload-image`
+- `/api/profile/bento/media/upload`
 
 The adapter guard tests also assert that the excluded `social-links` and `playlist` route families are not delegated to the profile-page Hono app in this pass.
 
 Final verification for this pass:
 
-- `bun test src/app/api/app/profile-page/__test__ src/lib/api/profile-page/__test__ src/lib/profile-page/__test__`
-- `bun test src/app/api/app/profile-page/__test__/playlist-route.test.ts src/components/icons/__test__/social-platform-icon.test.tsx src/lib/users/__test__/me-query-options.test.ts src/lib/validations/__test__/auth.schema.test.ts`
+- `bun test src/app/api/profile/__test__ src/lib/api/profile/__test__ src/lib/profile/__test__`
+- `bun test src/app/api/profile/__test__/playlist-route.test.ts src/components/icons/__test__/social-platform-icon.test.tsx src/lib/users/__test__/me-query-options.test.ts src/lib/validations/__test__/auth.schema.test.ts`
 - `bun x tsc --noEmit --pretty false --skipLibCheck --project tsconfig.json`
 - `bun run build`
 

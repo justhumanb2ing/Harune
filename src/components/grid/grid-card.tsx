@@ -89,6 +89,7 @@ export function GridCard({
     isSectionItem && !readOnly && (isSectionPointerActive || isSectionFocusActive || isDragActive);
   const shadowClassName =
     !isSectionItem || shouldShowSectionShadow ? "shadow-float" : "shadow-none";
+  const outlineClassName = isSectionItem ? "outline-transparent" : "outline-border/35";
   const isFullBleedItem = item.itemType === "media" || item.itemType === "map";
   const paddingClassName = isFullBleedItem ? "p-0" : "p-3";
   const radiusClassName = isVisuallyThinItem ? "rounded-lg" : "rounded-[1.5rem]";
@@ -110,7 +111,7 @@ export function GridCard({
 
   return (
     <motion.div
-      className={`group/item relative flex w-full flex-col justify-between outline outline-border/60 ${radiusClassName} bg-white ${paddingClassName} pointer-events-auto transition-shadow ${bevelClassName} ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} ${shadowClassName} ${dragInteractionClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isDragActive || motionPhase ? "will-change-transform" : ""} ${isDragActive ? "drop-shadow-xs" : ""} ${isExiting ? "pointer-events-none select-none shadow-none" : ""}`}
+      className={`group/item relative flex w-full flex-col justify-between outline ${outlineClassName} ${radiusClassName} bg-white ${paddingClassName} pointer-events-auto transition-shadow ${bevelClassName} ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} ${shadowClassName} ${dragInteractionClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isDragActive || motionPhase ? "will-change-transform" : ""} ${isDragActive ? "drop-shadow-xs" : ""} ${isExiting ? "pointer-events-none select-none shadow-none" : ""}`}
       data-link-provider-theme={item.theme ? "true" : undefined}
       onBlurCapture={(event) => {
         if (!isSectionItem || event.currentTarget.contains(event.relatedTarget)) {

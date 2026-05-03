@@ -60,6 +60,7 @@ EditableTextBento / EditableSectionBento
 Public readonly surface와 owner editor surface는 의도적으로 같은 profile presentation을 보여준다.
 
 - read-only라고 해서 card radius, padding, shadow, media crop, link provider theme를 다르게 만들지 않는다.
+- 일반 item의 card outline은 콘텐츠보다 앞서 보이지 않도록 옅게 유지하고, section item은 outline 없이 얇은 구분선 텍스트처럼 보여야 한다.
 - owner-only controls, input affordance, upload/loading state만 editor 전용으로 둔다.
 - public surface에서 삭제된 fallback text는 editor에도 무심코 되살리지 않는다.
 

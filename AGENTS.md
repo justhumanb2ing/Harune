@@ -30,6 +30,11 @@
 - 바렐 패턴은 사용하지 않는다. 단순 재수출만 담당하는 `index.ts`나 forwarding 파일을 만들지 말고, 사용하는 쪽에서 실제 구현 파일을 직접 import한다.
 - React/Next.js 코드를 작성, 수정, 리팩터링할 때는 `$vercel-composition-patterns`와 `$vercel-react-best-practices` 스킬을 먼저 확인하고 적용한다.
 
+### UI/UX experience contract
+- UI/UX 관련 개선을 추가하거나 수정할 때는 `docs/solutions/best-practices/profile-bento-v2-user-experience-contract-2026-05-03.md`를 먼저 확인한다.
+- 사용자가 체감 품질을 기준으로 지적한 문제를 해결하거나, smoothness/focus/scroll/hover/drag/reveal/loading/toast/empty state/mobile ergonomics 계약이 생기면 같은 변경 단위에서 위 문서를 자동으로 갱신한다.
+- Public readonly surface와 owner editor surface의 parity 기준이 바뀌면 구현 파일만 수정하지 말고 기대 체감, 원인, 유지해야 하는 코드 contract, 확인해야 하는 interaction을 문서에 남긴다.
+
 ### Profile persistence contract
 - `profile` 저장/동기화 기능을 추가하거나 수정할 때는 `docs/solutions/logic-errors/profile-page-draft-sync-persistence-regression-2026-04-27.md`를 먼저 확인한다.
 - `src/lib/profile/mutations.ts`의 저장 API 응답은 draft, payload, optimistic state, transaction-local read를 근거로 만들지 않는다. 저장이 끝난 뒤 `db` executor로 정상 read path를 다시 읽은 committed DB snapshot만 성공 응답으로 반환한다.

@@ -1,5 +1,5 @@
 import { TrashIcon } from "lucide-react";
-import { type MotionValue, motion } from "motion/react";
+import { type MotionStyle, type MotionValue, motion } from "motion/react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { GridResizeControls } from "@/components/grid/grid-resize-controls";
@@ -28,6 +28,11 @@ type GridCardProps = {
 };
 
 const GRID_CARD_MOTION_EASE = [0.22, 1, 0.36, 1] as const;
+
+type GridCardStyle = MotionStyle & {
+  "--grid-card-muted-foreground"?: string;
+  "--grid-card-control-background"?: string;
+};
 
 function getGridCardMotion(phase: GridCardMotionPhase | undefined, shouldReduceMotion: boolean) {
   if (!phase) {
@@ -94,10 +99,19 @@ export function GridCard({
   const isExiting = motionPhase === "exiting";
   const shouldShowActions = !readOnly && !isDragActive && !isExiting;
   const motionProps = getGridCardMotion(motionPhase, shouldReduceMotion);
+  const themeStyle = item.theme
+    ? {
+        "--grid-card-control-background": item.theme.controlBackgroundColor,
+        "--grid-card-muted-foreground": item.theme.mutedForegroundColor,
+        backgroundColor: item.theme.backgroundColor,
+        color: item.theme.foregroundColor,
+      }
+    : {};
 
   return (
     <motion.div
-      className={`group/item relative flex w-full flex-col justify-between ${radiusClassName} bg-white ${paddingClassName} pointer-events-auto transition-shadow ${bevelClassName} ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} ${shadowClassName} ${dragInteractionClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isDragActive || motionPhase ? "will-change-transform" : ""} ${isDragActive ? "drop-shadow-xs" : ""} ${isExiting ? "pointer-events-none select-none shadow-none" : ""}`}
+      className={`group/item relative flex w-full flex-col justify-between outline outline-border/60 ${radiusClassName} bg-white ${paddingClassName} pointer-events-auto transition-shadow ${bevelClassName} ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} ${shadowClassName} ${dragInteractionClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isDragActive || motionPhase ? "will-change-transform" : ""} ${isDragActive ? "drop-shadow-xs" : ""} ${isExiting ? "pointer-events-none select-none shadow-none" : ""}`}
+      data-link-provider-theme={item.theme ? "true" : undefined}
       onBlurCapture={(event) => {
         if (!isSectionItem || event.currentTarget.contains(event.relatedTarget)) {
           return;
@@ -125,11 +139,14 @@ export function GridCard({
           onMotionComplete?.(item.id, motionPhase);
         }
       }}
-      style={{
-        rotate: isDragActive ? cardRotate : 0,
-        x: isDragActive ? cardX : 0,
-        transformOrigin: "50% 70%",
-      }}
+      style={
+        {
+          ...themeStyle,
+          rotate: isDragActive ? cardRotate : 0,
+          x: isDragActive ? cardX : 0,
+          transformOrigin: "50% 70%",
+        } satisfies GridCardStyle
+      }
       {...motionProps}
     >
       {children ? (

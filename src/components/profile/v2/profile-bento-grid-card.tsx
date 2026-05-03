@@ -136,24 +136,27 @@ function LinkFavicon({
   title: string;
   className?: string;
 }) {
+  const hasFavicon = !!favicon;
+
   return (
     <span
       className={cn(
         "flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-sm",
+        hasFavicon ? "bg-transparent" : "bg-muted/60",
         className
       )}
     >
-      {favicon ? (
+      {hasFavicon ? (
         <Image
           alt=""
-          className="size-full object-cover"
+          className="pointer-events-none size-full object-cover select-none"
           height={32}
           src={favicon}
           unoptimized
           width={32}
         />
       ) : (
-        <span className="size-3 rounded-full bg-secondary" aria-hidden />
+        <span className="size-full bg-muted/40" aria-hidden />
       )}
       <span className="sr-only">{title ? `${title} favicon` : "Link favicon"}</span>
     </span>
@@ -196,6 +199,7 @@ function LinkTitleInput({
       aria-label="Link title"
       className={cn(
         "grid-action min-h-9 min-w-0 rounded-md bg-transparent px-0 py-1.5 font-medium text-sm outline-none transition-colors placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary truncate",
+        "group-data-[link-provider-theme=true]/item:placeholder:text-[var(--grid-card-muted-foreground)] group-data-[link-provider-theme=true]/item:hover:bg-[var(--grid-card-control-background)] group-data-[link-provider-theme=true]/item:focus-visible:bg-[var(--grid-card-control-background)]",
         className
       )}
       onChange={(event) => {
@@ -228,12 +232,21 @@ function ReadonlyLinkTitle({ title, className }: { title: string; className?: st
 }
 
 function LinkThumbnail({ thumbnail, className }: { thumbnail: string | null; className?: string }) {
+  const hasThumbnail = !!thumbnail;
+
   return (
-    <div className={cn("relative overflow-hidden rounded-md bg-muted", className)}>
-      {thumbnail ? (
+    <div
+      className={cn(
+        "pointer-events-none relative overflow-hidden rounded-md select-none",
+        hasThumbnail ? "bg-muted" : "bg-muted/60",
+        className
+      )}
+      aria-hidden
+    >
+      {hasThumbnail ? (
         <Image
           alt=""
-          className="object-cover"
+          className="pointer-events-none object-cover select-none"
           fill
           sizes="(min-width: 1024px) 25vw, 50vw"
           src={thumbnail}
@@ -245,7 +258,7 @@ function LinkThumbnail({ thumbnail, className }: { thumbnail: string | null; cla
 
 function LinkUrlText({ url }: { url: string }) {
   return (
-    <div className="min-w-0 max-w-full text-muted-foreground text-xs">
+    <div className="min-w-0 max-w-full text-muted-foreground text-xs group-data-[link-provider-theme=true]/item:text-[var(--grid-card-muted-foreground)]">
       <p className="min-w-0 max-w-full truncate line-clamp-1">{url}</p>
     </div>
   );
@@ -455,7 +468,7 @@ function EditableTextBento({
         return;
       }
 
-      textarea.focus();
+      textarea.focus({ preventScroll: true });
       textarea.setSelectionRange(textarea.value.length, textarea.value.length);
       onFocusReady?.();
     });
@@ -515,7 +528,7 @@ function EditableSectionBento({
         return;
       }
 
-      input.focus();
+      input.focus({ preventScroll: true });
       input.setSelectionRange(input.value.length, input.value.length);
       onFocusReady?.();
     });

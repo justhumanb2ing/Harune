@@ -1,6 +1,7 @@
 import type { LayoutItem } from "react-grid-layout";
 import { createLayoutItem, normalizeLayouts } from "@/lib/grid/grid-layout-utils";
 import type { GridBreakpoint, GridItem, GridLayouts } from "@/lib/grid/grid-types";
+import { resolveLinkProviderTheme } from "@/lib/metadata/link-provider-theme";
 import type { ProfileBentoItem, ProfileBentoLayout, ProfileBentoType } from "@/lib/profile/types";
 
 export type CreatableBentoType = Exclude<ProfileBentoType, "playlist">;
@@ -55,6 +56,8 @@ export const toBentoGridLayouts = (bento: ProfileBentoItem[]): GridLayouts =>
 export const toBentoGridItem = (item: ProfileBentoItem): GridItem => ({
   id: item.id,
   itemType: item.type,
+  theme:
+    item.type === "link" ? (resolveLinkProviderTheme(item.content.url) ?? undefined) : undefined,
   label:
     item.type === "text"
       ? "Text"

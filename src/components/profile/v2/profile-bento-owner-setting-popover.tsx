@@ -1,35 +1,25 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { AnimatePresence, MotionConfig, motion, type Transition } from "motion/react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ChangeHandleButton } from "@/components/profile/editor-block/change-handle-button";
 import { DeleteAccountDialog } from "@/components/profile/layout/delete-account-dialog";
+import {
+  Popover,
+  PopoverPanel,
+  PopoverTrigger,
+} from "@/components/ui/animate-ui/components/base/popover";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { clearAuthenticatedAppQueries } from "@/lib/react-query/app-cache";
-
-const EMPHASIZED_EASE = [0.22, 1, 0.36, 1] as const;
-const EXIT_EASE = [0.4, 0, 1, 1] as const;
-
-const popoverTransition: Transition = {
-  duration: 0.28,
-  ease: EMPHASIZED_EASE,
-};
-
-const popoverExitTransition: Transition = {
-  duration: 0.16,
-  ease: EXIT_EASE,
-};
 
 export function ProfileBentoOwnerSettingPopover() {
   const pathname = usePathname();
   const router = useRouter();
   const queryClient = useQueryClient();
   const previousPathnameRef = useRef(pathname);
-  const containerRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -106,42 +96,6 @@ export function ProfileBentoOwnerSettingPopover() {
   };
 
   useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsOpen(false);
-      }
-    };
-
-    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
-      if (isDeleteDialogOpen) {
-        return;
-      }
-
-      if (event.target instanceof Element && event.target.closest("[data-setting-box-popover]")) {
-        return;
-      }
-
-      if (!containerRef.current?.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("mousedown", handlePointerDown);
-    document.addEventListener("touchstart", handlePointerDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("mousedown", handlePointerDown);
-      document.removeEventListener("touchstart", handlePointerDown);
-    };
-  }, [isDeleteDialogOpen, isOpen]);
-
-  useEffect(() => {
     if (previousPathnameRef.current === pathname) {
       return;
     }
@@ -151,80 +105,69 @@ export function ProfileBentoOwnerSettingPopover() {
   }, [pathname]);
 
   return (
-    <MotionConfig transition={popoverTransition}>
-      <div ref={containerRef} className="relative">
-        <Button
-          type="button"
-          variant="ghost"
-          className="px-2 min-h-9 font-normal text-neutral-500"
-          aria-expanded={isOpen}
-          aria-controls="v2-owner-setting-popover"
-          onClick={() => setIsOpen((current) => !current)}
-        >
-          Setting
-        </Button>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger
+        render={
+          <Button
+            type="button"
+            variant="ghost"
+            className="min-h-9 px-2 font-normal text-neutral-500"
+          >
+            Setting
+          </Button>
+        }
+      />
 
-        <AnimatePresence initial={false}>
-          {isOpen ? (
-            <motion.div
-              id="v2-owner-setting-popover"
-              key="v2-owner-setting-popover"
-              initial={{ opacity: 0, y: 12, scale: 0.96, filter: "blur(8px)" }}
-              animate={{ opacity: 1, y: 0, scale: [1, 1.018, 1], filter: "blur(0px)" }}
-              exit={{
-                opacity: 0,
-                y: 10,
-                scale: 0.98,
-                filter: "blur(6px)",
-                transition: popoverExitTransition,
-              }}
-              className="-translate-x-1/2 absolute bottom-full left-1/2 mb-3 w-52 origin-bottom overflow-hidden rounded-2xl bg-background shadow-brand-small border border-border/40 p-2 xl:left-0 xl:translate-x-0 xl:origin-bottom-left"
-            >
-              <div className="mb-10 flex flex-col gap-1">
-                <Button
-                  variant="ghost"
-                  className="h-16 w-full flex-col items-start gap-1 rounded-lg px-4 font-normal text-muted-foreground hover:bg-transparent hover:text-muted-foreground"
-                  disabled
-                >
-                  <span>Create page</span>
-                  <span className="text-xs">(coming soon)</span>
-                </Button>
-                <ChangeHandleButton
-                  panelAlign="end"
-                  panelCollisionAvoidance={{
-                    align: "none",
-                    fallbackAxisSide: "none",
-                    side: "none",
-                  }}
-                  panelSideOffset={12}
-                  triggerClassName="h-16! rounded-md"
-                />
-              </div>
+      <PopoverPanel
+        id="v2-owner-setting-popover"
+        align="end"
+        side="top"
+        sideOffset={12}
+        data-setting-box-popover=""
+        className="w-52 overflow-hidden rounded-2xl border-border/40 bg-background p-2 shadow-brand-small!"
+      >
+        <div className="mb-10 flex flex-col gap-1">
+          <Button
+            variant="ghost"
+            className="h-16 w-full flex-col items-start gap-1 rounded-lg px-4 font-normal text-muted-foreground hover:bg-transparent hover:text-muted-foreground"
+            disabled
+          >
+            <span>Create page</span>
+            <span className="text-xs">(coming soon)</span>
+          </Button>
+          <ChangeHandleButton
+            panelAlign="end"
+            panelCollisionAvoidance={{
+              align: "none",
+              fallbackAxisSide: "none",
+              side: "none",
+            }}
+            panelSideOffset={12}
+            triggerClassName="h-16! rounded-md"
+          />
+        </div>
 
-              <aside className="mt-1 space-y-1">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  disabled={isSigningOut}
-                  aria-busy={isSigningOut}
-                  className="h-11 w-full justify-start rounded-lg px-4 font-normal"
-                  onClick={handleSignOut}
-                >
-                  <span>{isSigningOut ? "Logging Out..." : "Log Out"}</span>
-                </Button>
-                <DeleteAccountDialog
-                  open={isDeleteDialogOpen}
-                  onOpenChange={handleDeleteDialogOpenChange}
-                  disabled
-                  isDeleting={isDeletingAccount}
-                  onConfirm={handleDeleteAccount}
-                  triggerClassName="h-11 min-h-0 rounded-lg py-0 hover:bg-transparent hover:text-muted-foreground"
-                />
-              </aside>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
-      </div>
-    </MotionConfig>
+        <aside className="mt-1 space-y-1">
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={isSigningOut}
+            aria-busy={isSigningOut}
+            className="h-11 w-full justify-start rounded-lg px-4 font-normal"
+            onClick={handleSignOut}
+          >
+            <span>{isSigningOut ? "Logging Out..." : "Log Out"}</span>
+          </Button>
+          <DeleteAccountDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={handleDeleteDialogOpenChange}
+            disabled
+            isDeleting={isDeletingAccount}
+            onConfirm={handleDeleteAccount}
+            triggerClassName="h-11 min-h-0 rounded-lg py-0 hover:bg-transparent hover:text-muted-foreground"
+          />
+        </aside>
+      </PopoverPanel>
+    </Popover>
   );
 }

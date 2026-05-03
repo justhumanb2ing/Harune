@@ -74,13 +74,13 @@ describe("profile page cache regression", () => {
     const start = source.indexOf("export const syncProfileBentoDraft");
     const end = source.indexOf("export const syncProfilePageDraft");
     const bentoSyncSource = source.slice(start, end);
+    const transactionIndex = bentoSyncSource.indexOf("await db.transaction");
+    const committedReadIndex = bentoSyncSource.indexOf(
+      "const nextData = await getPublicProfileBentoPageByPageId(db, ownedPage.id);"
+    );
 
-    expect(bentoSyncSource.includes("db.transaction")).toBe(false);
-    expect(
-      bentoSyncSource.includes(
-        "const nextData = await getPublicProfileBentoPageByPageId(db, ownedPage.id);"
-      )
-    ).toBe(true);
+    expect(transactionIndex >= 0).toBe(true);
+    expect(committedReadIndex > transactionIndex).toBe(true);
   });
 
   test("bento media child table participates in sync write and public read paths", () => {

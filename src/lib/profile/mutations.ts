@@ -967,7 +967,13 @@ const prepareMediaBentoContent = async ({
     };
   }
 
-  if (item.content.objectKey !== finalObjectKey) {
+  if (
+    !isProfileBentoMediaObjectKeyForBento({
+      bentoId: item.id,
+      objectKey: item.content.objectKey,
+      userId,
+    })
+  ) {
     throw new ProfilePageError("Invalid media object key.", 400);
   }
 
@@ -1125,35 +1131,40 @@ export const syncProfileBentoDraft = async ({
     .filter((item) => !nextIds.has(item.id))
     .map((item) => item.id);
 
-  if (deletedBentoIds.length > 0) {
-    await db.delete(profileBentos).where(inArray(profileBentos.id, deletedBentoIds));
-  }
-
-  await deleteBentoContentBatch(db, nextBentoIds);
-  await insertBentoLayoutsBatch(db, values.bento, now);
-
-  for (const item of values.bento) {
-    if (existingIds.has(item.id)) {
-      await db
-        .update(profileBentos)
-        .set({
-          type: item.type,
-          updatedAt: now,
-        })
-        .where(and(eq(profileBentos.id, item.id), eq(profileBentos.profilePageId, ownedPage.id)));
-    } else {
-      await db.insert(profileBentos).values({
-        id: item.id,
-        profilePageId: ownedPage.id,
-        type: item.type,
-        updatedAt: now,
-      });
+  await db.transaction(async (tx) => {
+    if (deletedBentoIds.length > 0) {
+      await tx.delete(profileBentos).where(inArray(profileBentos.id, deletedBentoIds));
     }
 
-    await insertBentoContent({ tx: db, item, now, userId });
-  }
+    await deleteBentoContentBatch(tx, nextBentoIds);
 
-  await db.update(profilePages).set({ updatedAt: now }).where(eq(profilePages.id, ownedPage.id));
+    for (const item of values.bento) {
+      if (existingIds.has(item.id)) {
+        await tx
+          .update(profileBentos)
+          .set({
+            type: item.type,
+            updatedAt: now,
+          })
+          .where(and(eq(profileBentos.id, item.id), eq(profileBentos.profilePageId, ownedPage.id)));
+      } else {
+        await tx.insert(profileBentos).values({
+          id: item.id,
+          profilePageId: ownedPage.id,
+          type: item.type,
+          updatedAt: now,
+        });
+      }
+    }
+
+    await insertBentoLayoutsBatch(tx, values.bento, now);
+
+    for (const item of values.bento) {
+      await insertBentoContent({ tx, item, now, userId });
+    }
+
+    await tx.update(profilePages).set({ updatedAt: now }).where(eq(profilePages.id, ownedPage.id));
+  });
 
   const nextData = await getPublicProfileBentoPageByPageId(db, ownedPage.id);
 

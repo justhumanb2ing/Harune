@@ -8,6 +8,7 @@ export type ProfileImageKind = (typeof PROFILE_IMAGE_KINDS)[number];
 
 const PROFILE_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 const PROFILE_IMAGE_KIND_SET = new Set<string>(PROFILE_IMAGE_KINDS);
+const PROFILE_IMAGE_STORAGE_NAMESPACE = "profile";
 
 const extensionByType: Record<string, string> = {
   "image/avif": "avif",
@@ -45,7 +46,7 @@ export function getProfileImageKind(value: unknown): ProfileImageKind | null {
 }
 
 export function getProfileImageObjectKey(userId: string, kind: ProfileImageKind) {
-  return `public/users/${userId}/profile/${kind}`;
+  return `public/users/${userId}/${PROFILE_IMAGE_STORAGE_NAMESPACE}/${kind}`;
 }
 
 export function withProfileImageCacheVersion(publicUrl: string, version: string) {

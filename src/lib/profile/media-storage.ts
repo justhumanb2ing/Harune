@@ -21,6 +21,7 @@ type R2Config = {
 const trimTrailingSlash = (value: string) => value.replace(/\/+$/, "");
 const encodeKey = (key: string) => key.split("/").map(encodeURIComponent).join("/");
 const safeSegment = (value: string) => encodeURIComponent(value.trim());
+const PROFILE_STORAGE_NAMESPACE = "profile";
 
 const getR2Config = (): R2Config => {
   const endpoint = env.R2_ACCOUNT_ID
@@ -68,7 +69,10 @@ export const getProfileBentoMediaObjectKey = ({
 }: {
   bentoId: string;
   userId: string;
-}) => `public/users/${safeSegment(userId)}/profile/bento/${safeSegment(bentoId)}/media`;
+}) =>
+  `public/users/${safeSegment(userId)}/${PROFILE_STORAGE_NAMESPACE}/bento/${safeSegment(
+    bentoId
+  )}/media`;
 
 export const getTemporaryProfileBentoMediaObjectKey = ({
   bentoId,
@@ -77,7 +81,9 @@ export const getTemporaryProfileBentoMediaObjectKey = ({
   bentoId: string;
   userId: string;
 }) =>
-  `tmp/users/${safeSegment(userId)}/profile/bento/${safeSegment(bentoId)}/${crypto.randomUUID()}`;
+  `tmp/users/${safeSegment(userId)}/${PROFILE_STORAGE_NAMESPACE}/bento/${safeSegment(
+    bentoId
+  )}/${crypto.randomUUID()}`;
 
 export const getProfileMediaPublicUrl = ({
   contentHash,
@@ -127,7 +133,9 @@ export const isProfileBentoMediaObjectKeyForBento = ({
   userId: string;
 }) => {
   const finalKey = getProfileBentoMediaObjectKey({ bentoId, userId });
-  const temporaryPrefix = `tmp/users/${safeSegment(userId)}/profile/bento/${safeSegment(bentoId)}/`;
+  const temporaryPrefix = `tmp/users/${safeSegment(
+    userId
+  )}/${PROFILE_STORAGE_NAMESPACE}/bento/${safeSegment(bentoId)}/`;
 
   return objectKey === finalKey || objectKey.startsWith(temporaryPrefix);
 };

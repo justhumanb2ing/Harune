@@ -335,7 +335,7 @@ const insertBentoContent = async ({
     await tx.insert(profileLinkBentos).values({
       bentoId: item.id,
       title: item.content.title,
-      description: item.content.description || null,
+      description: null,
       favicon: item.content.favicon || null,
       thumbnail: item.content.thumbnail || null,
       url: item.content.url,

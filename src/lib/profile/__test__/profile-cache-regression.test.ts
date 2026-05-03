@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { profilePageQueryOptions } from "@/lib/profile/query-options";
 import { meQueryOptions } from "@/lib/users/queries";
+import { profileBentoSyncSchema } from "@/lib/validations/profile-content.schema";
 
 const jsonResponse = (body: unknown) =>
   new Response(JSON.stringify(body), {
@@ -126,5 +127,35 @@ describe("profile page cache regression", () => {
     expect(mutationSource.includes("profileMapBentos")).toBe(true);
     expect(querySource.includes("profileMapBentos")).toBe(true);
     expect(querySource.includes('item.type === "map"')).toBe(true);
+  });
+
+  test("link bento sync accepts long metadata descriptions without storing them", () => {
+    const mutationSource = readFileSync(
+      join(process.cwd(), "src/lib/profile/mutations.ts"),
+      "utf8"
+    );
+    const result = profileBentoSyncSchema.safeParse({
+      bento: [
+        {
+          id: "link-1",
+          type: "link",
+          layout: {
+            desktop: { x: 0, y: 0, w: 2, h: 2 },
+            compact: { x: 0, y: 0, w: 2, h: 2 },
+          },
+          content: {
+            title: "Long metadata link",
+            description: "a".repeat(1000),
+            favicon: "",
+            thumbnail: "",
+            url: "https://example.com",
+          },
+        },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+    expect(mutationSource.includes("description: null")).toBe(true);
+    expect(mutationSource.includes("description: item.content.description || null")).toBe(false);
   });
 });

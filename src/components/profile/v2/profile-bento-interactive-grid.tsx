@@ -45,7 +45,7 @@ import {
   PROFILE_BENTO_MEDIA_UPLOAD_ROUTE,
 } from "@/lib/profile/media-upload";
 import type { ProfileBentoItem, PublicProfileBentoPageData } from "@/lib/profile/types";
-import { apiFetch, getApiErrorDescription } from "@/lib/react-query/fetcher";
+import { apiFetch } from "@/lib/react-query/fetcher";
 import { cn } from "@/lib/utils";
 import { ProfileBentoGridMotion } from "./profile-bento-entry-motion";
 import {
@@ -95,7 +95,7 @@ const createPayload = (items: ProfileBentoItem[], layouts: GridLayouts) => ({
       ...item,
       content: {
         ...item.content,
-        description: item.content.description ?? "",
+        description: "",
         favicon: item.content.favicon ?? "",
         thumbnail: item.content.thumbnail ?? "",
       },
@@ -759,9 +759,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
       URL.revokeObjectURL(previewUrl);
       delete mediaObjectUrlsByIdRef.current[placeholderItem.id];
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "미디어 업로드에 실패했어요.", {
-        description: getApiErrorDescription(error),
-      });
+      toast.error(error instanceof Error ? error.message : "미디어 업로드에 실패했어요.");
       removeItemFromGrid(placeholderItem.id);
       setItemMotionPhaseById((current) => {
         if (!current[placeholderItem.id]) {
@@ -832,9 +830,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
           toast("Synced");
         }
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Failed to sync bento", {
-          description: getApiErrorDescription(error),
-        });
+        toast.error(error instanceof Error ? error.message : "Failed to sync bento");
       }
     });
   };

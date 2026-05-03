@@ -102,13 +102,6 @@ export const createProfileApi = ({
     logger.error(logMessage, error);
     return jsonResponse(context, { error: responseMessage }, { noStore: true, status: 500 });
   };
-  const toValidationDescription = (issues: { message: string; path: PropertyKey[] }[]) =>
-    issues
-      .map((issue) => {
-        const path = issue.path.join(".");
-        return path ? `${path}: ${issue.message}` : issue.message;
-      })
-      .join("\n");
   app.get("/", async (context) => {
     const session = getAuthenticatedSession(context);
 
@@ -237,7 +230,6 @@ export const createProfileApi = ({
         return jsonResponse(
           context,
           {
-            description: toValidationDescription(validation.error.issues),
             error: "Failed to sync bento",
           },
           { noStore: true, status: 400 }

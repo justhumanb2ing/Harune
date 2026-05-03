@@ -81,7 +81,7 @@ export const profileLinkBentoSyncSchema = profileBentoBaseSchema.extend({
   type: z.literal("link"),
   content: z.object({
     title: requiredText("Title", 100),
-    description: z.string().trim().max(280, "Must be 280 characters or fewer."),
+    description: z.string().trim().optional(),
     favicon: z.string().trim().max(2048, "Must be 2048 characters or fewer."),
     thumbnail: z.string().trim().max(2048, "Must be 2048 characters or fewer."),
     url: z.string().trim().url("Enter a valid URL."),

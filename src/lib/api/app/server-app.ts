@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { profilePages, profileSocialLinks } from "@/db/schema/profile";
+import { profilePages } from "@/db/schema/profile";
 import { users } from "@/db/schema/user";
 import { getProfileAnalyticsResponse } from "@/lib/analytics/profile-summary";
 import { getOwnedProfilePage } from "@/lib/profile/queries";
@@ -59,7 +59,7 @@ const createProfilePage = async ({
   userId: string;
   values: OnboardingInput;
 }) => {
-  const { backgroundImage, bio, handle, image, location, name, role, socialLinks } = values;
+  const { backgroundImage, bio, handle, image, location, name, role } = values;
 
   const pageId = await db.transaction(async (tx) => {
     await tx
@@ -90,20 +90,6 @@ const createProfilePage = async ({
         name: profilePages.name,
       })
       .then((rows) => rows[0]);
-
-    const socialLinkValues = Object.entries(socialLinks)
-      .filter(([, value]) => typeof value === "string" && value.length > 0)
-      .map(([platform, url], index) => ({
-        platform: platform as (typeof profileSocialLinks.$inferInsert)["platform"],
-        position: index,
-        profilePageId: page.id,
-        updatedAt: new Date(),
-        url,
-      }));
-
-    if (socialLinkValues.length > 0) {
-      await tx.insert(profileSocialLinks).values(socialLinkValues);
-    }
 
     return page.id;
   });

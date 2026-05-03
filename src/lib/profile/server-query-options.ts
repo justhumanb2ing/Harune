@@ -27,10 +27,6 @@ const getSerializableProfilePageEditorData = async (
       image: data.page.image,
       backgroundImage: data.page.backgroundImage,
     },
-    socialLinks: data.socialLinks,
-    linkItems: data.linkItems,
-    playlistItems: data.playlistItems,
-    textBoxItems: data.textBoxItems,
   };
 };
 

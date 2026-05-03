@@ -13,19 +13,11 @@ import {
   putProfileMediaObject,
 } from "@/lib/profile/media-storage";
 import {
-  createLinkItem,
-  createTextBoxItem,
-  deleteLinkItem,
-  deleteTextBoxItem,
   isHandleAvailableForUser,
   ProfilePageError,
-  reorderLinkItems,
-  reorderTextBoxItems,
   syncProfileBentoDraft,
   syncProfilePageDraft,
-  updateLinkItem,
   updateProfileMetadata,
-  updateTextBoxItem,
 } from "@/lib/profile/mutations";
 import { getProfilePageEditorData } from "@/lib/profile/queries";
 import { createProfileApi } from "./app";
@@ -58,11 +50,7 @@ const updateProfileImage = async ({
 
 export const profileApi = createProfileApi({
   auth,
-  createLinkItem,
-  createTextBoxItem,
   deleteProfileMediaObject,
-  deleteLinkItem,
-  deleteTextBoxItem,
   getProfilePageEditorData,
   getProfileMediaPublicUrl,
   getProfileMediaObjectKeyFromUrl,
@@ -70,14 +58,10 @@ export const profileApi = createProfileApi({
   hashProfileMediaBuffer,
   isHandleAvailableForUser,
   isProfilePageError: (error): error is ProfilePageError => error instanceof ProfilePageError,
-  reorderLinkItems,
-  reorderTextBoxItems,
   putProfileMediaObject,
   revalidatePath,
   syncProfileBentoDraft,
   syncProfilePageDraft,
   updateProfileImage,
-  updateLinkItem,
   updateProfileMetadata,
-  updateTextBoxItem,
 });

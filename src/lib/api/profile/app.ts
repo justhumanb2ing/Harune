@@ -20,27 +20,17 @@ import {
 import type { ProfileMediaType } from "@/lib/profile/types";
 import { handleSchema } from "@/lib/validations/auth.schema";
 import {
-  type LinkItemInput,
-  linkItemInputSchema,
   type ProfileBentoSyncValues,
   type ProfilePageSyncValues,
   type ProfilePageUpdateValues,
   profileBentoSyncSchema,
   profilePageSyncSchema,
   profilePageUpdateSchema,
-  type ReorderItemsInput,
-  reorderItemsSchema,
-  type TextBoxItemInput,
-  textBoxItemInputSchema,
 } from "@/lib/validations/profile-content.schema";
 
 type ProfileApiDependencies = {
   auth: () => Promise<AuthSession | null>;
-  createLinkItem: (input: { userId: string; values: LinkItemInput }) => Promise<unknown>;
-  createTextBoxItem: (input: { userId: string; values: TextBoxItemInput }) => Promise<unknown>;
   deleteProfileMediaObject: (objectKey: string) => Promise<unknown>;
-  deleteLinkItem: (input: { linkId: string; userId: string }) => Promise<void>;
-  deleteTextBoxItem: (input: { textBoxId: string; userId: string }) => Promise<void>;
   getProfileMediaPublicUrl: (input: { contentHash: string; objectKey: string }) => string;
   getProfileMediaObjectKeyFromUrl: (publicUrl: string) => string | null;
   getProfilePageEditorData: (userId: string, handle?: string) => Promise<unknown | null>;
@@ -49,18 +39,10 @@ type ProfileApiDependencies = {
   isHandleAvailableForUser: (input: { handle: string; userId: string }) => Promise<boolean>;
   isProfilePageError?: (error: unknown) => error is { message: string; status: number };
   logger?: Pick<Console, "error">;
-  reorderLinkItems: (input: {
-    orderedIds: ReorderItemsInput["orderedIds"];
-    userId: string;
-  }) => Promise<void>;
   putProfileMediaObject: (input: {
     body: Buffer;
     contentType: string;
     objectKey: string;
-  }) => Promise<void>;
-  reorderTextBoxItems: (input: {
-    orderedIds: ReorderItemsInput["orderedIds"];
-    userId: string;
   }) => Promise<void>;
   revalidatePath: (path: string) => void;
   syncProfilePageDraft: (input: {
@@ -76,29 +58,15 @@ type ProfileApiDependencies = {
     imageUrl: string;
     userId: string;
   }) => Promise<{ backgroundImage: string | null; image: string | null } | null>;
-  updateLinkItem: (input: {
-    linkId: string;
-    userId: string;
-    values: LinkItemInput;
-  }) => Promise<unknown>;
   updateProfileMetadata: (input: {
     userId: string;
     values: ProfilePageUpdateValues;
-  }) => Promise<unknown>;
-  updateTextBoxItem: (input: {
-    textBoxId: string;
-    userId: string;
-    values: TextBoxItemInput;
   }) => Promise<unknown>;
 };
 
 export const createProfileApi = ({
   auth: getSession,
-  createLinkItem,
-  createTextBoxItem,
   deleteProfileMediaObject,
-  deleteLinkItem,
-  deleteTextBoxItem,
   getProfileMediaPublicUrl,
   getProfileMediaObjectKeyFromUrl,
   getProfilePageEditorData,
@@ -107,16 +75,12 @@ export const createProfileApi = ({
   isHandleAvailableForUser: checkHandleAvailability,
   isProfilePageError = (_error): _error is { message: string; status: number } => false,
   logger = console,
-  reorderLinkItems,
-  reorderTextBoxItems,
   putProfileMediaObject,
   revalidatePath,
   syncProfileBentoDraft,
   syncProfilePageDraft,
   updateProfileImage,
-  updateLinkItem,
   updateProfileMetadata,
-  updateTextBoxItem,
 }: ProfileApiDependencies) => {
   const app = apiFactory.createApp();
 
@@ -554,258 +518,5 @@ export const createProfileApi = ({
       );
     }
   });
-  app.post("/links", async (context) => {
-    const session = getAuthenticatedSession(context);
-
-    if (!session) {
-      return unauthorizedResponse(context, { noStore: true });
-    }
-
-    try {
-      const body = await context.req.json();
-      const validation = linkItemInputSchema.safeParse(body);
-
-      if (!validation.success) {
-        return jsonResponse(
-          context,
-          { error: validation.error.issues[0]?.message ?? "Invalid link item payload." },
-          400
-        );
-      }
-
-      const linkItem = await createLinkItem({
-        userId: session.user.id,
-        values: validation.data,
-      });
-
-      return jsonResponse(context, { linkItem }, { noStore: true, status: 200 });
-    } catch (error) {
-      return routeErrorResponse(
-        context,
-        error,
-        "Failed to create link item:",
-        "Failed to create link item."
-      );
-    }
-  });
-  app.post("/links/reorder", async (context) => {
-    const session = getAuthenticatedSession(context);
-
-    if (!session) {
-      return unauthorizedResponse(context, { noStore: true });
-    }
-
-    try {
-      const body = await context.req.json();
-      const validation = reorderItemsSchema.safeParse(body);
-
-      if (!validation.success) {
-        return jsonResponse(
-          context,
-          { error: validation.error.issues[0]?.message ?? "Invalid reorder payload." },
-          400
-        );
-      }
-
-      await reorderLinkItems({
-        orderedIds: validation.data.orderedIds,
-        userId: session.user.id,
-      });
-
-      return jsonResponse(context, { success: true }, { noStore: true, status: 200 });
-    } catch (error) {
-      return routeErrorResponse(
-        context,
-        error,
-        "Failed to reorder link items:",
-        "Failed to reorder link items."
-      );
-    }
-  });
-  app.patch("/links/:linkId", async (context) => {
-    const session = getAuthenticatedSession(context);
-
-    if (!session) {
-      return unauthorizedResponse(context, { noStore: true });
-    }
-
-    try {
-      const body = await context.req.json();
-      const validation = linkItemInputSchema.safeParse(body);
-
-      if (!validation.success) {
-        return jsonResponse(
-          context,
-          { error: validation.error.issues[0]?.message ?? "Invalid link item payload." },
-          400
-        );
-      }
-
-      const linkItem = await updateLinkItem({
-        linkId: context.req.param("linkId"),
-        userId: session.user.id,
-        values: validation.data,
-      });
-
-      return jsonResponse(context, { linkItem }, { noStore: true, status: 200 });
-    } catch (error) {
-      return routeErrorResponse(
-        context,
-        error,
-        "Failed to update link item:",
-        "Failed to update link item."
-      );
-    }
-  });
-  app.delete("/links/:linkId", async (context) => {
-    const session = getAuthenticatedSession(context);
-
-    if (!session) {
-      return unauthorizedResponse(context, { noStore: true });
-    }
-
-    try {
-      await deleteLinkItem({
-        linkId: context.req.param("linkId"),
-        userId: session.user.id,
-      });
-
-      return jsonResponse(context, { success: true }, { noStore: true, status: 200 });
-    } catch (error) {
-      return routeErrorResponse(
-        context,
-        error,
-        "Failed to delete link item:",
-        "Failed to delete link item."
-      );
-    }
-  });
-  app.post("/text", async (context) => {
-    const session = getAuthenticatedSession(context);
-
-    if (!session) {
-      return unauthorizedResponse(context, { noStore: true });
-    }
-
-    try {
-      const body = await context.req.json();
-      const validation = textBoxItemInputSchema.safeParse(body);
-
-      if (!validation.success) {
-        return jsonResponse(
-          context,
-          { error: validation.error.issues[0]?.message ?? "Invalid text box payload." },
-          400
-        );
-      }
-
-      const textBoxItem = await createTextBoxItem({
-        userId: session.user.id,
-        values: validation.data,
-      });
-
-      return jsonResponse(context, { textBoxItem }, { noStore: true, status: 200 });
-    } catch (error) {
-      return routeErrorResponse(
-        context,
-        error,
-        "Failed to create text box item:",
-        "Failed to create text box item."
-      );
-    }
-  });
-  app.post("/text/reorder", async (context) => {
-    const session = getAuthenticatedSession(context);
-
-    if (!session) {
-      return unauthorizedResponse(context, { noStore: true });
-    }
-
-    try {
-      const body = await context.req.json();
-      const validation = reorderItemsSchema.safeParse(body);
-
-      if (!validation.success) {
-        return jsonResponse(
-          context,
-          { error: validation.error.issues[0]?.message ?? "Invalid reorder payload." },
-          400
-        );
-      }
-
-      await reorderTextBoxItems({
-        orderedIds: validation.data.orderedIds,
-        userId: session.user.id,
-      });
-
-      return jsonResponse(context, { success: true }, { noStore: true, status: 200 });
-    } catch (error) {
-      return routeErrorResponse(
-        context,
-        error,
-        "Failed to reorder text box items:",
-        "Failed to reorder text box items."
-      );
-    }
-  });
-  app.patch("/text/:textBoxId", async (context) => {
-    const session = getAuthenticatedSession(context);
-
-    if (!session) {
-      return unauthorizedResponse(context, { noStore: true });
-    }
-
-    try {
-      const body = await context.req.json();
-      const validation = textBoxItemInputSchema.safeParse(body);
-
-      if (!validation.success) {
-        return jsonResponse(
-          context,
-          { error: validation.error.issues[0]?.message ?? "Invalid text box payload." },
-          400
-        );
-      }
-
-      const textBoxItem = await updateTextBoxItem({
-        textBoxId: context.req.param("textBoxId"),
-        userId: session.user.id,
-        values: validation.data,
-      });
-
-      return jsonResponse(context, { textBoxItem }, { noStore: true, status: 200 });
-    } catch (error) {
-      return routeErrorResponse(
-        context,
-        error,
-        "Failed to update text box item:",
-        "Failed to update text box item."
-      );
-    }
-  });
-  app.delete("/text/:textBoxId", async (context) => {
-    const session = getAuthenticatedSession(context);
-
-    if (!session) {
-      return unauthorizedResponse(context, { noStore: true });
-    }
-
-    try {
-      await deleteTextBoxItem({
-        textBoxId: context.req.param("textBoxId"),
-        userId: session.user.id,
-      });
-
-      return jsonResponse(context, { success: true }, { noStore: true, status: 200 });
-    } catch (error) {
-      return routeErrorResponse(
-        context,
-        error,
-        "Failed to delete text box item:",
-        "Failed to delete text box item."
-      );
-    }
-  });
-
   return app;
 };

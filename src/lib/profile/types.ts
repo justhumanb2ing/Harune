@@ -28,45 +28,8 @@ export type ProfilePage = {
   backgroundImage: string | null;
 };
 
-export type SocialLink = {
-  id: string;
-  platform: SocialPlatform;
-  url: string;
-  position: number;
-};
-
-export type LinkItem = {
-  id: string;
-  title: string;
-  description: string | null;
-  favicon: string | null;
-  url: string;
-  position: number;
-};
-
-export type PlaylistItem = {
-  id: string;
-  title: string;
-  provider: PlaylistProvider;
-  content: string;
-  position: number;
-  blockPosition: number;
-};
-
-export type TextBoxItem = {
-  id: string;
-  title: string;
-  description: string | null;
-  position: number;
-  blockPosition: number;
-};
-
 export type ProfilePageData = {
   page: ProfilePage;
-  socialLinks: SocialLink[];
-  linkItems: LinkItem[];
-  playlistItems: PlaylistItem[];
-  textBoxItems: TextBoxItem[];
 };
 
 export type ProfileBentoType = "link" | "text" | "playlist" | "section" | "media" | "map";
@@ -197,44 +160,8 @@ export type DraftProfilePage = {
   backgroundImage: string | null;
 };
 
-export type DraftSocialLink = {
-  platform: SocialPlatform;
-  url: string;
-  position: number;
-};
-
-export type DraftLinkItem = {
-  id: string;
-  title: string;
-  description: string;
-  favicon: string;
-  url: string;
-  position: number;
-};
-
-export type DraftPlaylistItem = {
-  id: string;
-  title: string;
-  provider: PlaylistProvider;
-  content: string;
-  position: number;
-  blockPosition: number;
-};
-
-export type DraftTextBoxItem = {
-  id: string;
-  title: string;
-  description: string;
-  position: number;
-  blockPosition: number;
-};
-
 export type ProfilePageDraftData = {
   page: DraftProfilePage;
-  socialLinks: DraftSocialLink[];
-  linkItems: DraftLinkItem[];
-  playlistItems: DraftPlaylistItem[];
-  textBoxItems: DraftTextBoxItem[];
 };
 
 export type ProfilePageSyncPayload = {
@@ -248,32 +175,4 @@ export type ProfilePageSyncPayload = {
     image: string | null;
     backgroundImage: string | null;
   };
-  socialLinks: Array<{
-    platform: SocialPlatform;
-    position: number;
-    url: string;
-  }>;
-  linkItems: Array<{
-    id: string;
-    title: string;
-    description: string;
-    favicon: string;
-    position: number;
-    url: string;
-  }>;
-  playlistItems: Array<{
-    id: string;
-    title: string;
-    provider: PlaylistProvider;
-    content: string;
-    position: number;
-    blockPosition: number;
-  }>;
-  textBoxItems: Array<{
-    id: string;
-    title: string;
-    description: string;
-    position: number;
-    blockPosition: number;
-  }>;
 };

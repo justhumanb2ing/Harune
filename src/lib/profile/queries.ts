@@ -1,19 +1,15 @@
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import {
   profileBentoLayouts,
   profileBentos,
   profileLinkBentos,
-  profileLinkItems,
   profileMapBentos,
   profileMediaBentos,
   profilePages,
   profilePlaylistBentos,
-  profilePlaylistItems,
   profileSectionBentos,
-  profileSocialLinks,
   profileTextBentos,
-  profileTextBoxItems,
 } from "@/db/schema/profile";
 import { users } from "@/db/schema/user";
 import type { PlaylistProvider } from "@/lib/profile/playlist";
@@ -84,63 +80,8 @@ export const getProfilePageEditorData = async (userId: string, handle?: string) 
     return null;
   }
 
-  const [socialLinks, linkItems, playlistItems, textBoxItems] = await Promise.all([
-    db
-      .select({
-        id: profileSocialLinks.id,
-        platform: profileSocialLinks.platform,
-        url: profileSocialLinks.url,
-        position: profileSocialLinks.position,
-      })
-      .from(profileSocialLinks)
-      .where(eq(profileSocialLinks.profilePageId, page.id))
-      .orderBy(asc(profileSocialLinks.position)),
-    db
-      .select({
-        id: profileLinkItems.id,
-        title: profileLinkItems.title,
-        description: profileLinkItems.description,
-        favicon: profileLinkItems.favicon,
-        url: profileLinkItems.url,
-        position: profileLinkItems.position,
-      })
-      .from(profileLinkItems)
-      .where(eq(profileLinkItems.profilePageId, page.id))
-      .orderBy(asc(profileLinkItems.position)),
-    db
-      .select({
-        id: profilePlaylistItems.id,
-        title: profilePlaylistItems.title,
-        provider: profilePlaylistItems.provider,
-        content: profilePlaylistItems.content,
-        position: profilePlaylistItems.position,
-        blockPosition: profilePlaylistItems.blockPosition,
-      })
-      .from(profilePlaylistItems)
-      .where(eq(profilePlaylistItems.profilePageId, page.id))
-      .orderBy(asc(profilePlaylistItems.position)),
-    db
-      .select({
-        id: profileTextBoxItems.id,
-        title: profileTextBoxItems.title,
-        description: profileTextBoxItems.description,
-        position: profileTextBoxItems.position,
-        blockPosition: profileTextBoxItems.blockPosition,
-      })
-      .from(profileTextBoxItems)
-      .where(eq(profileTextBoxItems.profilePageId, page.id))
-      .orderBy(asc(profileTextBoxItems.position)),
-  ]);
-
   return {
     page,
-    socialLinks,
-    linkItems,
-    playlistItems: playlistItems.map((playlistItem) => ({
-      ...playlistItem,
-      provider: toPlaylistProvider(playlistItem.provider),
-    })),
-    textBoxItems,
   };
 };
 

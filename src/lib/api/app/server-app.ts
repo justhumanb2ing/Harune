@@ -61,7 +61,7 @@ const createProfilePage = async ({
 }) => {
   const { backgroundImage, bio, handle, image, location, name, role, socialLinks } = values;
 
-  return db.transaction(async (tx) => {
+  const pageId = await db.transaction(async (tx) => {
     await tx
       .update(users)
       .set({
@@ -105,12 +105,25 @@ const createProfilePage = async ({
       await tx.insert(profileSocialLinks).values(socialLinkValues);
     }
 
-    return {
-      handle: page.handle,
-      id: page.id,
-      name,
-    };
+    return page.id;
   });
+
+  const committedPage = await db
+    .select({
+      handle: profilePages.handle,
+      id: profilePages.id,
+      name: profilePages.name,
+    })
+    .from(profilePages)
+    .where(eq(profilePages.id, pageId))
+    .limit(1)
+    .then((rows) => rows[0] ?? null);
+
+  if (!committedPage) {
+    throw new Error("Profile page was not found after create.");
+  }
+
+  return committedPage;
 };
 
 export const appApi = createAppApi({

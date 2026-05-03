@@ -27,7 +27,7 @@ import {
   updateProfileMetadata,
   updateTextBoxItem,
 } from "@/lib/profile/mutations";
-import { getProfilePageEditorApiData } from "@/lib/profile/queries";
+import { getProfilePageEditorData } from "@/lib/profile/queries";
 import { createProfileApi } from "./app";
 
 const updateProfileImage = async ({
@@ -63,7 +63,7 @@ export const profileApi = createProfileApi({
   deleteProfileMediaObject,
   deleteLinkItem,
   deleteTextBoxItem,
-  getProfilePageEditorData: getProfilePageEditorApiData,
+  getProfilePageEditorData,
   getProfileMediaPublicUrl,
   getProfileMediaObjectKeyFromUrl,
   getTemporaryProfileBentoMediaObjectKey,

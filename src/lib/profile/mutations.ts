@@ -1,6 +1,5 @@
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
-import { db, dbClient } from "@/db";
+import { db } from "@/db";
 import {
   profileBentoLayouts,
   profileBentos,
@@ -49,16 +48,6 @@ export class ProfilePageError extends Error {
 
 type DbTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type DbExecutor = typeof db | DbTransaction;
-
-const withReservedDb = async <Result>(callback: (reservedDb: typeof db) => Promise<Result>) => {
-  const reservedClient = await dbClient.reserve();
-
-  try {
-    return await callback(drizzle(reservedClient) as typeof db);
-  } finally {
-    reservedClient.release();
-  }
-};
 
 const shouldDeleteReplacedProfileImage = (previousUrl: string | null, nextUrl: string | null) => {
   if (!previousUrl || previousUrl === nextUrl) {
@@ -1121,73 +1110,63 @@ export const syncProfileBentoDraft = async ({
   const ownedPage = await getOwnedPageOrThrow(userId);
   const now = new Date();
 
-  const { existingMediaBentos, nextData } = await withReservedDb(async (reservedDb) => {
-    const existingBentos = await reservedDb
-      .select({
-        id: profileBentos.id,
-      })
-      .from(profileBentos)
-      .where(eq(profileBentos.profilePageId, ownedPage.id));
-    const existingMediaBentos = await reservedDb
-      .select({
-        objectKey: profileMediaBentos.objectKey,
-      })
-      .from(profileMediaBentos)
-      .innerJoin(profileBentos, eq(profileMediaBentos.bentoId, profileBentos.id))
-      .where(eq(profileBentos.profilePageId, ownedPage.id));
-    const existingIds = new Set(existingBentos.map((item) => item.id));
-    const nextIds = new Set(values.bento.map((item) => item.id));
-    const nextBentoIds = values.bento.map((item) => item.id);
+  const existingBentos = await db
+    .select({
+      id: profileBentos.id,
+    })
+    .from(profileBentos)
+    .where(eq(profileBentos.profilePageId, ownedPage.id));
+  const existingMediaBentos = await db
+    .select({
+      objectKey: profileMediaBentos.objectKey,
+    })
+    .from(profileMediaBentos)
+    .innerJoin(profileBentos, eq(profileMediaBentos.bentoId, profileBentos.id))
+    .where(eq(profileBentos.profilePageId, ownedPage.id));
+  const existingIds = new Set(existingBentos.map((item) => item.id));
+  const nextIds = new Set(values.bento.map((item) => item.id));
+  const nextBentoIds = values.bento.map((item) => item.id);
 
-    const deletedBentoIds = existingBentos
-      .filter((item) => !nextIds.has(item.id))
-      .map((item) => item.id);
+  const deletedBentoIds = existingBentos
+    .filter((item) => !nextIds.has(item.id))
+    .map((item) => item.id);
 
-    await reservedDb.transaction(async (tx) => {
-      if (deletedBentoIds.length > 0) {
-        await tx.delete(profileBentos).where(inArray(profileBentos.id, deletedBentoIds));
-      }
+  await db.transaction(async (tx) => {
+    if (deletedBentoIds.length > 0) {
+      await tx.delete(profileBentos).where(inArray(profileBentos.id, deletedBentoIds));
+    }
 
-      await deleteBentoContentBatch(tx, nextBentoIds);
+    await deleteBentoContentBatch(tx, nextBentoIds);
 
-      for (const item of values.bento) {
-        if (existingIds.has(item.id)) {
-          await tx
-            .update(profileBentos)
-            .set({
-              type: item.type,
-              updatedAt: now,
-            })
-            .where(
-              and(eq(profileBentos.id, item.id), eq(profileBentos.profilePageId, ownedPage.id))
-            );
-        } else {
-          await tx.insert(profileBentos).values({
-            id: item.id,
-            profilePageId: ownedPage.id,
+    for (const item of values.bento) {
+      if (existingIds.has(item.id)) {
+        await tx
+          .update(profileBentos)
+          .set({
             type: item.type,
             updatedAt: now,
-          });
-        }
+          })
+          .where(and(eq(profileBentos.id, item.id), eq(profileBentos.profilePageId, ownedPage.id)));
+      } else {
+        await tx.insert(profileBentos).values({
+          id: item.id,
+          profilePageId: ownedPage.id,
+          type: item.type,
+          updatedAt: now,
+        });
       }
+    }
 
-      await insertBentoLayoutsBatch(tx, values.bento, now);
+    await insertBentoLayoutsBatch(tx, values.bento, now);
 
-      for (const item of values.bento) {
-        await insertBentoContent({ tx, item, now, userId });
-      }
+    for (const item of values.bento) {
+      await insertBentoContent({ tx, item, now, userId });
+    }
 
-      await tx
-        .update(profilePages)
-        .set({ updatedAt: now })
-        .where(eq(profilePages.id, ownedPage.id));
-    });
-
-    return {
-      existingMediaBentos,
-      nextData: await getPublicProfileBentoPageByPageId(reservedDb, ownedPage.id),
-    };
+    await tx.update(profilePages).set({ updatedAt: now }).where(eq(profilePages.id, ownedPage.id));
   });
+
+  const nextData = await getPublicProfileBentoPageByPageId(db, ownedPage.id);
 
   if (!nextData) {
     throw new ProfilePageError("Profile page not found.", 404);
@@ -1238,47 +1217,45 @@ export const syncProfilePageDraft = async ({
     throw new ProfilePageError("This handle is already taken.", 409);
   }
 
-  const nextData = await withReservedDb(async (reservedDb) => {
-    await reservedDb.transaction(async (tx) => {
-      await tx
-        .update(profilePages)
-        .set({
-          handle: values.page.handle,
-          linkBlockPosition: values.page.linkBlockPosition,
-          location: values.page.location || null,
-          name: values.page.name,
-          role: values.page.role || null,
-          bio: values.page.bio || null,
-          image: values.page.image,
-          backgroundImage: values.page.backgroundImage,
-          updatedAt: new Date(),
-        })
-        .where(eq(profilePages.id, ownedPage.id));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(profilePages)
+      .set({
+        handle: values.page.handle,
+        linkBlockPosition: values.page.linkBlockPosition,
+        location: values.page.location || null,
+        name: values.page.name,
+        role: values.page.role || null,
+        bio: values.page.bio || null,
+        image: values.page.image,
+        backgroundImage: values.page.backgroundImage,
+        updatedAt: new Date(),
+      })
+      .where(eq(profilePages.id, ownedPage.id));
 
-      await syncSocialLinks({
-        tx,
-        profilePageId: ownedPage.id,
-        values: values.socialLinks,
-      });
-      await syncLinkItems({
-        tx,
-        profilePageId: ownedPage.id,
-        values: values.linkItems,
-      });
-      await syncPlaylistItems({
-        tx,
-        profilePageId: ownedPage.id,
-        values: values.playlistItems,
-      });
-      await syncTextBoxItems({
-        tx,
-        profilePageId: ownedPage.id,
-        values: values.textBoxItems,
-      });
+    await syncSocialLinks({
+      tx,
+      profilePageId: ownedPage.id,
+      values: values.socialLinks,
     });
-
-    return getProfilePageEditorDataByPageId(reservedDb, ownedPage.id);
+    await syncLinkItems({
+      tx,
+      profilePageId: ownedPage.id,
+      values: values.linkItems,
+    });
+    await syncPlaylistItems({
+      tx,
+      profilePageId: ownedPage.id,
+      values: values.playlistItems,
+    });
+    await syncTextBoxItems({
+      tx,
+      profilePageId: ownedPage.id,
+      values: values.textBoxItems,
+    });
   });
+
+  const nextData = await getProfilePageEditorDataByPageId(db, ownedPage.id);
 
   if (!nextData) {
     throw new ProfilePageError("Profile page was not found after sync.", 404);

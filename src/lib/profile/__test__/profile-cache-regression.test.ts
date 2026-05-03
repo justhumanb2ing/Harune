@@ -74,13 +74,11 @@ describe("profile page cache regression", () => {
     const start = source.indexOf("export const syncProfileBentoDraft");
     const end = source.indexOf("export const syncProfilePageDraft");
     const bentoSyncSource = source.slice(start, end);
-    const reservedDbIndex = bentoSyncSource.indexOf("withReservedDb");
-    const transactionIndex = bentoSyncSource.indexOf("await reservedDb.transaction");
+    const transactionIndex = bentoSyncSource.indexOf("await db.transaction");
     const committedReadIndex = bentoSyncSource.indexOf(
-      "nextData: await getPublicProfileBentoPageByPageId(reservedDb, ownedPage.id),"
+      "const nextData = await getPublicProfileBentoPageByPageId(db, ownedPage.id);"
     );
 
-    expect(reservedDbIndex >= 0).toBe(true);
     expect(transactionIndex >= 0).toBe(true);
     expect(committedReadIndex > transactionIndex).toBe(true);
   });
@@ -89,15 +87,20 @@ describe("profile page cache regression", () => {
     const source = readFileSync(join(process.cwd(), "src/lib/profile/mutations.ts"), "utf8");
     const start = source.indexOf("export const syncProfilePageDraft");
     const profileSyncSource = source.slice(start);
-    const reservedDbIndex = profileSyncSource.indexOf("withReservedDb");
-    const transactionIndex = profileSyncSource.indexOf("await reservedDb.transaction");
+    const transactionIndex = profileSyncSource.indexOf("await db.transaction");
     const committedReadIndex = profileSyncSource.indexOf(
-      "return getProfilePageEditorDataByPageId(reservedDb, ownedPage.id);"
+      "const nextData = await getProfilePageEditorDataByPageId(db, ownedPage.id);"
     );
 
-    expect(reservedDbIndex >= 0).toBe(true);
     expect(transactionIndex >= 0).toBe(true);
     expect(committedReadIndex > transactionIndex).toBe(true);
+  });
+
+  test("/api/profile returns the editor data shape expected by the client store", () => {
+    const source = readFileSync(join(process.cwd(), "src/lib/api/profile/server-app.ts"), "utf8");
+
+    expect(source.includes("getProfilePageEditorData,")).toBe(true);
+    expect(source.includes("getProfilePageEditorApiData")).toBe(false);
   });
 
   test("bento media child table participates in sync write and public read paths", () => {

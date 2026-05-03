@@ -1,4 +1,6 @@
 import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { ProfileAnalyticsResponse } from "@/lib/analytics/types";
 import type { MeResponse } from "@/lib/api/app/types";
 import type { OnboardingInput } from "@/lib/validations/auth.schema";
@@ -437,6 +439,15 @@ describe("app Hono API", () => {
       success: true,
     });
     expect(calls).toEqual([{ userId: "user-1", values: validOnboardingPayload }]);
+  });
+
+  test("keeps /api/create success responses backed by a post-transaction committed read", () => {
+    const source = readFileSync(join(process.cwd(), "src/lib/api/app/server-app.ts"), "utf8");
+
+    expect(source.includes("const pageId = await db.transaction")).toBe(true);
+    expect(source.includes("const committedPage = await db")).toBe(true);
+    expect(source.includes("where(eq(profilePages.id, pageId))")).toBe(true);
+    expect(source.includes("Profile page was not found after create.")).toBe(true);
   });
 
   test("preserves onboarding user, validation, and handle conflict errors", async () => {

@@ -702,8 +702,8 @@ function EditableMapBento({
   return (
     <article
       className={cn(
-        "relative size-full overflow-hidden rounded-[1.5rem] border-[3px] border-transparent bg-muted transition-colors duration-200 ease-out",
-        isInteractionEnabled ? "grid-action border-black" : ""
+        "relative size-full overflow-hidden rounded-[1.5rem] ring-0 border-transparent bg-muted transition-all duration-200 ease-out",
+        isInteractionEnabled ? "grid-action ring-4 ring-black" : ""
       )}
     >
       <BentoMap

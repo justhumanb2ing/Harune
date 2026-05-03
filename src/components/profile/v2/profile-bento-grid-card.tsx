@@ -749,7 +749,7 @@ function EditableMapBento({
       />
       <a
         aria-label="Open location in Google Maps"
-        className="grid-action absolute right-3 bottom-3 flex size-8 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm transition-colors hover:bg-black/55"
+        className="grid-action absolute right-3 bottom-3.5 flex size-8 items-center justify-center rounded-full bg-black text-white backdrop-blur-sm transition-colors hover:bg-black/55"
         href={item.content.url}
         rel="noreferrer"
         target="_blank"

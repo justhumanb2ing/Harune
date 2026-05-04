@@ -9,8 +9,8 @@ import MainHeroSection from "@/components/website/landing/main-hero-section";
 import { appConfig } from "@/lib/config";
 import { createPageMetadata } from "@/lib/seo";
 
-const homepageTitle = "A Link in bio: One page, all of you.";
-const homepageDescription = `Create a free ${appConfig.projectName} bio site to share your links, social profiles, and creator page in one place.`;
+const homepageTitle = "Harune, A Link in bio: One page, all of you.";
+const homepageDescription = `Create a free ${appConfig.projectName} page to share your links, social profiles in one place.`;
 
 export const metadata: Metadata = createPageMetadata({
   path: "/",

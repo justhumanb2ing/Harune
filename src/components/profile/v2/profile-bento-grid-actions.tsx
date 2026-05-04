@@ -4,12 +4,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import type { CreatableBentoType } from "./profile-bento-grid-model";
 import { bentoTypeLabels, creatableBentoTypes } from "./profile-bento-grid-model";
 
+const toolbarAssetBaseUrl = "https://pub-cdb24d695a3d4aa08aa10719325ca3bd.r2.dev/public/assets";
 const toolbarIconSrcByType: Record<CreatableBentoType, string> = {
-  link: "/assets/toolbar-link.png",
-  text: "/assets/toolbar-text.png",
-  map: "/assets/toolbar-map.png",
-  section: "/assets/toolbar-section.png",
-  media: "/assets/toolbar-media.png",
+  link: `${toolbarAssetBaseUrl}/toolbar-link.png`,
+  text: `${toolbarAssetBaseUrl}/toolbar-text.png`,
+  map: `${toolbarAssetBaseUrl}/toolbar-map.png`,
+  section: `${toolbarAssetBaseUrl}/toolbar-section.png`,
+  media: `${toolbarAssetBaseUrl}/toolbar-media.png`,
 };
 
 export function ProfileBentoGridActions({
@@ -56,6 +57,7 @@ export function ProfileBentoGridActions({
                   className="size-full object-cover"
                   height={120}
                   width={120}
+                  unoptimized
                 />
               </Button>
             }

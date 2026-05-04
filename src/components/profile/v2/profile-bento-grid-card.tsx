@@ -10,6 +10,7 @@ import {
   MarkerContent,
 } from "@/components/ui/map";
 import type { GridBreakpoint, ResizeOptionId } from "@/lib/grid/grid-types";
+import { resolveLinkProviderTheme } from "@/lib/metadata/link-provider-theme";
 import type { ProfileBentoItem } from "@/lib/profile/types";
 import { cn } from "@/lib/utils";
 
@@ -141,7 +142,7 @@ function LinkFavicon({
   return (
     <span
       className={cn(
-        "flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-sm",
+        "flex size-full shrink-0 items-center justify-center overflow-hidden rounded-lg",
         hasFavicon ? "bg-transparent" : "bg-muted/60",
         className
       )}
@@ -175,7 +176,7 @@ function EditableLinkFavicon({
   return (
     <a
       aria-label={title ? `Open ${title}` : "Open link"}
-      className="grid-action inline-flex size-8 shrink-0 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+      className="grid-action inline-flex size-9 md:size-10 shrink-0 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
       href={href}
       rel="noreferrer"
       target="_blank"
@@ -198,7 +199,7 @@ function LinkTitleInput({
     <input
       aria-label="Link title"
       className={cn(
-        "grid-action min-h-9 min-w-0 rounded-md bg-transparent px-0 py-1.5 font-medium text-sm outline-none transition-colors placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary truncate",
+        "grid-action min-h-9 min-w-0 rounded-md bg-transparent px-0 py-1.5 font-medium text-base outline-none transition-colors placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary truncate",
         "group-data-[link-provider-theme=true]/item:placeholder:text-[var(--grid-card-muted-foreground)] group-data-[link-provider-theme=true]/item:hover:bg-[var(--grid-card-control-background)] group-data-[link-provider-theme=true]/item:focus-visible:bg-[var(--grid-card-control-background)]",
         className
       )}
@@ -218,7 +219,7 @@ function LinkTitleText({ title, className }: { title: string; className?: string
   return (
     <h2
       className={cn(
-        "min-h-9 min-w-0 truncate rounded-md px-0 py-1.5 font-medium text-sm",
+        "min-h-9 min-w-0 truncate rounded-md px-0 py-1.5 font-medium text-base",
         className
       )}
     >
@@ -229,6 +230,55 @@ function LinkTitleText({ title, className }: { title: string; className?: string
 
 function ReadonlyLinkTitle({ title, className }: { title: string; className?: string }) {
   return <LinkTitleText title={title} className={className} />;
+}
+
+function LinkProviderActionLabel({
+  backgroundColor,
+  className,
+  foregroundColor,
+  label,
+}: {
+  backgroundColor: string;
+  className?: string;
+  foregroundColor: string;
+  label: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex h-6 max-w-full shrink-0 items-center justify-center truncate rounded-full px-2 font-semibold text-[10px] leading-none sm:h-7 sm:px-2.5 sm:text-[11px]",
+        className
+      )}
+      style={{ backgroundColor, color: foregroundColor }}
+    >
+      {label}
+    </span>
+  );
+}
+
+function EditableLinkProviderAction({
+  backgroundColor,
+  foregroundColor,
+  href,
+  label,
+}: {
+  backgroundColor: string;
+  foregroundColor: string;
+  href: string;
+  label: string;
+}) {
+  return (
+    <a
+      aria-label={label}
+      className="grid-action inline-flex h-6 max-w-fit shrink-0 items-center justify-center truncate rounded-full px-4 py-4 font-semibold text-sm leading-none outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring/50 sm:h-8 sm:px-4 sm:text-sm md:px-4 md:py-4.5"
+      href={href}
+      rel="noreferrer"
+      style={{ backgroundColor, color: foregroundColor }}
+      target="_blank"
+    >
+      {label}
+    </a>
+  );
 }
 
 function LinkThumbnail({ thumbnail, className }: { thumbnail: string | null; className?: string }) {
@@ -256,14 +306,6 @@ function LinkThumbnail({ thumbnail, className }: { thumbnail: string | null; cla
   );
 }
 
-function LinkUrlText({ url }: { url: string }) {
-  return (
-    <div className="min-w-0 max-w-full text-muted-foreground text-xs group-data-[link-provider-theme=true]/item:text-[var(--grid-card-muted-foreground)]">
-      <p className="min-w-0 max-w-full truncate line-clamp-1">{url}</p>
-    </div>
-  );
-}
-
 function ReadonlyLinkBento({
   item,
   layoutSize,
@@ -271,11 +313,24 @@ function ReadonlyLinkBento({
   item: Extract<ProfileBentoItem, { type: "link" }>;
   layoutSize: ProfileBentoLinkSize;
 }) {
+  const providerTheme = resolveLinkProviderTheme(item.content.url);
+
   if (layoutSize === "2x1") {
     return (
       <article className="flex size-full min-h-0 items-center gap-3 overflow-hidden rounded-lg p-2">
-        <LinkFavicon favicon={item.content.favicon} title={item.content.title} />
+        <LinkFavicon
+          favicon={item.content.favicon}
+          title={item.content.title}
+          className="size-9 md:size-10"
+        />
         <ReadonlyLinkTitle title={item.content.title} className="flex-1" />
+        {providerTheme ? (
+          <LinkProviderActionLabel
+            backgroundColor={providerTheme.actionBackgroundColor}
+            foregroundColor={providerTheme.actionForegroundColor}
+            label={providerTheme.actionLabel}
+          />
+        ) : null}
       </article>
     );
   }
@@ -285,10 +340,20 @@ function ReadonlyLinkBento({
       <article className="flex size-full min-h-0 gap-3 overflow-hidden rounded-lg p-2">
         <div className="flex min-w-0 flex-1 flex-col justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
-            <LinkFavicon favicon={item.content.favicon} title={item.content.title} />
+            <LinkFavicon
+              favicon={item.content.favicon}
+              title={item.content.title}
+              className="size-9 md:size-10"
+            />
             <ReadonlyLinkTitle title={item.content.title} className="w-full" />
           </div>
-          <LinkUrlText url={item.content.url} />
+          {providerTheme ? (
+            <LinkProviderActionLabel
+              backgroundColor={providerTheme.actionBackgroundColor}
+              foregroundColor={providerTheme.actionForegroundColor}
+              label={providerTheme.actionLabel}
+            />
+          ) : null}
         </div>
         <LinkThumbnail thumbnail={item.content.thumbnail} className="h-full w-[46%] shrink-0" />
       </article>
@@ -300,10 +365,20 @@ function ReadonlyLinkBento({
       <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-2">
         <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
-            <LinkFavicon favicon={item.content.favicon} title={item.content.title} />
+            <LinkFavicon
+              favicon={item.content.favicon}
+              title={item.content.title}
+              className="size-9 md:size-10"
+            />
             <ReadonlyLinkTitle title={item.content.title} className="w-full" />
           </div>
-          <LinkUrlText url={item.content.url} />
+          {providerTheme ? (
+            <LinkProviderActionLabel
+              backgroundColor={providerTheme.actionBackgroundColor}
+              foregroundColor={providerTheme.actionForegroundColor}
+              label={providerTheme.actionLabel}
+            />
+          ) : null}
         </div>
         <LinkThumbnail thumbnail={item.content.thumbnail} className="h-[58%] w-full shrink-0" />
       </article>
@@ -315,10 +390,20 @@ function ReadonlyLinkBento({
       <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-2">
         <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
-            <LinkFavicon favicon={item.content.favicon} title={item.content.title} />
+            <LinkFavicon
+              favicon={item.content.favicon}
+              title={item.content.title}
+              className="size-9 md:size-10"
+            />
             <ReadonlyLinkTitle title={item.content.title} className="w-full" />
           </div>
-          <LinkUrlText url={item.content.url} />
+          {providerTheme ? (
+            <LinkProviderActionLabel
+              backgroundColor={providerTheme.actionBackgroundColor}
+              foregroundColor={providerTheme.actionForegroundColor}
+              label={providerTheme.actionLabel}
+            />
+          ) : null}
         </div>
         <LinkThumbnail thumbnail={item.content.thumbnail} className="h-[42%] w-full shrink-0" />
       </article>
@@ -326,9 +411,22 @@ function ReadonlyLinkBento({
   }
 
   return (
-    <article className="flex size-full min-h-0 flex-col gap-3 overflow-hidden rounded-lg p-2">
-      <LinkFavicon favicon={item.content.favicon} title={item.content.title} />
-      <ReadonlyLinkTitle title={item.content.title} className="w-full" />
+    <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-2">
+      <div className="flex min-w-0 flex-col gap-3">
+        <LinkFavicon
+          favicon={item.content.favicon}
+          title={item.content.title}
+          className="size-9 md:size-10"
+        />
+        <ReadonlyLinkTitle title={item.content.title} className="w-full" />
+      </div>
+      {providerTheme ? (
+        <LinkProviderActionLabel
+          backgroundColor={providerTheme.actionBackgroundColor}
+          foregroundColor={providerTheme.actionForegroundColor}
+          label={providerTheme.actionLabel}
+        />
+      ) : null}
     </article>
   );
 }
@@ -346,6 +444,7 @@ function EditableLinkBento({
 }) {
   const activeLayout = item.layout[activeBreakpoint];
   const size = layoutSize ?? getProfileBentoLinkSize(activeLayout.w, activeLayout.h);
+  const providerTheme = resolveLinkProviderTheme(item.content.url);
 
   if (size === "2x1") {
     return (
@@ -356,6 +455,14 @@ function EditableLinkBento({
           title={item.content.title}
         />
         <LinkTitleInput item={item} onChange={onChange} className="flex-1" />
+        {providerTheme ? (
+          <EditableLinkProviderAction
+            backgroundColor={providerTheme.actionBackgroundColor}
+            foregroundColor={providerTheme.actionForegroundColor}
+            href={item.content.url}
+            label={providerTheme.actionLabel}
+          />
+        ) : null}
       </article>
     );
   }
@@ -372,7 +479,14 @@ function EditableLinkBento({
             />
             <LinkTitleInput item={item} onChange={onChange} className="w-full" />
           </div>
-          <LinkUrlText url={item.content.url} />
+          {providerTheme ? (
+            <EditableLinkProviderAction
+              backgroundColor={providerTheme.actionBackgroundColor}
+              foregroundColor={providerTheme.actionForegroundColor}
+              href={item.content.url}
+              label={providerTheme.actionLabel}
+            />
+          ) : null}
         </div>
 
         <LinkThumbnail thumbnail={item.content.thumbnail} className="h-full w-[46%] shrink-0" />
@@ -392,7 +506,14 @@ function EditableLinkBento({
             />
             <LinkTitleInput item={item} onChange={onChange} className="w-full" />
           </div>
-          <LinkUrlText url={item.content.url} />
+          {providerTheme ? (
+            <EditableLinkProviderAction
+              backgroundColor={providerTheme.actionBackgroundColor}
+              foregroundColor={providerTheme.actionForegroundColor}
+              href={item.content.url}
+              label={providerTheme.actionLabel}
+            />
+          ) : null}
         </div>
         <LinkThumbnail thumbnail={item.content.thumbnail} className="h-[58%] w-full shrink-0" />
       </article>
@@ -411,7 +532,14 @@ function EditableLinkBento({
             />
             <LinkTitleInput item={item} onChange={onChange} className="w-full" />
           </div>
-          <LinkUrlText url={item.content.url} />
+          {providerTheme ? (
+            <EditableLinkProviderAction
+              backgroundColor={providerTheme.actionBackgroundColor}
+              foregroundColor={providerTheme.actionForegroundColor}
+              href={item.content.url}
+              label={providerTheme.actionLabel}
+            />
+          ) : null}
         </div>
         <LinkThumbnail thumbnail={item.content.thumbnail} className="h-[42%] w-full shrink-0" />
       </article>
@@ -419,13 +547,23 @@ function EditableLinkBento({
   }
 
   return (
-    <article className="flex size-full min-h-0 flex-col gap-3 overflow-hidden rounded-lg p-2">
-      <EditableLinkFavicon
-        favicon={item.content.favicon}
-        href={item.content.url}
-        title={item.content.title}
-      />
-      <LinkTitleInput item={item} onChange={onChange} className="w-full" />
+    <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-2">
+      <div className="flex min-w-0 flex-col gap-3">
+        <EditableLinkFavicon
+          favicon={item.content.favicon}
+          href={item.content.url}
+          title={item.content.title}
+        />
+        <LinkTitleInput item={item} onChange={onChange} className="w-full" />
+      </div>
+      {providerTheme ? (
+        <EditableLinkProviderAction
+          backgroundColor={providerTheme.actionBackgroundColor}
+          foregroundColor={providerTheme.actionForegroundColor}
+          href={item.content.url}
+          label={providerTheme.actionLabel}
+        />
+      ) : null}
     </article>
   );
 }
@@ -481,7 +619,7 @@ function EditableTextBento({
   return (
     <textarea
       aria-label="Text content"
-      className="grid-action size-full resize-none rounded-lg bg-transparent p-1 text-lg font-medium leading-relaxed outline-none placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary"
+      className="grid-action size-full resize-none rounded-lg bg-transparent p-1 text-lg! font-medium leading-relaxed outline-none break-all placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary"
       onBlur={(event) => {
         const shouldReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -548,7 +686,7 @@ function EditableSectionBento({
       </span>
       <input
         aria-label="Section title"
-        className="col-start-1 row-start-1 h-full w-full min-w-40 max-w-full bg-transparent font-bold text-xl tracking-tight outline-none placeholder:text-muted-foreground truncate"
+        className="col-start-1 row-start-1 h-full w-full min-w-40 max-w-full truncate bg-transparent px-2 font-bold text-xl tracking-tight outline-none placeholder:text-muted-foreground"
         onChange={(event) => {
           onChange({
             ...item,
@@ -619,12 +757,12 @@ function EditableMediaBento({
       {item.content.href ? (
         <a
           aria-label="Open media link"
-          className="grid-action absolute right-3 bottom-3 flex size-8 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm transition-colors hover:bg-black/55"
+          className={cn("grid-action", overlayActionLinkClassName)}
           href={item.content.href}
           rel="noreferrer"
           target="_blank"
         >
-          <ArrowCircleUpRightIcon aria-hidden className="size-5" weight="bold" />
+          <ArrowCircleUpRightIcon aria-hidden className="size-7" weight="fill" />
         </a>
       ) : null}
     </article>
@@ -640,6 +778,9 @@ const MAP_INTERACTION_OPTIONS = {
   scrollZoom: false,
   touchPitch: false,
 } as const;
+
+const overlayActionLinkClassName =
+  "absolute right-3 bottom-4 flex size-7 items-center justify-center rounded-full bg-white text-black shadow-md backdrop-blur-sm transition-colors hover:bg-white/60";
 
 function MapPulseMarker({ className }: { className?: string }) {
   return (
@@ -762,12 +903,12 @@ function EditableMapBento({
       />
       <a
         aria-label="Open location in Google Maps"
-        className="grid-action absolute right-3 bottom-3.5 flex size-8 items-center justify-center rounded-full bg-black text-white backdrop-blur-sm transition-colors hover:bg-black/55"
+        className={cn("grid-action", overlayActionLinkClassName)}
         href={item.content.url}
         rel="noreferrer"
         target="_blank"
       >
-        <ArrowCircleUpRightIcon aria-hidden className="size-5" weight="bold" />
+        <ArrowCircleUpRightIcon aria-hidden className="size-7" weight="fill" />
       </a>
     </article>
   );
@@ -807,13 +948,13 @@ function ReadonlyMapBento({
       ) : null}
       <a
         aria-label="Open location in Google Maps"
-        className="absolute right-3 bottom-3 flex size-8 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm transition-colors hover:bg-black/55"
+        className={overlayActionLinkClassName}
         href={item.content.url}
         onClick={preventNavigation ? (event) => event.preventDefault() : undefined}
         rel="noreferrer"
         target="_blank"
       >
-        <ArrowCircleUpRightIcon aria-hidden className="size-5" weight="bold" />
+        <ArrowCircleUpRightIcon aria-hidden className="size-7" weight="fill" />
       </a>
     </article>
   );
@@ -897,13 +1038,13 @@ function ProfileBentoGridCardContent({
         {item.content.href ? (
           <a
             aria-label="Open media link"
-            className="absolute right-3 bottom-3 flex size-8 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm transition-colors hover:bg-black/55"
+            className={overlayActionLinkClassName}
             href={item.content.href}
             onClick={preventNavigation ? (event) => event.preventDefault() : undefined}
             rel="noreferrer"
             target="_blank"
           >
-            <ArrowCircleUpRightIcon aria-hidden className="size-5" weight="bold" />
+            <ArrowCircleUpRightIcon aria-hidden className="size-7" weight="fill" />
           </a>
         ) : null}
       </article>
@@ -916,7 +1057,7 @@ function ProfileBentoGridCardContent({
 
   return (
     <section className="relative inline-grid h-full min-w-40 max-w-full overflow-hidden rounded-lg">
-      <h2 className="h-full w-full min-w-40 max-w-full truncate font-bold text-xl tracking-tight">
+      <h2 className="h-full w-full min-w-40 max-w-full truncate px-2 font-bold text-xl tracking-tight">
         {item.content.title}
       </h2>
     </section>
@@ -926,7 +1067,7 @@ function ProfileBentoGridCardContent({
 function ReadonlyTextBento({ content }: { content: string }) {
   return (
     <article className="relative size-full min-h-0 overflow-y-auto overscroll-contain rounded-lg p-1">
-      <p className="whitespace-pre-line break-words text-lg font-medium leading-relaxed">
+      <p className="whitespace-pre-line break-all text-lg! font-medium leading-relaxed">
         {content}
       </p>
     </article>

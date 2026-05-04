@@ -19,9 +19,9 @@ type GridResizeControlsProps = {
 
 const resizeOptionIcons = {
   "1x2": SquareIcon,
-  "1x4": RectangleVerticalIcon,
   "2x1": RectangleHorizontalIcon,
   "2x2": RectangleHorizontalIcon,
+  "1x4": RectangleVerticalIcon,
   "2x4": SquareIcon,
 } satisfies Record<ResizeOptionId, LucideIcon>;
 
@@ -65,7 +65,7 @@ export function GridResizeControls({
                 aria-hidden
                 className={cn(
                   "stroke-3",
-                  smallResizeOptionIds.has(option.id) ? "size-4" : "size-5"
+                  smallResizeOptionIds.has(option.id) ? "size-3.5" : "size-5"
                 )}
               />
             </ToggleGroupItem>

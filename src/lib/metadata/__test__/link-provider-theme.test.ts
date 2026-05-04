@@ -3,31 +3,51 @@ import { resolveLinkProviderTheme } from "@/lib/metadata/link-provider-theme";
 
 describe("resolveLinkProviderTheme", () => {
   const cases = [
+    ["https://youtube.com/watch?v=abc", "youtube", "#fff2f5", "Subscribe", "#ff0033", "#ffffff"],
+    ["https://github.com/leeve/leeve", "github", "#ffffff", "Follow", "#000000", "#ffffff"],
+    ["https://x.com/leeve/status/1", "x", "#f7f7f7", "Follow", "#000000", "#ffffff"],
+    ["https://open.spotify.com/track/abc", "spotify", "#f0fbf4", "Play", "#1ED760", "#ffffff"],
     ["https://threads.net/@leeve", "threads", "#f7f7f7"],
-    ["https://www.instagram.com/leeve", "instagram", "#fff1f5"],
+    ["https://www.instagram.com/leeve", "instagram", "#ffffff"],
     ["https://buymeacoffee.com/leeve", "buymeacoffee", "#fffbe5"],
-    ["https://linkedin.com/in/leeve", "linkedin", "#f0f7ff"],
+    ["https://linkedin.com/in/leeve", "linkedin", "#f0f7ff", "Connect", "#0a66c2", "#ffffff"],
     ["https://chzzk.naver.com/live/abc", "chzzk", "#effff9"],
     ["https://figma.com/file/abc", "figma", "#f7f2ff"],
     ["https://ko-fi.com/leeve", "kofi", "#eefaff"],
     ["https://gumroad.com/l/leeve", "gumroad", "#fff2fc"],
     ["https://medium.com/@leeve/post", "medium", "#f7f7f7"],
-    ["https://patreon.com/leeve", "patreon", "#fff1f2"],
+    ["https://patreon.com/leeve", "patreon", "#fff1f2", "Join", "#ff424d", "#ffffff"],
     ["https://producthunt.com/products/leeve", "producthunt", "#fff4f0"],
-    ["https://reddit.com/r/leeve", "reddit", "#fff2ed"],
+    ["https://reddit.com/r/leeve", "reddit", "#fff2ed", "Join", "#ff4500", "#ffffff"],
     ["https://tiktok.com/@leeve", "tiktok", "#f7f7f7"],
     ["https://twitch.tv/leeve", "twitch", "#f7f2ff"],
     ["https://behance.net/leeve", "behance", "#f0f5ff"],
-    ["https://dribbble.com/leeve", "dribbble", "#fff2f7"],
+    ["https://dribbble.com/leeve", "dribbble", "#fff2f7", "Follow", "#ea4c89", "#ffffff"],
   ] as const;
 
-  for (const [url, provider, color] of cases) {
+  for (const [
+    url,
+    provider,
+    color,
+    actionLabel,
+    actionBackgroundColor,
+    actionForegroundColor,
+  ] of cases) {
     test(`resolves ${url}`, () => {
       const theme = resolveLinkProviderTheme(url);
 
       expect(theme?.backgroundColor).toBe(color);
       expect(theme?.foregroundColor).toBe("#111111");
       expect(theme?.provider).toBe(provider);
+      if (actionLabel) {
+        expect(theme?.actionLabel).toBe(actionLabel);
+        expect(theme?.actionBackgroundColor).toBe(actionBackgroundColor);
+        expect(theme?.actionForegroundColor).toBe(actionForegroundColor);
+      } else {
+        expect(typeof theme?.actionLabel).toBe("string");
+        expect(typeof theme?.actionBackgroundColor).toBe("string");
+        expect(["#000000", "#ffffff"].includes(theme?.actionForegroundColor ?? "")).toBe(true);
+      }
     });
   }
 

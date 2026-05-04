@@ -20,10 +20,10 @@ export const ROW_HEIGHT = {
 
 export const RESIZE_OPTIONS: readonly ResizeOption[] = [
   { id: "1x2", w: 1, h: 2 },
-  { id: "1x4", w: 1, h: 4, hiddenForItemTypes: ["section"] },
-  { id: "2x2", w: 2, h: 2 },
-  { id: "2x4", w: 2, h: 4, hiddenForItemTypes: ["section"] },
   { id: "2x1", w: 2, h: 1, hiddenForItemTypes: ["map", "media", "playlist", "section"] },
+  { id: "2x2", w: 2, h: 2 },
+  { id: "1x4", w: 1, h: 4, hiddenForItemTypes: ["section"] },
+  { id: "2x4", w: 2, h: 4, hiddenForItemTypes: ["section"] },
 ] as const;
 
 export function getGridRowHeight(width: number, breakpoint: GridBreakpoint) {

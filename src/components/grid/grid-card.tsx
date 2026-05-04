@@ -91,7 +91,7 @@ export function GridCard({
     !isSectionItem || shouldShowSectionShadow ? "shadow-float" : "shadow-none";
   const outlineClassName = isSectionItem ? "outline-transparent" : "outline-border/35";
   const isFullBleedItem = item.itemType === "media" || item.itemType === "map";
-  const paddingClassName = isFullBleedItem ? "p-0" : "p-3";
+  const paddingClassName = isFullBleedItem ? "p-0" : isVisuallyThinItem ? "p-2" : "p-3.5";
   const radiusClassName = isVisuallyThinItem ? "rounded-lg" : "rounded-[1.5rem]";
   const bevelClassName = isFullBleedItem ? "surface-bevel" : "";
   const dragInteractionClassName = isDragActive

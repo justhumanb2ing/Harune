@@ -62,6 +62,7 @@ Public readonly surface와 owner editor surface는 의도적으로 같은 profil
 - read-only라고 해서 card radius, padding, shadow, media crop, link provider theme를 다르게 만들지 않는다.
 - 일반 item의 card outline은 콘텐츠보다 앞서 보이지 않도록 옅게 유지하고, section item은 outline 없이 얇은 구분선 텍스트처럼 보여야 한다.
 - owner-only controls, input affordance, upload/loading state만 editor 전용으로 둔다.
+- media/map 외부 링크 action의 size, position, icon weight, contrast는 editor와 readonly에서 같아야 한다.
 - public surface에서 삭제된 fallback text는 editor에도 무심코 되살리지 않는다.
 
 ### Motion And Pointer Feel
@@ -78,10 +79,27 @@ Motion은 장식이 아니라 item 위치, drag affordance, public reveal 순서
 Link item의 thumbnail과 favicon 영역은 이미지 유무와 관계없이 같은 layout footprint를 유지해야 한다. 이미지가 없을 때도 영역은 남기되 skeleton처럼 옅은 회색 배경으로 비어 있는 media slot임을 드러낸다.
 
 - thumbnail이 없으면 `bg-muted/60` 수준의 희미한 배경으로 렌더링해 로딩 skeleton과 비슷하게 처리한다.
+- link thumbnail slot은 thumbnail을 보여주는 item size에서 thumbnail 존재 여부에 따라 사라지면 안 된다. thumbnail-capable size는 저장/크롤 전부터 media slot 크기를 먼저 잡아 layout rhythm을 유지한다.
 - favicon이 없으면 작은 점이나 임의 아이콘을 만들지 않고 같은 크기의 옅은 회색 square placeholder를 유지한다.
+- editor에서 link favicon/title 밀도나 URL 표시 여부를 바꾸면 readonly link item도 같은 footprint와 정보량으로 맞춘다.
+- link URL text를 숨기는 경우 editor와 readonly 모두 숨겨야 하며, title과 thumbnail hierarchy만으로 같은 card rhythm을 유지한다.
+- provider theme가 있는 link item은 provider 특성에 맞춘 짧은 CTA label을 보여준다. 이 label은 `src/lib/metadata/link-provider-theme.ts`의 provider theme entry에서 theme와 함께 관리한다.
+- CTA label의 배경은 provider brand color를 사용하고, 텍스트는 brand color 대비가 더 높은 black 또는 white로 계산한다. 시각 의도상 더 선명한 white가 필요한 provider는 theme entry에서 override한다.
+- readonly link item은 카드 전체가 이미 anchor이므로 CTA를 실제 nested button으로 만들지 않는다. 버튼처럼 보이는 text label로 렌더링해 invalid interactive nesting을 피한다.
+- owner editor에서는 같은 CTA footprint를 유지하되 grid drag/edit affordance와 충돌하지 않도록 `grid-action` 외부 링크 action으로 렌더링한다.
+- CTA label은 모바일/태블릿의 작은 card에서도 제목을 밀어내지 않도록 compact height와 responsive padding을 유지한다.
+- 작은 정사각형 link item에서도 favicon/title 묶음과 CTA label은 세로로 `justify-between`처럼 떨어져야 하며, CTA는 카드 하단에 위치한다.
 - thumbnail wrapper와 내부 image는 `pointer-events: none`을 유지한다.
 - thumbnail 영역이 pointer event를 받으면 grid item drag/resize 시작점과 충돌할 수 있다.
-- 2x1, 2x2, 2x4, 1x4 link item에서 thumbnail/favicon이 있는 경우와 없는 경우 모두 editor/public visual parity와 resize control이 끊기지 않아야 한다.
+- 2x2, 2x4, 1x4 link item에서 thumbnail/favicon이 있는 경우와 없는 경우 모두 editor/public visual parity와 resize control이 끊기지 않아야 한다. 1x2, 2x1처럼 thumbnail을 보여주지 않는 size에는 thumbnail slot을 만들지 않는다.
+
+### Text And Section Density
+
+Text item과 section item은 owner가 editor에서 맞춘 밀도와 줄바꿈이 public readonly에서 바뀌지 않아야 한다.
+
+- text item은 긴 단어, URL, 한글/영문 혼합 문장이 card 바깥으로 밀리지 않도록 editor와 readonly 모두 같은 wrapping policy를 쓴다.
+- section item은 editor input에 좌우 inset을 추가하면 readonly title에도 같은 inset을 둔다.
+- readonly surface에는 input hover/focus 배경만 없어야 하고, text size, weight, padding, truncation은 editor와 같은 presentation contract를 유지한다.
 
 ### Public Render Performance
 

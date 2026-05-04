@@ -8,15 +8,16 @@ export type CreatableBentoType = Exclude<ProfileBentoType, "playlist">;
 
 export const creatableBentoTypes = [
   "link",
-  "map",
   "text",
+  "media",
+  "map",
   "section",
 ] as const satisfies readonly CreatableBentoType[];
 
 export const bentoTypeLabels = {
   link: "Link",
   map: "Map",
-  media: "Media",
+  media: "Image & Video",
   section: "Section",
   text: "Text",
 } satisfies Record<CreatableBentoType, string>;

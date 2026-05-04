@@ -41,7 +41,7 @@ export default function WebsiteHomepage() {
                 </Link>
               }
             />
-            <p className="text-sm text-muted-foreground">Unique links are still available</p>
+            <p className="text-sm text-muted-foreground">Unique handles are still available</p>
           </div>
         </section>
       </main>

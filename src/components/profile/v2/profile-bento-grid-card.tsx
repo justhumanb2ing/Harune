@@ -1,6 +1,6 @@
 import { ArrowCircleUpRightIcon } from "@phosphor-icons/react";
 import Image from "next/image";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { type CSSProperties, memo, useCallback, useEffect, useRef, useState } from "react";
 import { PlaylistIframe } from "@/components/profile/playlist-iframe";
 import {
   Map as BentoMap,
@@ -232,29 +232,69 @@ function ReadonlyLinkTitle({ title, className }: { title: string; className?: st
   return <LinkTitleText title={title} className={className} />;
 }
 
-const LINK_PROVIDER_ACTION_LABEL_CLASS_NAME =
-  "inline-flex h-6 max-w-fit shrink-0 items-center justify-center truncate rounded-full px-4 py-4 font-semibold text-sm leading-none sm:h-8 sm:px-4 sm:text-sm md:px-4 md:py-4.5";
-
-function LinkProviderActionLabel({
-  backgroundColor,
-  className,
-  foregroundColor,
-  label,
+function ReadonlyLinkFavicon({
+  favicon,
+  href,
+  title,
+  preventNavigation,
 }: {
-  backgroundColor: string;
-  className?: string;
-  foregroundColor: string;
-  label: string;
+  favicon: string | null;
+  href: string;
+  title: string;
+  preventNavigation: boolean;
 }) {
   return (
-    <span
-      className={cn(LINK_PROVIDER_ACTION_LABEL_CLASS_NAME, className)}
-      style={{ backgroundColor, color: foregroundColor }}
+    <a
+      aria-label={title ? `Open ${title}` : "Open link"}
+      className="grid-action inline-flex size-9 shrink-0 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50 md:size-10"
+      href={href}
+      onClick={preventNavigation ? (event) => event.preventDefault() : undefined}
+      rel="noreferrer"
+      target="_blank"
     >
-      {label}
-    </span>
+      <LinkFavicon favicon={favicon} title={title} />
+    </a>
   );
 }
+
+function ReadonlyLinkAction({
+  backgroundColor,
+  foregroundColor,
+  href,
+  label,
+  preventNavigation,
+}: {
+  backgroundColor: string;
+  foregroundColor: string;
+  href: string;
+  label: string;
+  preventNavigation: boolean;
+}) {
+  return (
+    <a
+      aria-label={label}
+      className={cn(
+        "grid-action outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring/50 !bg-[var(--link-provider-action-background)] !text-[var(--link-provider-action-foreground)]",
+        LINK_PROVIDER_ACTION_LABEL_CLASS_NAME
+      )}
+      href={href}
+      onClick={preventNavigation ? (event) => event.preventDefault() : undefined}
+      rel="noreferrer"
+      style={
+        {
+          "--link-provider-action-background": backgroundColor,
+          "--link-provider-action-foreground": foregroundColor,
+        } as CSSProperties
+      }
+      target="_blank"
+    >
+      {label}
+    </a>
+  );
+}
+
+const LINK_PROVIDER_ACTION_LABEL_CLASS_NAME =
+  "inline-flex h-6 max-w-fit shrink-0 items-center justify-center truncate rounded-full px-4 py-4 font-semibold text-sm leading-none sm:h-8 sm:px-4 sm:text-sm md:px-4 md:py-4.5";
 
 function EditableLinkProviderAction({
   backgroundColor,
@@ -271,12 +311,17 @@ function EditableLinkProviderAction({
     <a
       aria-label={label}
       className={cn(
-        "grid-action outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring/50",
+        "grid-action outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring/50 !bg-[var(--link-provider-action-background)] !text-[var(--link-provider-action-foreground)]",
         LINK_PROVIDER_ACTION_LABEL_CLASS_NAME
       )}
       href={href}
       rel="noreferrer"
-      style={{ backgroundColor, color: foregroundColor }}
+      style={
+        {
+          "--link-provider-action-background": backgroundColor,
+          "--link-provider-action-foreground": foregroundColor,
+        } as CSSProperties
+      }
       target="_blank"
     >
       {label}
@@ -312,26 +357,31 @@ function LinkThumbnail({ thumbnail, className }: { thumbnail: string | null; cla
 function ReadonlyLinkBento({
   item,
   layoutSize,
+  preventNavigation,
 }: {
   item: Extract<ProfileBentoItem, { type: "link" }>;
   layoutSize: ProfileBentoLinkSize;
+  preventNavigation: boolean;
 }) {
   const providerTheme = resolveLinkProviderTheme(item.content.url);
 
   if (layoutSize === "2x1") {
     return (
       <article className="flex size-full min-h-0 items-center gap-3 overflow-hidden rounded-lg p-2">
-        <LinkFavicon
+        <ReadonlyLinkFavicon
           favicon={item.content.favicon}
+          href={item.content.url}
+          preventNavigation={preventNavigation}
           title={item.content.title}
-          className="size-9 md:size-10"
         />
         <ReadonlyLinkTitle title={item.content.title} className="flex-1" />
         {providerTheme ? (
-          <LinkProviderActionLabel
+          <ReadonlyLinkAction
             backgroundColor={providerTheme.actionBackgroundColor}
             foregroundColor={providerTheme.actionForegroundColor}
+            href={item.content.url}
             label={providerTheme.actionLabel}
+            preventNavigation={preventNavigation}
           />
         ) : null}
       </article>
@@ -343,18 +393,21 @@ function ReadonlyLinkBento({
       <article className="flex size-full min-h-0 gap-3 overflow-hidden rounded-lg p-2">
         <div className="flex min-w-0 flex-1 flex-col justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
-            <LinkFavicon
+            <ReadonlyLinkFavicon
               favicon={item.content.favicon}
+              href={item.content.url}
+              preventNavigation={preventNavigation}
               title={item.content.title}
-              className="size-9 md:size-10"
             />
             <ReadonlyLinkTitle title={item.content.title} className="w-full" />
           </div>
           {providerTheme ? (
-            <LinkProviderActionLabel
+            <ReadonlyLinkAction
               backgroundColor={providerTheme.actionBackgroundColor}
               foregroundColor={providerTheme.actionForegroundColor}
+              href={item.content.url}
               label={providerTheme.actionLabel}
+              preventNavigation={preventNavigation}
             />
           ) : null}
         </div>
@@ -368,18 +421,21 @@ function ReadonlyLinkBento({
       <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-2">
         <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
-            <LinkFavicon
+            <ReadonlyLinkFavicon
               favicon={item.content.favicon}
+              href={item.content.url}
+              preventNavigation={preventNavigation}
               title={item.content.title}
-              className="size-9 md:size-10"
             />
             <ReadonlyLinkTitle title={item.content.title} className="w-full" />
           </div>
           {providerTheme ? (
-            <LinkProviderActionLabel
+            <ReadonlyLinkAction
               backgroundColor={providerTheme.actionBackgroundColor}
               foregroundColor={providerTheme.actionForegroundColor}
+              href={item.content.url}
               label={providerTheme.actionLabel}
+              preventNavigation={preventNavigation}
             />
           ) : null}
         </div>
@@ -393,18 +449,21 @@ function ReadonlyLinkBento({
       <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-2">
         <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
-            <LinkFavicon
+            <ReadonlyLinkFavicon
               favicon={item.content.favicon}
+              href={item.content.url}
+              preventNavigation={preventNavigation}
               title={item.content.title}
-              className="size-9 md:size-10"
             />
             <ReadonlyLinkTitle title={item.content.title} className="w-full" />
           </div>
           {providerTheme ? (
-            <LinkProviderActionLabel
+            <ReadonlyLinkAction
               backgroundColor={providerTheme.actionBackgroundColor}
               foregroundColor={providerTheme.actionForegroundColor}
+              href={item.content.url}
               label={providerTheme.actionLabel}
+              preventNavigation={preventNavigation}
             />
           ) : null}
         </div>
@@ -416,18 +475,21 @@ function ReadonlyLinkBento({
   return (
     <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-2">
       <div className="flex min-w-0 flex-col gap-3">
-        <LinkFavicon
+        <ReadonlyLinkFavicon
           favicon={item.content.favicon}
+          href={item.content.url}
+          preventNavigation={preventNavigation}
           title={item.content.title}
-          className="size-9 md:size-10"
         />
         <ReadonlyLinkTitle title={item.content.title} className="w-full" />
       </div>
       {providerTheme ? (
-        <LinkProviderActionLabel
+        <ReadonlyLinkAction
           backgroundColor={providerTheme.actionBackgroundColor}
           foregroundColor={providerTheme.actionForegroundColor}
+          href={item.content.url}
           label={providerTheme.actionLabel}
+          preventNavigation={preventNavigation}
         />
       ) : null}
     </article>
@@ -1000,15 +1062,7 @@ function ProfileBentoGridCardContent({
     const size = layoutSize ?? getProfileBentoLinkSize(activeLayout.w, activeLayout.h);
 
     return (
-      <a
-        className="relative block size-full min-h-0 overflow-hidden rounded-lg"
-        href={item.content.url}
-        onClick={preventNavigation ? (event) => event.preventDefault() : undefined}
-        rel="noreferrer"
-        target="_blank"
-      >
-        <ReadonlyLinkBento item={item} layoutSize={size} />
-      </a>
+      <ReadonlyLinkBento item={item} layoutSize={size} preventNavigation={preventNavigation} />
     );
   }
 

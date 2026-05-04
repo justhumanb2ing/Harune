@@ -47,6 +47,7 @@ import {
 import type { ProfileBentoItem, PublicProfileBentoPageData } from "@/lib/profile/types";
 import { apiFetch } from "@/lib/react-query/fetcher";
 import { cn } from "@/lib/utils";
+import { ProfileBentoEmptyGridState } from "./profile-bento-empty-grid-state";
 import { ProfileBentoGridMotion } from "./profile-bento-entry-motion";
 import {
   type CreatableBentoType,
@@ -936,8 +937,10 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
         </div>
       </motion.header>
 
-      <div className={gridClassName} ref={containerRef} style={gridStyle}>
-        {mounted ? (
+      <div className={`${gridClassName} flex min-h-0 flex-1`} ref={containerRef} style={gridStyle}>
+        {bento.length === 0 ? (
+          <ProfileBentoEmptyGridState />
+        ) : mounted ? (
           <ResponsiveGridCanvas
             activeBreakpoint={activeBreakpoint}
             activeDragItemId={activeDragItemId}

@@ -1,13 +1,19 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { BubblesIcon, CircleFadingArrowUpIcon, DotIcon, Loader2Icon } from "lucide-react";
+import {
+  BubblesIcon,
+  CircleFadingArrowUpIcon,
+  DotIcon,
+  Loader2Icon,
+  TrashIcon,
+} from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 import { startTransition, ViewTransition } from "react";
-import { SocialPlatformIcon } from "@/components/icons";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ProfileBentoProfileMotion } from "@/components/profile/v2/profile-bento-entry-motion";
+import { PROFILE_BENTO_PROFILE_SHELL_CLASS } from "@/components/profile/v2/profile-bento-profile-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -37,23 +43,7 @@ type OnboardingFormProps = {
   handle?: string;
 };
 
-type StepKey = "handle" | "profile" | "socials";
-
-type SocialLinkKey =
-  | "x"
-  | "instagram"
-  | "youtube"
-  | "linkedin"
-  | "github"
-  | "threads"
-  | "soundcloud"
-  | "spotify"
-  | "behance"
-  | "tiktok"
-  | "mail"
-  | "apple_music";
-
-type SocialLinksState = Record<SocialLinkKey, string>;
+type StepKey = "handle" | "profile";
 
 const steps: Array<{
   key: StepKey;
@@ -71,97 +61,9 @@ const steps: Array<{
     key: "profile",
     label: "Profile",
     title: "Fill out your profile",
-    description: "Add your name, avatar, background, and a short bio.",
-  },
-  {
-    key: "socials",
-    label: "Links",
-    title: "Connect your socials",
-    description: "Add the links you want to share on your page.",
+    description: "Add your name, avatar, bio, role, and location.",
   },
 ];
-
-const socialPlatforms: Array<{
-  key: SocialLinkKey;
-  label: string;
-  placeholder: string;
-}> = [
-  {
-    key: "x",
-    label: "X",
-    placeholder: "https://x.com/yourname",
-  },
-  {
-    key: "instagram",
-    label: "Instagram",
-    placeholder: "https://instagram.com/yourname",
-  },
-  {
-    key: "youtube",
-    label: "YouTube",
-    placeholder: "https://youtube.com/@yourname",
-  },
-  {
-    key: "linkedin",
-    label: "LinkedIn",
-    placeholder: "https://linkedin.com/in/yourname",
-  },
-  {
-    key: "github",
-    label: "GitHub",
-    placeholder: "https://github.com/yourname",
-  },
-  {
-    key: "threads",
-    label: "Threads",
-    placeholder: "https://www.threads.net/@yourname",
-  },
-  {
-    key: "soundcloud",
-    label: "SoundCloud",
-    placeholder: "https://soundcloud.com/yourname",
-  },
-  {
-    key: "spotify",
-    label: "Spotify",
-    placeholder: "https://open.spotify.com/artist/yourid",
-  },
-  {
-    key: "behance",
-    label: "Behance",
-    placeholder: "https://www.behance.net/yourname",
-  },
-  {
-    key: "tiktok",
-    label: "TikTok",
-    placeholder: "https://www.tiktok.com/@yourname",
-  },
-  {
-    key: "mail",
-    label: "Email",
-    placeholder: "example@domain.com",
-  },
-  {
-    key: "apple_music",
-    label: "Apple Music",
-    placeholder: "https://music.apple.com/profile/yourname",
-  },
-];
-
-const createInitialSocialLinks = (): SocialLinksState => ({
-  x: "",
-  instagram: "",
-  youtube: "",
-  linkedin: "",
-  github: "",
-  threads: "",
-  soundcloud: "",
-  spotify: "",
-  behance: "",
-  tiktok: "",
-  mail: "",
-  apple_music: "",
-});
 
 const runOnboardingStepTransition = (direction: "forward" | "back", updateStep: () => void) => {
   document.documentElement.dataset.onboardingStepTransition = direction;
@@ -175,9 +77,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
-  const backgroundImageInputRef = React.useRef<HTMLInputElement | null>(null);
   const profileImageUpload = useProfileImageUpload();
-  const backgroundImageUpload = useProfileImageUpload();
   const [currentStep, setCurrentStep] = React.useState(0);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isSigningOut, setIsSigningOut] = React.useState(false);
@@ -189,7 +89,6 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
   const [role, setRole] = React.useState("");
   const [location, setLocation] = React.useState("");
   const [bio, setBio] = React.useState("");
-  const [socialLinks, setSocialLinks] = React.useState<SocialLinksState>(createInitialSocialLinks);
 
   const currentStepMeta = steps[currentStep];
   const hasHandleInput = !!pageHandle;
@@ -264,11 +163,6 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
       }
     }
 
-    if (currentStep === 1 && !trimmedName) {
-      setError("Name is required.");
-      return;
-    }
-
     transitionToStep(currentStep + 1, () => setError(null));
   };
 
@@ -283,22 +177,6 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
     try {
       setError(null);
       profileImageUpload.selectFile(file);
-    } catch (uploadError) {
-      setError(uploadError instanceof Error ? uploadError.message : "Failed to select image.");
-    }
-  };
-
-  const handleSelectBackgroundImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-
-    if (!file) {
-      return;
-    }
-
-    try {
-      setError(null);
-      backgroundImageUpload.selectFile(file);
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : "Failed to select image.");
     }
@@ -326,19 +204,12 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
       return;
     }
 
-    if (backgroundImageUpload.error) {
-      transitionToStep(1, () => setError(backgroundImageUpload.error));
-      return;
-    }
-
     setIsSubmitting(true);
     setError(null);
     let uploadedImageUrl: string | null = null;
-    let uploadedBackgroundImageUrl: string | null = null;
 
     try {
       uploadedImageUrl = await profileImageUpload.uploadSelectedFile("profile");
-      uploadedBackgroundImageUrl = await backgroundImageUpload.uploadSelectedFile("background");
     } catch (uploadError) {
       if (uploadedImageUrl) {
         try {
@@ -364,12 +235,10 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
         body: JSON.stringify({
           handle: pageHandle,
           image: uploadedImageUrl || undefined,
-          backgroundImage: uploadedBackgroundImageUrl || undefined,
           name: trimmedName,
           role,
           location,
           bio,
-          socialLinks,
         }),
       });
       await invalidateAuthenticatedAppQueries(queryClient);
@@ -380,14 +249,6 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
           await deleteUploadedProfileImage(uploadedImageUrl);
         } catch (rollbackError) {
           console.error("Failed to rollback uploaded onboarding profile image:", rollbackError);
-        }
-      }
-
-      if (uploadedBackgroundImageUrl) {
-        try {
-          await deleteUploadedProfileImage(uploadedBackgroundImageUrl);
-        } catch (rollbackError) {
-          console.error("Failed to rollback uploaded onboarding background image:", rollbackError);
         }
       }
 
@@ -457,12 +318,10 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
         <form onSubmit={handleComplete} className="flex h-full min-h-0 w-full flex-col gap-4">
           <ViewTransition name="onboarding-step">
             <div className="min-h-0 flex-1 w-full">
-              <div className="mx-auto flex h-full max-w-md flex-col gap-4 px-8 pb-6">
+              <div className="mx-auto flex h-full max-w-xl flex-col gap-4 px-8 pb-6">
                 <div className="flex min-h-0 flex-1 flex-col gap-4">
                   <header className="shrink-0 space-y-2 pt-12">
-                    <h1 className="text-3xl font-semibold tracking-tight">
-                      {currentStepMeta.title}
-                    </h1>
+                    <h1 className="text-3xl font-bold tracking-tight">{currentStepMeta.title}</h1>
                     <p className="text-sm text-muted-foreground">{currentStepMeta.description}</p>
                   </header>
 
@@ -481,7 +340,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                           </Button>
                         </div>
 
-                        <InputGroup className="h-12 rounded-xl has-[[data-slot=input-group-control]:focus-visible]:border-secondary bg-secondary! transition-all border-0">
+                        <InputGroup className="h-12 rounded-xl border-0 bg-secondary transition-all has-[[data-slot=input-group-control]:focus-visible]:border-secondary">
                           <InputGroupAddon className="pl-5">
                             <InputGroupText className="text-primary">harune.me/</InputGroupText>
                           </InputGroupAddon>
@@ -554,198 +413,129 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                   ) : null}
 
                   {currentStep === 1 ? (
-                    <div className="relative flex min-h-0 flex-1 flex-col justify-center rounded-t-[2rem] bg-background">
-                      <div className="relative z-10 flex min-h-[46rem] flex-col rounded-t-[2rem] bg-background">
-                        <div className="flex flex-col gap-2 rounded-t-[3rem] bg-background shadow-brand-small">
-                          <div className="relative mb-16">
+                    <ProfileBentoProfileMotion className={cn(PROFILE_BENTO_PROFILE_SHELL_CLASS, "mt-10")}>
+                      <div className="flex flex-col gap-8 overflow-hidden">
+                        <div className="flex px-4">
+                          <div className="group/profile-image relative">
                             <button
                               type="button"
-                              className="relative flex h-52 w-full cursor-pointer items-center justify-center overflow-hidden rounded-t-[2rem] border-b border-border bg-secondary transition-colors hover:bg-input disabled:cursor-not-allowed disabled:opacity-70"
-                              onClick={() => backgroundImageInputRef.current?.click()}
-                              disabled={backgroundImageUpload.isUploading || isSubmitting}
-                              aria-label="Upload background image"
-                            >
-                              {backgroundImageUpload.previewUrl ? (
-                                <Image
-                                  src={backgroundImageUpload.previewUrl}
-                                  alt=""
-                                  fill
-                                  className="object-cover"
-                                />
-                              ) : null}
-                              {backgroundImageUpload.isUploading ? (
-                                <span className="absolute inset-0 flex items-center justify-center bg-black/35">
-                                  <Loader2Icon className="size-6 animate-spin text-white" />
-                                </span>
-                              ) : null}
-                            </button>
-                            <input
-                              ref={backgroundImageInputRef}
-                              id="background-image-upload"
-                              type="file"
-                              accept={PROFILE_IMAGE_ACCEPT}
-                              className="sr-only"
-                              onChange={handleSelectBackgroundImage}
-                              disabled={backgroundImageUpload.isUploading || isSubmitting}
-                            />
-                            <div className="absolute left-1/2 bottom-0 z-10 -translate-x-1/2 translate-y-1/2">
-                              <button
-                                type="button"
-                                className="relative flex size-32 cursor-pointer items-center justify-center overflow-hidden rounded-full border bg-secondary transition-colors hover:bg-input disabled:cursor-not-allowed disabled:opacity-70"
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={profileImageUpload.isUploading || isSubmitting}
-                                aria-label="Upload profile image"
-                              >
-                                {profileImageUpload.previewUrl ? (
-                                  <Avatar className="size-full">
-                                    <AvatarImage
-                                      src={profileImageUpload.previewUrl}
-                                      alt={
-                                        profileImageUpload.selectedFileName ??
-                                        "Selected profile image"
-                                      }
-                                      className="object-cover"
-                                    />
-                                    <AvatarFallback />
-                                  </Avatar>
-                                ) : (
-                                  <span className="flex min-w-24 flex-col items-center justify-center gap-2 text-muted-foreground">
-                                    <CircleFadingArrowUpIcon className="size-6 text-muted-foreground" />
-                                    <span className="text-xs font-semibold">Avatar</span>
-                                  </span>
-                                )}
-                                {profileImageUpload.isUploading ? (
-                                  <span className="absolute inset-0 flex items-center justify-center bg-black/35">
-                                    <Loader2Icon className="size-6 animate-spin text-white" />
-                                  </span>
-                                ) : null}
-                              </button>
-                            </div>
-                            <input
-                              ref={fileInputRef}
-                              id="image-upload"
-                              type="file"
-                              accept={PROFILE_IMAGE_ACCEPT}
-                              className="sr-only"
-                              onChange={handleSelectImage}
+                              className="relative flex size-32 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-secondary transition-colors hover:bg-input disabled:cursor-not-allowed disabled:opacity-70 xl:size-44"
+                              onClick={() => fileInputRef.current?.click()}
                               disabled={profileImageUpload.isUploading || isSubmitting}
+                              aria-label="Upload profile image"
+                            >
+                              {profileImageUpload.previewUrl ? (
+                                // Object URLs and immediate local previews should render without Next image optimization.
+                                // biome-ignore lint/performance/noImgElement: This preview can be a blob URL.
+                                <img
+                                  src={profileImageUpload.previewUrl}
+                                  alt={trimmedName || "Selected profile image"}
+                                  className="size-full object-cover"
+                                />
+                              ) : (
+                                <span className="flex size-full flex-col items-center justify-center gap-2 rounded-full text-muted-foreground">
+                                  {profileImageUpload.isUploading ? (
+                                    <Loader2Icon className="size-6 animate-spin" />
+                                  ) : (
+                                    <CircleFadingArrowUpIcon className="size-6" />
+                                  )}
+                                  <span className="font-semibold text-lg">Avatar</span>
+                                </span>
+                              )}
+                            </button>
+                            {profileImageUpload.previewUrl ? (
+                              <Button
+                                type="button"
+                                size="icon-lg"
+                                className="pointer-events-none absolute top-1 right-1 z-10 size-10 rounded-full border-[0.5px] border-border bg-background text-black opacity-0 shadow-sm transition-opacity hover:bg-secondary group-hover/profile-image:pointer-events-auto group-hover/profile-image:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100"
+                                disabled={profileImageUpload.isUploading || isSubmitting}
+                                onClick={(event) => {
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  profileImageUpload.clear();
+                                }}
+                                aria-label="Remove profile image"
+                              >
+                                <TrashIcon className="size-5 stroke-3" />
+                              </Button>
+                            ) : null}
+                          </div>
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept={PROFILE_IMAGE_ACCEPT}
+                            className="sr-only"
+                            onChange={handleSelectImage}
+                            disabled={profileImageUpload.isUploading || isSubmitting}
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-3 p-4 pt-0">
+                          <Textarea
+                            id="name"
+                            value={name}
+                            onChange={(event) => {
+                              setName(event.target.value);
+                              if (error) {
+                                setError(null);
+                              }
+                            }}
+                            placeholder="Your name"
+                            aria-label="Your name"
+                            autoComplete="off"
+                            maxLength={100}
+                            className="min-h-8 resize-none overflow-hidden rounded-none border-0 p-0! text-3xl! font-bold break-all focus-visible:ring-0 xl:text-5xl!"
+                          />
+
+                          <Textarea
+                            id="bio"
+                            value={bio}
+                            onChange={(event) => setBio(event.target.value)}
+                            placeholder="Bio"
+                            aria-label="Bio"
+                            className="min-h-8 resize-none overflow-hidden rounded-none border-0 p-0! text-lg! break-all focus-visible:ring-0 xl:text-xl!"
+                          />
+
+                          <div className="flex flex-col gap-2 text-neutral-500">
+                            <Input
+                              id="role"
+                              value={role}
+                              onChange={(event) => setRole(event.target.value)}
+                              placeholder="Role"
+                              aria-label="Role"
+                              autoComplete="off"
+                              maxLength={100}
+                              className="h-fit rounded-none border-0 p-0! text-base! focus-visible:ring-0"
+                            />
+                            <Input
+                              id="location"
+                              value={location}
+                              onChange={(event) => setLocation(event.target.value)}
+                              placeholder="Location"
+                              aria-label="Location"
+                              autoComplete="off"
+                              maxLength={100}
+                              className="h-fit rounded-none border-0 p-0! text-base! focus-visible:ring-0"
                             />
                           </div>
-                          {profileImageUpload.error || backgroundImageUpload.error ? (
-                            <p className="text-center text-destructive text-sm">
-                              {profileImageUpload.error || backgroundImageUpload.error}
-                            </p>
-                          ) : null}
-
-                          <div className="flex flex-col gap-2 p-4">
-                            <div>
-                              <Input
-                                id="name"
-                                value={name}
-                                onChange={(event) => {
-                                  setName(event.target.value);
-                                  if (error) {
-                                    setError(null);
-                                  }
-                                }}
-                                placeholder="Name"
-                                aria-label="Name"
-                                aria-invalid={!!error && !trimmedName}
-                                autoComplete="off"
-                                className="h-12 border-0 bg-secondary text-center hover:bg-input"
-                              />
-                            </div>
-
-                            <div>
-                              <Textarea
-                                id="bio"
-                                value={bio}
-                                onChange={(event) => setBio(event.target.value)}
-                                placeholder="Bio"
-                                aria-label="Bio"
-                                className="h-24 resize-none border-0 bg-secondary p-4 hover:bg-input"
-                              />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-2">
-                              <Input
-                                id="role"
-                                value={role}
-                                onChange={(event) => setRole(event.target.value)}
-                                placeholder="Role"
-                                aria-label="Role"
-                                autoComplete="off"
-                                maxLength={100}
-                                className="h-12 border-0 bg-secondary text-center hover:bg-input"
-                              />
-                              <Input
-                                id="location"
-                                value={location}
-                                onChange={(event) => setLocation(event.target.value)}
-                                placeholder="Location"
-                                aria-label="Location"
-                                autoComplete="off"
-                                maxLength={100}
-                                className="h-12 border-0 bg-secondary text-center hover:bg-input"
-                              />
-                            </div>
-                          </div>
                         </div>
-                        <div className="flex-1 bg-background" />
                       </div>
-                    </div>
-                  ) : null}
-
-                  {currentStep === 2 ? (
-                    <div className="relative flex min-h-0 flex-1 flex-col justify-center rounded-t-[2rem] bg-background">
-                      <div className="relative z-10 flex min-h-[46rem] flex-col rounded-t-[2rem] bg-background">
-                        <div className="flex flex-col gap-3 rounded-t-[3rem] bg-background p-4 pt-18 shadow-brand-small">
-                          {socialPlatforms.map((platform) => (
-                            <div key={platform.key} className="flex items-center gap-3">
-                              <SocialPlatformIcon
-                                platform={platform.key}
-                                variant="color"
-                                className="size-10 shrink-0"
-                                aria-hidden="true"
-                              />
-                              <InputGroup className="h-11 flex-1 rounded-md border-0 bg-secondary">
-                                <InputGroupInput
-                                  id={platform.key}
-                                  value={socialLinks[platform.key]}
-                                  onChange={(event) => {
-                                    setSocialLinks((prev) => ({
-                                      ...prev,
-                                      [platform.key]: event.target.value,
-                                    }));
-                                  }}
-                                  placeholder={
-                                    platform.key === "mail" ? platform.placeholder : "Add URL"
-                                  }
-                                  aria-label={platform.label}
-                                  className="h-full px-4!"
-                                />
-                              </InputGroup>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="relative z-10 -mt-3 min-h-20 flex-1 bg-background" />
-                      </div>
-                    </div>
+                    </ProfileBentoProfileMotion>
                   ) : null}
 
                   {currentStep !== 0 && handleErrorMessage ? (
-                    <p className="text-destructive text-center">{handleErrorMessage}</p>
+                    <p className="text-center text-destructive">{handleErrorMessage}</p>
                   ) : null}
 
                   {currentStep !== 0 && error ? (
-                    <p className="text-destructive text-center">{error}</p>
+                    <p className="text-center text-destructive">{error}</p>
                   ) : null}
                 </div>
               </div>
             </div>
           </ViewTransition>
 
-          <div className="mx-auto flex w-full max-w-md shrink-0 flex-col items-center justify-between gap-2 px-8 pb-6">
+          <div className="mx-auto flex w-full max-w-md shrink-0 flex-col items-center justify-between gap-2 pb-6">
             <div className="flex w-full items-center justify-center gap-2">
               {currentStep === 0 ? null : currentStep < steps.length - 1 ? (
                 <Button
@@ -755,7 +545,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                     goToNextStep();
                   }}
                   className={cn(
-                    "h-12 w-full bg-indigo-400 border-indigo-400 text-base font-bold opacity-100 shadow-lg transition-opacity hover:bg-indigo-500",
+                    "h-12 w-full border-indigo-400 bg-indigo-400 text-base font-bold opacity-100 shadow-lg transition-opacity hover:bg-indigo-500",
                     trimmedName && !profileImageUpload.isUploading
                       ? "pointer-events-auto opacity-100"
                       : "pointer-events-none opacity-0"
@@ -767,9 +557,9 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                 <Button
                   type="button"
                   size="lg"
-                  className="h-12 text-base w-full bg-indigo-400 border-indigo-400 font-bold hover:bg-indigo-500 shadow-lg"
+                  className="h-12 w-full border-indigo-400 bg-indigo-400 text-base font-bold shadow-lg hover:bg-indigo-500"
                   onClick={() => void submitOnboarding()}
-                  disabled={isSubmitting || profileImageUpload.isUploading}
+                  disabled={isSubmitting || profileImageUpload.isUploading || !trimmedName}
                 >
                   {isSubmitting ? (
                     <>
@@ -790,7 +580,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                 type="button"
                 variant="ghost"
                 size="lg"
-                className="font-bold w-full h-12 text-muted-foreground"
+                className="h-12 w-full font-bold text-muted-foreground"
                 onClick={goToPreviousStep}
               >
                 <span>Back</span>

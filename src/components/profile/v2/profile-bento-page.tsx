@@ -44,7 +44,7 @@ export function ProfileBentoProfileAside({ page }: Pick<PublicProfileBentoPageDa
 
         <div className="flex flex-col gap-3 p-4 pt-0">
           {page.name ? (
-            <h1 className="min-h-8 whitespace-pre-line break-all p-0 font-bold text-3xl! xl:text-5xl!">
+            <h1 className="min-h-8 whitespace-pre-line break-all p-0 font-bold text-3xl! xl:text-5xl! tracking-tighter">
               {page.name}
             </h1>
           ) : null}

@@ -1,4 +1,3 @@
-import { SsgoiTransition } from "@ssgoi/react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
@@ -53,7 +52,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
   }`;
 
   return (
-    <SsgoiTransition id="/sign-up" className="block h-full">
+    <div className="block h-full">
       <section className="h-full flex flex-col justify-between px-6 py-6">
         <div className="flex min-h-0 flex-1 items-center justify-center">
           <article className="w-full max-w-lg flex flex-col gap-8">
@@ -73,6 +72,6 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
         </div>
         <PolicyBox />
       </section>
-    </SsgoiTransition>
+    </div>
   );
 }

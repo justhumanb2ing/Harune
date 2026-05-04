@@ -22,15 +22,15 @@ type AuthBentoPreviewItem = {
 
 const AUTH_BENTO_ITEMS: AuthBentoPreviewItem[] = [
   {
-    className: "col-start-4 row-start-1 col-span-1 row-span-2",
+    className: "col-start-4 row-start-1 col-span-1 row-span-1",
     rotation: -7,
     delay: 0.08,
     item: {
       id: "auth-map-seongsu",
       type: "map",
       layout: {
-        desktop: { x: 3, y: 0, w: 1, h: 2 },
-        compact: { x: 1, y: 0, w: 1, h: 2 },
+        desktop: { x: 3, y: 0, w: 1, h: 1 },
+        compact: { x: 1, y: 0, w: 1, h: 1 },
       },
       content: {
         latitude: 37.5446,
@@ -42,15 +42,15 @@ const AUTH_BENTO_ITEMS: AuthBentoPreviewItem[] = [
     },
   },
   {
-    className: "col-start-2 row-start-1 col-span-2 row-span-4",
+    className: "col-start-2 row-start-1 col-span-2 row-span-2",
     rotation: 3.5,
     delay: 0,
     item: {
       id: "auth-media-studio",
       type: "media",
       layout: {
-        desktop: { x: 1, y: 0, w: 2, h: 4 },
-        compact: { x: 0, y: 2, w: 2, h: 4 },
+        desktop: { x: 1, y: 0, w: 2, h: 2 },
+        compact: { x: 0, y: 1, w: 2, h: 2 },
       },
       content: {
         mediaType: "image",
@@ -63,15 +63,15 @@ const AUTH_BENTO_ITEMS: AuthBentoPreviewItem[] = [
     },
   },
   {
-    className: "col-start-1 row-start-5 col-span-2 row-span-2",
+    className: "col-start-1 row-start-3 col-span-2 row-span-1",
     rotation: -2.5,
     delay: 0.2,
     item: {
       id: "auth-media-gallery",
       type: "media",
       layout: {
-        desktop: { x: 0, y: 4, w: 2, h: 2 },
-        compact: { x: 0, y: 6, w: 2, h: 2 },
+        desktop: { x: 0, y: 2, w: 2, h: 1 },
+        compact: { x: 0, y: 3, w: 2, h: 1 },
       },
       content: {
         mediaType: "image",
@@ -84,15 +84,15 @@ const AUTH_BENTO_ITEMS: AuthBentoPreviewItem[] = [
     },
   },
   {
-    className: "col-start-3 row-start-7 col-span-2 row-span-2",
+    className: "col-start-3 row-start-4 col-span-2 row-span-1",
     rotation: 5,
     delay: 0.14,
     item: {
       id: "auth-link-behance",
       type: "link",
       layout: {
-        desktop: { x: 2, y: 6, w: 2, h: 2 },
-        compact: { x: 0, y: 8, w: 2, h: 2 },
+        desktop: { x: 2, y: 3, w: 2, h: 1 },
+        compact: { x: 0, y: 4, w: 2, h: 1 },
       },
       content: {
         title: "Behance",
@@ -105,15 +105,15 @@ const AUTH_BENTO_ITEMS: AuthBentoPreviewItem[] = [
     },
   },
   {
-    className: "col-start-1 row-start-1 col-span-1 row-span-2",
+    className: "col-start-1 row-start-1 col-span-1 row-span-1",
     rotation: 8,
     delay: 0.26,
     item: {
       id: "auth-link-twitter",
       type: "link",
       layout: {
-        desktop: { x: 0, y: 0, w: 1, h: 2 },
-        compact: { x: 0, y: 0, w: 1, h: 2 },
+        desktop: { x: 0, y: 0, w: 1, h: 1 },
+        compact: { x: 0, y: 0, w: 1, h: 1 },
       },
       content: {
         title: "Twitter",
@@ -125,15 +125,15 @@ const AUTH_BENTO_ITEMS: AuthBentoPreviewItem[] = [
     },
   },
   {
-    className: "col-start-4 row-start-3 col-span-1 row-span-2",
+    className: "col-start-4 row-start-2 col-span-1 row-span-1",
     rotation: -4,
     delay: 0.32,
     item: {
       id: "auth-link-github",
       type: "link",
       layout: {
-        desktop: { x: 3, y: 2, w: 1, h: 2 },
-        compact: { x: 1, y: 10, w: 1, h: 2 },
+        desktop: { x: 3, y: 1, w: 1, h: 1 },
+        compact: { x: 1, y: 5, w: 1, h: 1 },
       },
       content: {
         title: "GitHub",

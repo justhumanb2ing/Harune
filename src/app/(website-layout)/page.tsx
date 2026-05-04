@@ -28,7 +28,7 @@ export default function WebsiteHomepage() {
         <MainHeroSection />
         <LiveCardSection />
         <HandleCardSection />
-        <AnalyticsCardSection />
+        {/*<AnalyticsCardSection />*/}
         <section className="h-[20rem] flex flex-col justify-center items-center">
           <div className="flex flex-col justify-center items-center gap-2">
             <Button

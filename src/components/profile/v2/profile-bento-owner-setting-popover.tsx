@@ -165,7 +165,7 @@ export function ProfileBentoOwnerSettingPopover() {
               variant="ghost"
               disabled={isSigningOut}
               aria-busy={isSigningOut}
-              className="h-11 w-full justify-start rounded-lg px-4 font-normal"
+              className="h-16 w-full justify-start rounded-lg px-4 font-normal"
               onClick={handleSignOut}
             >
               <span>{isSigningOut ? "Logging Out..." : "Log Out"}</span>

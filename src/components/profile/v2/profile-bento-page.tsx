@@ -49,7 +49,7 @@ export function ProfileBentoProfileAside({ page }: Pick<PublicProfileBentoPageDa
           ) : null}
 
           {page.bio ? (
-            <p className="min-h-8 whitespace-pre-line break-all p-0 text-lg! xl:text-xl!">
+            <p className="min-h-8 whitespace-pre-line break-all p-0 text-lg! text-neutral-600 xl:text-xl!">
               {page.bio}
             </p>
           ) : null}

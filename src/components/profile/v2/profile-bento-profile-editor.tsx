@@ -91,7 +91,7 @@ export function ProfileBentoProfileEditor() {
             onChange={(event) => editor.setProfileField("bio", event.target.value)}
             placeholder="Bio"
             aria-label="Bio"
-            className="min-h-8 resize-none overflow-hidden border-0 p-0! text-lg! xl:text-xl! break-all rounded-none focus-visible:ring-0"
+            className="min-h-8 resize-none overflow-hidden border-0 p-0! text-lg! text-neutral-600 xl:text-xl! break-all rounded-none focus-visible:ring-0"
           />
 
           <div className="flex flex-col gap-2 text-neutral-500">

@@ -589,12 +589,14 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
         </form>
       </div>
       <section className="hidden h-full flex-1 lg:block">
-        <div className="relative h-full">
+        <div className="h-full flex items-center justify-center">
           <Image
-            src="https://images.unsplash.com/photo-1713508298272-7d0db139dc54?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            alt="img"
-            fill
-            className="object-cover"
+            src="https://pub-cdb24d695a3d4aa08aa10719325ca3bd.r2.dev/public/assets/layout-side-03.png"
+            alt="image"
+            width={300}
+            height={300}
+            className="object-contain w-full h-[600px]"
+            unoptimized
           />
         </div>
       </section>

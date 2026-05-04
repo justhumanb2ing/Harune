@@ -1,6 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
+import { Settings2Icon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -12,6 +13,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/animate-ui/components/base/popover";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { authClient } from "@/lib/auth-client";
 import { clearAuthenticatedAppQueries } from "@/lib/react-query/app-cache";
 
@@ -105,69 +107,80 @@ export function ProfileBentoOwnerSettingPopover() {
   }, [pathname]);
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger
-        render={
-          <Button
-            type="button"
-            variant="ghost"
-            className="min-h-9 px-2 font-normal text-neutral-500"
-          >
-            Setting
-          </Button>
-        }
-      />
+    <Tooltip>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger
+          render={
+            <TooltipTrigger
+              render={
+                <Button
+                  aria-label="Settings"
+                  type="button"
+                  variant="ghost"
+                  size={"icon-sm"}
+                  className="surface-bevel border-0 bg-secondary/80 text-neutral-500 shadow-none hover:bg-secondary/80"
+                >
+                  <Settings2Icon aria-hidden className="size-4" />
+                </Button>
+              }
+            />
+          }
+        />
+        <TooltipContent side="top" sideOffset={8}>
+          Settings
+        </TooltipContent>
 
-      <PopoverPanel
-        id="v2-owner-setting-popover"
-        align="end"
-        side="top"
-        sideOffset={12}
-        data-setting-box-popover=""
-        className="w-52 overflow-hidden rounded-2xl border-border/40 bg-background p-2 shadow-brand-small!"
-      >
-        <div className="mb-10 flex flex-col gap-1">
-          <Button
-            variant="ghost"
-            className="h-16 w-full flex-col items-start gap-1 rounded-lg px-4 font-normal text-muted-foreground hover:bg-transparent hover:text-muted-foreground"
-            disabled
-          >
-            <span>Create page</span>
-            <span className="text-xs">(coming soon)</span>
-          </Button>
-          <ChangeHandleButton
-            panelAlign="end"
-            panelCollisionAvoidance={{
-              align: "none",
-              fallbackAxisSide: "none",
-              side: "none",
-            }}
-            panelSideOffset={12}
-            triggerClassName="h-16! rounded-md"
-          />
-        </div>
+        <PopoverPanel
+          id="v2-owner-setting-popover"
+          align="end"
+          side="top"
+          sideOffset={12}
+          data-setting-box-popover=""
+          className="w-52 overflow-hidden rounded-2xl border-border/40 bg-background p-2 shadow-brand-small!"
+        >
+          <div className="mb-10 flex flex-col gap-1">
+            <Button
+              variant="ghost"
+              className="h-16 w-full flex-col items-start gap-1 rounded-lg px-4 font-normal text-muted-foreground hover:bg-transparent hover:text-muted-foreground"
+              disabled
+            >
+              <span>Create page</span>
+              <span className="text-xs">(coming soon)</span>
+            </Button>
+            <ChangeHandleButton
+              panelAlign="end"
+              panelCollisionAvoidance={{
+                align: "none",
+                fallbackAxisSide: "none",
+                side: "none",
+              }}
+              panelSideOffset={12}
+              triggerClassName="h-16! rounded-md"
+            />
+          </div>
 
-        <aside className="mt-1 space-y-1">
-          <Button
-            type="button"
-            variant="ghost"
-            disabled={isSigningOut}
-            aria-busy={isSigningOut}
-            className="h-11 w-full justify-start rounded-lg px-4 font-normal"
-            onClick={handleSignOut}
-          >
-            <span>{isSigningOut ? "Logging Out..." : "Log Out"}</span>
-          </Button>
-          <DeleteAccountDialog
-            open={isDeleteDialogOpen}
-            onOpenChange={handleDeleteDialogOpenChange}
-            disabled
-            isDeleting={isDeletingAccount}
-            onConfirm={handleDeleteAccount}
-            triggerClassName="h-11 min-h-0 rounded-lg py-0 hover:bg-transparent hover:text-muted-foreground"
-          />
-        </aside>
-      </PopoverPanel>
-    </Popover>
+          <aside className="mt-1 space-y-1">
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={isSigningOut}
+              aria-busy={isSigningOut}
+              className="h-11 w-full justify-start rounded-lg px-4 font-normal"
+              onClick={handleSignOut}
+            >
+              <span>{isSigningOut ? "Logging Out..." : "Log Out"}</span>
+            </Button>
+            <DeleteAccountDialog
+              open={isDeleteDialogOpen}
+              onOpenChange={handleDeleteDialogOpenChange}
+              disabled
+              isDeleting={isDeletingAccount}
+              onConfirm={handleDeleteAccount}
+              triggerClassName="h-11 min-h-0 rounded-lg py-0 hover:bg-transparent hover:text-muted-foreground"
+            />
+          </aside>
+        </PopoverPanel>
+      </Popover>
+    </Tooltip>
   );
 }

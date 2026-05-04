@@ -1,10 +1,12 @@
 "use client";
 
+import { BlocksIcon, ChartColumnBigIcon } from "lucide-react";
 import Link from "next/link";
 import { ProfilePageEditorProvider } from "@/components/profile/layout/profile-editor-provider";
 import { ProfileBentoInteractiveGrid } from "@/components/profile/v2/profile-bento-interactive-grid";
 import { ProfileBentoOwnerSettingPopover } from "@/components/profile/v2/profile-bento-owner-setting-popover";
 import { ProfileBentoProfileEditor } from "@/components/profile/v2/profile-bento-profile-editor";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { ProfileBentoItem, ProfilePageData } from "@/lib/profile/types";
 import { cn } from "@/lib/utils";
 
@@ -27,25 +29,62 @@ function ProfileBentoOwnerFooterAction({
   disableAnalytics: boolean;
   ownerHandle: string;
 }) {
+  const iconButtonClassName =
+    "surface-bevel border-0 bg-secondary/80 text-neutral-500 shadow-none hover:bg-secondary/80";
+
   return (
     <footer className={cn("flex items-center justify-center gap-2", className)}>
       <ProfileBentoOwnerSettingPopover />
-      {disableAnalytics ? (
-        <button
-          className="inline-flex min-h-9 cursor-not-allowed items-center justify-center rounded-md px-2 font-normal text-neutral-500 text-sm opacity-50"
-          disabled
-          type="button"
-        >
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            disableAnalytics ? (
+              <span
+                aria-disabled="true"
+                className={cn(
+                  "inline-flex size-9 cursor-not-allowed items-center justify-center rounded-md opacity-50",
+                  iconButtonClassName
+                )}
+              >
+                <ChartColumnBigIcon aria-hidden className="size-4" />
+              </span>
+            ) : (
+              <Link
+                aria-label="Analytics"
+                href={`/${ownerHandle}/analytics`}
+                className={cn(
+                  "inline-flex size-9 items-center justify-center rounded-md",
+                  iconButtonClassName
+                )}
+              >
+                <ChartColumnBigIcon aria-hidden className="size-4" />
+              </Link>
+            )
+          }
+        />
+        <TooltipContent side="top" sideOffset={8}>
           Analytics
-        </button>
-      ) : (
-        <Link
-          href={`/${ownerHandle}/analytics`}
-          className="inline-flex min-h-9 items-center justify-center rounded-md px-2 font-normal text-neutral-500 text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-        >
-          Analytics
-        </Link>
-      )}
+        </TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Link
+              aria-label="Leaderboard"
+              href="/leaderboard"
+              className={cn(
+                "inline-flex size-9 items-center justify-center rounded-md",
+                iconButtonClassName
+              )}
+            >
+              <BlocksIcon aria-hidden className="size-4" />
+            </Link>
+          }
+        />
+        <TooltipContent side="top" sideOffset={8}>
+          Leaderboard
+        </TooltipContent>
+      </Tooltip>
     </footer>
   );
 }

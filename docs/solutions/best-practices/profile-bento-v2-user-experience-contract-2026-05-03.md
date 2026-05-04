@@ -65,11 +65,22 @@ Public readonly surface와 owner editor surface는 의도적으로 같은 profil
 - media/map 외부 링크 action의 size, position, icon weight, contrast는 editor와 readonly에서 같아야 한다.
 - public surface에서 삭제된 fallback text는 editor에도 무심코 되살리지 않는다.
 
+### Toolbar Primary Action
+
+Owner editor의 하단 primary button은 현재 상태를 바로 드러내야 한다.
+
+- 변경 사항이 없으면 `Copy my page`를 보여주고, 클릭하면 현재 public page URL을 복사한다.
+- 복사에 성공하면 토스트 대신 버튼 안에서 `CheckIcon + Copied` 상태를 짧게 보여준다.
+- 변경 사항이 있으면 `Save`를 보여주고, sync가 진행 중이면 `Saving`을 보여준다.
+- label만 바꾸지 말고 click behavior도 상태에 맞춰 함께 전환한다.
+
 ### Motion And Pointer Feel
 
 Motion은 장식이 아니라 item 위치, drag affordance, public reveal 순서를 이해하게 만드는 피드백이다.
 
 - item 추가/진입 motion은 scroll 위치 이동과 충돌하지 않아야 한다.
+- 섹션 item이 focus-within 상태가 되어도 하단 fixed toolbar보다 위로 올라와서는 안 된다.
+- grid item은 sibling보다 앞에 보여야 할 때만 z-order를 올리고, toolbar를 덮는 수준까지는 올라가지 않게 유지한다.
 - drag motion을 고칠 때는 `docs/solutions/best-practices/profile-bento-v2-drag-motion-and-section-shadow-contract-2026-05-01.md`를 함께 확인한다.
 - `prefers-reduced-motion` 사용자는 과한 motion 없이 같은 정보 구조를 이해할 수 있어야 한다.
 - hover/focus/drag 상태는 pointer interception과 text selection 부작용을 실제로 확인한다.

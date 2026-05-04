@@ -1,8 +1,9 @@
 "use client";
 
-import { LinkBreakIcon, LinkSimpleIcon } from "@phosphor-icons/react";
-import { ExpandIcon } from "lucide-react";
+import { LinkBreakIcon, LinkSimpleIcon, SpinnerGapIcon } from "@phosphor-icons/react";
+import { CheckIcon, ExpandIcon } from "lucide-react";
 import { motion } from "motion/react";
+import { usePathname } from "next/navigation";
 import type { CSSProperties } from "react";
 import {
   useCallback,
@@ -34,9 +35,11 @@ import {
 import { useGridDragMotion } from "@/hooks/use-grid-drag-motion";
 import { useProfilePageEditor } from "@/hooks/use-profile-editor";
 import { rootApiClient } from "@/lib/api/client";
+import { appConfig } from "@/lib/config";
 import { BREAKPOINTS, COLS, GRID_MARGIN, getGridRowHeight } from "@/lib/grid/grid-config";
 import { normalizeLayouts } from "@/lib/grid/grid-layout-utils";
 import type { GridBreakpoint, GridLayouts, ResizeOption } from "@/lib/grid/grid-types";
+import { getProfileAppPath, getProfileRouteHandle } from "@/lib/profile/app-paths";
 import {
   getProfileBentoMediaFileError,
   getProfileBentoMediaType,
@@ -59,6 +62,7 @@ import {
 } from "./profile-bento-grid-model";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
+import { Separator } from "@/components/ui/separator";
 
 type ProfileBentoInteractiveGridProps = {
   initialBento: ProfileBentoItem[];
@@ -309,6 +313,8 @@ async function prepareMediaFile(file: File) {
 
 export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoInteractiveGridProps) {
   const profileEditor = useProfilePageEditor();
+  const pathname = usePathname();
+  const currentHandle = getProfileRouteHandle(pathname);
   const { width, containerRef, mounted } = useContainerWidth({
     initialWidth: 864,
     measureBeforeMount: true,
@@ -340,6 +346,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   const removeTimerByIdRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const [pendingScrollItemId, setPendingScrollItemId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [isCopied, setIsCopied] = useState(false);
   const {
     activeDragItemId,
     cardRotate,
@@ -362,13 +369,21 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   const isCrawlingLink = loadingLinkItemIds.size > 0;
   const isUploadingMedia = uploadingMediaItemIds.size > 0;
   const isSaving = isPending || profileEditor.isSyncing;
+  const isPrimaryActionBusy = isSaving || isCrawlingLink || isUploadingMedia;
   const canSave = isDirty || hasProfileChanges;
+  const primaryActionLabel = isPrimaryActionBusy
+    ? "Saving"
+    : isCopied
+      ? "Copied"
+      : canSave
+        ? "Save"
+        : "Copy my page";
   const isSectionDragActive =
     activeDragItemId !== null && itemTypeById.get(activeDragItemId) === "section";
   const isThinPlaceholderShapeActive = isThinPlaceholderActive || isSectionDragActive;
   const rowHeight = getGridRowHeight(width, activeBreakpoint);
   const thinItemVisibleHeight = Math.round(rowHeight * 0.75);
-  const gridClassName = `w-[380px] max-w-full sm:w-[425px] xl:w-full [&_.react-draggable-dragging]:z-20! [&_.react-grid-item:not(.react-grid-placeholder)]:z-10 [&_.react-grid-item:focus-within]:z-30! [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none! [&_.react-grid-placeholder]:z-0! [&_.react-grid-placeholder]:bg-secondary! [&_.react-grid-placeholder]:opacity-100! [&_.react-grid-placeholder]:shadow-[inset_0_1px_6px_rgb(0_0_0_/_0.08),inset_0_-1px_1px_rgb(255_255_255_/_0.8)]! ${isThinPlaceholderShapeActive ? "[&_.react-grid-placeholder]:h-[var(--thin-placeholder-height)]! [&_.react-grid-placeholder]:translate-y-[var(--thin-placeholder-offset)]! [&_.react-grid-placeholder]:rounded-lg!" : "[&_.react-grid-placeholder]:rounded-[1.5rem]!"}`;
+  const gridClassName = `w-[380px] max-w-full sm:w-[425px] xl:w-full [&_.react-draggable-dragging]:z-20! [&_.react-grid-item:not(.react-grid-placeholder)]:z-10 [&_.react-grid-item:focus-within]:z-20! [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none! [&_.react-grid-placeholder]:z-0! [&_.react-grid-placeholder]:bg-secondary! [&_.react-grid-placeholder]:opacity-100! [&_.react-grid-placeholder]:shadow-[inset_0_1px_6px_rgb(0_0_0_/_0.08),inset_0_-1px_1px_rgb(255_255_255_/_0.8)]! ${isThinPlaceholderShapeActive ? "[&_.react-grid-placeholder]:h-[var(--thin-placeholder-height)]! [&_.react-grid-placeholder]:translate-y-[var(--thin-placeholder-offset)]! [&_.react-grid-placeholder]:rounded-lg!" : "[&_.react-grid-placeholder]:rounded-[1.5rem]!"}`;
   const gridStyle = {
     "--thin-placeholder-height": `${thinItemVisibleHeight}px`,
     "--thin-placeholder-offset": `${rowHeight * 2 + GRID_MARGIN[1] - thinItemVisibleHeight}px`,
@@ -390,6 +405,20 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [isDirty]);
+
+  useEffect(() => {
+    if (!isCopied) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setIsCopied(false);
+    }, 2000);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [isCopied]);
 
   useEffect(() => {
     const removeTimerById = removeTimerByIdRef.current;
@@ -836,13 +865,35 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     });
   };
 
+  const copyMyPage = async () => {
+    try {
+      await navigator.clipboard.writeText(`${appConfig.url}${getProfileAppPath(currentHandle)}`);
+      setIsCopied(true);
+    } catch {
+      toast.error("Failed to copy page URL");
+    }
+  };
+
+  const handlePrimaryAction = () => {
+    if (isPrimaryActionBusy) {
+      return;
+    }
+
+    if (canSave) {
+      save();
+      return;
+    }
+
+    void copyMyPage();
+  };
+
   return (
     <ProfileBentoGridMotion
       className="relative flex min-w-0 flex-1 flex-col items-center gap-4 pb-28 xl:w-[52rem] xl:flex-none xl:items-stretch 2xl:w-[56rem]"
       ready={mounted}
     >
       <motion.header
-        className="fixed bottom-6 left-1/2 z-30 flex w-auto -translate-x-1/2 flex-col items-center justify-center rounded-xl border bg-background/90 p-2 shadow-xs backdrop-blur"
+        className="fixed bottom-6 left-1/2 z-30 flex w-auto -translate-x-1/2 flex-col items-center justify-center rounded-2xl bg-background/80 p-2.5 shadow-float backdrop-blur"
         layout
         ref={toolbarRef}
         transition={TOOLBAR_EXPAND_TRANSITION}
@@ -907,6 +958,22 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
           </motion.form>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-2" ref={actionRowRef}>
+          <Button
+            aria-busy={isPrimaryActionBusy}
+            disabled={isPrimaryActionBusy}
+            onClick={handlePrimaryAction}
+            type="button"
+            size={"lg"}
+            className={"brand-button w-36 font-semibold py-5 text-base surface-bevel border-0"}
+          >
+            {isSaving ? <SpinnerGapIcon className="size-4 animate-spin" /> : null}
+            {!isSaving && isCopied ? <CheckIcon className="size-4" /> : null}
+            <span>{primaryActionLabel}</span>
+          </Button>
+          <Separator
+            orientation="vertical"
+            className={"data-vertical:w-[3px] my-3 rounded-lg mx-2"}
+          />
           <ProfileBentoGridActions
             onAddItem={addItem}
             onRequestMediaInput={() => mediaInputRef.current?.click()}
@@ -926,14 +993,6 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
             ref={mediaInputRef}
             type="file"
           />
-          <Button
-            aria-busy={isSaving}
-            disabled={!canSave || isSaving || isCrawlingLink || isUploadingMedia}
-            onClick={save}
-            type="button"
-          >
-            {isSaving ? "Saving" : isUploadingMedia ? "Uploading" : "Save"}
-          </Button>
         </div>
       </motion.header>
 

@@ -1,3 +1,4 @@
+import { getSessionCookie } from "better-auth/cookies";
 import { z } from "zod";
 import type { AuthSession } from "@/auth";
 import { apiFactory, jsonResponse, noStoreHeaders, zQueryValidator } from "@/lib/api/hono-factory";
@@ -71,8 +72,20 @@ export const createRootApi = ({
       }
     )
     .get("/api/join", async (context) => {
-      const session = await getSession();
       const requestUrl = new URL(context.req.url);
+      const sessionCookie = getSessionCookie(context.req.raw);
+
+      if (!sessionCookie) {
+        const signInUrl = new URL("/sign-in", requestUrl);
+        signInUrl.searchParams.set(
+          "callbackUrl",
+          getSafeRedirectPath(`${requestUrl.pathname}${requestUrl.search}`)
+        );
+
+        return context.redirect(`${signInUrl.pathname}${signInUrl.search}`, 307);
+      }
+
+      const session = await getSession();
 
       if (!session?.user?.id) {
         const signInUrl = new URL("/sign-in", requestUrl);

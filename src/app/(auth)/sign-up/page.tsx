@@ -1,4 +1,6 @@
+import { getSessionCookie } from "better-auth/cookies";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AuthForm } from "@/components/auth/auth-form";
@@ -23,9 +25,10 @@ type SignUpPageProps = {
 };
 
 export default async function SignUpPage({ searchParams }: SignUpPageProps) {
-  const session = await auth();
+  const requestHeaders = await headers();
   const { callbackUrl, handle } = await searchParams;
   const resolvedCallbackPath = getSafeRedirectPath(callbackUrl);
+  const session = getSessionCookie(requestHeaders) ? await auth() : null;
 
   if (session?.user?.id) {
     redirect(

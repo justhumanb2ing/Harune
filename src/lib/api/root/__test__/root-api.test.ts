@@ -130,8 +130,12 @@ describe("root Hono API", () => {
   });
 
   test("redirects anonymous join requests to sign-in with a safe callback path", async () => {
+    let authCallCount = 0;
     const app = createTestRootApi({
-      auth: async () => null,
+      auth: async () => {
+        authCallCount += 1;
+        return null;
+      },
       getSafeRedirectPath: (path) => `/safe${path}`,
     });
 
@@ -141,6 +145,7 @@ describe("root Hono API", () => {
     expect(response.headers.get("location")).toBe(
       "/sign-in?callbackUrl=%2Fsafe%2Fapi%2Fjoin%3Fhandle%3Ddemo"
     );
+    expect(authCallCount).toBe(0);
   });
 
   test("redirects authenticated join requests to the resolved app destination", async () => {
@@ -152,7 +157,11 @@ describe("root Hono API", () => {
       },
     });
 
-    const response = await app.request("/api/join?handle=demo&next=%2Fanalytics");
+    const response = await app.request("/api/join?handle=demo&next=%2Fanalytics", {
+      headers: {
+        cookie: "better-auth.session_token=token",
+      },
+    });
 
     expect(response.status).toBe(307);
     expect(response.headers.get("location")).toBe("/demo/analytics");
@@ -163,5 +172,26 @@ describe("root Hono API", () => {
         userId: "user-1",
       },
     ]);
+  });
+
+  test("reads the session only after a session cookie signal exists", async () => {
+    let authCallCount = 0;
+    const app = createTestRootApi({
+      auth: async () => {
+        authCallCount += 1;
+        return authenticatedSession;
+      },
+      resolveAuthenticatedAppRedirect: async () => "/demo/analytics",
+    });
+
+    const response = await app.request("/api/join?handle=demo", {
+      headers: {
+        cookie: "better-auth.session_token=token",
+      },
+    });
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("/demo/analytics");
+    expect(authCallCount).toBe(1);
   });
 });

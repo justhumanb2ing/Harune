@@ -42,6 +42,8 @@ join shortcut이 빠른 redirect shortcut 역할을 하면서도 `auth()`와 DB 
 
 이 route는 보안 경계가 아니다. 실제 보안 검증은 목적지인 `/sign-in`, `/create`, owner analytics page, 보호 API에서 다시 수행된다. 따라서 shortcut route에서 full session validation을 반복할 필요가 없었다.
 
+추가로 익명 사용자가 들어오는 `sign-in`/`sign-up` 페이지도 서버에서 항상 `auth()`를 호출하고 있었다. 로그인된 사용자만 redirect가 필요하므로, 세션 쿠키가 없는 요청은 곧바로 렌더링하고 쿠키가 있을 때만 `auth()`를 읽는 편이 맞았다.
+
 현재 redirect 전용 경로는 `/api/join` route handler가 맡는다. 사용자에게 보여줄 auth shell을 갖지 않아야 한다.
 
 ## Fix
@@ -50,15 +52,19 @@ join shortcut이 빠른 redirect shortcut 역할을 하면서도 `auth()`와 DB 
 
 ```text
 /api/join
-  -> session cookie exists: resolveAuthenticatedAppRedirect
   -> no session cookie: /sign-in?callbackUrl=/api/join
+  -> session cookie exists: auth()
+  -> valid session: resolveAuthenticatedAppRedirect
+  -> stale cookie: /sign-in?callbackUrl=/api/join
 ```
 
 변경 파일:
 
 | File | Change |
 |---|---|
-| `src/app/api/join/route.ts` | session/callback forwarding과 authenticated app redirect |
+| `src/lib/api/root/app.ts` | session/callback forwarding과 authenticated app redirect |
+| `src/app/(auth)/sign-in/page.tsx` | session cookie가 있을 때만 auth() 호출 |
+| `src/app/(auth)/sign-up/page.tsx` | session cookie가 있을 때만 auth() 호출 |
 
 ## Why This Is Safe
 
@@ -82,7 +88,7 @@ stale cookie
 
 ```text
 bun x biome check \
-  src/app/api/join/route.ts \
+  src/lib/api/root/app.ts \
   src/app/(auth)/layout.tsx \
   src/app/(auth)/sign-in/page.tsx \
   src/app/(auth)/sign-up/page.tsx \

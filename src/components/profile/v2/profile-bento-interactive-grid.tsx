@@ -836,7 +836,10 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   };
 
   return (
-    <ProfileBentoGridMotion className="relative flex min-w-0 flex-1 flex-col items-center gap-4 pb-28 xl:w-[52rem] xl:flex-none xl:items-stretch 2xl:w-[56rem]">
+    <ProfileBentoGridMotion
+      className="relative flex min-w-0 flex-1 flex-col items-center gap-4 pb-28 xl:w-[52rem] xl:flex-none xl:items-stretch 2xl:w-[56rem]"
+      ready={mounted}
+    >
       <motion.header
         className="fixed bottom-6 left-1/2 z-30 flex w-auto -translate-x-1/2 flex-col items-center justify-center rounded-xl border bg-background/90 p-2 shadow-xs backdrop-blur"
         layout
@@ -934,80 +937,82 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
       </motion.header>
 
       <div className={gridClassName} ref={containerRef} style={gridStyle}>
-        <ResponsiveGridCanvas
-          activeBreakpoint={activeBreakpoint}
-          activeDragItemId={activeDragItemId}
-          cardRotate={cardRotate}
-          cardX={cardX}
-          items={gridItems}
-          layouts={layouts}
-          mounted={mounted}
-          onDrag={updateDragPointer}
-          onDragStart={startDrag}
-          onDragStop={stopDrag}
-          onItemMotionComplete={completeItemMotion}
-          onLayoutChange={(nextLayouts) => {
-            setLayouts(normalizeLayouts(nextLayouts, itemTypeById));
-          }}
-          onRemoveItem={removeItem}
-          onResizeItem={resizeItem}
-          onResizeStart={startResize}
-          onResizeStop={stopResize}
-          getItemMotionPhase={getItemMotionPhase}
-          renderItem={(gridItem) => {
-            const item = bentoById.get(gridItem.id);
-            const activeLayout =
-              layouts[activeBreakpoint]?.find((layoutItem) => layoutItem.i === gridItem.id) ??
-              item?.layout[activeBreakpoint];
-            const layoutSize = activeLayout
-              ? getProfileBentoLinkSize(activeLayout.w, activeLayout.h)
-              : undefined;
+        {mounted ? (
+          <ResponsiveGridCanvas
+            activeBreakpoint={activeBreakpoint}
+            activeDragItemId={activeDragItemId}
+            cardRotate={cardRotate}
+            cardX={cardX}
+            items={gridItems}
+            layouts={layouts}
+            mounted={mounted}
+            onDrag={updateDragPointer}
+            onDragStart={startDrag}
+            onDragStop={stopDrag}
+            onItemMotionComplete={completeItemMotion}
+            onLayoutChange={(nextLayouts) => {
+              setLayouts(normalizeLayouts(nextLayouts, itemTypeById));
+            }}
+            onRemoveItem={removeItem}
+            onResizeItem={resizeItem}
+            onResizeStart={startResize}
+            onResizeStop={stopResize}
+            getItemMotionPhase={getItemMotionPhase}
+            renderItem={(gridItem) => {
+              const item = bentoById.get(gridItem.id);
+              const activeLayout =
+                layouts[activeBreakpoint]?.find((layoutItem) => layoutItem.i === gridItem.id) ??
+                item?.layout[activeBreakpoint];
+              const layoutSize = activeLayout
+                ? getProfileBentoLinkSize(activeLayout.w, activeLayout.h)
+                : undefined;
 
-            return item ? (
-              <ProfileBentoEditableContentCard
-                activeBreakpoint={activeBreakpoint}
-                autoFocus={focusItemId === item.id}
-                isLoading={loadingLinkItemIds.has(item.id)}
-                item={item}
-                layoutSize={item.type === "link" ? layoutSize : undefined}
-                mapInteractionEnabled={activeMapInteractionItemId === item.id}
-                onChange={updateItem}
-                onFocusReady={() => {
-                  setFocusItemId((current) => (current === item.id ? null : current));
-                }}
-              />
-            ) : null;
-          }}
-          renderTrailingResizeControl={(gridItem) => {
-            const item = bentoById.get(gridItem.id);
+              return item ? (
+                <ProfileBentoEditableContentCard
+                  activeBreakpoint={activeBreakpoint}
+                  autoFocus={focusItemId === item.id}
+                  isLoading={loadingLinkItemIds.has(item.id)}
+                  item={item}
+                  layoutSize={item.type === "link" ? layoutSize : undefined}
+                  mapInteractionEnabled={activeMapInteractionItemId === item.id}
+                  onChange={updateItem}
+                  onFocusReady={() => {
+                    setFocusItemId((current) => (current === item.id ? null : current));
+                  }}
+                />
+              ) : null;
+            }}
+            renderTrailingResizeControl={(gridItem) => {
+              const item = bentoById.get(gridItem.id);
 
-            return item?.type === "media" ? (
-              <MediaLinkControl item={item} onChange={updateItem} />
-            ) : item?.type === "map" ? (
-              <Button
-                aria-label={
-                  activeMapInteractionItemId === item.id
-                    ? "Disable map interaction"
-                    : "Enable map interaction"
-                }
-                aria-pressed={activeMapInteractionItemId === item.id}
-                className="size-8.5 min-h-8 min-w-8 rounded-md text-primary-foreground hover:bg-primary-foreground hover:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary"
-                onClick={() => {
-                  setActiveMapInteractionItemId((current) =>
-                    current === item.id ? null : item.id
-                  );
-                }}
-                size="icon"
-                type="button"
-                variant="ghost"
-              >
-                <ExpandIcon aria-hidden className="size-5 stroke-3" />
-              </Button>
-            ) : null;
-          }}
-          rowHeight={rowHeight}
-          width={width}
-        />
+              return item?.type === "media" ? (
+                <MediaLinkControl item={item} onChange={updateItem} />
+              ) : item?.type === "map" ? (
+                <Button
+                  aria-label={
+                    activeMapInteractionItemId === item.id
+                      ? "Disable map interaction"
+                      : "Enable map interaction"
+                  }
+                  aria-pressed={activeMapInteractionItemId === item.id}
+                  className="size-8.5 min-h-8 min-w-8 rounded-md text-primary-foreground hover:bg-primary-foreground hover:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary"
+                  onClick={() => {
+                    setActiveMapInteractionItemId((current) =>
+                      current === item.id ? null : item.id
+                    );
+                  }}
+                  size="icon"
+                  type="button"
+                  variant="ghost"
+                >
+                  <ExpandIcon aria-hidden className="size-5 stroke-3" />
+                </Button>
+              ) : null;
+            }}
+            rowHeight={rowHeight}
+            width={width}
+          />
+        ) : null}
       </div>
     </ProfileBentoGridMotion>
   );

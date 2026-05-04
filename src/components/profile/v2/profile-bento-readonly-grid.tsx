@@ -39,47 +39,52 @@ export function ProfileBentoReadonlyGrid({
   } as CSSProperties;
 
   return (
-    <ProfileBentoGridMotion className="min-w-0 flex-1 xl:w-[52rem] xl:flex-none 2xl:w-[56rem]">
+    <ProfileBentoGridMotion
+      className="min-w-0 flex-1 xl:w-[52rem] xl:flex-none 2xl:w-[56rem]"
+      ready={mounted}
+    >
       <div
         className="w-[380px] max-w-full sm:w-[425px] xl:w-full [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none!"
         ref={containerRef}
         style={gridStyle}
       >
-        <ResponsiveGridCanvas
-          activeBreakpoint={activeBreakpoint}
-          activeDragItemId={null}
-          cardRotate={cardRotate}
-          cardX={cardX}
-          items={gridItems}
-          layouts={layouts}
-          mounted={mounted}
-          onDrag={() => {}}
-          onDragStart={() => {}}
-          onDragStop={() => {}}
-          onLayoutChange={() => {}}
-          onRemoveItem={() => {}}
-          onResizeItem={() => {}}
-          onResizeStart={() => {}}
-          onResizeStop={() => {}}
-          readOnly
-          rowHeight={rowHeight}
-          width={width}
-          renderItem={(gridItem) => {
-            const item = bentoById.get(gridItem.id);
+        {mounted ? (
+          <ResponsiveGridCanvas
+            activeBreakpoint={activeBreakpoint}
+            activeDragItemId={null}
+            cardRotate={cardRotate}
+            cardX={cardX}
+            items={gridItems}
+            layouts={layouts}
+            mounted={mounted}
+            onDrag={() => {}}
+            onDragStart={() => {}}
+            onDragStop={() => {}}
+            onLayoutChange={() => {}}
+            onRemoveItem={() => {}}
+            onResizeItem={() => {}}
+            onResizeStart={() => {}}
+            onResizeStop={() => {}}
+            readOnly
+            rowHeight={rowHeight}
+            width={width}
+            renderItem={(gridItem) => {
+              const item = bentoById.get(gridItem.id);
 
-            return item ? (
-              <ProfileBentoGridCard
-                activeBreakpoint={activeBreakpoint}
-                item={item}
-                layoutSize={getProfileBentoLinkSize(
-                  item.layout[activeBreakpoint].w,
-                  item.layout[activeBreakpoint].h
-                )}
-                preventNavigation={preventNavigation}
-              />
-            ) : null;
-          }}
-        />
+              return item ? (
+                <ProfileBentoGridCard
+                  activeBreakpoint={activeBreakpoint}
+                  item={item}
+                  layoutSize={getProfileBentoLinkSize(
+                    item.layout[activeBreakpoint].w,
+                    item.layout[activeBreakpoint].h
+                  )}
+                  preventNavigation={preventNavigation}
+                />
+              ) : null;
+            }}
+          />
+        ) : null}
       </div>
     </ProfileBentoGridMotion>
   );

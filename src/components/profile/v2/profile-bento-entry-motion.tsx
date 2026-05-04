@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 type ProfileBentoEntryMotionProps = {
   children: ReactNode;
   className?: string;
+  ready?: boolean;
 };
 
 const PROFILE_BENTO_ENTRY_EASE = [0.22, 1, 0.36, 1] as const;
@@ -38,11 +39,25 @@ export function ProfileBentoProfileMotion({ children, className }: ProfileBentoE
   );
 }
 
-export function ProfileBentoGridMotion({ children, className }: ProfileBentoEntryMotionProps) {
+export function ProfileBentoGridMotion({
+  children,
+  className,
+  ready = true,
+}: ProfileBentoEntryMotionProps) {
   const shouldReduceMotion = Boolean(useReducedMotion());
+  const motionState = getEntryMotion(shouldReduceMotion, 0.58, 14);
+  const hiddenState = {
+    opacity: 0,
+    y: shouldReduceMotion ? 0 : 14,
+  };
 
   return (
-    <motion.section className={className} {...getEntryMotion(shouldReduceMotion, 0.58, 14)}>
+    <motion.section
+      animate={ready ? motionState.animate : hiddenState}
+      className={className}
+      initial={motionState.initial}
+      transition={ready ? motionState.transition : { duration: 0 }}
+    >
       {children}
     </motion.section>
   );

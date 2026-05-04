@@ -3,7 +3,6 @@
 import { type MotionValue, motion, useTransform } from "motion/react";
 import Image from "next/image";
 import { type CSSProperties, type ReactNode, useEffect, useState } from "react";
-import { ProfileBentoProfileMotion } from "@/components/profile/v2/profile-bento-entry-motion";
 import { PROFILE_BENTO_PROFILE_SHELL_CLASS } from "@/components/profile/v2/profile-bento-profile-shell";
 import { ProfileBentoReadonlyGrid } from "@/components/profile/v2/profile-bento-readonly-grid";
 import type { ProfileBentoItem } from "@/lib/profile/types";
@@ -190,7 +189,7 @@ function LandingPreviewItem({
 
 function LandingProfileAside() {
   return (
-    <ProfileBentoProfileMotion className={PROFILE_BENTO_PROFILE_SHELL_CLASS}>
+    <aside className={PROFILE_BENTO_PROFILE_SHELL_CLASS}>
       <div className="flex flex-col gap-8 overflow-hidden">
         <div className="flex px-4">
           <div className="relative flex size-32 items-center justify-center overflow-hidden rounded-full bg-secondary xl:size-44">
@@ -220,7 +219,7 @@ function LandingProfileAside() {
           </div>
         </div>
       </div>
-    </ProfileBentoProfileMotion>
+    </aside>
   );
 }
 

@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ProfileBentoProfileMotion } from "@/components/profile/v2/profile-bento-entry-motion";
 import { PROFILE_BENTO_PROFILE_SHELL_CLASS } from "@/components/profile/v2/profile-bento-profile-shell";
 import { ProfileBentoReadonlyGrid } from "@/components/profile/v2/profile-bento-readonly-grid";
 import type { ProfilePageData, PublicProfileBentoPageData } from "@/lib/profile/types";
@@ -21,7 +20,7 @@ export function ProfileBentoProfileAside({ page }: Pick<PublicProfileBentoPageDa
   const imageAlt = page.name ?? page.userName ?? page.handle;
 
   return (
-    <ProfileBentoProfileMotion className={cn(PROFILE_BENTO_PROFILE_SHELL_CLASS)}>
+    <aside className={cn(PROFILE_BENTO_PROFILE_SHELL_CLASS)}>
       <div className="flex flex-col gap-8 overflow-hidden">
         <div className="flex px-4">
           <div className="relative flex size-32 items-center justify-center overflow-hidden rounded-full bg-secondary xl:size-44">
@@ -63,7 +62,7 @@ export function ProfileBentoProfileAside({ page }: Pick<PublicProfileBentoPageDa
           ) : null}
         </div>
       </div>
-    </ProfileBentoProfileMotion>
+    </aside>
   );
 }
 

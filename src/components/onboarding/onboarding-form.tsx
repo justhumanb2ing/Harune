@@ -12,7 +12,6 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 import { startTransition, ViewTransition } from "react";
-import { ProfileBentoProfileMotion } from "@/components/profile/v2/profile-bento-entry-motion";
 import { PROFILE_BENTO_PROFILE_SHELL_CLASS } from "@/components/profile/v2/profile-bento-profile-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -413,7 +412,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                   ) : null}
 
                   {currentStep === 1 ? (
-                    <ProfileBentoProfileMotion className={cn(PROFILE_BENTO_PROFILE_SHELL_CLASS, "mt-10")}>
+                    <aside className={cn(PROFILE_BENTO_PROFILE_SHELL_CLASS, "mt-10")}>
                       <div className="flex flex-col gap-8 overflow-hidden">
                         <div className="flex px-4">
                           <div className="group/profile-image relative">
@@ -520,7 +519,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                           </div>
                         </div>
                       </div>
-                    </ProfileBentoProfileMotion>
+                    </aside>
                   ) : null}
 
                   {currentStep !== 0 && handleErrorMessage ? (

@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useProfilePageEditor } from "@/hooks/use-profile-editor";
 import { PROFILE_IMAGE_ACCEPT } from "@/lib/profile/image-upload";
-import { ProfileBentoProfileMotion } from "./profile-bento-entry-motion";
 import { PROFILE_BENTO_PROFILE_SHELL_CLASS } from "./profile-bento-profile-shell";
 
 export function ProfileBentoProfileEditor() {
@@ -17,7 +16,7 @@ export function ProfileBentoProfileEditor() {
   }
 
   return (
-    <ProfileBentoProfileMotion className={PROFILE_BENTO_PROFILE_SHELL_CLASS}>
+    <aside className={PROFILE_BENTO_PROFILE_SHELL_CLASS}>
       <div className="flex flex-col gap-8 overflow-hidden">
         <div className="flex px-4">
           <div className="group/profile-image relative">
@@ -117,6 +116,6 @@ export function ProfileBentoProfileEditor() {
           </div>
         </div>
       </div>
-    </ProfileBentoProfileMotion>
+    </aside>
   );
 }

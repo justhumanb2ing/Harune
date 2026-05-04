@@ -95,7 +95,7 @@ export function GridCard({
   const radiusClassName = isVisuallyThinItem ? "rounded-lg" : "rounded-[1.5rem]";
   const bevelClassName = isFullBleedItem ? "surface-bevel" : "";
   const dragInteractionClassName = isDragActive
-    ? "select-none [&_.grid-action]:pointer-events-none [&_.grid-action]:select-none [&_.grid-action]:!bg-transparent [&_.grid-action:focus-within]:!bg-transparent [&_.grid-action:hover]:!bg-transparent [&_input]:pointer-events-none [&_input]:select-none [&_input]:!bg-transparent [&_textarea]:pointer-events-none [&_textarea]:select-none [&_textarea]:!bg-transparent"
+    ? "select-none [&_.grid-action]:pointer-events-none [&_.grid-action]:select-none [&_input]:pointer-events-none [&_input]:select-none [&_input]:!bg-transparent [&_textarea]:pointer-events-none [&_textarea]:select-none [&_textarea]:!bg-transparent"
     : "";
   const isExiting = motionPhase === "exiting";
   const shouldShowActions = !readOnly && !isDragActive && !isExiting;

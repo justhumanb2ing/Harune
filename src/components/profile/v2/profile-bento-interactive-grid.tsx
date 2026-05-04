@@ -920,8 +920,8 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
           >
             <div className="min-h-0 overflow-hidden">
               <div className="pb-2">
-                <Field className="relative rounded-lg bg-background py-1 outline-none">
-                  <InputGroup className="border-0 bg-background! ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
+                <Field className="relative rounded-lg bg-background/80! py-1 outline-none">
+                  <InputGroup className="border-0 bg-background/80! ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
                     <InputGroupInput
                       aria-label="Link URL"
                       className="text-sm!"

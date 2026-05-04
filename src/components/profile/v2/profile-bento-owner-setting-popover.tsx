@@ -117,8 +117,8 @@ export function ProfileBentoOwnerSettingPopover() {
                   aria-label="Settings"
                   type="button"
                   variant="ghost"
-                  size={"icon-sm"}
-                  className="surface-bevel border-0 bg-secondary/80 text-neutral-500 shadow-none hover:bg-secondary/80"
+                  size={"icon-lg"}
+                  className="border-0 bg-transparent text-neutral-500 shadow-none outline-none ring-0 hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-0"
                 >
                   <Settings2Icon aria-hidden className="size-4" />
                 </Button>

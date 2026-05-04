@@ -1,6 +1,6 @@
 "use client";
 
-import { BlocksIcon, ChartColumnBigIcon } from "lucide-react";
+import { ChartColumnBigIcon, TrophyIcon } from "lucide-react";
 import Link from "next/link";
 import { ProfilePageEditorProvider } from "@/components/profile/layout/profile-editor-provider";
 import { ProfileBentoInteractiveGrid } from "@/components/profile/v2/profile-bento-interactive-grid";
@@ -30,10 +30,10 @@ function ProfileBentoOwnerFooterAction({
   ownerHandle: string;
 }) {
   const iconButtonClassName =
-    "surface-bevel border-0 bg-secondary/80 text-neutral-500 shadow-none hover:bg-secondary/80";
+    "border-0 bg-transparent text-neutral-500 shadow-none outline-none ring-0 hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-0";
 
   return (
-    <footer className={cn("flex items-center justify-center gap-2", className)}>
+    <footer className={cn("flex items-center justify-center gap-0", className)}>
       <ProfileBentoOwnerSettingPopover />
       <Tooltip>
         <TooltipTrigger
@@ -77,7 +77,7 @@ function ProfileBentoOwnerFooterAction({
                 iconButtonClassName
               )}
             >
-              <BlocksIcon aria-hidden className="size-4" />
+              <TrophyIcon aria-hidden className="size-4" />
             </Link>
           }
         />

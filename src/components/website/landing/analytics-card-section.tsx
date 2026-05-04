@@ -1,6 +1,6 @@
-"use client";
 import { ArrowUpIcon, EyeIcon, MousePointerClickIcon, PercentIcon, TrophyIcon } from "lucide-react";
-import { motion, type Variants } from "motion/react";
+import type { Variants } from "motion/react";
+import * as motion from "motion/react-client";
 import { ProgressiveBlur } from "@/components/ui/progressive-blur";
 
 const numberFormatter = new Intl.NumberFormat("en-US");

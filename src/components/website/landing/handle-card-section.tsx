@@ -1,6 +1,5 @@
-"use client";
-
-import { motion, type Variants } from "motion/react";
+import type { Variants } from "motion/react";
+import * as motion from "motion/react-client";
 
 type HandleChip = {
   className: string;
@@ -105,13 +104,13 @@ const itemVariants: Variants = {
   },
 };
 
-const chipEntryVariants: Variants = {
+const getChipEntryVariants = (index: number): Variants => ({
   hidden: {
     opacity: 0,
     scale: 0.88,
     y: 28,
   },
-  visible: (index: number) => ({
+  visible: {
     opacity: 1,
     scale: 1,
     transition: {
@@ -122,8 +121,8 @@ const chipEntryVariants: Variants = {
       type: "spring",
     },
     y: 0,
-  }),
-};
+  },
+});
 
 export default function HandleCardSection() {
   return (
@@ -155,9 +154,8 @@ export default function HandleCardSection() {
             {handleChips.map((chip, index) => (
               <div className={`absolute ${chip.className}`} key={chip.handle}>
                 <motion.div
-                  custom={index}
                   initial="hidden"
-                  variants={chipEntryVariants}
+                  variants={getChipEntryVariants(index)}
                   viewport={{ once: true, margin: "-120px" }}
                   whileInView="visible"
                 >

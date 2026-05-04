@@ -1,5 +1,5 @@
-"use client";
-import { type HTMLMotionProps, motion } from "motion/react";
+import type { HTMLMotionProps } from "motion/react";
+import * as motion from "motion/react-client";
 import { cn } from "@/lib/utils";
 
 export const GRADIENT_ANGLES = {
@@ -30,6 +30,7 @@ export function ProgressiveBlur({
     <div className={cn("relative", className)}>
       {Array.from({ length: layers }).map((_, index) => {
         const angle = GRADIENT_ANGLES[direction];
+        const layerKey = `${direction}-${blurLayers}-${index}`;
         const gradientStops = [
           index * segmentSize,
           (index + 1) * segmentSize,
@@ -44,7 +45,7 @@ export function ProgressiveBlur({
 
         return (
           <motion.div
-            key={index}
+            key={layerKey}
             className="pointer-events-none absolute inset-0 rounded-[inherit]"
             style={{
               maskImage: gradient,

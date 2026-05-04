@@ -232,6 +232,9 @@ function ReadonlyLinkTitle({ title, className }: { title: string; className?: st
   return <LinkTitleText title={title} className={className} />;
 }
 
+const LINK_PROVIDER_ACTION_LABEL_CLASS_NAME =
+  "inline-flex h-6 max-w-fit shrink-0 items-center justify-center truncate rounded-full px-4 py-4 font-semibold text-sm leading-none sm:h-8 sm:px-4 sm:text-sm md:px-4 md:py-4.5";
+
 function LinkProviderActionLabel({
   backgroundColor,
   className,
@@ -245,10 +248,7 @@ function LinkProviderActionLabel({
 }) {
   return (
     <span
-      className={cn(
-        "inline-flex h-6 max-w-full shrink-0 items-center justify-center truncate rounded-full px-2 font-semibold text-[10px] leading-none sm:h-7 sm:px-2.5 sm:text-[11px]",
-        className
-      )}
+      className={cn(LINK_PROVIDER_ACTION_LABEL_CLASS_NAME, className)}
       style={{ backgroundColor, color: foregroundColor }}
     >
       {label}
@@ -270,7 +270,10 @@ function EditableLinkProviderAction({
   return (
     <a
       aria-label={label}
-      className="grid-action inline-flex h-6 max-w-fit shrink-0 items-center justify-center truncate rounded-full px-4 py-4 font-semibold text-sm leading-none outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring/50 sm:h-8 sm:px-4 sm:text-sm md:px-4 md:py-4.5"
+      className={cn(
+        "grid-action outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring/50",
+        LINK_PROVIDER_ACTION_LABEL_CLASS_NAME
+      )}
       href={href}
       rel="noreferrer"
       style={{ backgroundColor, color: foregroundColor }}

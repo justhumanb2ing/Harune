@@ -6,13 +6,13 @@ const demoScreenshots = {
   desktop: {
     alt: "Desktop screenshot of a Harune public profile page",
     height: 1100,
-    src: "/images/demo-page-desktop-20260502-1838.png",
+    src: "/images/demo-page-desktop.png",
     width: 1440,
   },
   mobile: {
     alt: "Mobile screenshot of a Harune public profile page",
     height: 932,
-    src: "/images/demo-page-mobile-20260502-1838.png",
+    src: "/images/demo-page-mobile.png",
     width: 430,
   },
 };

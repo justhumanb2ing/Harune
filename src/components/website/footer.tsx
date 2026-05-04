@@ -16,7 +16,7 @@ export function Footer() {
                 className="mb-4 rounded-lg object-cover size-full"
               />
             </div>
-            <p className="font-bold text-muted-foreground">Harune.</p>
+            {/*<p className="font-bold text-muted-foreground">Harune.</p>*/}
           </div>
           {/* Hooking Title */}
           <div className="text-sm text-muted-foreground font-medium flex flex-row gap-2 text-center">

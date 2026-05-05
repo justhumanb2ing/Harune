@@ -8,6 +8,8 @@
     "dev": "next dev",
     "build": "NODE_ENV=production next build",
     "start": "next start",
+    "vercel:env:sync": "tsx scripts/vercel-sync-env.ts",
+    "deploy": "bun run vercel:env:sync && bunx vercel@latest --prod --yes",
     "lint": "biome check src next.config.ts drizzle.config.ts",
     "lint:fix": "biome check src next.config.ts drizzle.config.ts --write --unsafe",
     "format": "biome format --write .",

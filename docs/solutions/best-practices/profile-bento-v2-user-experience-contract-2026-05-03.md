@@ -74,6 +74,25 @@ Owner editor의 하단 primary button은 현재 상태를 바로 드러내야 �
 - 변경 사항이 있으면 `Save`를 보여주고, sync가 진행 중이면 `Saving`을 보여준다.
 - label만 바꾸지 말고 click behavior도 상태에 맞춰 함께 전환한다.
 
+### Owner Footer Navigation
+
+Owner footer의 navigation은 아이콘만 두는 대신 현재 page 상태를 글자로 읽을 수 있어야 한다.
+
+- `Analytics` action은 `[값] views`를 함께 보여주고, active state에서는 `/{handle}/analytics`로 이동한다.
+- `Analytics` view 값이 0일 때는 `No Views Today`로 표시한다.
+- 배포 환경에서는 `Analytics` action을 disabled로 유지하되, text color는 일반 state와 동일하게 유지한다.
+- `my page` action은 viewer가 가진 profile image를 함께 보여주고, image가 없을 때만 빈 avatar slot으로 대체한다.
+- avatar slot과 text label은 한 덩어리로 동작해야 하며, text-only fallback으로 밀어내지 않는다.
+
+### Toolbar Link Input Chrome
+
+Owner editor의 link 입력은 toolbar 위에 따로 떠 있는 카드처럼 보이지 않아야 한다.
+
+- link 입력의 최상위 wrapper는 toolbar header의 `bg`를 그대로 상속한다.
+- 내부 `Field`와 `InputGroup`도 별도 배경을 다시 선언하지 않고 `bg-inherit`를 사용한다.
+- 결과적으로 링크 입력은 toolbar 배경 안에서 한 덩어리로 읽히고, 배경/블러 톤이 중복되지 않아야 한다.
+- 링크 아이콘 버튼은 toggle 역할을 하며, 열린 상태에서 다시 누르면 link input이 접히고 닫혀야 한다.
+
 ### Motion And Pointer Feel
 
 Motion은 장식이 아니라 item 위치, drag affordance, public reveal 순서를 이해하게 만드는 피드백이다.

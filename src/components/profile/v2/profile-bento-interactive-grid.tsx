@@ -856,7 +856,6 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
           setBento(response.bento);
           setLayouts(nextLayouts);
           setSavedSnapshot(createPayloadSnapshot(response.bento, nextLayouts));
-          toast("Synced");
         }
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Failed to sync bento");

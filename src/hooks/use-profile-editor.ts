@@ -171,7 +171,6 @@ export function useProfilePageEditor() {
       });
       store.actions.rebaseFromServer(response);
       await mutate();
-      toast("Synced");
       return response;
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to sync";

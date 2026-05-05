@@ -37,6 +37,7 @@ import {
 import { type ApiError, apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import { cn } from "@/lib/utils";
+import { TextLoop } from "../ui/text-loop";
 
 type OnboardingFormProps = {
   handle?: string;
@@ -590,14 +591,46 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
       </div>
       <section className="hidden h-full flex-1 lg:block">
         <div className="h-full flex items-center justify-center">
-          <Image
-            src="https://pub-cdb24d695a3d4aa08aa10719325ca3bd.r2.dev/public/assets/layout-side-03.png"
-            alt="image"
-            width={300}
-            height={300}
-            className="object-contain w-full h-[600px]"
-            unoptimized
-          />
+          <div className='inline-flex gap-4  whitespace-pre-wrap text-3xl'>
+            <span>for</span>
+            <TextLoop
+              className='overflow-y-clip flex-1 min-w-80'
+              transition={{
+                    type: 'spring',
+                    stiffness: 900,
+                    damping: 80,
+                    mass: 10,
+                  }}
+                  variants={{
+                    initial: {
+                      y: 20,
+                      rotateX: 90,
+                      opacity: 0,
+                      filter: 'blur(4px)',
+                    },
+                    animate: {
+                      y: 0,
+                      rotateX: 0,
+                      opacity: 1,
+                      filter: 'blur(0px)',
+                    },
+                    exit: {
+                      y: -20,
+                      rotateX: -90,
+                      opacity: 0,
+                      filter: 'blur(4px)',
+                    },
+                  }}
+                >
+              <span>Founders</span>
+              <span>Developers</span>
+              <span>Designers</span>
+              <span>Makers</span>
+              <span>Musician</span>
+              <span>Writers</span>
+              <span>Everyone</span>
+            </TextLoop>
+          </div>
         </div>
       </section>
     </div>

@@ -6,9 +6,14 @@ import type { ProfilePageData, PublicProfileBentoPageData } from "@/lib/profile/
 import { cn } from "@/lib/utils";
 
 type ProfileBentoPageProps = PublicProfileBentoPageData & {
+  analyticsViews: number;
   editorData: ProfilePageData | null;
   isOwner: boolean;
-  viewerProfilePage: { handle: string } | null;
+  viewerProfilePage: {
+    handle: string;
+    image: string | null;
+    name: string | null;
+  } | null;
 };
 
 const isDeploymentEnvironment = process.env.VERCEL === "1" || Boolean(process.env.VERCEL_ENV);
@@ -71,24 +76,45 @@ function ProfileBentoFooterAction({
   viewerProfilePage,
 }: {
   className?: string;
-  viewerProfilePage: { handle: string } | null;
+  viewerProfilePage: {
+    handle: string;
+    image: string | null;
+    name: string | null;
+  } | null;
 }) {
   const href = viewerProfilePage?.handle ? `/${viewerProfilePage.handle}` : "/sign-in";
   const label = viewerProfilePage?.handle ? "my page" : "create my page";
+  const imageAlt = viewerProfilePage?.name ?? viewerProfilePage?.handle ?? "My page";
 
   return (
     <footer className={cn("flex items-center justify-center gap-2", className)}>
       <Link
         href={href}
-        className="inline-flex min-h-9 items-center justify-center rounded-md px-3 font-normal text-neutral-500 text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+        className="inline-flex min-h-9 items-center gap-2 rounded-md px-3 font-normal text-sm text-neutral-500 transition-colors hover:bg-accent hover:text-neutral-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
       >
-        {label}
+        {viewerProfilePage ? (
+          <span className="relative size-6 shrink-0 overflow-hidden rounded-full bg-secondary">
+            {viewerProfilePage.image ? (
+              <Image
+                alt={imageAlt}
+                className="size-full object-cover"
+                height={24}
+                src={viewerProfilePage.image}
+                width={24}
+              />
+            ) : (
+              <span aria-hidden className="block size-full" />
+            )}
+          </span>
+        ) : null}
+        <span>{label}</span>
       </Link>
     </footer>
   );
 }
 
 export async function ProfileBentoPage({
+  analyticsViews,
   page,
   bento,
   editorData,
@@ -103,6 +129,7 @@ export async function ProfileBentoPage({
     return (
       <ProfileBentoOwnerEditorSurface
         bento={bento}
+        analyticsViews={analyticsViews}
         disableAnalytics={isDeploymentEnvironment}
         editorData={editorData}
         ownerHandle={page.handle}

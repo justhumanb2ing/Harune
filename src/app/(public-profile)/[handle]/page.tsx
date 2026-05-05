@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { ProfileBentoPage } from "@/components/profile/v2/profile-bento-page";
 import { WebPageJsonLd } from "@/components/site-instrumentation/structured-data";
+import { getProfileAnalyticsResponse } from "@/lib/analytics/profile-summary";
 import { appConfig } from "@/lib/config";
 import {
   getOwnedProfilePage,
@@ -80,6 +81,13 @@ export default async function HandlePage({ params }: HandlePageProps) {
       ])
     : [null, null];
   const isOwner = editorData?.page.id === data.page.id;
+  const analyticsViews = isOwner
+    ? (
+        await getProfileAnalyticsResponse({
+          profilePageId: data.page.id,
+        })
+      ).summaries.today.pageViews
+    : 0;
   const title = `${data.page.name || data.page.userName || data.page.handle} on ${appConfig.projectName}`;
 
   return (
@@ -106,6 +114,7 @@ export default async function HandlePage({ params }: HandlePageProps) {
           bento={data.bento}
           editorData={editorData}
           isOwner={isOwner}
+          analyticsViews={analyticsViews}
           viewerProfilePage={viewerProfilePage}
         />
       </main>

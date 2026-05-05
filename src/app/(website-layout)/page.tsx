@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { WebPageStructuredData } from "@/components/site-instrumentation/structured-data";
 import { Button } from "@/components/ui/button";
-import AnalyticsCardSection from "@/components/website/landing/analytics-card-section";
 import HandleCardSection from "@/components/website/landing/handle-card-section";
 import LiveCardSection from "@/components/website/landing/live-card-section";
 import MainHeroSection from "@/components/website/landing/main-hero-section";

@@ -30,27 +30,22 @@ const main = async () => {
     return;
   }
 
-  for (const [name, value] of envEntries) {
-    const result = spawnSync(
-      "vercel",
-      [
-        "env",
-        "add",
-        name,
-        ...(targetEnvironment ? [targetEnvironment] : ["production", "preview"]),
-        "--value",
-        value,
-        "--yes",
-        "--force",
-      ],
-      {
-        encoding: "utf8",
-        stdio: "inherit",
-      }
-    );
+  const targets = targetEnvironment ? [targetEnvironment] : ["production", "preview"];
 
-    if (result.status !== 0) {
-      throw new Error(`Failed to sync ${name}`);
+  for (const [name, value] of envEntries) {
+    for (const target of targets) {
+      const result = spawnSync(
+        "vercel",
+        ["env", "add", name, target, "--value", value, "--yes", "--force"],
+        {
+          encoding: "utf8",
+          stdio: "inherit",
+        }
+      );
+
+      if (result.status !== 0) {
+        throw new Error(`Failed to sync ${name} to ${target}`);
+      }
     }
   }
 

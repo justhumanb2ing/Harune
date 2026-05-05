@@ -91,6 +91,7 @@ const linkProviderThemeEntries = [
   },
   {
     provider: "kofi",
+    actionForegroundColor: "#ffffff",
     actionLabel: "Support",
     color: "#29abe0",
     pastelColor: "#eefaff",
@@ -120,6 +121,7 @@ const linkProviderThemeEntries = [
   },
   {
     provider: "producthunt",
+    actionForegroundColor: "#ffffff",
     actionLabel: "View",
     color: "#da552f",
     pastelColor: "#fff4f0",

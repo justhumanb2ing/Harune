@@ -18,6 +18,10 @@ const main = async () => {
     throw new Error("Environment must be production, preview, or development.");
   }
 
+  if (targetEnvironment === "development") {
+    throw new Error("Development must be synced separately.");
+  }
+
   const rawEnvFile = await readFile(envFilePath, "utf8");
   const envEntries = Object.entries(parse(normalizeEnvFile(rawEnvFile)));
 
@@ -28,13 +32,12 @@ const main = async () => {
 
   for (const [name, value] of envEntries) {
     const result = spawnSync(
-      "bunx",
+      "vercel",
       [
-        "vercel@latest",
         "env",
         "add",
         name,
-        ...(targetEnvironment ? [targetEnvironment] : []),
+        ...(targetEnvironment ? [targetEnvironment] : ["production", "preview"]),
         "--value",
         value,
         "--yes",

@@ -2,12 +2,16 @@ import { getSessionCookie } from "better-auth/cookies";
 import { z } from "zod";
 import type { AuthSession } from "@/auth";
 import { apiFactory, jsonResponse, noStoreHeaders, zQueryValidator } from "@/lib/api/hono-factory";
-import type { UrlMetadata } from "@/lib/metadata/url-metadata";
+import {
+  type MetadataErrorResponse,
+  MetadataFetchError,
+  type NormalizedMetadata,
+} from "@/lib/metadata/url-metadata";
 import { handleSchema } from "@/lib/validations/auth.schema";
 
 type RootApiDependencies = {
   auth: () => Promise<AuthSession | null>;
-  fetchUrlMetadata: (url: string) => Promise<UrlMetadata>;
+  fetchUrlMetadata: (url: string) => Promise<NormalizedMetadata>;
   getProfilePageByHandle: (handle: string) => Promise<{ id: string } | null>;
   getSafeRedirectPath: (path?: string) => string;
   logger?: Pick<Console, "error">;
@@ -63,11 +67,19 @@ export const createRootApi = ({
 
           return jsonResponse(context, metadata, { headers: noStoreHeaders });
         } catch (error) {
-          const message = error instanceof Error ? error.message : "Failed to fetch metadata.";
-          const status =
-            message.includes("Invalid URL") || message.includes("Only HTTP") ? 400 : 502;
+          if (error instanceof MetadataFetchError) {
+            return jsonResponse(context, error.body, {
+              headers: noStoreHeaders,
+              status: error.status,
+            });
+          }
 
-          return jsonResponse(context, { error: message }, { headers: noStoreHeaders, status });
+          const body: MetadataErrorResponse = {
+            error: "internal_error",
+            message: error instanceof Error ? error.message : "Failed to fetch metadata.",
+          };
+
+          return jsonResponse(context, body, { headers: noStoreHeaders, status: 502 });
         }
       }
     )

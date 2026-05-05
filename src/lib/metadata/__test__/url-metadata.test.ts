@@ -1,31 +1,29 @@
 import { describe, expect, test } from "bun:test";
-import { fetchUrlMetadata } from "@/lib/metadata/url-metadata";
+import { fetchUrlMetadata, MetadataFetchError } from "@/lib/metadata/url-metadata";
 
 describe("fetchUrlMetadata", () => {
-  test("extracts open graph metadata and resolves relative URLs", async () => {
+  test("fetches normalized metadata from the harune metadata API", async () => {
     const originalFetch = globalThis.fetch;
+    let requestUrl = "";
     let requestHeaders: HeadersInit | undefined;
 
-    globalThis.fetch = (async (_input, init) => {
+    globalThis.fetch = (async (input, init) => {
+      requestUrl = String(input);
       requestHeaders = init?.headers;
 
       return new Response(
-        `<!doctype html>
-        <html>
-          <head>
-            <title>Fallback title</title>
-            <meta property="og:title" content="OG Title &amp; More">
-            <meta name="description" content="Page description">
-            <meta property="og:site_name" content="Example Site">
-            <meta property="og:image" content="/og.png">
-            <link rel="icon" sizes="32x32" href="/favicon.ico">
-            <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-            <link rel="canonical" href="/canonical">
-          </head>
-        </html>`,
+        JSON.stringify({
+          canonicalUrl: "https://example.com/canonical",
+          description: "Page description",
+          favicon: "https://example.com/favicon.ico",
+          image: "https://example.com/og.png",
+          siteName: "Example Site",
+          title: "OG Title",
+          url: "https://example.com/post",
+        }),
         {
           headers: {
-            "content-type": "text/html",
+            "content-type": "application/json",
           },
         }
       );
@@ -35,67 +33,68 @@ describe("fetchUrlMetadata", () => {
       const metadata = await fetchUrlMetadata("https://example.com/post");
       const headers = new Headers(requestHeaders);
 
+      expect(requestUrl).toBe(
+        "https://api.harune.me/metadata?url=https%3A%2F%2Fexample.com%2Fpost"
+      );
+      expect(headers.get("accept")).toBe("application/json");
       expect(metadata).toEqual({
-        title: "OG Title & More",
+        canonicalUrl: "https://example.com/canonical",
         description: "Page description",
-        sitename: "Example Site",
+        favicon: "https://example.com/favicon.ico",
         image: "https://example.com/og.png",
-        favicon: "https://example.com/apple-touch-icon.png",
-        url: "https://example.com/canonical",
-        readMode: "head",
+        siteName: "Example Site",
+        title: "OG Title",
+        url: "https://example.com/post",
       });
-      expect(headers.get("user-agent")).toContain("Mozilla/5.0");
-      expect(headers.get("accept-language")).toBe("en-US,en;q=0.9");
     } finally {
       globalThis.fetch = originalFetch;
     }
   });
 
-  test("reads the full document when the head exceeds the byte limit", async () => {
+  test("surfaces metadata API errors with the upstream status", async () => {
     const originalFetch = globalThis.fetch;
-    const oversizedHeadPadding = " ".repeat(140 * 1024);
 
     globalThis.fetch = (async () =>
       new Response(
-        `<!doctype html>
-        <html>
-          <head>
-            <meta property="og:title" content="Early Title">
-            <meta name="description" content="Early description">
-            ${oversizedHeadPadding}
-            <meta property="og:image" content="/late.png">
-          </head>
-        </html>`,
+        JSON.stringify({
+          error: "invalid_url",
+          message: "Invalid URL.",
+          details: {
+            url: "notaurl",
+          },
+        }),
         {
           headers: {
-            "content-type": "text/html",
+            "content-type": "application/json",
           },
+          status: 400,
         }
       )) as typeof fetch;
 
     try {
-      const metadata = await fetchUrlMetadata("https://example.com/post");
+      let error: unknown;
 
-      expect(metadata.title).toBe("Early Title");
-      expect(metadata.description).toBe("Early description");
-      expect(metadata.image).toBe("https://example.com/late.png");
-      expect(metadata.favicon).toBe("https://example.com/favicon.ico");
-      expect(metadata.url).toBe("https://example.com/post");
-      expect(metadata.readMode).toBe("document");
+      try {
+        await fetchUrlMetadata("notaurl");
+      } catch (caughtError) {
+        error = caughtError;
+      }
+
+      expect(error).toBeInstanceOf(MetadataFetchError);
+      expect(error).toEqual(
+        expect.objectContaining({
+          status: 400,
+          body: {
+            error: "invalid_url",
+            message: "Invalid URL.",
+            details: {
+              url: "notaurl",
+            },
+          },
+        })
+      );
     } finally {
       globalThis.fetch = originalFetch;
     }
-  });
-
-  test("rejects unsupported protocols before fetch", async () => {
-    let errorMessage = "";
-
-    try {
-      await fetchUrlMetadata("file:///etc/passwd");
-    } catch (error) {
-      errorMessage = error instanceof Error ? error.message : "";
-    }
-
-    expect(errorMessage).toBe("Only HTTP and HTTPS URLs are supported.");
   });
 });

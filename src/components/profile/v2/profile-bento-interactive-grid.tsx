@@ -39,6 +39,7 @@ import { appConfig } from "@/lib/config";
 import { BREAKPOINTS, COLS, GRID_MARGIN, getGridRowHeight } from "@/lib/grid/grid-config";
 import { normalizeLayouts } from "@/lib/grid/grid-layout-utils";
 import type { GridBreakpoint, GridLayouts, ResizeOption } from "@/lib/grid/grid-types";
+import type { MetadataErrorResponse, NormalizedMetadata } from "@/lib/metadata/url-metadata";
 import { getProfileAppPath, getProfileRouteHandle } from "@/lib/profile/app-paths";
 import {
   getProfileBentoMediaFileError,
@@ -65,20 +66,6 @@ import { Separator } from "@/components/ui/separator";
 
 type ProfileBentoInteractiveGridProps = {
   initialBento: ProfileBentoItem[];
-};
-
-type CrawlMetadataResponse = {
-  description: string | null;
-  favicon: string | null;
-  image: string | null;
-  readMode: "head" | "document";
-  sitename: string | null;
-  title: string | null;
-  url: string;
-};
-
-type ErrorBody = {
-  error: string;
 };
 
 type MediaUploadResponse = {
@@ -142,9 +129,9 @@ function createLinkBentoSkeleton(
 function createLinkBentoFromCrawl(
   item: Extract<ProfileBentoItem, { type: "link" }>,
   rawUrl: string,
-  data: CrawlMetadataResponse
+  data: NormalizedMetadata
 ): Extract<ProfileBentoItem, { type: "link" }> {
-  const resolvedUrl = data.url?.trim() || rawUrl;
+  const resolvedUrl = data.canonicalUrl?.trim() || data.url?.trim() || rawUrl;
   let fallbackTitle = resolvedUrl;
 
   try {
@@ -680,14 +667,14 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
 
     try {
       const response = await rootApiClient.api.crawl.$get({ query: { url: rawUrl } });
-      const body = (await response.json()) as CrawlMetadataResponse | ErrorBody;
+      const body = (await response.json()) as NormalizedMetadata | MetadataErrorResponse;
 
       if (!response.ok) {
-        throw new Error("error" in body ? body.error : "Could not fetch link details");
+        throw new Error("message" in body ? body.message : "Could not fetch link details");
       }
 
       if ("error" in body) {
-        throw new Error(body.error);
+        throw new Error(body.message);
       }
 
       const nextItem = createLinkBentoFromCrawl(placeholderItem, rawUrl, body);

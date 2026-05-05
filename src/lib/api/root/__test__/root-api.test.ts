@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { MetadataFetchError } from "@/lib/metadata/url-metadata";
 import { createRootApi } from "../app";
 
 const authenticatedSession = {
@@ -17,9 +18,9 @@ const createTestRootApi = (overrides: Partial<RootApiOptions> = {}) =>
     fetchUrlMetadata: async (url) => ({
       description: "Description",
       favicon: null,
-      image: null,
-      readMode: "head",
-      sitename: "Example",
+      canonicalUrl: null,
+      image: "https://example.com/image.png",
+      siteName: "Example",
       title: "Example",
       url,
     }),
@@ -75,9 +76,9 @@ describe("root Hono API", () => {
         return {
           description: null,
           favicon: null,
+          canonicalUrl: "https://example.com/canonical",
           image: "https://example.com/image.png",
-          readMode: "head",
-          sitename: "Example",
+          siteName: "Example",
           title: "Example title",
           url,
         };
@@ -85,16 +86,24 @@ describe("root Hono API", () => {
     });
 
     const response = await app.request("/api/crawl?url=https%3A%2F%2Fexample.com%2Fpost");
-    const body = (await response.json()) as { image: string; title: string; url: string };
+    const body = (await response.json()) as {
+      canonicalUrl: string | null;
+      description: string | null;
+      favicon: string | null;
+      image: string | null;
+      siteName: string | null;
+      title: string | null;
+      url: string;
+    };
 
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toBe("no-store");
     expect(body).toEqual({
+      canonicalUrl: "https://example.com/canonical",
       description: null,
       favicon: null,
       image: "https://example.com/image.png",
-      readMode: "head",
-      sitename: "Example",
+      siteName: "Example",
       title: "Example title",
       url: "https://example.com/post",
     });
@@ -105,12 +114,18 @@ describe("root Hono API", () => {
     const missingUrlApp = createTestRootApi();
     const invalidUrlApp = createTestRootApi({
       fetchUrlMetadata: async () => {
-        throw new Error("Invalid URL.");
+        throw new MetadataFetchError(400, {
+          error: "invalid_url",
+          message: "Invalid URL.",
+        });
       },
     });
     const upstreamErrorApp = createTestRootApi({
       fetchUrlMetadata: async () => {
-        throw new Error("metadata fetch failed");
+        throw new MetadataFetchError(502, {
+          error: "fetch_failed",
+          message: "metadata fetch failed",
+        });
       },
     });
 
@@ -124,9 +139,15 @@ describe("root Hono API", () => {
     expect(missingUrlResponse.headers.get("cache-control")).toBe("no-store");
     expect(await missingUrlResponse.json()).toEqual({ error: "Missing URL." });
     expect(invalidUrlResponse.status).toBe(400);
-    expect(await invalidUrlResponse.json()).toEqual({ error: "Invalid URL." });
+    expect(await invalidUrlResponse.json()).toEqual({
+      error: "invalid_url",
+      message: "Invalid URL.",
+    });
     expect(upstreamErrorResponse.status).toBe(502);
-    expect(await upstreamErrorResponse.json()).toEqual({ error: "metadata fetch failed" });
+    expect(await upstreamErrorResponse.json()).toEqual({
+      error: "fetch_failed",
+      message: "metadata fetch failed",
+    });
   });
 
   test("redirects anonymous join requests to sign-in with a safe callback path", async () => {

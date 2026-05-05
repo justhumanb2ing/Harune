@@ -65,7 +65,7 @@ function ProfileBentoOwnerFooterAction({
       </Tooltip>
       <Separator
         orientation="vertical"
-        className={"data-vertical:w-[2.5px] data-vertical:my-2 rounded-lg mx-3"}
+        className={"data-vertical:w-[2.5px] data-vertical:my-2.5 rounded-lg mx-3"}
       />
       <Tooltip>
         <TooltipTrigger

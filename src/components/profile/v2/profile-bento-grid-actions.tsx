@@ -16,11 +16,11 @@ const toolbarIconSrcByType: Record<CreatableBentoType, string> = {
 export function ProfileBentoGridActions({
   onAddItem,
   onRequestMediaInput,
-  onRequestLinkInput,
+  onToggleLinkInput,
 }: {
   onAddItem: (type: CreatableBentoType) => void;
   onRequestMediaInput: () => void;
-  onRequestLinkInput: () => void;
+  onToggleLinkInput: () => void;
 }) {
   return (
     <div className="flex flex-wrap gap-2">
@@ -32,7 +32,7 @@ export function ProfileBentoGridActions({
                 aria-label={`Add ${bentoTypeLabels[type]}`}
                 onClick={() => {
                   if (type === "link") {
-                    onRequestLinkInput();
+                    onToggleLinkInput();
                     return;
                   }
 

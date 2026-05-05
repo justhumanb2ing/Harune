@@ -916,11 +916,11 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
           >
             <div className="min-h-0 overflow-hidden">
               <div className="pb-2">
-                <Field className="relative rounded-lg bg-background/80! py-1 outline-none">
-                  <InputGroup className="border-0 bg-background/80! ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
+                <Field className="relative rounded-lg !bg-inherit py-1 outline-none">
+                  <InputGroup className="border-0 !bg-inherit ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
                     <InputGroupInput
                       aria-label="Link URL"
-                      className="text-sm!"
+                      className="text-sm! h-10 px-1"
                       disabled={!isLinkInputOpen || isCrawlingLink}
                       id="profile-bento-link-url"
                       onChange={(event) => setLinkUrl(event.target.value)}
@@ -936,10 +936,10 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
                       ref={linkInputRef}
                       value={linkUrl}
                     />
-                    <InputGroupAddon align="inline-end">
+                    <InputGroupAddon align="inline-end" className="pr-2">
                       <InputGroupButton
                         aria-label="Fetch link details"
-                        className="h-8 border-border/60 bg-background px-3 font-semibold text-base text-black shadow-sm"
+                        className="h-8 border-0 bg-background px-3 font-semibold text-base text-black shadow-sm"
                         disabled={!isLinkInputOpen || isCrawlingLink || !linkUrl.trim()}
                         type="submit"
                         variant="outline"
@@ -973,7 +973,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
           <ProfileBentoGridActions
             onAddItem={addItem}
             onRequestMediaInput={() => mediaInputRef.current?.click()}
-            onRequestLinkInput={() => setIsLinkInputOpen(true)}
+            onToggleLinkInput={() => setIsLinkInputOpen((current) => !current)}
           />
           <input
             accept={PROFILE_BENTO_MEDIA_ACCEPT}

@@ -1,5 +1,7 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
-import { absoluteUrl, seoConfig } from "@/lib/seo";
+import { seoConfig } from "@/lib/seo";
 
 export const alt = `${seoConfig.siteName} opengraph image`;
 export const size = {
@@ -10,6 +12,9 @@ export const size = {
 export const contentType = "image/png";
 
 export default async function Image() {
+  const logoData = await readFile(join(process.cwd(), "public/assets/logo.png"), "base64");
+  const logoSrc = `data:image/png;base64,${logoData}`;
+
   return new ImageResponse(
     <div
       style={{
@@ -26,7 +31,9 @@ export default async function Image() {
       {/* biome-ignore lint/performance/noImgElement: next/og renders standard img elements in the generated image */}
       <img
         alt={seoConfig.siteName}
-        src={absoluteUrl("/assets/logo.png")}
+        src={logoSrc}
+        width={420}
+        height={420}
         style={{
           height: 420,
           objectFit: "contain",

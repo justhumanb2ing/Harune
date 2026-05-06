@@ -27,25 +27,6 @@ export const noStoreHeaders = {
   "Cache-Control": "no-store",
 };
 
-export const isAuthenticatedSession = (
-  session: AuthSession | null
-): session is AuthenticatedSession => {
-  return Boolean(session?.user?.id && session.user.email);
-};
-
-export const createSessionMiddleware = (getSession: () => Promise<AuthSession | null>) =>
-  apiFactory.createMiddleware(async (context, next) => {
-    const session = await getSession();
-
-    context.set("session", session);
-    context.set("authenticatedSession", isAuthenticatedSession(session) ? session : null);
-
-    await next();
-  });
-
-export const getAuthenticatedSession = (context: Context<ApiBindings>) =>
-  context.get("authenticatedSession");
-
 export const jsonResponse = <Body>(
   context: Context<ApiBindings>,
   body: Body,

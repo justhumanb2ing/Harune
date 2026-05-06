@@ -3,13 +3,13 @@
 import { useQuery } from "@tanstack/react-query";
 import type { InferResponseType } from "hono/client";
 import { useDebounce } from "@/hooks/use-debounce";
-import { rootApiClient } from "@/lib/api/client";
+import { apiClient } from "@/lib/api/client";
 import { normalizeHandle, validateHandle } from "@/lib/handles";
 import { ApiError } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
 
 type HandleAvailabilityResponse = Extract<
-  InferResponseType<typeof rootApiClient.api.handle.availability.$get, 200>,
+  InferResponseType<typeof apiClient.api.handle.availability.$get, 200>,
   { available: boolean }
 >;
 
@@ -21,7 +21,7 @@ export function useHandleAvailability(handle: string) {
   const availabilityQuery = useQuery<HandleAvailabilityResponse, ApiError>({
     queryKey: queryKeys.handles.availability(debouncedHandle),
     queryFn: async ({ signal }) => {
-      const response = await rootApiClient.api.handle.availability.$get(
+      const response = await apiClient.api.handle.availability.$get(
         { query: { handle: debouncedHandle } },
         { init: { signal } }
       );

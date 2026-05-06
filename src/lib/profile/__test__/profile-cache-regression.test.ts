@@ -100,7 +100,10 @@ describe("profile page cache regression", () => {
   });
 
   test("/api/profile returns the editor data shape expected by the client store", () => {
-    const source = readFileSync(join(process.cwd(), "src/lib/api/profile/server-app.ts"), "utf8");
+    const source = readFileSync(
+      join(process.cwd(), "src/lib/api/services/profile-server.ts"),
+      "utf8"
+    );
 
     expect(source.includes("getProfilePageEditorData,")).toBe(true);
     expect(source.includes("getProfilePageEditorApiData")).toBe(false);

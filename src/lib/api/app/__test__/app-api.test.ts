@@ -3,9 +3,9 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { ProfileAnalyticsResponse } from "@/lib/analytics/types";
 import type { MeResponse } from "@/lib/api/app/types";
+import { createAppApi } from "@/lib/api/routes/app";
 import type { OnboardingInput } from "@/lib/validations/auth.schema";
 import type { ProfileUpdateValues } from "@/lib/validations/profile.schema";
-import { createAppApi } from "../app";
 
 const authenticatedSession = {
   expires: "2026-05-02T00:00:00.000Z",
@@ -442,7 +442,7 @@ describe("app Hono API", () => {
   });
 
   test("keeps /api/create success responses backed by a post-transaction committed read", () => {
-    const source = readFileSync(join(process.cwd(), "src/lib/api/app/server-app.ts"), "utf8");
+    const source = readFileSync(join(process.cwd(), "src/lib/api/repositories/app.ts"), "utf8");
 
     expect(source.includes("const pageId = await db.transaction")).toBe(true);
     expect(source.includes("const committedPage = await db")).toBe(true);

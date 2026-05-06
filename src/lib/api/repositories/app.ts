@@ -1,18 +1,11 @@
 import { eq } from "drizzle-orm";
-import { auth } from "@/auth";
 import { db } from "@/db";
 import { profilePages } from "@/db/schema/profile";
 import { users } from "@/db/schema/user";
-import { getProfileAnalyticsResponse } from "@/lib/analytics/profile-summary";
-import { getOwnedProfilePage } from "@/lib/profile/queries";
-import { getMissingS3ConfigKeys, getPublicS3ObjectUrl } from "@/lib/s3/config";
-import createS3UploadFields from "@/lib/s3/create-s3-upload-fields";
-import { getMeForUser } from "@/lib/users/me";
 import type { OnboardingInput } from "@/lib/validations/auth.schema";
 import type { ProfileUpdateValues } from "@/lib/validations/profile.schema";
-import { createAppApi } from "./app";
 
-const updateUserProfile = async ({
+export const updateUserProfile = async ({
   userId,
   values,
 }: {
@@ -30,7 +23,7 @@ const updateUserProfile = async ({
     .then((rows) => rows[0] ?? null);
 };
 
-const getUserExists = async (userId: string) => {
+export const getUserExists = async (userId: string) => {
   return db
     .select({
       id: users.id,
@@ -41,7 +34,7 @@ const getUserExists = async (userId: string) => {
     .then((rows) => Boolean(rows[0]));
 };
 
-const getProfilePageByHandle = async (handle: string) => {
+export const getProfilePageByHandle = async (handle: string) => {
   return db
     .select({
       id: profilePages.id,
@@ -52,7 +45,7 @@ const getProfilePageByHandle = async (handle: string) => {
     .then((rows) => rows[0] ?? null);
 };
 
-const createProfilePage = async ({
+export const createProfilePage = async ({
   userId,
   values,
 }: {
@@ -119,17 +112,3 @@ const createProfilePage = async ({
     name: committedPage.name,
   };
 };
-
-export const appApi = createAppApi({
-  auth,
-  createProfilePage,
-  createS3UploadFields,
-  getMissingS3ConfigKeys,
-  getOwnedProfilePage,
-  getProfileAnalyticsResponse,
-  getPublicS3ObjectUrl,
-  getMeForUser,
-  getProfilePageByHandle,
-  getUserExists,
-  updateUserProfile,
-});

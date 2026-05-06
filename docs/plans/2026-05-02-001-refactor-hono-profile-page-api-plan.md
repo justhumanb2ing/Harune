@@ -16,8 +16,8 @@ Approved decisions:
 - Do not migrate `playlist` routes in this pass because they are not currently used.
 - First migration target: `/api/profile/handle-availability`.
 - Use profile-page scoped helpers, not a global internal API framework.
-- Do not move Hono implementation into `src/server` during this pass. `src/server` is a future option only if Hono grows beyond a profile-page slice into an app-wide API composition layer.
-- Keep Better Auth architecture unchanged. `/api/auth/[...all]` stays on `toNextJsHandler(betterAuthServer)`.
+- Historical note: this initial plan avoided `src/server`. Current implementation keeps Hono API composition under `src/lib/api/server`, not a separate top-level `src/server`.
+- Historical note: this initial plan kept Better Auth on `/api/auth/[...all]`, but the current implementation now mounts `/api/auth/*` through the single Hono catch-all route.
 - Treat Hono as a DX, contract, middleware, validation, and testability improvement. Do not claim performance wins without measurement.
 - Add full contract tests for the first Hono route.
 
@@ -46,7 +46,7 @@ Existing flows to preserve:
 
 - `src/lib/auth/with-auth-required.ts` validates protected API sessions and provides `session`, `getUser`, and `getCurrentPlan`.
 - `src/lib/react-query/fetcher.ts` expects JSON errors shaped with `error`, `message`, and sometimes `description`.
-- `src/app/api/auth/[...all]/route.ts` mounts Better Auth with `toNextJsHandler(betterAuthServer)`.
+- Current implementation mounts Better Auth through `src/lib/api/routes/auth.ts` with `betterAuthServer.handler(context.req.raw)`.
 - `src/auth.ts` owns Better Auth config, Drizzle adapter, JWT plugin, `nextCookies()`, and the `auth()` wrapper.
 - Profile-page sync routes have committed-read and no-store persistence requirements.
 
@@ -69,7 +69,7 @@ Existing flows to preserve:
 
 - `playlist` route migration. It is intentionally excluded for now.
 - `social-links` route migration. It is intentionally excluded from this pass.
-- `/api/auth/[...all]` migration. Better Auth stays on its official Next.js handler.
+- Webhooks and Inngest migration remain out of scope. Better Auth is now handled by the Hono catch-all.
 - `webhooks/*` migration. External provider signatures and SDK contracts stay untouched.
 - `inngest/route.ts` migration.
 - Performance claims beyond no-regression checks.
@@ -101,8 +101,9 @@ Response shape unchanged
 Better Auth boundary:
 
 ```txt
-/api/auth/[...all]
-  -> Better Auth toNextJsHandler
+/api/auth/*
+  -> Hono catch-all
+  -> Better Auth handler
   -> unchanged
 
 /api/profile/handle-availability
@@ -116,7 +117,7 @@ Better Auth boundary:
 ### Affected Pages/Routes
 
 - `/api/profile/handle-availability` - first Hono-backed profile-page API route; verify auth, query validation, domain errors, unknown errors, and unchanged JSON response shape.
-- `/api/auth/[...all]` - must remain on Better Auth `toNextJsHandler`; verify it is not moved behind Hono.
+- `/api/auth/*` - verify it is mounted before broader `/api` routes in the Hono server app.
 
 ### Key Interactions To Verify
 
@@ -159,7 +160,7 @@ CODE PATHS                                                   USER FLOWS
 Hono app contract
   ├── [DONE] app.request("/handle-availability?handle=demo")
   ├── [DONE] adapter route preserves current URL and response shape
-  └── [DONE] Better Auth route /api/auth/[...all] remains untouched
+  └── [UPDATED] Better Auth route now lives under the single Hono catch-all
 ```
 
 The remaining user-flow gaps are UI-facing behavior outside this API migration pass. This pass verifies the Hono API contracts and Next route adapter ownership without changing the editor UI.
@@ -202,11 +203,11 @@ Keep `social-links` out of this pass even though it has a similar child mutation
 
 `playlist` also remains excluded because it is not currently used and should not be recreated in Hono during this migration.
 
-### Future `src/server` Migration Criteria
+### Historical `src/server` Migration Criteria
 
-Do not move the current profile-page Hono implementation from `src/lib/api/profile/` to `src/server` just to match another repository layout.
+Do not move the current Hono implementation from `src/lib/api/**` to top-level `src/server` just to match another repository layout.
 
-`src/server` becomes appropriate only when Hono stops being a feature-local profile-page API slice and becomes an app-wide API composition layer. Reconsider the folder boundary when at least several of these conditions are true:
+Top-level `src/server` only becomes appropriate if non-API server runtimes appear. For current API-only Hono composition, keep it under `src/lib/api/server`.
 
 - Hono routes expand beyond `/api/profile/**` into multiple API domains.
 - `auth`, `db`, validation, error response, no-store headers, and logging middleware are repeated across those domains.
@@ -217,7 +218,7 @@ Do not move the current profile-page Hono implementation from `src/lib/api/profi
 If those conditions are met, prefer a dedicated server boundary such as:
 
 ```txt
-src/server/
+src/lib/api/server/
   hono-factory.ts
   middleware/
     auth.ts

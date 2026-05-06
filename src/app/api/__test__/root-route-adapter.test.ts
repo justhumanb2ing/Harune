@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { toServerApiRequest } from "@/server/adapter";
+import { toServerApiRequest } from "@/lib/api/server/adapter";
 
 describe("root route adapters", () => {
   test("normalizes root API trailing slashes for Hono route matching", () => {
@@ -14,9 +14,10 @@ describe("root route adapters", () => {
   });
 
   test("keeps app-owned API routes behind a thin catch-all adapter to the server Hono API", () => {
-    const source = readFileSync(join(process.cwd(), "src/app/api/[[...path]]/route.ts"), "utf8");
+    const source = readFileSync(join(process.cwd(), "src/app/api/[...route]/route.ts"), "utf8");
 
-    expect(source.includes("handleServerApiRequest")).toBe(true);
+    expect(source.includes('from "hono/vercel"')).toBe(true);
+    expect(source.includes("handle(routes)")).toBe(true);
     expect(source.includes('dynamic = "force-dynamic"')).toBe(true);
     expect(source.includes("export const DELETE")).toBe(true);
     expect(source.includes("export const GET")).toBe(true);

@@ -19,51 +19,68 @@ tags: [hono, nextjs, app-router, api, better-auth]
 Harune now uses Hono for the app-owned API composition layer while keeping Next.js App Router as the public URL owner. Hono-backed API route handlers are consolidated into one app-owned catch-all route handler:
 
 ```text
-src/app/api/[[...path]]/route.ts
-  -> src/server/index.ts
-  -> src/lib/api/root/server-app.ts
-  -> src/lib/api/app/server-app.ts
-  -> src/lib/api/profile/server-app.ts
-
-src/app/api/auth/[...all]/route.ts
-  -> toNextJsHandler(betterAuthServer)
+src/app/api/[...route]/route.ts
+  -> src/lib/api/server/index.ts
+  -> src/lib/api/services/auth-server.ts
+  -> src/lib/api/services/root-server.ts
+  -> src/lib/api/services/app-server.ts
+  -> src/lib/api/services/profile-server.ts
 ```
 
-The catch-all route file is intentionally thin. It only exports the HTTP methods that Next.js needs to register the URL and then delegates to the Hono-backed server handler.
+The catch-all route file is intentionally thin. It exports the HTTP methods through `hono/vercel`'s `handle(routes)` adapter and delegates to the Hono-backed server handler.
 
 ## Guidance
 Do not recreate one-file-per-endpoint route handlers for Hono-backed APIs. Add routes inside the matching Hono app instead:
 
 | Public URL prefix | Add route in |
 |---|---|
-| `/api/join`, `/api/crawl`, `/api/handle/*` | `src/lib/api/root/app.ts` |
-| `/api/me`, `/api/analytics`, `/api/create`, `/api/upload-input-images` | `src/lib/api/app/app.ts` |
-| `/api/profile/*` | `src/lib/api/profile/app.ts` |
+| `/api/auth/*` | `src/lib/api/routes/auth.ts` |
+| `/api/join`, `/api/crawl`, `/api/handle/*` | `src/lib/api/routes/root.ts` |
+| `/api/me`, `/api/analytics`, `/api/create`, `/api/upload-input-images` | `src/lib/api/routes/app.ts` |
+| `/api/profile/*` | `src/lib/api/routes/profile.ts` |
 
 Keep request path normalization inside the server adapter:
 
 ```text
-src/server/adapter.ts
+src/lib/api/server/adapter.ts
 ```
 
 The Hono API modules must not import from `src/app/api` or `@/app/api`. Types shared with API consumers belong under `src/lib/api/**`, for example `src/lib/api/app/types.ts`.
 
-`src/lib/api/hono-factory.ts` owns the shared Hono factory, session middleware, authenticated-session context getter, JSON response helper, and no-store response helper. New Hono apps should use this shared factory rather than `new Hono()` directly.
+`src/lib/api/hono-factory.ts` owns the shared Hono factory, JSON response helper, validators, and no-store response helper. `src/lib/api/middlewares/session.ts` owns session middleware and the authenticated-session context getter. New Hono apps should use these shared modules rather than `new Hono()` directly.
 
-`src/server/index.ts` owns route composition order. Mount the more specific `/api/profile` Hono app before the broader `/api` Hono app.
+Keep Hono responsibility separated by folder:
+
+```text
+src/lib/api/routes          HTTP endpoint definitions and request/response assembly
+src/lib/api/middlewares     auth/session and other cross-cutting Hono middleware
+src/lib/api/schemas         input validation schemas used by routes
+src/lib/api/services        use-case orchestration and production dependency wiring
+src/lib/api/repositories    Drizzle DB reads/writes
+```
+
+Routes may call services and schemas, but they should not directly import Drizzle tables or mutate the DB. Repositories may import `@/db` and schema tables, but they should not import Hono context, route helpers, or Next route handlers.
+
+`src/lib/api/server/index.ts` owns route composition order. Mount Better Auth first, then `/api/profile` and root-owned `/api/*` routes before the broader app `/api` Hono app.
 
 ## Current Non-Hono API Boundaries
 These route handlers are intentionally outside the Hono app-owned API boundary for now:
 
 ```text
-src/app/api/auth/[...all]/route.ts
 src/app/api/inngest/route.ts
 src/app/api/webhooks/dodo/route.ts
 src/app/api/webhooks/paddle/route.ts
 src/app/api/webhooks/stripe/route.ts
 ```
 
-Better Auth follows the official Next.js route handler integration with `toNextJsHandler(betterAuthServer)`. Keep it on `src/app/api/auth/[...all]/route.ts`; do not mount Better Auth behind Hono. Webhooks and Inngest have provider-specific body/signature/SDK contracts and should only move to Hono with dedicated parity tests.
+Better Auth is mounted inside the single Hono server app through its official Hono handler pattern:
+
+```text
+src/lib/api/routes/auth.ts
+  -> betterAuthServer.handler(context.req.raw)
+```
+
+Webhooks and Inngest have provider-specific body/signature/SDK contracts and should only move to Hono with dedicated parity tests.
 
 The retired profile routes below should not be restored unless product scope explicitly reopens them:
 
@@ -79,7 +96,7 @@ src/app/api/profile/social-links/reorder/route.ts
 - Hono apps own app-owned API business logic, validation, auth checks, no-store JSON contracts, and error mapping.
 - Hono-backed API code never imports from `src/app/api`.
 - Profile-page sync endpoints must preserve committed-read response semantics and no-store behavior.
-- Better Auth stays on its official Next.js handler. This is the project boundary, not a temporary gap.
+- Better Auth stays on `/api/auth/*`, but it is served by the Hono catch-all route rather than a separate Next route handler.
 - Provider webhook route handlers stay provider-local until raw body and signature verification parity is proven.
 
 ## Verification
@@ -89,9 +106,9 @@ Use focused checks after changing the Hono boundary:
 bun test src/lib/api/__test__/api-boundary.test.ts \
   src/lib/api/root/__test__/root-api.test.ts \
   src/lib/api/app/__test__/app-api.test.ts \
-  src/lib/api/profile/__test__/profile-api.test.ts \
   src/app/api/__test__/root-route-adapter.test.ts \
-  src/server/__test__/server-api.test.ts
+  src/lib/api/server/__test__/server-api.test.ts \
+  src/lib/profile/__test__/profile-cache-regression.test.ts
 
 bun x tsc --noEmit --pretty false --skipLibCheck --project tsconfig.json
 bun run build

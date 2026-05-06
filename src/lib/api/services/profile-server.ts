@@ -1,9 +1,7 @@
-import { eq } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { auth } from "@/auth";
-import { db } from "@/db";
-import { profilePages } from "@/db/schema/profile";
-import type { ProfileImageKind } from "@/lib/profile/image-upload";
+import { updateProfileImage } from "@/lib/api/repositories/profile";
+import { createProfileApi } from "@/lib/api/routes/profile";
 import {
   deleteProfileMediaObject,
   getProfileMediaObjectKeyFromUrl,
@@ -20,33 +18,6 @@ import {
   updateProfileMetadata,
 } from "@/lib/profile/mutations";
 import { getProfilePageEditorData, PUBLIC_PROFILE_BENTO_CACHE_TAG } from "@/lib/profile/queries";
-import { createProfileApi } from "./app";
-
-const updateProfileImage = async ({
-  imageKind,
-  imageUrl,
-  userId,
-}: {
-  imageKind: ProfileImageKind;
-  imageUrl: string;
-  userId: string;
-}) => {
-  const updateValues =
-    imageKind === "background" ? { backgroundImage: imageUrl } : { image: imageUrl };
-
-  return db
-    .update(profilePages)
-    .set({
-      ...updateValues,
-      updatedAt: new Date(),
-    })
-    .where(eq(profilePages.userId, userId))
-    .returning({
-      backgroundImage: profilePages.backgroundImage,
-      image: profilePages.image,
-    })
-    .then((rows) => rows[0] ?? null);
-};
 
 export const profileApi = createProfileApi({
   auth,

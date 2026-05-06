@@ -62,7 +62,7 @@ join shortcut이 빠른 redirect shortcut 역할을 하면서도 `auth()`와 DB 
 
 | File | Change |
 |---|---|
-| `src/lib/api/root/app.ts` | session/callback forwarding과 authenticated app redirect |
+| `src/lib/api/routes/root.ts` | session/callback forwarding과 authenticated app redirect |
 | `src/app/(auth)/sign-in/page.tsx` | session cookie가 있을 때만 auth() 호출 |
 | `src/app/(auth)/sign-up/page.tsx` | session cookie가 있을 때만 auth() 호출 |
 
@@ -88,7 +88,7 @@ stale cookie
 
 ```text
 bun x biome check \
-  src/lib/api/root/app.ts \
+  src/lib/api/routes/root.ts \
   src/app/(auth)/layout.tsx \
   src/app/(auth)/sign-in/page.tsx \
   src/app/(auth)/sign-up/page.tsx \

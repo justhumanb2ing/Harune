@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
+import { createRootApi } from "@/lib/api/routes/root";
 import { MetadataFetchError } from "@/lib/metadata/url-metadata";
-import { createRootApi } from "../app";
 
 const authenticatedSession = {
   expires: "2026-05-02T00:00:00.000Z",

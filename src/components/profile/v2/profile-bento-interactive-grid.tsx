@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/input-group";
 import { useGridDragMotion } from "@/hooks/use-grid-drag-motion";
 import { useProfilePageEditor } from "@/hooks/use-profile-editor";
-import { rootApiClient } from "@/lib/api/client";
+import { apiClient } from "@/lib/api/client";
 import { appConfig } from "@/lib/config";
 import { BREAKPOINTS, COLS, GRID_MARGIN, getGridRowHeight } from "@/lib/grid/grid-config";
 import { normalizeLayouts } from "@/lib/grid/grid-layout-utils";
@@ -666,7 +666,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     setLinkUrl("");
 
     try {
-      const response = await rootApiClient.api.crawl.$get({ query: { url: rawUrl } });
+      const response = await apiClient.api.crawl.$get({ query: { url: rawUrl } });
       const body = (await response.json()) as NormalizedMetadata | MetadataErrorResponse;
 
       if (!response.ok) {

@@ -8,8 +8,10 @@ tags: [hono, better-auth, nextjs, app-router, api]
 
 # Hono, Better Auth, and Next.js API Transition Plan
 
+> Updated current state: Better Auth is now mounted through the single Hono catch-all via `src/lib/api/routes/auth.ts`. The old `src/app/api/auth/[...all]/route.ts` exception has been removed.
+
 ## Decision Summary
-Move Harune toward one Hono-composed app API runtime mounted through Next.js catch-all route handlers, while keeping Better Auth on its official Next.js route handler integration.
+Move Harune toward one Hono-composed app API runtime mounted through a single Next.js catch-all route handler, including Better Auth through its Hono handler mount.
 
 The target shape is not “remove all Next.js route handlers.” Next.js still needs route handler files to register public URLs. The target is:
 
@@ -20,31 +22,30 @@ Next.js catch-all route handler
   -> domain route modules
 ```
 
-Better Auth is not part of the Hono migration target. It remains:
+Better Auth is part of the Hono migration target. It is mounted as:
 
 ```text
-src/app/api/auth/[...all]/route.ts
-  -> toNextJsHandler(betterAuthServer)
+src/app/api/[...route]/route.ts
+  -> src/lib/api/server/index.ts
+  -> src/lib/api/routes/auth.ts
+  -> betterAuthServer.handler(context.req.raw)
 ```
 
-This follows Better Auth's official Next.js integration recommendation and avoids replacing framework-specific cookie/OAuth behavior with a custom Hono mount.
+This follows Better Auth's official Hono integration pattern for `auth.handler(c.req.raw)`.
 
 ## References
-- Better Auth official Next.js integration recommends mounting auth at `/api/auth/[...all]` with `toNextJsHandler(auth)`.
+- Better Auth official Hono integration mounts auth with `app.on(["POST", "GET"], "/api/auth/*", c => auth.handler(c.req.raw))`.
 - Better Auth official Next.js docs note that `nextCookies()` should be the last plugin when server actions or server calls need to set cookies.
 - Better Auth official Next.js docs recommend cookie-only checks in proxy for optimistic redirects and server-side session validation in pages/routes for protected actions.
-- Hono docs include a Next.js getting-started path and Vercel adapter support. Leeve currently uses local `app.fetch()` adapters rather than `hono/vercel` directly.
+- Hono docs include a Next.js getting-started path and Vercel adapter support. Harune now uses `hono/vercel` in the single catch-all route and keeps request normalization inside the server fetch boundary.
 
 ## Current State
 Current route ownership:
 
 ```text
-src/app/api/[[...path]]/route.ts
+src/app/api/[...route]/route.ts
   -> single server Hono API
-  -> root/app/profile Hono routes
-
-src/app/api/auth/[...all]/route.ts
-  -> Better Auth official toNextJsHandler
+  -> auth/root/app/profile Hono routes
 
 src/app/api/inngest/route.ts
   -> Inngest handler
@@ -66,41 +67,27 @@ Shared Hono infrastructure:
 
 ```text
 src/lib/api/hono-factory.ts
-src/lib/api/root/*
-src/lib/api/app/*
-src/lib/api/profile/*
-src/server/index.ts
+src/lib/api/routes/*
+src/lib/api/services/*
+src/lib/api/repositories/*
+src/lib/api/server/index.ts
 ```
 
 ## Target Architecture
 Preferred target after the remaining migrations:
 
 ```text
-src/server/
+src/lib/api/server/
   index.ts
-  hono-factory.ts
-  middleware/
-    auth-session.ts
-    errors.ts
-    no-store.ts
-    request-id.ts
-  routes/
-    root.ts
-    app.ts
-    profile.ts
-    webhooks/
-      dodo.ts
-      paddle.ts
-      stripe.ts
+  adapter.ts
+  create-server-api.ts
 
 src/app/api/[[...route]]/route.ts
   -> export HTTP methods from handle(serverRoutes)
 
-src/app/api/auth/[...all]/route.ts
-  -> export GET/POST from toNextJsHandler(betterAuthServer)
 ```
 
-Use `src/server` only when the API is truly app-wide. Until then, `src/lib/api/**` remains acceptable and already matches current ownership.
+Keep API server composition under `src/lib/api/server`. A separate top-level `src/server` folder is unnecessary unless non-API server runtimes appear.
 
 ## Migration Phases
 
@@ -124,34 +111,31 @@ Status: implemented for app-owned API route composition.
 Goal: replace multiple prefix-specific Next.js catch-all handlers with one typed Hono server app.
 
 Tasks:
-- Create `src/server/index.ts`.
+- Create `src/lib/api/server/index.ts`.
 - Mount existing route modules under one Hono app.
-- Replace three catch-all route handlers with one `src/app/api/[[...path]]/route.ts`.
-- Keep Better Auth on `src/app/api/auth/[...all]/route.ts`.
+- Replace three catch-all route handlers with one `src/app/api/[...route]/route.ts`.
+- Mount Better Auth inside the server Hono app before broader `/api` routes.
 
 Exit criteria:
 - No public URL changes.
 - Hono route contract tests still call the app directly.
-- `src/server/__test__/server-api.test.ts` verifies profile route precedence over broader app routes.
+- `src/lib/api/server/__test__/server-api.test.ts` verifies profile route precedence over broader app routes.
 - App Router catch-all route file remains thin.
 
-### Phase 3: Optional Server Folder Consolidation
-Goal: decide whether to move `src/lib/api/**` implementation files under `src/server/**`.
+### Phase 3: API Server Composition Consolidation
+Goal: keep Hono server composition colocated with the rest of `src/lib/api/**`.
 
 Target:
 
 ```ts
-src/server/
+src/lib/api/server/
   index.ts
-  hono-factory.ts
-  routes/
-    root.ts
-    app.ts
-    profile.ts
+  adapter.ts
+  create-server-api.ts
 ```
 
 Tasks:
-- Move only when `src/lib/api/**` no longer describes ownership clearly.
+- Do not create a top-level `src/server` folder while this runtime only serves API composition.
 - Preserve direct Hono route contract tests during any file move.
 - Keep shared client/server response types in a location that does not force UI code to import from server-only modules.
 
@@ -160,45 +144,33 @@ Exit criteria:
 - No `src/app/api` imports from Hono API modules.
 - Route manifest still shows one app-owned catch-all API entry plus official/special route handlers.
 
-### Phase 4: Lock the Better Auth Official Boundary
-Goal: make the official Next.js Better Auth route a permanent exception to the Hono app API runtime.
+### Phase 4: Better Auth Hono Mount
+Goal: keep `/api/auth/*` on the single Hono catch-all route.
 
-Keep:
-
-```ts
-import { toNextJsHandler } from "better-auth/next-js";
-import { betterAuthServer } from "@/auth";
-
-export const { GET, POST } = toNextJsHandler(betterAuthServer);
-```
-
-Do not replace this with:
+Keep the Hono mount:
 
 ```ts
-routes.on(["GET", "POST"], "/auth/*", (context) => {
+routes.on(["GET", "POST"], "/api/auth/*", (context) => {
   return betterAuthServer.handler(context.req.raw);
 });
 ```
 
-That Hono mount is similar to the referenced GitHub pattern, but it bypasses the official `toNextJsHandler` wrapper. Harune should follow the official Better Auth + Next.js path here.
-
 Boundary tests:
 - `GET /api/auth/ok` returns the expected health response.
-- `src/app/api/auth/[...all]/route.ts` contains `toNextJsHandler(betterAuthServer)`.
-- The Hono catch-all route must not intercept `/api/auth/*`.
+- `src/app/api/auth/[...all]/route.ts` does not exist.
+- The Hono server routes `/api/auth/*` before broader app API routes.
 - `nextCookies()` remains the last plugin and server-side auth calls still set cookies where expected.
 
 Exit criteria:
-- Build route manifest includes `/api/auth/[...all]`.
-- Tests assert the Better Auth route remains on the official Next.js handler.
-- No Hono route module imports or mounts `betterAuthServer.handler` for `/api/auth/*`.
+- Build route manifest includes `/api/[...route]` and no separate `/api/auth/[...all]`.
+- Tests assert the Better Auth route is handled by the Hono server app.
 
 ### Phase 5: Webhook Hono Migration
 Goal: move provider webhooks only if raw body/signature contracts are preserved.
 
 Tasks:
 - For Stripe, Paddle, and Dodo, write tests that verify raw request body is passed to the signature verifier unchanged.
-- Move one webhook provider at a time into `src/server/routes/webhooks/*`.
+- Move one webhook provider at a time into `src/lib/api/routes/webhooks/*`.
 - Preserve provider status codes, retry semantics, and logging.
 
 Exit criteria:
@@ -215,9 +187,9 @@ Exit criteria:
 - Either official-handler exception is documented, or a Hono parity test proves equivalent behavior.
 
 ## Risks
-- Better Auth cookie or OAuth behavior can regress if `toNextJsHandler` is replaced with a custom Hono mount.
+- Better Auth cookie or OAuth behavior can regress if the Hono mount does not pass the raw `Request` to `betterAuthServer.handler`.
 - Webhook signature verification can break if body parsing changes.
-- A single `/api/[[...route]]` catch-all can accidentally intercept routes that should remain provider-owned.
+- A single `/api/[...route]` catch-all can accidentally intercept routes that should remain provider-owned.
 - `.next/types` can cache deleted route files; clean `.next/types` before interpreting TypeScript failures after route deletions.
 
 ## Verification Matrix
@@ -230,12 +202,12 @@ bun test src/lib/api/profile/__test__/profile-api.test.ts
 bun test src/app/api/__test__/root-route-adapter.test.ts
 bun test src/app/api/app/__test__/app-route-adapter.test.ts
 bun test src/app/api/profile/__test__/handle-availability-route.test.ts
-bun test src/server/__test__/server-api.test.ts
+bun test src/lib/api/server/__test__/server-api.test.ts
 bun x tsc --noEmit --pretty false --skipLibCheck --project tsconfig.json
 bun run build
 ```
 
-Before deleting or moving route files, run:
+Before interpreting TypeScript failures after deleting or moving route files, clean stale Next generated types:
 
 ```bash
 rm -rf .next/types
@@ -244,7 +216,7 @@ rm -rf .next/types
 Then re-run TypeScript and build so the route manifest reflects current source files.
 
 ## Stop Rules
-- Do not move Better Auth behind Hono. Keep `toNextJsHandler(betterAuthServer)` as the official integration boundary.
+- Do not add a separate `src/app/api/auth/[...all]/route.ts`; keep Better Auth under the single Hono catch-all.
 - Do not move webhooks behind Hono if raw-body signature verification is not proven.
 - Do not remove Next.js route handlers entirely; keep at least one catch-all route handler for public URL registration.
 - Do not claim performance wins without measurement. Treat this migration as architecture, testability, and route ownership cleanup first.

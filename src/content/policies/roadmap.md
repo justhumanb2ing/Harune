@@ -6,7 +6,7 @@ description: See what is planned next for Harune.
 
 ## Upcoming
 - Playlist widget development.
-- Leaderboard development.
+- Explore development.
 - Mobile responsiveness.
 - Enhanced Open Graph images.
 - Performance optimizations.

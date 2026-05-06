@@ -23,7 +23,7 @@ const variants: Variants = {
   },
 };
 
-export default function LeaderboardSection() {
+export default function ExploreSection() {
   return (
     <section className="h-full flex flex-col">
       <header className="h-[12rem] flex flex-col justify-center items-center mt-8">
@@ -45,13 +45,13 @@ export default function LeaderboardSection() {
           }}
         >
           <h2 className="text-center text-3xl font-bold tracking-tight sm:text-5xl text-primary-foreground bg-green-400 rounded-xl p-3 px-6 py-3">
-            Leaderboard
+            Explore
           </h2>
         </motion.div>
       </header>
       <main className="flex-1 flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8 rounded-2xl mx-8">
         <div className="flex flex-col gap-2 items-center">
-          <p className="font-medium text-lg">Leaderboard is on the horizon. 🚀</p>
+          <p className="font-medium text-lg">Explore is on the horizon. 🚀</p>
           <p>It's in the works.</p>
         </div>
       </main>

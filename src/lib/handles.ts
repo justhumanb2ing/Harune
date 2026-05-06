@@ -10,7 +10,7 @@ const reservedHandles = new Set([
   "create",
   "docs",
   "join",
-  "leaderboard",
+  "explore",
   "profile",
   "privacy",
   "refund",

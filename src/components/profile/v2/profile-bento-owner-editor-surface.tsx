@@ -1,6 +1,6 @@
 "use client";
 
-import { TrophyIcon } from "lucide-react";
+import { CompassIcon } from "lucide-react";
 import Link from "next/link";
 import { ProfilePageEditorProvider } from "@/components/profile/layout/profile-editor-provider";
 import { ProfileBentoInteractiveGrid } from "@/components/profile/v2/profile-bento-interactive-grid";
@@ -48,19 +48,19 @@ function ProfileBentoOwnerFooterAction({
         <TooltipTrigger
           render={
             <Link
-              aria-label="Leaderboard"
-              href="/leaderboard"
+              aria-label="Explore"
+              href="/explore"
               className={cn(
                 "inline-flex size-9 items-center justify-center rounded-md",
                 iconButtonClassName
               )}
             >
-              <TrophyIcon aria-hidden className="size-4" />
+              <CompassIcon aria-hidden className="size-4" />
             </Link>
           }
         />
         <TooltipContent side="top" sideOffset={8}>
-          Leaderboard
+          Explore
         </TooltipContent>
       </Tooltip>
       <Separator

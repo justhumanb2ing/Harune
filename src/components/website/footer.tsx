@@ -38,8 +38,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/leaderboard" className="inline-block hover:text-primary">
-                  Leaderboard
+                <Link href="/explore" className="inline-block hover:text-primary">
+                  Explore
                 </Link>
               </li>
               <li>

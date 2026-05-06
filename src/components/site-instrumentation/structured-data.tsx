@@ -52,7 +52,7 @@ export function SiteStructuredData() {
   const sameAs = [appConfig.social.twitter].filter(Boolean);
   const navigationItems = [
     { name: "Home", url: absoluteUrl("/") },
-    { name: "Leaderboard", url: absoluteUrl("/leaderboard") },
+    { name: "Explore", url: absoluteUrl("/explore") },
     { name: "Changelog", url: absoluteUrl("/changelog") },
     { name: "Roadmap", url: absoluteUrl("/roadmap") },
     { name: "Privacy Policy", url: absoluteUrl("/privacy") },

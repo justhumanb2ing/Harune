@@ -16,6 +16,7 @@ export type MetadataErrorCode =
   | "invalid_protocol"
   | "blocked_host"
   | "fetch_failed"
+  | "bad_gateway"
   | "not_found"
   | "internal_error";
 
@@ -73,6 +74,7 @@ function isMetadataErrorCode(value: unknown): value is MetadataErrorCode {
     value === "invalid_protocol" ||
     value === "blocked_host" ||
     value === "fetch_failed" ||
+    value === "bad_gateway" ||
     value === "not_found" ||
     value === "internal_error"
   );
@@ -114,19 +116,52 @@ function normalizeMetadataResponse(value: unknown): NormalizedMetadata {
 }
 
 function normalizeMetadataErrorResponse(value: unknown): MetadataErrorResponse {
-  if (!isRecord(value) || !isMetadataErrorCode(value.error) || typeof value.message !== "string") {
+  if (!isRecord(value)) {
     return {
       error: "internal_error",
       message: "Failed to fetch metadata.",
     };
   }
 
-  const details = isMetadataDetails(value.details) ? value.details : undefined;
+  const flatError =
+    isMetadataErrorCode(value.error) && typeof value.message === "string"
+      ? {
+          error: value.error,
+          message: value.message,
+          details: isMetadataDetails(value.details) ? value.details : undefined,
+        }
+      : null;
+
+  if (flatError) {
+    return {
+      error: flatError.error,
+      message: flatError.message,
+      ...(flatError.details ? { details: flatError.details } : {}),
+    };
+  }
+
+  const nestedError =
+    isRecord(value.error) &&
+    isMetadataErrorCode(value.error.code) &&
+    typeof value.error.message === "string"
+      ? {
+          error: value.error.code,
+          message: value.error.message,
+          details: isMetadataDetails(value.error.details) ? value.error.details : undefined,
+        }
+      : null;
+
+  if (nestedError) {
+    return {
+      error: nestedError.error,
+      message: nestedError.message,
+      ...(nestedError.details ? { details: nestedError.details } : {}),
+    };
+  }
 
   return {
-    error: value.error,
-    message: value.message,
-    ...(details ? { details } : {}),
+    error: "internal_error",
+    message: "Failed to fetch metadata.",
   };
 }
 

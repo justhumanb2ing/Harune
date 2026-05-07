@@ -97,4 +97,53 @@ describe("fetchUrlMetadata", () => {
       globalThis.fetch = originalFetch;
     }
   });
+
+  test("normalizes nested metadata API errors", async () => {
+    const originalFetch = globalThis.fetch;
+
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          error: {
+            code: "bad_gateway",
+            message: "target responded with an error status",
+            details: {
+              status: 429,
+            },
+          },
+        }),
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+          status: 502,
+        }
+      )) as typeof fetch;
+
+    try {
+      let error: unknown;
+
+      try {
+        await fetchUrlMetadata("https://music.youtube.com/watch?v=tlcEurH9Cpg");
+      } catch (caughtError) {
+        error = caughtError;
+      }
+
+      expect(error).toBeInstanceOf(MetadataFetchError);
+      expect(error).toEqual(
+        expect.objectContaining({
+          status: 502,
+          body: {
+            error: "bad_gateway",
+            message: "target responded with an error status",
+            details: {
+              status: 429,
+            },
+          },
+        })
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
 });

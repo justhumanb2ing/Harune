@@ -85,7 +85,7 @@ describe("root Hono API", () => {
       },
     });
 
-    const response = await app.request("/api/crawl?url=https%3A%2F%2Fexample.com%2Fpost");
+    const response = await app.request("/metadata?url=https%3A%2F%2Fexample.com%2Fpost");
     const body = (await response.json()) as {
       canonicalUrl: string | null;
       description: string | null;
@@ -129,10 +129,10 @@ describe("root Hono API", () => {
       },
     });
 
-    const missingUrlResponse = await missingUrlApp.request("/api/crawl");
-    const invalidUrlResponse = await invalidUrlApp.request("/api/crawl?url=notaurl");
+    const missingUrlResponse = await missingUrlApp.request("/metadata");
+    const invalidUrlResponse = await invalidUrlApp.request("/metadata?url=notaurl");
     const upstreamErrorResponse = await upstreamErrorApp.request(
-      "/api/crawl?url=https%3A%2F%2Fexample.com"
+      "/metadata?url=https%3A%2F%2Fexample.com"
     );
 
     expect(missingUrlResponse.status).toBe(400);

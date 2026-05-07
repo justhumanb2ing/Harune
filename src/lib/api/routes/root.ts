@@ -28,7 +28,7 @@ export const createRootApi = ({
       }
     )
     .get(
-      "/api/crawl",
+      "/metadata",
       zQueryValidator(
         crawlQuerySchema,
         (error) => ({

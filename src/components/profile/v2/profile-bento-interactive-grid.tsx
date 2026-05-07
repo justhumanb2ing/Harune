@@ -666,7 +666,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     setLinkUrl("");
 
     try {
-      const response = await apiClient.api.crawl.$get({ query: { url: rawUrl } });
+      const response = await apiClient.metadata.$get({ query: { url: rawUrl } });
       const body = (await response.json()) as NormalizedMetadata | MetadataErrorResponse;
 
       if (!response.ok) {

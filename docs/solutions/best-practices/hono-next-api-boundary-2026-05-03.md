@@ -16,10 +16,11 @@ tags: [hono, nextjs, app-router, api, better-auth]
 # Hono and Next.js API boundary
 
 ## Context
-Harune now uses Hono for the app-owned API composition layer while keeping Next.js App Router as the public URL owner. Hono-backed API route handlers are consolidated into one app-owned catch-all route handler:
+Harune now uses Hono for the app-owned API composition layer while keeping Next.js App Router as the public URL owner. Hono-backed API route handlers are mostly consolidated into one app-owned catch-all route handler, with the public `/metadata` surface served from a dedicated route file:
 
 ```text
 src/app/api/[...route]/route.ts
+src/app/metadata/route.ts
   -> src/lib/api/server/index.ts
   -> src/lib/api/services/auth-server.ts
   -> src/lib/api/services/root-server.ts
@@ -30,12 +31,13 @@ src/app/api/[...route]/route.ts
 The catch-all route file is intentionally thin. It exports the HTTP methods through `hono/vercel`'s `handle(routes)` adapter and delegates to the Hono-backed server handler.
 
 ## Guidance
-Do not recreate one-file-per-endpoint route handlers for Hono-backed APIs. Add routes inside the matching Hono app instead:
+Do not recreate one-file-per-endpoint route handlers for Hono-backed APIs. Add routes inside the matching Hono app instead. The public `/metadata` surface is the one exception here because it is intentionally served from its own Next.js route file:
 
 | Public URL prefix | Add route in |
 |---|---|
+| `/metadata` | `src/lib/api/routes/root.ts` and `src/app/metadata/route.ts` |
 | `/api/auth/*` | `src/lib/api/routes/auth.ts` |
-| `/api/join`, `/api/crawl`, `/api/handle/*` | `src/lib/api/routes/root.ts` |
+| `/api/join`, `/api/handle/*` | `src/lib/api/routes/root.ts` |
 | `/api/me`, `/api/analytics`, `/api/create`, `/api/upload-input-images` | `src/lib/api/routes/app.ts` |
 | `/api/profile/*` | `src/lib/api/routes/profile.ts` |
 
@@ -107,6 +109,7 @@ bun test src/lib/api/__test__/api-boundary.test.ts \
   src/lib/api/root/__test__/root-api.test.ts \
   src/lib/api/app/__test__/app-api.test.ts \
   src/app/api/__test__/root-route-adapter.test.ts \
+  src/app/metadata/__test__/route-adapter.test.ts \
   src/lib/api/server/__test__/server-api.test.ts \
   src/lib/profile/__test__/profile-cache-regression.test.ts
 

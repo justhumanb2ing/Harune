@@ -1,8 +1,14 @@
 import { ArrowCircleUpRightIcon } from "@phosphor-icons/react";
-import dynamic from "next/dynamic";
 import Image from "next/image";
-import { type CSSProperties, memo, useEffect, useRef } from "react";
+import { type CSSProperties, memo, useCallback, useEffect, useRef, useState } from "react";
 import { PlaylistIframe } from "@/components/profile/playlist-iframe";
+import {
+  Map as BentoMap,
+  MapControls,
+  MapMarker,
+  type MapViewport,
+  MarkerContent,
+} from "@/components/ui/map";
 import type { GridBreakpoint, ResizeOptionId } from "@/lib/grid/grid-types";
 import { resolveLinkProviderTheme } from "@/lib/metadata/link-provider-theme";
 import type { ProfileBentoItem } from "@/lib/profile/types";
@@ -23,23 +29,6 @@ type ProfileBentoEditableContentCardProps = {
 export function ProfileBentoEditableGridCard({ item }: { item: ProfileBentoItem }) {
   return <ProfileBentoGridCardContent item={item} preventNavigation />;
 }
-
-const ProfileBentoMapBento = dynamic(
-  () =>
-    import("@/components/profile/v2/profile-bento-map-bento").then(
-      (module) => module.ProfileBentoMapBento
-    ),
-  {
-    loading: () => (
-      <article
-        aria-hidden
-        className="relative size-full overflow-hidden rounded-[1.5rem] bg-muted"
-        data-profile-bento-map-loading
-      />
-    ),
-    ssr: false,
-  }
-);
 
 export const ProfileBentoEditableContentCard = memo(function ProfileBentoEditableContentCard({
   autoFocus = false,
@@ -94,10 +83,9 @@ export const ProfileBentoEditableContentCard = memo(function ProfileBentoEditabl
 
   if (item.type === "map") {
     return (
-      <ProfileBentoMapBento
-        item={item}
+      <EditableMapBento
         isInteractionEnabled={mapInteractionEnabled}
-        mode="editable"
+        item={item}
         onChange={onChange}
       />
     );
@@ -843,8 +831,196 @@ function EditableMediaBento({
   );
 }
 
+const toGoogleMapsUrl = (latitude: number, longitude: number) =>
+  `https://www.google.com/maps?q=${latitude.toFixed(6)},${longitude.toFixed(6)}`;
+
+const MAP_INTERACTION_OPTIONS = {
+  dragRotate: false,
+  keyboard: false,
+  scrollZoom: false,
+  touchPitch: false,
+} as const;
+
 const overlayActionLinkClassName =
   "absolute right-3 bottom-4 flex size-7 items-center justify-center rounded-full bg-white text-black shadow-md backdrop-blur-sm transition-colors hover:bg-white/60";
+
+function MapPulseMarker({ className }: { className?: string }) {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "relative flex size-8 items-center justify-center rounded-full bg-white shadow-[0_8px_24px_rgb(0_0_0_/_0.22)]",
+        className
+      )}
+    >
+      <span className="absolute size-12 rounded-full bg-blue-500 opacity-50 animate-ping [animation-duration:2.4s] -z-10" />
+      <span className="relative size-[24px] rounded-full bg-blue-500 shadow-sm" />
+    </span>
+  );
+}
+
+function CenterMapMarker() {
+  return (
+    <div
+      aria-hidden
+      className="-translate-x-1/2 -translate-y-1/2 pointer-events-none absolute top-1/2 left-1/2 z-20"
+    >
+      <MapPulseMarker />
+    </div>
+  );
+}
+
+function MapPinMarker() {
+  return <MapPulseMarker />;
+}
+
+const LEEVE_MAP_STYLE = "/assets/leeve-mapbox-inspired-carto-maplibre-style.json";
+const LEEVE_MAP_STYLES = {
+  light: LEEVE_MAP_STYLE,
+  dark: LEEVE_MAP_STYLE,
+} as const;
+
+function EditableMapBento({
+  isInteractionEnabled,
+  item,
+  onChange,
+}: {
+  isInteractionEnabled: boolean;
+  item: Extract<ProfileBentoItem, { type: "map" }>;
+  onChange: (item: ProfileBentoItem) => void;
+}) {
+  const [viewport, setViewport] = useState<MapViewport>({
+    bearing: 0,
+    center: [item.content.longitude, item.content.latitude],
+    pitch: 0,
+    zoom: item.content.zoom,
+  });
+
+  const updateLocation = useCallback(
+    (nextViewport: MapViewport) => {
+      const [longitude, latitude] = nextViewport.center;
+
+      setViewport(nextViewport);
+      onChange({
+        ...item,
+        content: {
+          ...item.content,
+          latitude,
+          longitude,
+          zoom: Math.round(nextViewport.zoom),
+          url: toGoogleMapsUrl(latitude, longitude),
+        },
+      });
+    },
+    [item, onChange]
+  );
+
+  return (
+    <article
+      className={cn(
+        "relative size-full overflow-hidden rounded-[1.5rem] ring-0 border-transparent bg-muted transition-all duration-200 ease-out",
+        isInteractionEnabled ? "grid-action ring-4 ring-black" : ""
+      )}
+    >
+      <BentoMap
+        className="size-full"
+        styles={LEEVE_MAP_STYLES}
+        onViewportChange={updateLocation}
+        viewport={viewport}
+        {...MAP_INTERACTION_OPTIONS}
+        dragPan={isInteractionEnabled}
+        doubleClickZoom={isInteractionEnabled}
+        touchZoomRotate={isInteractionEnabled}
+      >
+        {isInteractionEnabled ? (
+          <MapControls
+            position="top-right"
+            showLocate
+            showZoom
+            onLocate={({ latitude, longitude }) => {
+              updateLocation({
+                ...viewport,
+                center: [longitude, latitude],
+                zoom: Math.max(viewport.zoom, 14),
+              });
+            }}
+          />
+        ) : null}
+      </BentoMap>
+      <CenterMapMarker />
+      <input
+        aria-label="Map caption"
+        className="grid-action absolute bottom-3 left-3 max-w-[calc(100%-4.5rem)] rounded-md bg-black/35 px-2 py-2 font-medium text-sm text-white outline-none backdrop-blur-sm placeholder:text-white/70"
+        onChange={(event) => {
+          onChange({
+            ...item,
+            content: {
+              ...item.content,
+              caption: event.target.value,
+            },
+          });
+        }}
+        placeholder="Caption"
+        value={item.content.caption}
+      />
+      <a
+        aria-label="Open location in Google Maps"
+        className={cn("grid-action", overlayActionLinkClassName)}
+        href={item.content.url}
+        rel="noreferrer"
+        target="_blank"
+      >
+        <ArrowCircleUpRightIcon aria-hidden className="size-7" weight="fill" />
+      </a>
+    </article>
+  );
+}
+
+function ReadonlyMapBento({
+  item,
+  preventNavigation,
+}: {
+  item: Extract<ProfileBentoItem, { type: "map" }>;
+  preventNavigation: boolean;
+}) {
+  return (
+    <article className="relative size-full overflow-hidden rounded-[1.5rem] bg-muted transition-colors duration-200 ease-out">
+      <BentoMap
+        className="size-full"
+        styles={LEEVE_MAP_STYLES}
+        viewport={{
+          center: [item.content.longitude, item.content.latitude],
+          zoom: item.content.zoom,
+        }}
+        {...MAP_INTERACTION_OPTIONS}
+        dragPan={false}
+        doubleClickZoom={false}
+        touchZoomRotate={false}
+      >
+        <MapMarker latitude={item.content.latitude} longitude={item.content.longitude}>
+          <MarkerContent className="pointer-events-none">
+            <MapPinMarker />
+          </MarkerContent>
+        </MapMarker>
+      </BentoMap>
+      {item.content.caption ? (
+        <p className="pointer-events-none absolute bottom-3 left-3 line-clamp-2 max-w-[calc(100%-4.5rem)] rounded-md bg-black/25 px-2 py-1 font-medium text-sm text-white backdrop-blur-sm">
+          {item.content.caption}
+        </p>
+      ) : null}
+      <a
+        aria-label="Open location in Google Maps"
+        className={overlayActionLinkClassName}
+        href={item.content.url}
+        onClick={preventNavigation ? (event) => event.preventDefault() : undefined}
+        rel="noreferrer"
+        target="_blank"
+      >
+        <ArrowCircleUpRightIcon aria-hidden className="size-7" weight="fill" />
+      </a>
+    </article>
+  );
+}
 
 export function ProfileBentoGridCard({
   activeBreakpoint,
@@ -930,9 +1106,7 @@ function ProfileBentoGridCardContent({
   }
 
   if (item.type === "map") {
-    return (
-      <ProfileBentoMapBento item={item} mode="readonly" preventNavigation={preventNavigation} />
-    );
+    return <ReadonlyMapBento item={item} preventNavigation={preventNavigation} />;
   }
 
   return (

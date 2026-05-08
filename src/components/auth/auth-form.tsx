@@ -70,8 +70,8 @@ export function AuthForm({
     try {
       const result = await authClient.signIn.social({
         provider: "google",
-        callbackURL: resolvedCallbackUrl,
-        errorCallbackURL: `/sign-in?${errorCallbackParams.toString()}`,
+        callbackURL: "https://harune.me",
+        errorCallbackURL: `https://harune.me/sign-in?${errorCallbackParams.toString()}`,
       });
 
       if (result.error) {
@@ -101,11 +101,13 @@ export function AuthForm({
           ? await authClient.signIn.email({
               email,
               password,
+              callbackURL: "https://harune.me/create"
             })
           : await authClient.signUp.email({
               name: name || email.split("@")[0] || `${appConfig.projectName} User`,
               email,
               password,
+              callbackURL: "https://harune.me/create"
             });
 
       if (result.error) {

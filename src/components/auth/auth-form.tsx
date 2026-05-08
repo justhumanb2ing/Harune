@@ -70,7 +70,7 @@ export function AuthForm({
     try {
       const result = await authClient.signIn.social({
         provider: "google",
-        callbackURL: "http://localhost:3000/create",
+        callbackURL: resolvedCallbackUrl,
         errorCallbackURL: `/sign-in?${errorCallbackParams.toString()}`,
       });
 

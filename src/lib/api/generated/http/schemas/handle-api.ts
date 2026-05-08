@@ -17,8 +17,39 @@ export type CheckHandleAvailability200 = {
   available: boolean;
 };
 
+export type CheckHandleAvailability400ErrorCode =
+  (typeof CheckHandleAvailability400ErrorCode)[keyof typeof CheckHandleAvailability400ErrorCode];
+
+export const CheckHandleAvailability400ErrorCode = {
+  validation_error: "validation_error",
+} as const;
+
+export type CheckHandleAvailability400ErrorDetailsItem = {
+  reason: string;
+  message: string;
+  type: string;
+};
+
+export type CheckHandleAvailability400Error = {
+  code: CheckHandleAvailability400ErrorCode;
+  message: string;
+  details?: CheckHandleAvailability400ErrorDetailsItem[];
+};
+
 export type CheckHandleAvailability400 = {
   error: CheckHandleAvailability400Error;
+};
+
+export type CheckHandleAvailability401ErrorCode =
+  (typeof CheckHandleAvailability401ErrorCode)[keyof typeof CheckHandleAvailability401ErrorCode];
+
+export const CheckHandleAvailability401ErrorCode = {
+  unauthorized: "unauthorized",
+} as const;
+
+export type CheckHandleAvailability401Error = {
+  code: CheckHandleAvailability401ErrorCode;
+  message: string;
 };
 
 export type CheckHandleAvailability401 = {
@@ -29,25 +60,101 @@ export type UpdateHandleBody = {
   handle: string;
 };
 
+export type UpdateHandle200ProfilePage = {
+  id: string;
+  handle: string;
+  /** @nullable */
+  name: string | null;
+  /** @nullable */
+  image: string | null;
+};
+
 export type UpdateHandle200 = {
   previousHandle: string;
   profilePage: UpdateHandle200ProfilePage;
+};
+
+export type UpdateHandle400ErrorCode =
+  (typeof UpdateHandle400ErrorCode)[keyof typeof UpdateHandle400ErrorCode];
+
+export const UpdateHandle400ErrorCode = {
+  validation_error: "validation_error",
+} as const;
+
+export type UpdateHandle400ErrorDetailsItem = {
+  reason: string;
+  message: string;
+  type: string;
+};
+
+export type UpdateHandle400Error = {
+  code: UpdateHandle400ErrorCode;
+  message: string;
+  details?: UpdateHandle400ErrorDetailsItem[];
 };
 
 export type UpdateHandle400 = {
   error: UpdateHandle400Error;
 };
 
+export type UpdateHandle401ErrorCode =
+  (typeof UpdateHandle401ErrorCode)[keyof typeof UpdateHandle401ErrorCode];
+
+export const UpdateHandle401ErrorCode = {
+  unauthorized: "unauthorized",
+} as const;
+
+export type UpdateHandle401Error = {
+  code: UpdateHandle401ErrorCode;
+  message: string;
+};
+
 export type UpdateHandle401 = {
   error: UpdateHandle401Error;
+};
+
+export type UpdateHandle404ErrorCode =
+  (typeof UpdateHandle404ErrorCode)[keyof typeof UpdateHandle404ErrorCode];
+
+export const UpdateHandle404ErrorCode = {
+  profile_not_found: "profile_not_found",
+} as const;
+
+export type UpdateHandle404Error = {
+  code: UpdateHandle404ErrorCode;
+  message: string;
 };
 
 export type UpdateHandle404 = {
   error: UpdateHandle404Error;
 };
 
+export type UpdateHandle409ErrorCode =
+  (typeof UpdateHandle409ErrorCode)[keyof typeof UpdateHandle409ErrorCode];
+
+export const UpdateHandle409ErrorCode = {
+  handle_taken: "handle_taken",
+} as const;
+
+export type UpdateHandle409Error = {
+  code: UpdateHandle409ErrorCode;
+  message: string;
+};
+
 export type UpdateHandle409 = {
   error: UpdateHandle409Error;
+};
+
+export type UpdateHandle500ErrorCode =
+  (typeof UpdateHandle500ErrorCode)[keyof typeof UpdateHandle500ErrorCode];
+
+export const UpdateHandle500ErrorCode = {
+  handle_update_failed: "handle_update_failed",
+} as const;
+
+export type UpdateHandle500Error = {
+  code: UpdateHandle500ErrorCode;
+  message: string;
 };
 
 export type UpdateHandle500 = {

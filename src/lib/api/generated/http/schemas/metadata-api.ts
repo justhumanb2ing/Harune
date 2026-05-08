@@ -29,16 +29,80 @@ export type GetMetadata200 = {
   favicon: string | null;
 };
 
+export type GetMetadata400ErrorCode =
+  (typeof GetMetadata400ErrorCode)[keyof typeof GetMetadata400ErrorCode];
+
+export const GetMetadata400ErrorCode = {
+  missing_url: "missing_url",
+  invalid_url: "invalid_url",
+  invalid_protocol: "invalid_protocol",
+  blocked_host: "blocked_host",
+} as const;
+
+export type GetMetadata400ErrorDetails = {
+  rawUrl?: string;
+  protocol?: string;
+  hostname?: string;
+};
+
+export type GetMetadata400Error = {
+  code: GetMetadata400ErrorCode;
+  message: string;
+  details?: GetMetadata400ErrorDetails;
+};
+
 export type GetMetadata400 = {
   error: GetMetadata400Error;
+};
+
+export type GetMetadata404ErrorCode =
+  (typeof GetMetadata404ErrorCode)[keyof typeof GetMetadata404ErrorCode];
+
+export const GetMetadata404ErrorCode = {
+  not_found: "not_found",
+} as const;
+
+export type GetMetadata404Error = {
+  code: GetMetadata404ErrorCode;
+  message: string;
 };
 
 export type GetMetadata404 = {
   error: GetMetadata404Error;
 };
 
+export type GetMetadata500ErrorCode =
+  (typeof GetMetadata500ErrorCode)[keyof typeof GetMetadata500ErrorCode];
+
+export const GetMetadata500ErrorCode = {
+  internal_error: "internal_error",
+} as const;
+
+export type GetMetadata500Error = {
+  code: GetMetadata500ErrorCode;
+  message: string;
+};
+
 export type GetMetadata500 = {
   error: GetMetadata500Error;
+};
+
+export type GetMetadata502ErrorCode =
+  (typeof GetMetadata502ErrorCode)[keyof typeof GetMetadata502ErrorCode];
+
+export const GetMetadata502ErrorCode = {
+  fetch_failed: "fetch_failed",
+} as const;
+
+export type GetMetadata502ErrorDetails = {
+  reason?: string;
+  status?: number;
+};
+
+export type GetMetadata502Error = {
+  code: GetMetadata502ErrorCode;
+  message: string;
+  details?: GetMetadata502ErrorDetails;
 };
 
 export type GetMetadata502 = {

@@ -19,7 +19,14 @@ import type {
 } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import { orvalMutator } from "../../../orval-mutator";
-import type { get-metadata-params, get-metadata200, get-metadata400, get-metadata404, get-metadata500, get-metadata502 } from "../schemas/metadata-api";
+import type {
+  GetMetadata200,
+  GetMetadata400,
+  GetMetadata404,
+  GetMetadata500,
+  GetMetadata502,
+  GetMetadataParams,
+} from "../schemas/metadata-api";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -65,11 +72,11 @@ export type getMetadataResponse = getMetadataResponseSuccess | getMetadataRespon
 export const getGetMetadataUrl = (params: GetMetadataParams) => {
   const normalizedParams = new URLSearchParams();
 
-  Object.entries(params || {}).forEach(([key, value]) => {
+  for (const [key, value] of Object.entries(params || {})) {
     if (value !== undefined) {
       normalizedParams.append(key, value === null ? "null" : value.toString());
     }
-  });
+  }
 
   const stringifiedParams = normalizedParams.toString();
 

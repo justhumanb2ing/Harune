@@ -15,6 +15,7 @@ const orvalHeader = [
 ].join("\n");
 
 const schemaImportLinePattern = /^import type \{[^}]+\} from "\.\/([^"]+)";\n?/gm;
+const leafSchemaImportPattern = /^import type \{[^}]+\} from "\.\/([^"]+)";$/;
 const clientSchemaImportPattern = /^import type \{([^}]+)\} from "\.\.\/schemas\/([^"]+)";$/;
 
 const normalizeNewlines = (value: string) => value.replace(/\r\n/g, "\n");
@@ -30,7 +31,10 @@ const stripGeneratedHeader = (content: string) => {
 };
 
 const stripSchemaImports = (content: string) =>
-  content.replace(schemaImportLinePattern, "").replace(/\n{3,}/g, "\n\n").trim();
+  content
+    .replace(schemaImportLinePattern, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 
 const unique = <T>(items: T[]) => [...new Set(items)];
 
@@ -52,7 +56,24 @@ const listSchemaFiles = async () => {
     .sort();
 };
 
-const parseSchemaImports = (content: string) => {
+const toPascalCase = (value: string) =>
+  value
+    .split("-")
+    .filter(Boolean)
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join("");
+
+const formatTypeImport = (typeNames: string[], source: string) => {
+  const names = unique(typeNames).sort((a, b) => a.localeCompare(b));
+
+  if (names.length === 1) {
+    return `import type { ${names[0]} } from "${source}";`;
+  }
+
+  return ["import type {", ...names.map((name) => `  ${name},`), `} from "${source}";`].join("\n");
+};
+
+const parseClientSchemaImports = (content: string) => {
   const imports: string[] = [];
 
   for (const line of normalizeNewlines(content).split("\n")) {
@@ -68,14 +89,33 @@ const parseSchemaImports = (content: string) => {
   return unique(imports);
 };
 
+const parseLeafSchemaImports = (content: string) => {
+  const imports: string[] = [];
+
+  for (const line of normalizeNewlines(content).split("\n")) {
+    const match = line.match(leafSchemaImportPattern);
+
+    if (!match) {
+      continue;
+    }
+
+    imports.push(match[1]);
+  }
+
+  return unique(imports);
+};
+
 const buildSchemaGraph = async (schemaFiles: string[]) => {
   const graph = new Map<string, string[]>();
 
   for (const schemaFile of schemaFiles) {
     const content = await readFile(path.join(schemaDir, schemaFile), "utf8");
-    const imports = parseSchemaImports(content);
+    const imports = parseLeafSchemaImports(content);
 
-    graph.set(schemaFile, imports.map((name) => `${name}.ts`));
+    graph.set(
+      schemaFile,
+      imports.map((dependency) => `${dependency}.ts`)
+    );
   }
 
   return graph;
@@ -92,7 +132,9 @@ const collectDependencyOrder = (entryFiles: string[], graph: Map<string, string[
     }
 
     if (visiting.has(fileName)) {
-      throw new Error(`Circular schema dependency detected: ${[...visiting, fileName].join(" -> ")}`);
+      throw new Error(
+        `Circular schema dependency detected: ${[...visiting, fileName].join(" -> ")}`
+      );
     }
 
     const deps = graph.get(fileName) ?? [];
@@ -115,11 +157,18 @@ const collectDependencyOrder = (entryFiles: string[], graph: Map<string, string[
   return ordered;
 };
 
-const rewriteClientFile = async (apiModule: string, importedTypes: string[]) => {
+const rewriteClientFile = async (apiModule: string, importedSchemas: string[]) => {
+  if (importedSchemas.length === 1 && importedSchemas[0] === apiModule) {
+    return;
+  }
+
   const clientFilePath = path.join(httpOutputDir, apiModule, `${apiModule}.ts`);
   const rawContent = await readFile(clientFilePath, "utf8");
   const normalizedContent = normalizeNewlines(rawContent);
-  const schemaImportLine = `import type { ${importedTypes.join(", ")} } from "../schemas/${apiModule}";`;
+  const schemaImportLine = formatTypeImport(
+    importedSchemas.map((schemaFile) => toPascalCase(schemaFile)),
+    `../schemas/${apiModule}`
+  );
 
   const withoutLeafImports = normalizedContent
     .replace(/^import type \{[^}]+\} from "\.\.\/schemas\/[^"]+";\n?/gm, "")
@@ -132,10 +181,12 @@ const rewriteClientFile = async (apiModule: string, importedTypes: string[]) => 
     throw new Error(`Unable to locate mutator import in ${clientFilePath}`);
   }
 
-  const rewritten = withoutLeafImports.replace(
-    `${mutatorImportLine}\n`,
-    `${mutatorImportLine}\n${schemaImportLine}\n`
-  );
+  const rewritten = withoutLeafImports
+    .replace(`${mutatorImportLine}\n`, `${mutatorImportLine}\n${schemaImportLine}\n`)
+    .replace(
+      / {2}Object\.entries\(params \|\| {}\)\.forEach\(\(\[key, value\]\) => \{\n([\s\S]*?) {2}\}\);\n/g,
+      "  for (const [key, value] of Object.entries(params || {})) {\n$1  }\n"
+    );
 
   await writeFile(clientFilePath, `${rewritten.trimEnd()}\n`, "utf8");
 };
@@ -164,11 +215,12 @@ const main = async () => {
   for (const apiModule of apiModules) {
     const clientFilePath = path.join(httpOutputDir, apiModule, `${apiModule}.ts`);
     const clientContent = await readFile(clientFilePath, "utf8");
-    const rootSchemaFiles = parseSchemaImports(clientContent).map((name) => `${name}.ts`);
+    const importedSchemas = parseClientSchemaImports(clientContent);
+    const rootSchemaFiles = importedSchemas.map((schemaFile) => `${schemaFile}.ts`);
     const orderedSchemaFiles = collectDependencyOrder(rootSchemaFiles, schemaGraph);
 
     await buildAggregateSchemaFile(apiModule, orderedSchemaFiles);
-    await rewriteClientFile(apiModule, parseSchemaImports(clientContent));
+    await rewriteClientFile(apiModule, importedSchemas);
   }
 
   const keepFiles = new Set(apiModules.map((apiModule) => `${apiModule}.ts`));

@@ -562,12 +562,79 @@ export type GetMeAnalytics200 =
       };
     };
 
+export type GetMeAnalytics401ErrorCode =
+  (typeof GetMeAnalytics401ErrorCode)[keyof typeof GetMeAnalytics401ErrorCode];
+
+export const GetMeAnalytics401ErrorCode = {
+  unauthorized: "unauthorized",
+} as const;
+
+export type GetMeAnalytics401Error = {
+  code: GetMeAnalytics401ErrorCode;
+  message: string;
+};
+
 export type GetMeAnalytics401 = {
   error: GetMeAnalytics401Error;
 };
 
+export type GetMeAnalytics500ErrorCode =
+  (typeof GetMeAnalytics500ErrorCode)[keyof typeof GetMeAnalytics500ErrorCode];
+
+export const GetMeAnalytics500ErrorCode = {
+  profile_analytics_failed: "profile_analytics_failed",
+} as const;
+
+export type GetMeAnalytics500Error = {
+  code: GetMeAnalytics500ErrorCode;
+  message: string;
+};
+
 export type GetMeAnalytics500 = {
   error: GetMeAnalytics500Error;
+};
+
+/**
+ * @nullable
+ */
+export type GetMe200CurrentPlan = {
+  id: string;
+  name: string;
+  codename: string;
+  quotas: {
+    permiumSupport: boolean;
+    monthlyImages: number;
+    somethingElse: string;
+  };
+  default: boolean;
+} | null;
+
+/**
+ * @nullable
+ */
+export type GetMe200ProfilePage = {
+  id: string;
+  handle: string;
+  /** @nullable */
+  name: string | null;
+  /** @nullable */
+  image: string | null;
+} | null;
+
+export type GetMe200UserCredits = { [key: string]: number };
+
+export type GetMe200User = {
+  id: string;
+  email: string;
+  /** @nullable */
+  name: string | null;
+  /** @nullable */
+  image: string | null;
+  createdAt: string;
+  updatedAt: string;
+  /** @nullable */
+  planId: string | null;
+  credits: GetMe200UserCredits;
 };
 
 export type GetMe200 = {
@@ -578,12 +645,39 @@ export type GetMe200 = {
   user: GetMe200User;
 };
 
+export type GetMe401ErrorCode = (typeof GetMe401ErrorCode)[keyof typeof GetMe401ErrorCode];
+
+export const GetMe401ErrorCode = {
+  unauthorized: "unauthorized",
+} as const;
+
+export type GetMe401Error = {
+  code: GetMe401ErrorCode;
+  message: string;
+};
+
 export type GetMe401 = {
   error: GetMe401Error;
 };
 
+export type GetMe404ErrorCode = (typeof GetMe404ErrorCode)[keyof typeof GetMe404ErrorCode];
+
+export const GetMe404ErrorCode = {
+  me_not_found: "me_not_found",
+} as const;
+
+export type GetMe404Error = {
+  code: GetMe404ErrorCode;
+  message: string;
+};
+
 export type GetMe404 = {
   error: GetMe404Error;
+};
+
+export type GetMe500Error = {
+  code: string;
+  message: string;
 };
 
 export type GetMe500 = {

@@ -6,14 +6,198 @@
  * OpenAPI spec version: 1.0.0
  */
 
+export type GetProfileByHandle200BentoItem =
+  | {
+      id: string;
+      type: "link";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        title: string;
+        /** @nullable */
+        description: string | null;
+        /** @nullable */
+        favicon: string | null;
+        /** @nullable */
+        thumbnail: string | null;
+        url: string;
+      };
+    }
+  | {
+      id: string;
+      type: "text";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        content: string;
+      };
+    }
+  | {
+      id: string;
+      type: "playlist";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        title: string;
+        provider: string;
+        url: string;
+        content: string;
+      };
+    }
+  | {
+      id: string;
+      type: "section";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        title: string;
+      };
+    }
+  | {
+      id: string;
+      type: "media";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        mediaType: "image" | "video";
+        url: string;
+        objectKey: string;
+        /** @nullable */
+        href: string | null;
+        alt: string;
+        caption: string;
+      };
+    }
+  | {
+      id: string;
+      type: "map";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        latitude: number;
+        longitude: number;
+        zoom: number;
+        caption: string;
+        url: string;
+      };
+    };
+
+export type GetProfileByHandle200Page = {
+  id: string;
+  userId: string;
+  handle: string;
+  /** @nullable */
+  name: string | null;
+  /** @nullable */
+  role: string | null;
+  /** @nullable */
+  bio: string | null;
+  /** @nullable */
+  image: string | null;
+  /** @nullable */
+  backgroundImage: string | null;
+  /** @nullable */
+  location: string | null;
+  updatedAt: string;
+};
+
+export type GetProfileByHandle200Viewer = {
+  isAuthenticated: boolean;
+  /** @nullable */
+  userId: string | null;
+  canEdit: boolean;
+};
+
 export type GetProfileByHandle200 = {
   page: GetProfileByHandle200Page;
   bento: GetProfileByHandle200BentoItem[];
   viewer: GetProfileByHandle200Viewer;
 };
 
+export type GetProfileByHandle404Error = {
+  code: string;
+  message: string;
+};
+
 export type GetProfileByHandle404 = {
   error: GetProfileByHandle404Error;
+};
+
+export type GetProfileByHandle500Error = {
+  code: string;
+  message: string;
 };
 
 export type GetProfileByHandle500 = {

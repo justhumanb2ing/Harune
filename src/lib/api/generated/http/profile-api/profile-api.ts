@@ -19,7 +19,11 @@ import type {
 } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import { orvalMutator } from "../../../orval-mutator";
-import type { get-profile-by-handle200, get-profile-by-handle404, get-profile-by-handle500 } from "../schemas/profile-api";
+import type {
+  GetProfileByHandle200,
+  GetProfileByHandle404,
+  GetProfileByHandle500,
+} from "../schemas/profile-api";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 

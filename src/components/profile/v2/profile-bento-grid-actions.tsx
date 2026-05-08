@@ -4,7 +4,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import type { CreatableBentoType } from "./profile-bento-grid-model";
 import { bentoTypeLabels, creatableBentoTypes } from "./profile-bento-grid-model";
 
-const toolbarAssetBaseUrl = "https://pub-cdb24d695a3d4aa08aa10719325ca3bd.r2.dev/public/assets";
+const toolbarAssetBaseUrl = "https://cdn.harune.me/public/assets";
 const toolbarIconSrcByType: Record<CreatableBentoType, string> = {
   link: `${toolbarAssetBaseUrl}/toolbar-link.png`,
   text: `${toolbarAssetBaseUrl}/toolbar-text.png`,

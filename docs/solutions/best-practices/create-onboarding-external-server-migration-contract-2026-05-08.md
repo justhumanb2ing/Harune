@@ -19,10 +19,11 @@ tags: [api, create, onboarding, migration, server, profile, cache]
 
 `/api/create`는 첫 회원가입 직후 온보딩에서 신규 사용자의 첫 public profile page를 만드는 mutation이다.
 현재 앱에서는 인증된 세션을 요구하고, 입력을 검증한 뒤, user row와 `profile_pages` row를 함께 갱신한다.
+이 엔드포인트는 first page creation을 담당하는 canonical write path다.
 
 이 mutation은 단순한 form submit이 아니라 다음 상태를 한 번에 묶는다.
 
-- first-signup authenticated user 존재 여부
+- authenticated user 존재 여부
 - handle 유효성 및 중복 여부
 - profile name 필수 여부
 - optional profile fields
@@ -55,7 +56,6 @@ Request body shape:
   role?: string;
   location?: string;
   image?: string;
-  backgroundImage?: string;
 }
 ```
 
@@ -73,6 +73,18 @@ Success response shape:
 ```
 
 The external server should keep `page.handle`, `page.id`, and `page.name` as the stable public fields.
+If additional fields are added later, they must not break the current subset.
+
+## Current Persisted Fields
+
+현재 앱의 `createProfilePage`는 다음 값만 실제로 저장한다.
+
+- `handle`
+- `name`
+- `bio`
+- `role`
+- `location`
+- `image`
 
 ## Validation Rules
 
@@ -83,8 +95,10 @@ The external server should keep `page.handle`, `page.id`, and `page.name` as the
 3. reserved handle reject
 4. invalid handle format reject
 5. name required
-6. handle uniqueness check
-7. optional profile fields validation
+6. bio length validation
+7. role/location length validation
+8. image URL validation
+9. handle uniqueness check
 
 현재 앱 기준으로 handle과 name의 주요 실패 메시지는 다음 의미를 유지해야 한다.
 
@@ -111,24 +125,22 @@ The external server should keep `page.handle`, `page.id`, and `page.name` as the
 중요한 점은 성공 응답을 transaction-local snapshot으로 만들지 않는 것이다.
 `db.transaction(async (tx) => ...)` 내부에서 읽은 값은 성공의 증거가 아니다.
 create 응답은 반드시 커밋 이후의 normal read path를 통해 확인된 상태여야 한다.
+`returning()` 결과만으로 성공을 판정하지 말고, commit 이후 read path를 통해 page identity와 name persist를 다시 확인해야 한다.
 
 ## What This Migration Should Preserve
 
-- `/create` 온보딩 화면에서 전달한 handle과 profile fields
-- 이미 업로드된 `image`와 `backgroundImage`
+- 이미 업로드된 `image`
 - user row의 name/image 동기화
 - profile page의 first-write semantics
-- success response가 refresh와 같은 상태를 가리키는 것
-
-즉, 사용자는 create 성공 직후 다시 읽으면 같은 page를 봐야 한다.
+- success response가 committed read 상태를 가리키는 것
 
 ## What Not To Do
 
 - create 성공 응답을 transaction 내부 `returning()` 결과로 끝내지 않는다
 - user update와 profile page insert를 서로 다른 공통 경로로 분산시키지 않는다
 - 예약 handle과 중복 handle을 서로 다른 contract로 취급하지 않는다
-- UI success toast를 persistence 증거로 사용하지 않는다
-- external server가 없는데도 frontend에서 create semantics를 다시 구현하지 않는다
+- handle uniqueness 실패를 400과 409 사이에서 흔들지 않는다
+- commit 전 read를 committed read처럼 문서화하지 않는다
 
 ## Migration Checklist
 
@@ -143,7 +155,6 @@ create 응답은 반드시 커밋 이후의 normal read path를 통해 확인된
 6. user row update + profile page insert
 7. committed-read response
 8. no-store cache policy
-9. frontend create form redirect and success/fail handling
 ```
 
 ## Minimal Test Checklist
@@ -167,9 +178,7 @@ create 응답은 반드시 커밋 이후의 normal read path를 통해 확인된
 - `src/lib/api/services/app.ts`
 - `src/lib/api/repositories/app.ts`
 - `src/lib/validations/auth.schema.ts`
-- `src/app/(in-app)/create/page.tsx`
-- `src/app/(in-app)/create/success/page.tsx`
-- `src/app/(in-app)/create/fail/page.tsx`
+- `src/lib/api/app/__test__/app-api.test.ts`
 
 ## Related
 

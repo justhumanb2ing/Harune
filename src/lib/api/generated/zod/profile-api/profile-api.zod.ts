@@ -8,6 +8,463 @@
 import * as zod from "zod";
 
 /**
+ * Creates the authenticated user's first profile page. The server normalizes the submitted handle to lowercase, rejects reserved or malformed handles, returns 409 when a profile page already exists or the handle is already taken, and returns only the committed page snapshot on success.
+ * @summary Create my profile page
+ */
+export const CreateProfilePageBody = zod.object({
+  handle: zod.string(),
+  name: zod.string(),
+  bio: zod.string().optional(),
+  role: zod.string().optional(),
+  location: zod.string().optional(),
+  image: zod.string().optional(),
+});
+
+export const CreateProfilePageResponse = zod.object({
+  page: zod.object({
+    id: zod.string(),
+    userId: zod.string(),
+    handle: zod.string(),
+    name: zod.string().nullable(),
+    role: zod.string().nullable(),
+    bio: zod.string().nullable(),
+    image: zod.string().nullable(),
+    backgroundImage: zod.string().nullable(),
+    location: zod.string().nullable(),
+    updatedAt: zod.iso.datetime({ offset: true }),
+  }),
+});
+
+/**
+ * Partially updates the authenticated user's profile page. The server trims text fields, allows null to clear fields, validates image/backgroundImage as absolute http or https URLs when provided, and returns the committed profile snapshot with no-store headers on success.
+ * @summary Update my profile page
+ */
+export const UpdateProfilePageBody = zod.object({
+  name: zod.string().nullish(),
+  location: zod.string().nullish(),
+  role: zod.string().nullish(),
+  bio: zod.string().nullish(),
+  image: zod.string().nullish(),
+  backgroundImage: zod.string().nullish(),
+});
+
+export const UpdateProfilePageResponse = zod.object({
+  page: zod.object({
+    id: zod.string(),
+    userId: zod.string(),
+    handle: zod.string(),
+    name: zod.string().nullable(),
+    role: zod.string().nullable(),
+    bio: zod.string().nullable(),
+    image: zod.string().nullable(),
+    backgroundImage: zod.string().nullable(),
+    location: zod.string().nullable(),
+    updatedAt: zod.iso.datetime({ offset: true }),
+  }),
+  bento: zod.array(
+    zod.union([
+      zod.object({
+        id: zod.string(),
+        type: zod.enum(["link"]),
+        layout: zod.object({
+          desktop: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+          compact: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+        }),
+        content: zod.object({
+          title: zod.string(),
+          description: zod.string().nullable(),
+          favicon: zod.string().nullable(),
+          thumbnail: zod.string().nullable(),
+          url: zod.string(),
+        }),
+      }),
+      zod.object({
+        id: zod.string(),
+        type: zod.enum(["text"]),
+        layout: zod.object({
+          desktop: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+          compact: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+        }),
+        content: zod.object({
+          content: zod.string(),
+        }),
+      }),
+      zod.object({
+        id: zod.string(),
+        type: zod.enum(["section"]),
+        layout: zod.object({
+          desktop: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+          compact: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+        }),
+        content: zod.object({
+          title: zod.string(),
+        }),
+      }),
+      zod.object({
+        id: zod.string(),
+        type: zod.enum(["media"]),
+        layout: zod.object({
+          desktop: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+          compact: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+        }),
+        content: zod.object({
+          mediaType: zod.enum(["image", "video"]),
+          url: zod.string(),
+          objectKey: zod.string(),
+          href: zod.string().nullable(),
+          alt: zod.string(),
+          caption: zod.string(),
+        }),
+      }),
+      zod.object({
+        id: zod.string(),
+        type: zod.enum(["map"]),
+        layout: zod.object({
+          desktop: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+          compact: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+        }),
+        content: zod.object({
+          latitude: zod.number(),
+          longitude: zod.number(),
+          zoom: zod.number(),
+          caption: zod.string(),
+          url: zod.string(),
+        }),
+      }),
+    ])
+  ),
+  viewer: zod.object({
+    isAuthenticated: zod.boolean(),
+    userId: zod.string().nullable(),
+    canEdit: zod.boolean(),
+  }),
+});
+
+/**
+ * Replaces the authenticated user's bento graph with the provided snapshot. The server validates each bento item, deletes bentos missing from the snapshot, promotes temporary media objects when tempObjectKey is present, and returns the committed profile snapshot with no-store headers on success.
+ * @summary Replace my bento graph
+ */
+export const ReplaceProfileBentoGraphBody = zod.object({
+  bento: zod.array(
+    zod.union([
+      zod.object({
+        id: zod.string(),
+        type: zod.enum(["link"]),
+        layout: zod.object({
+          desktop: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+          compact: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+        }),
+        content: zod.object({
+          title: zod.string(),
+          description: zod.string().nullish(),
+          favicon: zod.string().nullish(),
+          thumbnail: zod.string().nullish(),
+          url: zod.string(),
+        }),
+      }),
+      zod.object({
+        id: zod.string(),
+        type: zod.enum(["text"]),
+        layout: zod.object({
+          desktop: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+          compact: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+        }),
+        content: zod.object({
+          content: zod.string(),
+        }),
+      }),
+      zod.object({
+        id: zod.string(),
+        type: zod.enum(["section"]),
+        layout: zod.object({
+          desktop: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+          compact: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+        }),
+        content: zod.object({
+          title: zod.string(),
+        }),
+      }),
+      zod.object({
+        id: zod.string(),
+        type: zod.enum(["media"]),
+        layout: zod.object({
+          desktop: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+          compact: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+        }),
+        content: zod.object({
+          mediaType: zod.enum(["image", "video"]),
+          url: zod.string(),
+          objectKey: zod.string(),
+          tempObjectKey: zod.string().nullish(),
+          contentHash: zod.string().nullish(),
+          contentType: zod.string().nullish(),
+          href: zod.string().nullish(),
+          alt: zod.string(),
+          caption: zod.string(),
+        }),
+      }),
+      zod.object({
+        id: zod.string(),
+        type: zod.enum(["map"]),
+        layout: zod.object({
+          desktop: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+          compact: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+        }),
+        content: zod.object({
+          latitude: zod.number(),
+          longitude: zod.number(),
+          zoom: zod.number(),
+          caption: zod.string().optional(),
+          url: zod.string(),
+        }),
+      }),
+    ])
+  ),
+});
+
+export const ReplaceProfileBentoGraphResponse = zod.object({
+  page: zod.object({
+    id: zod.string(),
+    userId: zod.string(),
+    handle: zod.string(),
+    name: zod.string().nullable(),
+    role: zod.string().nullable(),
+    bio: zod.string().nullable(),
+    image: zod.string().nullable(),
+    backgroundImage: zod.string().nullable(),
+    location: zod.string().nullable(),
+    updatedAt: zod.iso.datetime({ offset: true }),
+  }),
+  bento: zod.array(
+    zod.union([
+      zod.object({
+        id: zod.string(),
+        type: zod.enum(["link"]),
+        layout: zod.object({
+          desktop: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+          compact: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+        }),
+        content: zod.object({
+          title: zod.string(),
+          description: zod.string().nullable(),
+          favicon: zod.string().nullable(),
+          thumbnail: zod.string().nullable(),
+          url: zod.string(),
+        }),
+      }),
+      zod.object({
+        id: zod.string(),
+        type: zod.enum(["text"]),
+        layout: zod.object({
+          desktop: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+          compact: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+        }),
+        content: zod.object({
+          content: zod.string(),
+        }),
+      }),
+      zod.object({
+        id: zod.string(),
+        type: zod.enum(["section"]),
+        layout: zod.object({
+          desktop: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+          compact: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+        }),
+        content: zod.object({
+          title: zod.string(),
+        }),
+      }),
+      zod.object({
+        id: zod.string(),
+        type: zod.enum(["media"]),
+        layout: zod.object({
+          desktop: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+          compact: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+        }),
+        content: zod.object({
+          mediaType: zod.enum(["image", "video"]),
+          url: zod.string(),
+          objectKey: zod.string(),
+          href: zod.string().nullable(),
+          alt: zod.string(),
+          caption: zod.string(),
+        }),
+      }),
+      zod.object({
+        id: zod.string(),
+        type: zod.enum(["map"]),
+        layout: zod.object({
+          desktop: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+          compact: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+        }),
+        content: zod.object({
+          latitude: zod.number(),
+          longitude: zod.number(),
+          zoom: zod.number(),
+          caption: zod.string(),
+          url: zod.string(),
+        }),
+      }),
+    ])
+  ),
+  viewer: zod.object({
+    isAuthenticated: zod.boolean(),
+    userId: zod.string().nullable(),
+    canEdit: zod.boolean(),
+  }),
+});
+
+/**
  * Uploads a profile image or background image into the authenticated user's stable slot.
 
 Rules:

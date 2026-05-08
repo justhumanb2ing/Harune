@@ -23,6 +23,13 @@ import type {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { orvalMutator } from "../../../orval-mutator";
 import type {
+  CreateProfilePage200,
+  CreateProfilePage400,
+  CreateProfilePage401,
+  CreateProfilePage404,
+  CreateProfilePage409,
+  CreateProfilePage500,
+  CreateProfilePageBody,
   DeleteProfileImage200,
   DeleteProfileImage400,
   DeleteProfileImage401,
@@ -40,6 +47,18 @@ import type {
   GetProfileByHandle200,
   GetProfileByHandle404,
   GetProfileByHandle500,
+  ReplaceProfileBentoGraph200,
+  ReplaceProfileBentoGraph400,
+  ReplaceProfileBentoGraph401,
+  ReplaceProfileBentoGraph404,
+  ReplaceProfileBentoGraph500,
+  ReplaceProfileBentoGraphBody,
+  UpdateProfilePage200,
+  UpdateProfilePage400,
+  UpdateProfilePage401,
+  UpdateProfilePage404,
+  UpdateProfilePage500,
+  UpdateProfilePageBody,
   UploadProfileBentoMedia200,
   UploadProfileBentoMedia400,
   UploadProfileBentoMedia401,
@@ -55,6 +74,435 @@ import type {
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
+export type createProfilePageResponse200 = {
+  data: CreateProfilePage200;
+  status: 200;
+};
+
+export type createProfilePageResponse400 = {
+  data: CreateProfilePage400;
+  status: 400;
+};
+
+export type createProfilePageResponse401 = {
+  data: CreateProfilePage401;
+  status: 401;
+};
+
+export type createProfilePageResponse404 = {
+  data: CreateProfilePage404;
+  status: 404;
+};
+
+export type createProfilePageResponse409 = {
+  data: CreateProfilePage409;
+  status: 409;
+};
+
+export type createProfilePageResponse500 = {
+  data: CreateProfilePage500;
+  status: 500;
+};
+
+export type createProfilePageResponseSuccess = createProfilePageResponse200 & {
+  headers: Headers;
+};
+export type createProfilePageResponseError = (
+  | createProfilePageResponse400
+  | createProfilePageResponse401
+  | createProfilePageResponse404
+  | createProfilePageResponse409
+  | createProfilePageResponse500
+) & {
+  headers: Headers;
+};
+
+export type createProfilePageResponse =
+  | createProfilePageResponseSuccess
+  | createProfilePageResponseError;
+
+export const getCreateProfilePageUrl = () => {
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/me`;
+};
+
+/**
+ * Creates the authenticated user's first profile page. The server normalizes the submitted handle to lowercase, rejects reserved or malformed handles, returns 409 when a profile page already exists or the handle is already taken, and returns only the committed page snapshot on success.
+ * @summary Create my profile page
+ */
+export const createProfilePage = async (
+  createProfilePageBody: CreateProfilePageBody,
+  options?: RequestInit
+): Promise<createProfilePageResponse> => {
+  return orvalMutator<createProfilePageResponse>(getCreateProfilePageUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createProfilePageBody),
+  });
+};
+
+export const getCreateProfilePageMutationOptions = <
+  TError =
+    | CreateProfilePage400
+    | CreateProfilePage401
+    | CreateProfilePage404
+    | CreateProfilePage409
+    | CreateProfilePage500,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createProfilePage>>,
+    TError,
+    { data: CreateProfilePageBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalMutator>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createProfilePage>>,
+  TError,
+  { data: CreateProfilePageBody },
+  TContext
+> => {
+  const mutationKey = ["createProfilePage"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createProfilePage>>,
+    { data: CreateProfilePageBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createProfilePage(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateProfilePageMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createProfilePage>>
+>;
+export type CreateProfilePageMutationBody = CreateProfilePageBody;
+export type CreateProfilePageMutationError =
+  | CreateProfilePage400
+  | CreateProfilePage401
+  | CreateProfilePage404
+  | CreateProfilePage409
+  | CreateProfilePage500;
+
+/**
+ * @summary Create my profile page
+ */
+export const useCreateProfilePage = <
+  TError =
+    | CreateProfilePage400
+    | CreateProfilePage401
+    | CreateProfilePage404
+    | CreateProfilePage409
+    | CreateProfilePage500,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createProfilePage>>,
+      TError,
+      { data: CreateProfilePageBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof createProfilePage>>,
+  TError,
+  { data: CreateProfilePageBody },
+  TContext
+> => {
+  return useMutation(getCreateProfilePageMutationOptions(options), queryClient);
+};
+export type updateProfilePageResponse200 = {
+  data: UpdateProfilePage200;
+  status: 200;
+};
+
+export type updateProfilePageResponse400 = {
+  data: UpdateProfilePage400;
+  status: 400;
+};
+
+export type updateProfilePageResponse401 = {
+  data: UpdateProfilePage401;
+  status: 401;
+};
+
+export type updateProfilePageResponse404 = {
+  data: UpdateProfilePage404;
+  status: 404;
+};
+
+export type updateProfilePageResponse500 = {
+  data: UpdateProfilePage500;
+  status: 500;
+};
+
+export type updateProfilePageResponseSuccess = updateProfilePageResponse200 & {
+  headers: Headers;
+};
+export type updateProfilePageResponseError = (
+  | updateProfilePageResponse400
+  | updateProfilePageResponse401
+  | updateProfilePageResponse404
+  | updateProfilePageResponse500
+) & {
+  headers: Headers;
+};
+
+export type updateProfilePageResponse =
+  | updateProfilePageResponseSuccess
+  | updateProfilePageResponseError;
+
+export const getUpdateProfilePageUrl = () => {
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/me`;
+};
+
+/**
+ * Partially updates the authenticated user's profile page. The server trims text fields, allows null to clear fields, validates image/backgroundImage as absolute http or https URLs when provided, and returns the committed profile snapshot with no-store headers on success.
+ * @summary Update my profile page
+ */
+export const updateProfilePage = async (
+  updateProfilePageBody: UpdateProfilePageBody,
+  options?: RequestInit
+): Promise<updateProfilePageResponse> => {
+  return orvalMutator<updateProfilePageResponse>(getUpdateProfilePageUrl(), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateProfilePageBody),
+  });
+};
+
+export const getUpdateProfilePageMutationOptions = <
+  TError =
+    | UpdateProfilePage400
+    | UpdateProfilePage401
+    | UpdateProfilePage404
+    | UpdateProfilePage500,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateProfilePage>>,
+    TError,
+    { data: UpdateProfilePageBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalMutator>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateProfilePage>>,
+  TError,
+  { data: UpdateProfilePageBody },
+  TContext
+> => {
+  const mutationKey = ["updateProfilePage"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateProfilePage>>,
+    { data: UpdateProfilePageBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return updateProfilePage(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateProfilePageMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateProfilePage>>
+>;
+export type UpdateProfilePageMutationBody = UpdateProfilePageBody;
+export type UpdateProfilePageMutationError =
+  | UpdateProfilePage400
+  | UpdateProfilePage401
+  | UpdateProfilePage404
+  | UpdateProfilePage500;
+
+/**
+ * @summary Update my profile page
+ */
+export const useUpdateProfilePage = <
+  TError =
+    | UpdateProfilePage400
+    | UpdateProfilePage401
+    | UpdateProfilePage404
+    | UpdateProfilePage500,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateProfilePage>>,
+      TError,
+      { data: UpdateProfilePageBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateProfilePage>>,
+  TError,
+  { data: UpdateProfilePageBody },
+  TContext
+> => {
+  return useMutation(getUpdateProfilePageMutationOptions(options), queryClient);
+};
+export type replaceProfileBentoGraphResponse200 = {
+  data: ReplaceProfileBentoGraph200;
+  status: 200;
+};
+
+export type replaceProfileBentoGraphResponse400 = {
+  data: ReplaceProfileBentoGraph400;
+  status: 400;
+};
+
+export type replaceProfileBentoGraphResponse401 = {
+  data: ReplaceProfileBentoGraph401;
+  status: 401;
+};
+
+export type replaceProfileBentoGraphResponse404 = {
+  data: ReplaceProfileBentoGraph404;
+  status: 404;
+};
+
+export type replaceProfileBentoGraphResponse500 = {
+  data: ReplaceProfileBentoGraph500;
+  status: 500;
+};
+
+export type replaceProfileBentoGraphResponseSuccess = replaceProfileBentoGraphResponse200 & {
+  headers: Headers;
+};
+export type replaceProfileBentoGraphResponseError = (
+  | replaceProfileBentoGraphResponse400
+  | replaceProfileBentoGraphResponse401
+  | replaceProfileBentoGraphResponse404
+  | replaceProfileBentoGraphResponse500
+) & {
+  headers: Headers;
+};
+
+export type replaceProfileBentoGraphResponse =
+  | replaceProfileBentoGraphResponseSuccess
+  | replaceProfileBentoGraphResponseError;
+
+export const getReplaceProfileBentoGraphUrl = () => {
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/me/bento`;
+};
+
+/**
+ * Replaces the authenticated user's bento graph with the provided snapshot. The server validates each bento item, deletes bentos missing from the snapshot, promotes temporary media objects when tempObjectKey is present, and returns the committed profile snapshot with no-store headers on success.
+ * @summary Replace my bento graph
+ */
+export const replaceProfileBentoGraph = async (
+  replaceProfileBentoGraphBody: ReplaceProfileBentoGraphBody,
+  options?: RequestInit
+): Promise<replaceProfileBentoGraphResponse> => {
+  return orvalMutator<replaceProfileBentoGraphResponse>(getReplaceProfileBentoGraphUrl(), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(replaceProfileBentoGraphBody),
+  });
+};
+
+export const getReplaceProfileBentoGraphMutationOptions = <
+  TError =
+    | ReplaceProfileBentoGraph400
+    | ReplaceProfileBentoGraph401
+    | ReplaceProfileBentoGraph404
+    | ReplaceProfileBentoGraph500,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof replaceProfileBentoGraph>>,
+    TError,
+    { data: ReplaceProfileBentoGraphBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalMutator>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof replaceProfileBentoGraph>>,
+  TError,
+  { data: ReplaceProfileBentoGraphBody },
+  TContext
+> => {
+  const mutationKey = ["replaceProfileBentoGraph"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof replaceProfileBentoGraph>>,
+    { data: ReplaceProfileBentoGraphBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return replaceProfileBentoGraph(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReplaceProfileBentoGraphMutationResult = NonNullable<
+  Awaited<ReturnType<typeof replaceProfileBentoGraph>>
+>;
+export type ReplaceProfileBentoGraphMutationBody = ReplaceProfileBentoGraphBody;
+export type ReplaceProfileBentoGraphMutationError =
+  | ReplaceProfileBentoGraph400
+  | ReplaceProfileBentoGraph401
+  | ReplaceProfileBentoGraph404
+  | ReplaceProfileBentoGraph500;
+
+/**
+ * @summary Replace my bento graph
+ */
+export const useReplaceProfileBentoGraph = <
+  TError =
+    | ReplaceProfileBentoGraph400
+    | ReplaceProfileBentoGraph401
+    | ReplaceProfileBentoGraph404
+    | ReplaceProfileBentoGraph500,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof replaceProfileBentoGraph>>,
+      TError,
+      { data: ReplaceProfileBentoGraphBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof replaceProfileBentoGraph>>,
+  TError,
+  { data: ReplaceProfileBentoGraphBody },
+  TContext
+> => {
+  return useMutation(getReplaceProfileBentoGraphMutationOptions(options), queryClient);
+};
 export type uploadProfileImageResponse200 = {
   data: UploadProfileImage200;
   status: 200;

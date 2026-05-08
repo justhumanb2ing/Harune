@@ -10,11 +10,12 @@ import {
 } from "@/components/profile/layout/profile-editor-provider";
 import { buildSyncPayload } from "@/hooks/profile-editor-store";
 import type { MeResponse } from "@/lib/api/app/types";
+import { updateProfilePage } from "@/lib/api/generated/http/profile-api/profile-api";
 import { getProfileRouteHandle } from "@/lib/profile/app-paths";
 import { uploadProfileImageIfChanged } from "@/lib/profile/client-image-upload";
+import { toProfilePageEditorDataFromPublicPage } from "@/lib/profile/public-profile-page";
 import { profilePageQueryOptions } from "@/lib/profile/query-options";
 import type { ProfilePageData, ProfilePageDraftData } from "@/lib/profile/types";
-import { apiFetch } from "@/lib/react-query/fetcher";
 import { queryKeys } from "@/lib/react-query/query-keys";
 import useUser from "@/lib/users/use-user";
 
@@ -142,18 +143,24 @@ export function useProfilePageEditor() {
           backgroundImage: nextDraftData.page.backgroundImage,
         },
       };
+      const { handle: _handle, ...updateProfilePageBody } = buildSyncPayload(requestDraftData).page;
 
-      const response = await apiFetch<ProfilePageData>("/api/profile/sync", {
-        method: "POST",
+      const response = await updateProfilePage(updateProfilePageBody, {
         cache: "no-store",
         headers: {
-          "Content-Type": "application/json",
           "Cache-Control": "no-store",
         },
-        body: JSON.stringify(buildSyncPayload(requestDraftData)),
       });
 
-      queryClient.setQueryData(profilePageQueryKey, response);
+      if (response.status !== 200) {
+        throw new Error("Failed to sync");
+      }
+
+      const profilePageData: ProfilePageData = toProfilePageEditorDataFromPublicPage(
+        response.data.page
+      );
+
+      queryClient.setQueryData(profilePageQueryKey, profilePageData);
       queryClient.setQueryData<MeResponse>(queryKeys.app.me(), (current) => {
         if (!current?.profilePage) {
           return current;
@@ -163,15 +170,15 @@ export function useProfilePageEditor() {
           ...current,
           profilePage: {
             ...current.profilePage,
-            handle: response.page.handle,
-            image: response.page.image,
-            name: response.page.name,
+            handle: profilePageData.page.handle,
+            image: profilePageData.page.image,
+            name: profilePageData.page.name,
           },
         };
       });
-      store.actions.rebaseFromServer(response);
+      store.actions.rebaseFromServer(profilePageData);
       await mutate();
-      return response;
+      return profilePageData;
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to sync";
       store.actions.setSyncError(message);

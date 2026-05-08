@@ -35,7 +35,11 @@ import {
 import { useGridDragMotion } from "@/hooks/use-grid-drag-motion";
 import { useProfilePageEditor } from "@/hooks/use-profile-editor";
 import { getMetadata } from "@/lib/api/generated/http/metadata-api/metadata-api";
-import { uploadProfileBentoMedia } from "@/lib/api/generated/http/profile-api/profile-api";
+import {
+  replaceProfileBentoGraph,
+  uploadProfileBentoMedia,
+} from "@/lib/api/generated/http/profile-api/profile-api";
+import type { ReplaceProfileBentoGraphBody } from "@/lib/api/generated/http/schemas/profile-api";
 import { appConfig } from "@/lib/config";
 import { BREAKPOINTS, COLS, GRID_MARGIN, getGridRowHeight } from "@/lib/grid/grid-config";
 import { normalizeLayouts } from "@/lib/grid/grid-layout-utils";
@@ -48,8 +52,8 @@ import {
   PROFILE_BENTO_MEDIA_ACCEPT,
   PROFILE_BENTO_MEDIA_MAX_SIZE_BYTES,
 } from "@/lib/profile/media-upload";
-import type { ProfileBentoItem, PublicProfileBentoPageData } from "@/lib/profile/types";
-import { ApiError, apiFetch } from "@/lib/react-query/fetcher";
+import type { ProfileBentoItem } from "@/lib/profile/types";
+import { ApiError } from "@/lib/react-query/fetcher";
 import { cn } from "@/lib/utils";
 import { ProfileBentoEmptyGridState } from "./profile-bento-empty-grid-state";
 import {
@@ -749,6 +753,12 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
         bentoId: placeholderItem.id,
       });
 
+      if (response.status !== 200) {
+        throw new Error("Failed to upload bento media");
+      }
+
+      const mediaUpload = response.data;
+
       setBento((currentItems) =>
         currentItems.map((item) => {
           if (item.id !== placeholderItem.id || item.type !== "media") {
@@ -759,12 +769,12 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
             ...item,
             content: {
               ...item.content,
-              contentHash: response.data.contentHash,
-              contentType: response.data.contentType,
-              mediaType: response.data.mediaType,
-              objectKey: response.data.tempObjectKey,
-              tempObjectKey: response.data.tempObjectKey,
-              url: response.data.tempUrl,
+              contentHash: mediaUpload.contentHash,
+              contentType: mediaUpload.contentType,
+              mediaType: mediaUpload.mediaType,
+              objectKey: mediaUpload.tempObjectKey,
+              tempObjectKey: mediaUpload.tempObjectKey,
+              url: mediaUpload.tempUrl,
             },
           };
         })
@@ -826,20 +836,26 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
         }
 
         if (isDirty) {
-          const response = await apiFetch<PublicProfileBentoPageData>("/api/profile/bento/sync", {
-            method: "POST",
-            cache: "no-store",
-            headers: {
-              "Content-Type": "application/json",
-              "Cache-Control": "no-store",
-            },
-            body: JSON.stringify(currentPayload),
-          });
-          const nextLayouts = toBentoGridLayouts(response.bento);
+          const response = await replaceProfileBentoGraph(
+            currentPayload as ReplaceProfileBentoGraphBody,
+            {
+              cache: "no-store",
+              headers: {
+                "Cache-Control": "no-store",
+              },
+            }
+          );
 
-          setBento(response.bento);
+          if (response.status !== 200) {
+            throw new Error("Failed to sync bento");
+          }
+
+          const responseData = response.data;
+          const nextLayouts = toBentoGridLayouts(responseData.bento);
+
+          setBento(responseData.bento);
           setLayouts(nextLayouts);
-          setSavedSnapshot(createPayloadSnapshot(response.bento, nextLayouts));
+          setSavedSnapshot(createPayloadSnapshot(responseData.bento, nextLayouts));
         }
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Failed to sync bento");

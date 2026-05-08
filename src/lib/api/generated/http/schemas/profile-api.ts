@@ -6,6 +6,134 @@
  * OpenAPI spec version: 1.0.0
  */
 
+export type CreateProfilePageBody = {
+  handle: string;
+  name: string;
+  bio?: string;
+  role?: string;
+  location?: string;
+  image?: string;
+};
+
+export type CreateProfilePage200Page = {
+  id: string;
+  userId: string;
+  handle: string;
+  /** @nullable */
+  name: string | null;
+  /** @nullable */
+  role: string | null;
+  /** @nullable */
+  bio: string | null;
+  /** @nullable */
+  image: string | null;
+  /** @nullable */
+  backgroundImage: string | null;
+  /** @nullable */
+  location: string | null;
+  updatedAt: string;
+};
+
+export type CreateProfilePage200 = {
+  page: CreateProfilePage200Page;
+};
+
+export type CreateProfilePage400ErrorCode =
+  (typeof CreateProfilePage400ErrorCode)[keyof typeof CreateProfilePage400ErrorCode];
+
+export const CreateProfilePage400ErrorCode = {
+  validation_error: "validation_error",
+} as const;
+
+export type CreateProfilePage400ErrorDetails = { [key: string]: unknown };
+
+export type CreateProfilePage400Error = {
+  code: CreateProfilePage400ErrorCode;
+  message: string;
+  details?: CreateProfilePage400ErrorDetails;
+};
+
+export type CreateProfilePage400 = {
+  error: CreateProfilePage400Error;
+};
+
+export type CreateProfilePage401ErrorCode =
+  (typeof CreateProfilePage401ErrorCode)[keyof typeof CreateProfilePage401ErrorCode];
+
+export const CreateProfilePage401ErrorCode = {
+  unauthorized: "unauthorized",
+} as const;
+
+export type CreateProfilePage401ErrorDetails = { [key: string]: unknown };
+
+export type CreateProfilePage401Error = {
+  code: CreateProfilePage401ErrorCode;
+  message: string;
+  details?: CreateProfilePage401ErrorDetails;
+};
+
+export type CreateProfilePage401 = {
+  error: CreateProfilePage401Error;
+};
+
+export type CreateProfilePage404ErrorCode =
+  (typeof CreateProfilePage404ErrorCode)[keyof typeof CreateProfilePage404ErrorCode];
+
+export const CreateProfilePage404ErrorCode = {
+  user_not_found: "user_not_found",
+} as const;
+
+export type CreateProfilePage404ErrorDetails = { [key: string]: unknown };
+
+export type CreateProfilePage404Error = {
+  code: CreateProfilePage404ErrorCode;
+  message: string;
+  details?: CreateProfilePage404ErrorDetails;
+};
+
+export type CreateProfilePage404 = {
+  error: CreateProfilePage404Error;
+};
+
+export type CreateProfilePage409ErrorCode =
+  (typeof CreateProfilePage409ErrorCode)[keyof typeof CreateProfilePage409ErrorCode];
+
+export const CreateProfilePage409ErrorCode = {
+  profile_page_exists: "profile_page_exists",
+  handle_taken: "handle_taken",
+} as const;
+
+export type CreateProfilePage409ErrorDetails = { [key: string]: unknown };
+
+export type CreateProfilePage409Error = {
+  code: CreateProfilePage409ErrorCode;
+  message: string;
+  details?: CreateProfilePage409ErrorDetails;
+};
+
+export type CreateProfilePage409 = {
+  error: CreateProfilePage409Error;
+};
+
+export type CreateProfilePage500ErrorCode =
+  (typeof CreateProfilePage500ErrorCode)[keyof typeof CreateProfilePage500ErrorCode];
+
+export const CreateProfilePage500ErrorCode = {
+  profile_page_create_failed: "profile_page_create_failed",
+} as const;
+
+export type CreateProfilePage500ErrorDetails = { [key: string]: unknown };
+
+export type CreateProfilePage500Error = {
+  code: CreateProfilePage500ErrorCode;
+  message: string;
+  details?: CreateProfilePage500ErrorDetails;
+};
+
+export type CreateProfilePage500 = {
+  error: CreateProfilePage500Error;
+};
+
 export type DeleteProfileImageBody = {
   imageUrl: string;
 };
@@ -411,6 +539,622 @@ export type GetProfileByHandle500Error = {
 
 export type GetProfileByHandle500 = {
   error: GetProfileByHandle500Error;
+};
+
+export type ReplaceProfileBentoGraphBodyBentoItem =
+  | {
+      id: string;
+      type: "link";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        title: string;
+        /** @nullable */
+        description?: string | null;
+        /** @nullable */
+        favicon?: string | null;
+        /** @nullable */
+        thumbnail?: string | null;
+        url: string;
+      };
+    }
+  | {
+      id: string;
+      type: "text";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        content: string;
+      };
+    }
+  | {
+      id: string;
+      type: "section";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        title: string;
+      };
+    }
+  | {
+      id: string;
+      type: "media";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        mediaType: "image" | "video";
+        url: string;
+        objectKey: string;
+        /** @nullable */
+        tempObjectKey?: string | null;
+        /** @nullable */
+        contentHash?: string | null;
+        /** @nullable */
+        contentType?: string | null;
+        /** @nullable */
+        href?: string | null;
+        alt: string;
+        caption: string;
+      };
+    }
+  | {
+      id: string;
+      type: "map";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        latitude: number;
+        longitude: number;
+        zoom: number;
+        caption?: string;
+        url: string;
+      };
+    };
+
+export type ReplaceProfileBentoGraphBody = {
+  bento: ReplaceProfileBentoGraphBodyBentoItem[];
+};
+
+export type ReplaceProfileBentoGraph200BentoItem =
+  | {
+      id: string;
+      type: "link";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        title: string;
+        /** @nullable */
+        description: string | null;
+        /** @nullable */
+        favicon: string | null;
+        /** @nullable */
+        thumbnail: string | null;
+        url: string;
+      };
+    }
+  | {
+      id: string;
+      type: "text";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        content: string;
+      };
+    }
+  | {
+      id: string;
+      type: "section";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        title: string;
+      };
+    }
+  | {
+      id: string;
+      type: "media";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        mediaType: "image" | "video";
+        url: string;
+        objectKey: string;
+        /** @nullable */
+        href: string | null;
+        alt: string;
+        caption: string;
+      };
+    }
+  | {
+      id: string;
+      type: "map";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        latitude: number;
+        longitude: number;
+        zoom: number;
+        caption: string;
+        url: string;
+      };
+    };
+
+export type ReplaceProfileBentoGraph200Page = {
+  id: string;
+  userId: string;
+  handle: string;
+  /** @nullable */
+  name: string | null;
+  /** @nullable */
+  role: string | null;
+  /** @nullable */
+  bio: string | null;
+  /** @nullable */
+  image: string | null;
+  /** @nullable */
+  backgroundImage: string | null;
+  /** @nullable */
+  location: string | null;
+  updatedAt: string;
+};
+
+export type ReplaceProfileBentoGraph200Viewer = {
+  isAuthenticated: boolean;
+  /** @nullable */
+  userId: string | null;
+  canEdit: boolean;
+};
+
+export type ReplaceProfileBentoGraph200 = {
+  page: ReplaceProfileBentoGraph200Page;
+  bento: ReplaceProfileBentoGraph200BentoItem[];
+  viewer: ReplaceProfileBentoGraph200Viewer;
+};
+
+export type ReplaceProfileBentoGraph400ErrorCode =
+  (typeof ReplaceProfileBentoGraph400ErrorCode)[keyof typeof ReplaceProfileBentoGraph400ErrorCode];
+
+export const ReplaceProfileBentoGraph400ErrorCode = {
+  validation_error: "validation_error",
+  invalid_media_upload_ownership: "invalid_media_upload_ownership",
+  missing_media_upload_metadata: "missing_media_upload_metadata",
+  profile_media_url_invalid: "profile_media_url_invalid",
+} as const;
+
+export type ReplaceProfileBentoGraph400ErrorDetails = { [key: string]: unknown };
+
+export type ReplaceProfileBentoGraph400Error = {
+  code: ReplaceProfileBentoGraph400ErrorCode;
+  message: string;
+  details?: ReplaceProfileBentoGraph400ErrorDetails;
+};
+
+export type ReplaceProfileBentoGraph400 = {
+  error: ReplaceProfileBentoGraph400Error;
+};
+
+export type ReplaceProfileBentoGraph401ErrorCode =
+  (typeof ReplaceProfileBentoGraph401ErrorCode)[keyof typeof ReplaceProfileBentoGraph401ErrorCode];
+
+export const ReplaceProfileBentoGraph401ErrorCode = {
+  unauthorized: "unauthorized",
+} as const;
+
+export type ReplaceProfileBentoGraph401ErrorDetails = { [key: string]: unknown };
+
+export type ReplaceProfileBentoGraph401Error = {
+  code: ReplaceProfileBentoGraph401ErrorCode;
+  message: string;
+  details?: ReplaceProfileBentoGraph401ErrorDetails;
+};
+
+export type ReplaceProfileBentoGraph401 = {
+  error: ReplaceProfileBentoGraph401Error;
+};
+
+export type ReplaceProfileBentoGraph404ErrorCode =
+  (typeof ReplaceProfileBentoGraph404ErrorCode)[keyof typeof ReplaceProfileBentoGraph404ErrorCode];
+
+export const ReplaceProfileBentoGraph404ErrorCode = {
+  profile_page_not_found: "profile_page_not_found",
+} as const;
+
+export type ReplaceProfileBentoGraph404ErrorDetails = { [key: string]: unknown };
+
+export type ReplaceProfileBentoGraph404Error = {
+  code: ReplaceProfileBentoGraph404ErrorCode;
+  message: string;
+  details?: ReplaceProfileBentoGraph404ErrorDetails;
+};
+
+export type ReplaceProfileBentoGraph404 = {
+  error: ReplaceProfileBentoGraph404Error;
+};
+
+export type ReplaceProfileBentoGraph500ErrorCode =
+  (typeof ReplaceProfileBentoGraph500ErrorCode)[keyof typeof ReplaceProfileBentoGraph500ErrorCode];
+
+export const ReplaceProfileBentoGraph500ErrorCode = {
+  profile_bento_sync_failed: "profile_bento_sync_failed",
+} as const;
+
+export type ReplaceProfileBentoGraph500ErrorDetails = { [key: string]: unknown };
+
+export type ReplaceProfileBentoGraph500Error = {
+  code: ReplaceProfileBentoGraph500ErrorCode;
+  message: string;
+  details?: ReplaceProfileBentoGraph500ErrorDetails;
+};
+
+export type ReplaceProfileBentoGraph500 = {
+  error: ReplaceProfileBentoGraph500Error;
+};
+
+export type UpdateProfilePageBody = {
+  /** @nullable */
+  name?: string | null;
+  /** @nullable */
+  location?: string | null;
+  /** @nullable */
+  role?: string | null;
+  /** @nullable */
+  bio?: string | null;
+  /** @nullable */
+  image?: string | null;
+  /** @nullable */
+  backgroundImage?: string | null;
+};
+
+export type UpdateProfilePage200BentoItem =
+  | {
+      id: string;
+      type: "link";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        title: string;
+        /** @nullable */
+        description: string | null;
+        /** @nullable */
+        favicon: string | null;
+        /** @nullable */
+        thumbnail: string | null;
+        url: string;
+      };
+    }
+  | {
+      id: string;
+      type: "text";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        content: string;
+      };
+    }
+  | {
+      id: string;
+      type: "section";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        title: string;
+      };
+    }
+  | {
+      id: string;
+      type: "media";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        mediaType: "image" | "video";
+        url: string;
+        objectKey: string;
+        /** @nullable */
+        href: string | null;
+        alt: string;
+        caption: string;
+      };
+    }
+  | {
+      id: string;
+      type: "map";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        latitude: number;
+        longitude: number;
+        zoom: number;
+        caption: string;
+        url: string;
+      };
+    };
+
+export type UpdateProfilePage200Page = {
+  id: string;
+  userId: string;
+  handle: string;
+  /** @nullable */
+  name: string | null;
+  /** @nullable */
+  role: string | null;
+  /** @nullable */
+  bio: string | null;
+  /** @nullable */
+  image: string | null;
+  /** @nullable */
+  backgroundImage: string | null;
+  /** @nullable */
+  location: string | null;
+  updatedAt: string;
+};
+
+export type UpdateProfilePage200Viewer = {
+  isAuthenticated: boolean;
+  /** @nullable */
+  userId: string | null;
+  canEdit: boolean;
+};
+
+export type UpdateProfilePage200 = {
+  page: UpdateProfilePage200Page;
+  bento: UpdateProfilePage200BentoItem[];
+  viewer: UpdateProfilePage200Viewer;
+};
+
+export type UpdateProfilePage400ErrorCode =
+  (typeof UpdateProfilePage400ErrorCode)[keyof typeof UpdateProfilePage400ErrorCode];
+
+export const UpdateProfilePage400ErrorCode = {
+  validation_error: "validation_error",
+} as const;
+
+export type UpdateProfilePage400ErrorDetails = { [key: string]: unknown };
+
+export type UpdateProfilePage400Error = {
+  code: UpdateProfilePage400ErrorCode;
+  message: string;
+  details?: UpdateProfilePage400ErrorDetails;
+};
+
+export type UpdateProfilePage400 = {
+  error: UpdateProfilePage400Error;
+};
+
+export type UpdateProfilePage401ErrorCode =
+  (typeof UpdateProfilePage401ErrorCode)[keyof typeof UpdateProfilePage401ErrorCode];
+
+export const UpdateProfilePage401ErrorCode = {
+  unauthorized: "unauthorized",
+} as const;
+
+export type UpdateProfilePage401ErrorDetails = { [key: string]: unknown };
+
+export type UpdateProfilePage401Error = {
+  code: UpdateProfilePage401ErrorCode;
+  message: string;
+  details?: UpdateProfilePage401ErrorDetails;
+};
+
+export type UpdateProfilePage401 = {
+  error: UpdateProfilePage401Error;
+};
+
+export type UpdateProfilePage404ErrorCode =
+  (typeof UpdateProfilePage404ErrorCode)[keyof typeof UpdateProfilePage404ErrorCode];
+
+export const UpdateProfilePage404ErrorCode = {
+  profile_page_not_found: "profile_page_not_found",
+} as const;
+
+export type UpdateProfilePage404ErrorDetails = { [key: string]: unknown };
+
+export type UpdateProfilePage404Error = {
+  code: UpdateProfilePage404ErrorCode;
+  message: string;
+  details?: UpdateProfilePage404ErrorDetails;
+};
+
+export type UpdateProfilePage404 = {
+  error: UpdateProfilePage404Error;
+};
+
+export type UpdateProfilePage500ErrorCode =
+  (typeof UpdateProfilePage500ErrorCode)[keyof typeof UpdateProfilePage500ErrorCode];
+
+export const UpdateProfilePage500ErrorCode = {
+  profile_page_update_failed: "profile_page_update_failed",
+} as const;
+
+export type UpdateProfilePage500ErrorDetails = { [key: string]: unknown };
+
+export type UpdateProfilePage500Error = {
+  code: UpdateProfilePage500ErrorCode;
+  message: string;
+  details?: UpdateProfilePage500ErrorDetails;
+};
+
+export type UpdateProfilePage500 = {
+  error: UpdateProfilePage500Error;
 };
 
 export type UploadProfileBentoMediaBody = {

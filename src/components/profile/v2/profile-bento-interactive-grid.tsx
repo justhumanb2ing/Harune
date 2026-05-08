@@ -49,11 +49,13 @@ import type { MetadataErrorResponse, NormalizedMetadata } from "@/lib/metadata/u
 import { getProfileAppPath, getProfileRouteHandle } from "@/lib/profile/app-paths";
 import {
   getProfileBentoMediaFileError,
+  getProfileBentoMediaHash,
   getProfileBentoMediaType,
   PROFILE_BENTO_MEDIA_ACCEPT,
   PROFILE_BENTO_MEDIA_MAX_SIZE_BYTES,
 } from "@/lib/profile/media-upload";
 import type { ProfileBentoItem } from "@/lib/profile/types";
+import { uploadToPresignedUrl } from "@/lib/s3/upload-to-presigned-url";
 import { cn } from "@/lib/utils";
 import { ProfileBentoEmptyGridState } from "./profile-bento-empty-grid-state";
 import {
@@ -748,9 +750,12 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     setLayouts(toBentoGridLayouts(nextBento));
 
     try {
+      const contentHash = await getProfileBentoMediaHash(uploadFile);
       const response = await uploadProfileBentoMedia({
-        file: uploadFile,
         bentoId: placeholderItem.id,
+        contentHash,
+        contentLength: uploadFile.size,
+        contentType: uploadFile.type,
       });
 
       if (response.status !== 200) {
@@ -758,6 +763,12 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
       }
 
       const mediaUpload = response.data;
+
+      await uploadToPresignedUrl({
+        contentType: mediaUpload.contentType,
+        file: uploadFile,
+        uploadUrl: mediaUpload.uploadUrl,
+      });
 
       setBento((currentItems) =>
         currentItems.map((item) => {

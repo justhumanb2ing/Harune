@@ -191,7 +191,7 @@ export const UpdateProfilePageResponse = zod.object({
 });
 
 /**
- * Replaces the authenticated user's bento graph with the provided snapshot. The server validates each bento item, deletes bentos missing from the snapshot, promotes temporary media objects when tempObjectKey is present, and returns the committed profile snapshot with no-store headers on success.
+ * Replaces the authenticated user's bento graph with the provided snapshot. The server validates each bento item, deletes bentos missing from the snapshot, promotes legacy temporary media objects when tempObjectKey is present, accepts a public preview object key in tempObjectKey without copying, accepts existing `public/.../preview:` media object keys as-is, and also resolves a preview draft media object when objectKey still points at a client-generated `preview:` bento id. It returns the saved profile graph assembled from the accepted payload after the database write with no-store headers on success.
  * @summary Replace my bento graph
  */
 export const ReplaceProfileBentoGraphBody = zod.object({
@@ -465,32 +465,36 @@ export const ReplaceProfileBentoGraphResponse = zod.object({
 });
 
 /**
- * Uploads a profile image or background image into the authenticated user's stable slot.
+ * Returns a presigned R2 upload URL for a profile image or background image.
 
 Rules:
 - Requires a valid session
-- Accepts `multipart/form-data` with `file`, `imageKind`, and `imageHash`
+- Accepts JSON with `imageKind`, `contentType`, `contentLength`, and `imageHash`
 - `imageKind` must be `profile` or `background`
+- `contentType` must be a supported image type
+- `contentLength` must be 5MB or smaller
 - `imageHash` must be a 64-character SHA-256 hex string
-- File type must be JPEG, PNG, WebP, or AVIF
-- File size must be 5MB or smaller
-- The uploaded bytes hash must match `imageHash`
+- The response includes the stable `imageUrl` and presigned `uploadUrl`
 - The response is `Cache-Control: no-store`
-- Upload only writes storage; DB finalize happens in `PATCH /profile/image`
- * @summary Upload a profile image slot object
+- The uploaded object is finalized later by `PATCH /profile/image`
+ * @summary Create a presigned profile image upload
  */
 export const UploadProfileImageBody = zod.object({
-  file: zod.instanceof(File),
   imageKind: zod.enum(["profile", "background"]),
+  contentType: zod.string(),
+  contentLength: zod.number(),
   imageHash: zod.string(),
 });
 
 export const UploadProfileImageResponse = zod.object({
   imageKind: zod.enum(["profile", "background"]),
+  imageHash: zod.string(),
   imageUrl: zod.string(),
   objectKey: zod.string(),
   contentType: zod.string(),
   contentLength: zod.number(),
+  uploadUrl: zod.string(),
+  expiresAt: zod.iso.datetime({ offset: true }),
 });
 
 /**
@@ -541,22 +545,26 @@ export const DeleteProfileImageResponse = zod.object({
 });
 
 /**
- * Uploads temporary media for a bento block and returns metadata for later sync.
+ * Returns a presigned R2 upload URL for temporary bento media.
 
 Rules:
 - Requires a valid session
-- Accepts `multipart/form-data` with `bentoId` and `file`
+- Accepts JSON with `bentoId`, `contentType`, `contentLength`, and `contentHash`
 - The bento must belong to the authenticated user
-- File type must be image or video
-- File size must be 5MB or smaller
-- A SHA-256 hash is computed before storage write
-- Temporary uploads only return metadata; no final DB write happens here
+- `preview:` bento uploads are presigned to the public preview object key so the later save can avoid temp-to-final copy work
+- `contentType` must be an image or video type
+- `contentLength` must be 5MB or smaller
+- `contentHash` must be a 64-character SHA-256 hex string
+- The response includes the stable object metadata and presigned `uploadUrl`
+- No final DB write happens here
 - The response is `Cache-Control: no-store`
- * @summary Upload temporary bento media
+ * @summary Create a presigned bento media upload
  */
 export const UploadProfileBentoMediaBody = zod.object({
   bentoId: zod.string(),
-  file: zod.instanceof(File),
+  contentType: zod.string(),
+  contentLength: zod.number(),
+  contentHash: zod.string(),
 });
 
 export const UploadProfileBentoMediaResponse = zod.object({
@@ -566,6 +574,32 @@ export const UploadProfileBentoMediaResponse = zod.object({
   mediaType: zod.enum(["image", "video"]),
   tempObjectKey: zod.string(),
   tempUrl: zod.string(),
+  uploadUrl: zod.string(),
+  expiresAt: zod.iso.datetime({ offset: true }),
+  contentLength: zod.number(),
+});
+
+/**
+ * Returns every row from the profile_page table. The endpoint does not require authentication, returns rows in updatedAt descending order then createdAt descending order, serializes timestamps as ISO strings, and returns no-store headers on success.
+ * @summary List profile page rows
+ */
+export const ListProfilePagesResponse = zod.object({
+  pages: zod.array(
+    zod.object({
+      id: zod.string(),
+      userId: zod.string(),
+      handle: zod.string(),
+      name: zod.string().nullable(),
+      location: zod.string().nullable(),
+      role: zod.string().nullable(),
+      bio: zod.string().nullable(),
+      image: zod.string().nullable(),
+      backgroundImage: zod.string().nullable(),
+      linkBlockPosition: zod.number(),
+      createdAt: zod.iso.datetime({ offset: true }),
+      updatedAt: zod.iso.datetime({ offset: true }),
+    })
+  ),
 });
 
 /**

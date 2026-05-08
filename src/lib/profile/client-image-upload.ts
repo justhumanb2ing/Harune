@@ -5,6 +5,7 @@ import {
   uploadProfileImage,
 } from "@/lib/api/generated/http/profile-api/profile-api";
 import { getProfileImageCacheVersion, type ProfileImageKind } from "@/lib/profile/image-upload";
+import { uploadToPresignedUrl } from "@/lib/s3/upload-to-presigned-url";
 
 export async function getFileSha256Hex(file: File) {
   const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
@@ -29,7 +30,8 @@ export async function uploadProfileImageIfChanged({
   }
 
   const uploaded = await uploadProfileImage({
-    file,
+    contentLength: file.size,
+    contentType: file.type,
     imageHash,
     imageKind: kind,
   });
@@ -37,6 +39,12 @@ export async function uploadProfileImageIfChanged({
   if (uploaded.status !== 200) {
     throw new Error("Failed to upload profile image.");
   }
+
+  await uploadToPresignedUrl({
+    contentType: uploaded.data.contentType,
+    file,
+    uploadUrl: uploaded.data.uploadUrl,
+  });
 
   if (!persist) {
     return uploaded.data.imageUrl;

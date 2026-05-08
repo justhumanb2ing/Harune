@@ -541,6 +541,50 @@ export type GetProfileByHandle500 = {
   error: GetProfileByHandle500Error;
 };
 
+export type ListProfilePages200PagesItem = {
+  id: string;
+  userId: string;
+  handle: string;
+  /** @nullable */
+  name: string | null;
+  /** @nullable */
+  location: string | null;
+  /** @nullable */
+  role: string | null;
+  /** @nullable */
+  bio: string | null;
+  /** @nullable */
+  image: string | null;
+  /** @nullable */
+  backgroundImage: string | null;
+  linkBlockPosition: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ListProfilePages200 = {
+  pages: ListProfilePages200PagesItem[];
+};
+
+export type ListProfilePages500ErrorCode =
+  (typeof ListProfilePages500ErrorCode)[keyof typeof ListProfilePages500ErrorCode];
+
+export const ListProfilePages500ErrorCode = {
+  profile_pages_failed: "profile_pages_failed",
+} as const;
+
+export type ListProfilePages500ErrorDetails = { [key: string]: unknown };
+
+export type ListProfilePages500Error = {
+  code: ListProfilePages500ErrorCode;
+  message: string;
+  details?: ListProfilePages500ErrorDetails;
+};
+
+export type ListProfilePages500 = {
+  error: ListProfilePages500Error;
+};
+
 export type ReplaceProfileBentoGraphBodyBentoItem =
   | {
       id: string;
@@ -1159,7 +1203,9 @@ export type UpdateProfilePage500 = {
 
 export type UploadProfileBentoMediaBody = {
   bentoId: string;
-  file: Blob;
+  contentType: string;
+  contentLength: number;
+  contentHash: string;
 };
 
 export type UploadProfileBentoMedia200MediaType =
@@ -1177,6 +1223,9 @@ export type UploadProfileBentoMedia200 = {
   mediaType: UploadProfileBentoMedia200MediaType;
   tempObjectKey: string;
   tempUrl: string;
+  uploadUrl: string;
+  expiresAt: string;
+  contentLength: number;
 };
 
 export type UploadProfileBentoMedia400ErrorCode =
@@ -1266,8 +1315,9 @@ export const UploadProfileImageBodyImageKind = {
 } as const;
 
 export type UploadProfileImageBody = {
-  file: Blob;
   imageKind: UploadProfileImageBodyImageKind;
+  contentType: string;
+  contentLength: number;
   imageHash: string;
 };
 
@@ -1281,10 +1331,13 @@ export const UploadProfileImage200ImageKind = {
 
 export type UploadProfileImage200 = {
   imageKind: UploadProfileImage200ImageKind;
+  imageHash: string;
   imageUrl: string;
   objectKey: string;
   contentType: string;
   contentLength: number;
+  uploadUrl: string;
+  expiresAt: string;
 };
 
 export type UploadProfileImage400ErrorCode =
@@ -1294,7 +1347,6 @@ export const UploadProfileImage400ErrorCode = {
   validation_error: "validation_error",
   profile_image_invalid_type: "profile_image_invalid_type",
   profile_image_too_large: "profile_image_too_large",
-  profile_image_hash_mismatch: "profile_image_hash_mismatch",
 } as const;
 
 export type UploadProfileImage400ErrorDetails = { [key: string]: unknown };

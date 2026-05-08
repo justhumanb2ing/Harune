@@ -8,10 +8,23 @@
 import * as zod from "zod";
 
 /**
- * Returns the authenticated user's app bootstrap context. `user` is always present and `profilePage` can be null.
+ * Returns the authenticated user's app bootstrap context. `user` is always present, `currentPlan` and `profilePage` can be null, and password data is never exposed.
  * @summary Get current user app context
  */
 export const GetMeResponse = zod.object({
+  currentPlan: zod
+    .object({
+      id: zod.string(),
+      name: zod.string(),
+      codename: zod.string(),
+      quotas: zod.object({
+        permiumSupport: zod.boolean(),
+        monthlyImages: zod.number(),
+        somethingElse: zod.string(),
+      }),
+      default: zod.boolean(),
+    })
+    .nullable(),
   profilePage: zod
     .object({
       id: zod.string(),
@@ -27,6 +40,8 @@ export const GetMeResponse = zod.object({
     image: zod.string().nullable(),
     createdAt: zod.iso.datetime({ offset: true }),
     updatedAt: zod.iso.datetime({ offset: true }),
+    planId: zod.string().nullable(),
+    credits: zod.record(zod.string(), zod.number()),
   }),
 });
 

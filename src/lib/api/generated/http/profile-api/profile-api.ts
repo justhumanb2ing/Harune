@@ -47,6 +47,8 @@ import type {
   GetProfileByHandle200,
   GetProfileByHandle404,
   GetProfileByHandle500,
+  ListProfilePages200,
+  ListProfilePages500,
   ReplaceProfileBentoGraph200,
   ReplaceProfileBentoGraph400,
   ReplaceProfileBentoGraph401,
@@ -409,7 +411,7 @@ export const getReplaceProfileBentoGraphUrl = () => {
 };
 
 /**
- * Replaces the authenticated user's bento graph with the provided snapshot. The server validates each bento item, deletes bentos missing from the snapshot, promotes temporary media objects when tempObjectKey is present, and returns the committed profile snapshot with no-store headers on success.
+ * Replaces the authenticated user's bento graph with the provided snapshot. The server validates each bento item, deletes bentos missing from the snapshot, promotes legacy temporary media objects when tempObjectKey is present, accepts a public preview object key in tempObjectKey without copying, accepts existing `public/.../preview:` media object keys as-is, and also resolves a preview draft media object when objectKey still points at a client-generated `preview:` bento id. It returns the saved profile graph assembled from the accepted payload after the database write with no-store headers on success.
  * @summary Replace my bento graph
  */
 export const replaceProfileBentoGraph = async (
@@ -543,33 +545,29 @@ export const getUploadProfileImageUrl = () => {
 };
 
 /**
- * Uploads a profile image or background image into the authenticated user's stable slot.
+ * Returns a presigned R2 upload URL for a profile image or background image.
 
 Rules:
 - Requires a valid session
-- Accepts `multipart/form-data` with `file`, `imageKind`, and `imageHash`
+- Accepts JSON with `imageKind`, `contentType`, `contentLength`, and `imageHash`
 - `imageKind` must be `profile` or `background`
+- `contentType` must be a supported image type
+- `contentLength` must be 5MB or smaller
 - `imageHash` must be a 64-character SHA-256 hex string
-- File type must be JPEG, PNG, WebP, or AVIF
-- File size must be 5MB or smaller
-- The uploaded bytes hash must match `imageHash`
+- The response includes the stable `imageUrl` and presigned `uploadUrl`
 - The response is `Cache-Control: no-store`
-- Upload only writes storage; DB finalize happens in `PATCH /profile/image`
- * @summary Upload a profile image slot object
+- The uploaded object is finalized later by `PATCH /profile/image`
+ * @summary Create a presigned profile image upload
  */
 export const uploadProfileImage = async (
   uploadProfileImageBody: UploadProfileImageBody,
   options?: RequestInit
 ): Promise<uploadProfileImageResponse> => {
-  const formData = new FormData();
-  formData.append(`file`, uploadProfileImageBody.file);
-  formData.append(`imageKind`, uploadProfileImageBody.imageKind);
-  formData.append(`imageHash`, uploadProfileImageBody.imageHash);
-
   return orvalMutator<uploadProfileImageResponse>(getUploadProfileImageUrl(), {
     ...options,
     method: "POST",
-    body: formData,
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(uploadProfileImageBody),
   });
 };
 
@@ -619,7 +617,7 @@ export type UploadProfileImageMutationError =
   | UploadProfileImage500;
 
 /**
- * @summary Upload a profile image slot object
+ * @summary Create a presigned profile image upload
  */
 export const useUploadProfileImage = <
   TError = UploadProfileImage400 | UploadProfileImage401 | UploadProfileImage500,
@@ -1004,31 +1002,30 @@ export const getUploadProfileBentoMediaUrl = () => {
 };
 
 /**
- * Uploads temporary media for a bento block and returns metadata for later sync.
+ * Returns a presigned R2 upload URL for temporary bento media.
 
 Rules:
 - Requires a valid session
-- Accepts `multipart/form-data` with `bentoId` and `file`
+- Accepts JSON with `bentoId`, `contentType`, `contentLength`, and `contentHash`
 - The bento must belong to the authenticated user
-- File type must be image or video
-- File size must be 5MB or smaller
-- A SHA-256 hash is computed before storage write
-- Temporary uploads only return metadata; no final DB write happens here
+- `preview:` bento uploads are presigned to the public preview object key so the later save can avoid temp-to-final copy work
+- `contentType` must be an image or video type
+- `contentLength` must be 5MB or smaller
+- `contentHash` must be a 64-character SHA-256 hex string
+- The response includes the stable object metadata and presigned `uploadUrl`
+- No final DB write happens here
 - The response is `Cache-Control: no-store`
- * @summary Upload temporary bento media
+ * @summary Create a presigned bento media upload
  */
 export const uploadProfileBentoMedia = async (
   uploadProfileBentoMediaBody: UploadProfileBentoMediaBody,
   options?: RequestInit
 ): Promise<uploadProfileBentoMediaResponse> => {
-  const formData = new FormData();
-  formData.append(`bentoId`, uploadProfileBentoMediaBody.bentoId);
-  formData.append(`file`, uploadProfileBentoMediaBody.file);
-
   return orvalMutator<uploadProfileBentoMediaResponse>(getUploadProfileBentoMediaUrl(), {
     ...options,
     method: "POST",
-    body: formData,
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(uploadProfileBentoMediaBody),
   });
 };
 
@@ -1083,7 +1080,7 @@ export type UploadProfileBentoMediaMutationError =
   | UploadProfileBentoMedia500;
 
 /**
- * @summary Upload temporary bento media
+ * @summary Create a presigned bento media upload
  */
 export const useUploadProfileBentoMedia = <
   TError =
@@ -1111,6 +1108,141 @@ export const useUploadProfileBentoMedia = <
 > => {
   return useMutation(getUploadProfileBentoMediaMutationOptions(options), queryClient);
 };
+export type listProfilePagesResponse200 = {
+  data: ListProfilePages200;
+  status: 200;
+};
+
+export type listProfilePagesResponse500 = {
+  data: ListProfilePages500;
+  status: 500;
+};
+
+export type listProfilePagesResponseSuccess = listProfilePagesResponse200 & {
+  headers: Headers;
+};
+export type listProfilePagesResponseError = listProfilePagesResponse500 & {
+  headers: Headers;
+};
+
+export type listProfilePagesResponse =
+  | listProfilePagesResponseSuccess
+  | listProfilePagesResponseError;
+
+export const getListProfilePagesUrl = () => {
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/pages`;
+};
+
+/**
+ * Returns every row from the profile_page table. The endpoint does not require authentication, returns rows in updatedAt descending order then createdAt descending order, serializes timestamps as ISO strings, and returns no-store headers on success.
+ * @summary List profile page rows
+ */
+export const listProfilePages = async (
+  options?: RequestInit
+): Promise<listProfilePagesResponse> => {
+  return orvalMutator<listProfilePagesResponse>(getListProfilePagesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListProfilePagesQueryKey = () => {
+  return [`${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/pages`] as const;
+};
+
+export const getListProfilePagesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listProfilePages>>,
+  TError = ListProfilePages500,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProfilePages>>, TError, TData>>;
+  request?: SecondParameter<typeof orvalMutator>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListProfilePagesQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listProfilePages>>> = ({ signal }) =>
+    listProfilePages({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listProfilePages>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ListProfilePagesQueryResult = NonNullable<Awaited<ReturnType<typeof listProfilePages>>>;
+export type ListProfilePagesQueryError = ListProfilePages500;
+
+export function useListProfilePages<
+  TData = Awaited<ReturnType<typeof listProfilePages>>,
+  TError = ListProfilePages500,
+>(
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProfilePages>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProfilePages>>,
+          TError,
+          Awaited<ReturnType<typeof listProfilePages>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useListProfilePages<
+  TData = Awaited<ReturnType<typeof listProfilePages>>,
+  TError = ListProfilePages500,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProfilePages>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listProfilePages>>,
+          TError,
+          Awaited<ReturnType<typeof listProfilePages>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useListProfilePages<
+  TData = Awaited<ReturnType<typeof listProfilePages>>,
+  TError = ListProfilePages500,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProfilePages>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary List profile page rows
+ */
+
+export function useListProfilePages<
+  TData = Awaited<ReturnType<typeof listProfilePages>>,
+  TError = ListProfilePages500,
+>(
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProfilePages>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListProfilePagesQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
 export type getProfileByHandleResponse200 = {
   data: GetProfileByHandle200;
   status: 200;

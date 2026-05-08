@@ -29,21 +29,21 @@ tags: [profile-page, image-upload, bento, media-upload, external-api, migration]
 
 역할:
 
-- profile image 또는 background image 파일을 서버에 업로드한다.
-- `FormData`의 `file`, `imageHash`, `imageKind`를 검증한다.
+- profile image 또는 background image에 대한 presigned R2 upload URL을 발급한다.
+- `imageKind`, `imageHash`, `contentType`, `contentLength`를 검증한다.
 - 파일 타입과 용량 제한을 검사한다.
-- SHA-256 hash가 업로드된 bytes와 일치하는지 확인한다.
-- 사용자별 고정 object key에 R2 object를 저장한다.
-- 업로드 직후 public URL을 반환한다.
+- 사용자별 고정 object key와 presigned `uploadUrl`을 반환한다.
+- 클라이언트는 반환된 `uploadUrl`로 직접 `PUT` 업로드를 수행한다.
 
 Request body:
 
 ```ts
-// multipart/form-data
+// application/json
 {
-  file: File;
   imageKind: "profile" | "background";
   imageHash: string; // 64-char SHA-256 hex
+  contentType: string;
+  contentLength: number;
 }
 ```
 
@@ -52,14 +52,17 @@ Success response:
 ```ts
 {
   imageKind: "profile" | "background";
+  imageHash: string;
   imageUrl: string;
   objectKey: string;
   contentType: string;
   contentLength: number;
+  uploadUrl: string;
+  expiresAt: string;
 }
 ```
 
-이 엔드포인트는 storage write만 담당하고 DB finalize는 하지 않는다.
+이 엔드포인트는 presign만 담당하고 storage write나 DB finalize는 하지 않는다.
 성공 응답은 `Cache-Control: no-store`와 `Pragma: no-cache`를 반환한다.
 
 Failure response:
@@ -164,19 +167,21 @@ Failure response:
 
 역할:
 
-- bento media를 temporary object key로 업로드한다.
-- `bentoId`와 `file`을 검증한다.
+- bento media용 presigned R2 upload URL을 발급한다.
+- `bentoId`, `contentHash`, `contentType`, `contentLength`를 검증한다.
 - 이미지/비디오 타입과 5MB 제한을 검사한다.
-- SHA-256 hash를 계산한다.
-- temporary object key에 저장하고 `tempObjectKey`, `tempUrl`, `contentHash`, `contentType`, `mediaType`를 반환한다.
+- temporary object key, public preview URL, presigned `uploadUrl`을 반환한다.
+- 클라이언트는 반환된 `uploadUrl`로 직접 `PUT` 업로드를 수행한다.
 
 Request body:
 
 ```ts
-// multipart/form-data
+// application/json
 {
   bentoId: string;
-  file: File;
+  contentHash: string;
+  contentType: string;
+  contentLength: number;
 }
 ```
 
@@ -193,7 +198,7 @@ Success response:
 }
 ```
 
-이 엔드포인트는 temp-only 계약이다.
+이 엔드포인트는 temp-only presign 계약이다.
 final object key copy, final DB row 생성, committed read finalize는 하지 않는다.
 
 Failure response:

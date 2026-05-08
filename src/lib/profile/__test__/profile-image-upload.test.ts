@@ -57,6 +57,8 @@ describe("profile image upload", () => {
 
   test("finalizes changed uploads so the profile image column is persisted", async () => {
     const file = new File(["changed-image"], "background.png", { type: "image/png" });
+    const presignedUrl =
+      "https://storage.example.com/public/users/user-1/profile/background?v=uploaded";
     const finalizedUrl =
       "https://storage.example.com/public/users/user-1/profile/background?v=final";
     const fetchCalls: Array<{ init?: RequestInit; input: RequestInfo | URL }> = [];
@@ -69,8 +71,33 @@ describe("profile image upload", () => {
         return Promise.resolve(
           new Response(
             JSON.stringify({
-              imageUrl:
-                "https://storage.example.com/public/users/user-1/profile/background?v=uploaded",
+              contentLength: file.size,
+              contentType: file.type,
+              expiresAt: "2026-05-08T02:00:00.000Z",
+              imageHash: "hash",
+              imageKind: "background",
+              imageUrl: presignedUrl,
+              objectKey: "public/users/user-1/profile/background",
+              uploadUrl: "https://upload.example.com/background",
+            }),
+            {
+              headers: {
+                "content-type": "application/json",
+              },
+            }
+          )
+        );
+      }
+
+      if (String(input) === "https://upload.example.com/background" && init?.method === "PUT") {
+        return Promise.resolve(new Response(null, { status: 200 }));
+      }
+
+      if (String(input).includes("/profile/image") && init?.method === "PATCH") {
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              imageUrl: finalizedUrl,
             }),
             {
               headers: {
@@ -82,16 +109,9 @@ describe("profile image upload", () => {
       }
 
       return Promise.resolve(
-        new Response(
-          JSON.stringify({
-            imageUrl: finalizedUrl,
-          }),
-          {
-            headers: {
-              "content-type": "application/json",
-            },
-          }
-        )
+        new Response(null, {
+          status: 500,
+        })
       );
     }) as typeof fetch;
 
@@ -106,16 +126,74 @@ describe("profile image upload", () => {
       globalThis.fetch = originalFetch;
     }
 
-    const finalizeBody = JSON.parse(String(fetchCalls[1]?.init?.body)) as {
+    const finalizeBody = JSON.parse(String(fetchCalls[2]?.init?.body)) as {
       imageKind: string;
       imageUrl: string;
     };
 
     expect(uploadedUrl).toBe(finalizedUrl);
-    expect(fetchCalls.length).toBe(2);
-    expect(String(fetchCalls[1]?.input)).toContain("/profile/image");
-    expect(fetchCalls[1]?.init?.method).toBe("PATCH");
+    expect(fetchCalls.length).toBe(3);
+    expect(String(fetchCalls[1]?.input)).toBe("https://upload.example.com/background");
+    expect(fetchCalls[1]?.init?.method).toBe("PUT");
+    expect(fetchCalls[2]?.init?.method).toBe("PATCH");
     expect(finalizeBody.imageKind).toBe("background");
     expect(finalizeBody.imageUrl.includes("/profile/background?v=")).toBe(true);
+  });
+
+  test("returns the uploaded url without finalizing when persistence is disabled", async () => {
+    const file = new File(["preview-image"], "profile.png", { type: "image/png" });
+    const presignedUrl =
+      "https://storage.example.com/public/users/user-1/profile/profile?v=uploaded";
+    const fetchCalls: Array<{ init?: RequestInit; input: RequestInfo | URL }> = [];
+    const originalFetch = globalThis.fetch;
+
+    globalThis.fetch = ((input, init) => {
+      fetchCalls.push({ input, init });
+
+      if (String(input).includes("/profile/image") && init?.method === "POST") {
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              contentLength: file.size,
+              contentType: file.type,
+              expiresAt: "2026-05-08T02:00:00.000Z",
+              imageHash: "hash",
+              imageKind: "profile",
+              imageUrl: presignedUrl,
+              objectKey: "public/users/user-1/profile/profile",
+              uploadUrl: "https://upload.example.com/profile",
+            }),
+            {
+              headers: {
+                "content-type": "application/json",
+              },
+            }
+          )
+        );
+      }
+
+      if (String(input) === "https://upload.example.com/profile" && init?.method === "PUT") {
+        return Promise.resolve(new Response(null, { status: 200 }));
+      }
+
+      return Promise.resolve(new Response(null, { status: 500 }));
+    }) as typeof fetch;
+
+    let resultUrl: string | null = null;
+    try {
+      resultUrl = await uploadProfileImageIfChanged({
+        currentUrl: null,
+        file,
+        kind: "profile",
+        persist: false,
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    expect(resultUrl).toBe(presignedUrl);
+    expect(fetchCalls.length).toBe(2);
+    expect(fetchCalls[0]?.init?.method).toBe("POST");
+    expect(fetchCalls[1]?.init?.method).toBe("PUT");
   });
 });

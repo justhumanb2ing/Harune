@@ -65,7 +65,7 @@ export const getGetMeUrl = () => {
 };
 
 /**
- * Returns the authenticated user's app bootstrap context. `user` is always present and `profilePage` can be null.
+ * Returns the authenticated user's app bootstrap context. `user` is always present, `currentPlan` and `profilePage` can be null, and password data is never exposed.
  * @summary Get current user app context
  */
 export const getMe = async (options?: RequestInit): Promise<getMeResponse> => {

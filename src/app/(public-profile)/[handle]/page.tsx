@@ -4,9 +4,13 @@ import { notFound } from "next/navigation";
 import { ProfileBentoPage } from "@/components/profile/v2/profile-bento-page";
 import { WebPageJsonLd } from "@/components/site-instrumentation/structured-data";
 import { getProfileByHandle } from "@/lib/api/generated/http/profile-api/profile-api";
+import type {
+  GetProfileByHandle200BentoItem,
+  GetProfileByHandle200Page,
+  GetProfileByHandle200Viewer,
+} from "@/lib/api/generated/http/schemas/profile-api";
 import { appConfig } from "@/lib/config";
-import { getProfilePageEditorData } from "@/lib/profile/queries";
-import type { ProfilePageData, PublicProfileBentoPageData } from "@/lib/profile/types";
+import { toProfilePageEditorDataFromPublicPage } from "@/lib/profile/public-profile-page";
 import { ApiError } from "@/lib/react-query/fetcher";
 import { absoluteUrl, createPageMetadata } from "@/lib/seo";
 import { getServerMe } from "@/lib/users/server-me";
@@ -20,33 +24,13 @@ type HandlePageProps = {
 
 export const revalidate = 300;
 
-const toSerializableProfilePageData = (
-  data: Awaited<ReturnType<typeof getProfilePageEditorData>>
-) =>
-  data
-    ? ({
-        page: {
-          id: data.page.id,
-          handle: data.page.handle,
-          linkBlockPosition: data.page.linkBlockPosition,
-          location: data.page.location,
-          name: data.page.name,
-          role: data.page.role,
-          bio: data.page.bio,
-          image: data.page.image,
-          backgroundImage: data.page.backgroundImage,
-        },
-      } satisfies ProfilePageData)
-    : null;
-
 type PublicProfilePageData = {
-  page: PublicProfileBentoPageData["page"];
-  bento: PublicProfileBentoPageData["bento"];
-  viewer: {
-    isAuthenticated: boolean;
-    userId: string | null;
-    canEdit: boolean;
+  page: Omit<GetProfileByHandle200Page, "updatedAt"> & {
+    updatedAt: Date;
+    userName: string | null;
   };
+  bento: GetProfileByHandle200BentoItem[];
+  viewer: GetProfileByHandle200Viewer;
 };
 
 const toPublicProfilePageData = (data: Awaited<ReturnType<typeof getProfileByHandle>>) => {
@@ -114,11 +98,7 @@ export default async function HandlePage({ params }: HandlePageProps) {
 
   const isOwner = data.viewer.canEdit;
   const editorData =
-    isOwner && me?.user?.id
-      ? await getProfilePageEditorData(me.user.id, data.page.handle).then(
-          toSerializableProfilePageData
-        )
-      : null;
+    isOwner && me?.user?.id ? toProfilePageEditorDataFromPublicPage(data.page) : null;
   const analytics = isOwner ? await getServerMeAnalytics() : null;
   const analyticsViews =
     analytics && analytics.status === 200 && analytics.data.state === "ready"

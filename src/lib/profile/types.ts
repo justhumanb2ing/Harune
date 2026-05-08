@@ -19,7 +19,6 @@ export type SocialPlatform =
 export type ProfilePage = {
   id: string;
   handle: string;
-  linkBlockPosition: number;
   location: string | null;
   name: string | null;
   role: string | null;
@@ -151,7 +150,6 @@ export type PublicProfileBentoPageData = {
 export type DraftProfilePage = {
   id: string;
   handle: string;
-  linkBlockPosition: number;
   location: string;
   name: string;
   role: string;
@@ -167,7 +165,6 @@ export type ProfilePageDraftData = {
 export type ProfilePageSyncPayload = {
   page: {
     handle: string;
-    linkBlockPosition: number;
     location: string;
     name: string;
     role: string;

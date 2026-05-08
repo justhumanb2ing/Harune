@@ -73,7 +73,6 @@ const getProfilePageEditorDataByPageId = async (executor: DbExecutor, profilePag
     .select({
       id: profilePages.id,
       handle: profilePages.handle,
-      linkBlockPosition: profilePages.linkBlockPosition,
       location: profilePages.location,
       name: profilePages.name,
       role: profilePages.role,
@@ -101,7 +100,6 @@ const getOwnedPageOrThrow = async (userId: string) => {
       id: profilePages.id,
       userId: profilePages.userId,
       handle: profilePages.handle,
-      linkBlockPosition: profilePages.linkBlockPosition,
       location: profilePages.location,
       name: profilePages.name,
       role: profilePages.role,
@@ -160,7 +158,6 @@ export const updateProfileMetadata = async ({
     .returning({
       id: profilePages.id,
       handle: profilePages.handle,
-      linkBlockPosition: profilePages.linkBlockPosition,
       location: profilePages.location,
       name: profilePages.name,
       role: profilePages.role,
@@ -533,7 +530,6 @@ export const syncProfilePageDraft = async ({
       .update(profilePages)
       .set({
         handle: values.page.handle,
-        linkBlockPosition: values.page.linkBlockPosition,
         location: values.page.location || null,
         name: values.page.name,
         role: values.page.role || null,

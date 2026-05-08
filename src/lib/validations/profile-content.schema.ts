@@ -205,7 +205,6 @@ export const profileBentoSyncSchema = z
 export const profilePageSyncSchema = z.object({
   page: z.object({
     handle: handleSchema,
-    linkBlockPosition: z.number().int().nonnegative(),
     name: requiredText("Name", 100),
     location: z.string().trim().max(100, "Must be 100 characters or fewer."),
     role: z.string().trim().max(100, "Must be 100 characters or fewer."),

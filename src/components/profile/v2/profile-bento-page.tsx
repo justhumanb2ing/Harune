@@ -2,10 +2,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { PROFILE_BENTO_PROFILE_SHELL_CLASS } from "@/components/profile/v2/profile-bento-profile-shell";
 import { ProfileBentoReadonlyGrid } from "@/components/profile/v2/profile-bento-readonly-grid";
-import type { ProfilePageData, PublicProfileBentoPageData } from "@/lib/profile/types";
+import type {
+  GetProfileByHandle200BentoItem,
+  GetProfileByHandle200Page,
+} from "@/lib/api/generated/http/schemas/profile-api";
+import type { ProfileBentoItem, ProfilePageData } from "@/lib/profile/types";
 import { cn } from "@/lib/utils";
 
-type ProfileBentoPageProps = PublicProfileBentoPageData & {
+type ProfileBentoPageProps = {
+  page: Omit<GetProfileByHandle200Page, "updatedAt"> & {
+    updatedAt: Date;
+    userName: string | null;
+  };
+  bento: GetProfileByHandle200BentoItem[];
   analyticsViews: number;
   editorData: ProfilePageData | null;
   isOwner: boolean;
@@ -21,7 +30,7 @@ const isDeploymentEnvironment = process.env.VERCEL === "1" || Boolean(process.en
 export const PROFILE_BENTO_PAGE_SECTION_CLASS =
   "mx-auto flex min-h-lvh w-full flex-col items-center gap-8 px-6 pb-8 pt-[var(--v2-page-top-offset)] [--v2-page-top-offset:2rem] sm:px-8 xl:[--v2-page-top-offset:5rem] xl:flex-row xl:items-stretch xl:justify-center xl:gap-[clamp(3rem,calc((100vw-80rem)*0.25+3rem),6rem)] xl:px-10 2xl:gap-[clamp(7.5rem,calc((100vw-96rem)*0.6+7.5rem),18rem)]";
 
-export function ProfileBentoProfileAside({ page }: Pick<PublicProfileBentoPageData, "page">) {
+export function ProfileBentoProfileAside({ page }: Pick<ProfileBentoPageProps, "page">) {
   const imageAlt = page.name ?? page.userName ?? page.handle;
 
   return (
@@ -128,7 +137,7 @@ export async function ProfileBentoPage({
 
     return (
       <ProfileBentoOwnerEditorSurface
-        bento={bento}
+        bento={bento as ProfileBentoItem[]}
         analyticsViews={analyticsViews}
         disableAnalytics={isDeploymentEnvironment}
         editorData={editorData}
@@ -140,7 +149,7 @@ export async function ProfileBentoPage({
   return (
     <section className={PROFILE_BENTO_PAGE_SECTION_CLASS}>
       <ProfileBentoProfileAside page={page} />
-      <ProfileBentoReadonlyGrid bento={bento} />
+      <ProfileBentoReadonlyGrid bento={bento as ProfileBentoItem[]} />
       <ProfileBentoFooterAction
         className="w-full py-16 md:fixed md:bottom-12 md:left-12 md:z-30 md:w-auto md:justify-start md:p-0"
         viewerProfilePage={viewerProfilePage}

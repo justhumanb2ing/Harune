@@ -55,7 +55,6 @@ export const createDraftData = (data: ProfilePageData): ProfilePageDraftData => 
   page: {
     id: data.page.id,
     handle: data.page.handle,
-    linkBlockPosition: data.page.linkBlockPosition ?? 0,
     location: normalizeNullableText(data.page.location),
     name: normalizeNullableText(data.page.name),
     role: normalizeNullableText(data.page.role),
@@ -67,7 +66,6 @@ export const createDraftData = (data: ProfilePageData): ProfilePageDraftData => 
 
 const toComparableProfile = (draftData: ProfilePageDraftData) => ({
   handle: draftData.page.handle,
-  linkBlockPosition: draftData.page.linkBlockPosition,
   location: draftData.page.location,
   name: draftData.page.name,
   role: draftData.page.role,
@@ -106,7 +104,6 @@ const recalculateDirtyState = (state: ProfilePageEditorState): ProfilePageEditor
 export const buildSyncPayload = (draftData: ProfilePageDraftData): ProfilePageSyncPayload => ({
   page: {
     handle: draftData.page.handle,
-    linkBlockPosition: draftData.page.linkBlockPosition,
     location: draftData.page.location,
     name: draftData.page.name,
     role: draftData.page.role,

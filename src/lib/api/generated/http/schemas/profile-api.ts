@@ -58,30 +58,6 @@ export type GetProfileByHandle200BentoItem =
     }
   | {
       id: string;
-      type: "playlist";
-      layout: {
-        desktop: {
-          x: number;
-          y: number;
-          w: number;
-          h: number;
-        };
-        compact: {
-          x: number;
-          y: number;
-          w: number;
-          h: number;
-        };
-      };
-      content: {
-        title: string;
-        provider: string;
-        url: string;
-        content: string;
-      };
-    }
-  | {
-      id: string;
       type: "section";
       layout: {
         desktop: {

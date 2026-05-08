@@ -82,30 +82,6 @@ export const GetProfileByHandleResponse = zod.object({
       }),
       zod.object({
         id: zod.string(),
-        type: zod.enum(["playlist"]),
-        layout: zod.object({
-          desktop: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-          compact: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-        }),
-        content: zod.object({
-          title: zod.string(),
-          provider: zod.string(),
-          url: zod.string(),
-          content: zod.string(),
-        }),
-      }),
-      zod.object({
-        id: zod.string(),
         type: zod.enum(["section"]),
         layout: zod.object({
           desktop: zod.object({

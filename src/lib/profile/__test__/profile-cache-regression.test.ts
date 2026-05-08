@@ -19,7 +19,28 @@ describe("profile page cache regression", () => {
     const fetchCalls: Array<{ init?: RequestInit; input: RequestInfo | URL }> = [];
     globalThis.fetch = ((input, init) => {
       fetchCalls.push({ input, init });
-      return Promise.resolve(jsonResponse(null));
+      return Promise.resolve(
+        jsonResponse({
+          page: {
+            id: "page-1",
+            userId: "user-1",
+            handle: "demo",
+            name: "Demo",
+            role: null,
+            bio: null,
+            image: null,
+            backgroundImage: null,
+            location: null,
+            updatedAt: "2026-05-08T00:00:00.000Z",
+          },
+          bento: [],
+          viewer: {
+            isAuthenticated: false,
+            userId: null,
+            canEdit: false,
+          },
+        })
+      );
     }) as typeof fetch;
 
     try {
@@ -29,7 +50,7 @@ describe("profile page cache regression", () => {
       globalThis.fetch = originalFetch;
     }
 
-    expect(fetchCalls[0]?.input).toBe("/api/profile?handle=demo");
+    expect(String(fetchCalls[0]?.input)).toContain("/profile/demo");
     expect(fetchCalls[0]?.init?.cache).toBe("no-store");
   });
 
@@ -60,7 +81,7 @@ describe("profile page cache regression", () => {
     }
 
     expect(String(fetchCalls[0]?.input)).toContain("/me");
-    expect(fetchCalls[0]?.init?.cache).toBe("no-store");
+    expect(fetchCalls[0]?.init?.cache).toBeUndefined();
   });
 
   test("public profile reads use explicit Next data cache instead of React request memoization", () => {

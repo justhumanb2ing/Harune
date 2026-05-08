@@ -179,6 +179,10 @@ export function useProfilePageEditor() {
       });
       store.actions.rebaseFromServer(profilePageData);
       await mutate();
+      await queryClient.invalidateQueries({
+        queryKey: profilePageQueryKey,
+        refetchType: "active",
+      });
       router.refresh();
       return profilePageData;
     } catch (error) {

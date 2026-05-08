@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { PROFILE_BENTO_PROFILE_SHELL_CLASS } from "@/components/profile/v2/profile-bento-profile-shell";
 import { ProfileBentoReadonlyGrid } from "@/components/profile/v2/profile-bento-readonly-grid";
@@ -38,11 +37,13 @@ export function ProfileBentoProfileAside({ page }: Pick<ProfileBentoPageProps, "
         <div className="flex px-4">
           <div className="relative flex size-32 items-center justify-center overflow-hidden rounded-full bg-secondary xl:size-44">
             {page.image ? (
-              <Image
+              // Public profile images must render without Next.js image optimization so the
+              // same persisted URL works for anonymous viewers and logged-in owners alike.
+              // biome-ignore lint/performance/noImgElement: This is a user-generated remote image.
+              <img
                 alt={imageAlt}
                 className="size-full object-cover"
                 height={176}
-                priority
                 src={page.image}
                 width={176}
               />
@@ -103,7 +104,8 @@ function ProfileBentoFooterAction({
         {viewerProfilePage ? (
           <span className="relative size-5 shrink-0 overflow-hidden rounded-full bg-secondary">
             {viewerProfilePage.image ? (
-              <Image
+              // biome-ignore lint/performance/noImgElement: This is a user-generated remote image.
+              <img
                 alt={imageAlt}
                 className="size-full object-cover"
                 height={24}

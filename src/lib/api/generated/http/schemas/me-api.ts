@@ -561,3 +561,31 @@ export type GetMeAnalytics200 =
         };
       };
     };
+
+export type GetMeAnalytics401 = {
+  error: GetMeAnalytics401Error;
+};
+
+export type GetMeAnalytics500 = {
+  error: GetMeAnalytics500Error;
+};
+
+export type GetMe200 = {
+  /** @nullable */
+  currentPlan: GetMe200CurrentPlan;
+  /** @nullable */
+  profilePage: GetMe200ProfilePage;
+  user: GetMe200User;
+};
+
+export type GetMe401 = {
+  error: GetMe401Error;
+};
+
+export type GetMe404 = {
+  error: GetMe404Error;
+};
+
+export type GetMe500 = {
+  error: GetMe500Error;
+};

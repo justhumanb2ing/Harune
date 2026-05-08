@@ -19,13 +19,7 @@ import type {
 } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import { orvalMutator } from "../../../orval-mutator";
-import type { GetMeAnalytics200 } from "../schemas/get-me-analytics200";
-import type { GetMeAnalytics401 } from "../schemas/get-me-analytics401";
-import type { GetMeAnalytics500 } from "../schemas/get-me-analytics500";
-import type { GetMe200 } from "../schemas/get-me200";
-import type { GetMe401 } from "../schemas/get-me401";
-import type { GetMe404 } from "../schemas/get-me404";
-import type { GetMe500 } from "../schemas/get-me500";
+import type { get-me-analytics200, get-me-analytics401, get-me-analytics500, get-me200, get-me401, get-me404, get-me500 } from "../schemas/me-api";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 

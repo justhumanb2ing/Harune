@@ -22,17 +22,7 @@ import type {
 } from "@tanstack/react-query";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { orvalMutator } from "../../../orval-mutator";
-import type { CheckHandleAvailabilityParams } from "../schemas/check-handle-availability-params";
-import type { CheckHandleAvailability200 } from "../schemas/check-handle-availability200";
-import type { CheckHandleAvailability400 } from "../schemas/check-handle-availability400";
-import type { CheckHandleAvailability401 } from "../schemas/check-handle-availability401";
-import type { UpdateHandleBody } from "../schemas/update-handle-body";
-import type { UpdateHandle200 } from "../schemas/update-handle200";
-import type { UpdateHandle400 } from "../schemas/update-handle400";
-import type { UpdateHandle401 } from "../schemas/update-handle401";
-import type { UpdateHandle404 } from "../schemas/update-handle404";
-import type { UpdateHandle409 } from "../schemas/update-handle409";
-import type { UpdateHandle500 } from "../schemas/update-handle500";
+import type { check-handle-availability-params, check-handle-availability200, check-handle-availability400, check-handle-availability401, update-handle-body, update-handle200, update-handle400, update-handle401, update-handle404, update-handle409, update-handle500 } from "../schemas/handle-api";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 

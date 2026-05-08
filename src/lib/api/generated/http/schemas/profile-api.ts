@@ -5,12 +5,17 @@
  * API documentation for Harune
  * OpenAPI spec version: 1.0.0
  */
-import type { GetProfileByHandle200BentoItem } from "./get-profile-by-handle200-bento-item";
-import type { GetProfileByHandle200Page } from "./get-profile-by-handle200-page";
-import type { GetProfileByHandle200Viewer } from "./get-profile-by-handle200-viewer";
 
 export type GetProfileByHandle200 = {
   page: GetProfileByHandle200Page;
   bento: GetProfileByHandle200BentoItem[];
   viewer: GetProfileByHandle200Viewer;
+};
+
+export type GetProfileByHandle404 = {
+  error: GetProfileByHandle404Error;
+};
+
+export type GetProfileByHandle500 = {
+  error: GetProfileByHandle500Error;
 };

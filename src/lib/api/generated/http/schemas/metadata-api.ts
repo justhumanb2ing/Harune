@@ -6,6 +6,13 @@
  * OpenAPI spec version: 1.0.0
  */
 
+export type GetMetadataParams = {
+  /**
+   * URL to fetch metadata from.
+   */
+  url: string;
+};
+
 export type GetMetadata200 = {
   url: string;
   /** @nullable */
@@ -20,4 +27,20 @@ export type GetMetadata200 = {
   siteName: string | null;
   /** @nullable */
   favicon: string | null;
+};
+
+export type GetMetadata400 = {
+  error: GetMetadata400Error;
+};
+
+export type GetMetadata404 = {
+  error: GetMetadata404Error;
+};
+
+export type GetMetadata500 = {
+  error: GetMetadata500Error;
+};
+
+export type GetMetadata502 = {
+  error: GetMetadata502Error;
 };

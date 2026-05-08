@@ -946,7 +946,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
             onClick={handlePrimaryAction}
             type="button"
             size={"lg"}
-            className={"brand-button w-36 font-semibold py-5 text-base surface-bevel border-0"}
+            className={"brand-button w-36 font-semibold py-5 text-base shadow-none border-0"}
           >
             {isSaving ? <SpinnerGapIcon className="size-4 animate-spin" /> : null}
             {!isSaving && isCopied ? <CheckIcon className="size-4" /> : null}

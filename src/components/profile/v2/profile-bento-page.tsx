@@ -90,7 +90,7 @@ function ProfileBentoFooterAction({
     <footer className={cn("flex items-center justify-center gap-2", className)}>
       <Link
         href={href}
-        className="inline-flex py-2 items-center gap-2 rounded-md px-3 font-normal text-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+        className="inline-flex items-center gap-2 rounded-md p-2 py-1.5 font-normal text-sm text-muted-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
       >
         {viewerProfilePage ? (
           <span className="relative size-5 shrink-0 overflow-hidden rounded-full bg-secondary">

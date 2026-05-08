@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { WebPageStructuredData } from "@/components/site-instrumentation/structured-data";
-import { Button } from "@/components/ui/button";
+import { AppEntryCtaButton } from "@/components/website/app-entry-cta-button";
 import HandleCardSection from "@/components/website/landing/handle-card-section";
 import LiveCardSection from "@/components/website/landing/live-card-section";
 import MainHeroSection from "@/components/website/landing/main-hero-section";
@@ -30,16 +29,13 @@ export default function WebsiteHomepage() {
         {/*<AnalyticsCardSection />*/}
         <section className="h-[20rem] flex flex-col justify-center items-center">
           <div className="flex flex-col justify-center items-center gap-2">
-            <Button
-              nativeButton={false}
-              size={"lg"}
-              className={"brand-button h-12 min-w-60 max-w-68 text-lg py-8 rounded-xl font-bold!"}
-              render={
-                <Link href="/api/join" prefetch={false}>
-                  Get Started
-                </Link>
-              }
-            />
+            <AppEntryCtaButton
+              next="/app"
+              size="lg"
+              className="brand-button h-12 min-w-60 max-w-68 rounded-xl py-8 text-lg font-bold!"
+            >
+              Get Started
+            </AppEntryCtaButton>
             <p className="text-sm text-muted-foreground">Unique handles are still available</p>
           </div>
         </section>

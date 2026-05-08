@@ -1,5 +1,4 @@
 import { createProfileSocialImage } from "@/app/(public-profile)/[handle]/_social-image";
-import { getPublicProfilePageSocialImage } from "@/lib/profile/queries";
 
 type ProfileImageRouteContext = {
   params: Promise<{
@@ -10,8 +9,6 @@ type ProfileImageRouteContext = {
 export const dynamic = "force-dynamic";
 
 export async function GET(_request: Request, { params }: ProfileImageRouteContext) {
-  const { handle } = await params;
-  const profile = await getPublicProfilePageSocialImage(handle);
-
-  return createProfileSocialImage(profile);
+  void params;
+  return createProfileSocialImage(null);
 }

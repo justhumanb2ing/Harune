@@ -3,7 +3,7 @@
 import { environmentManager, MutationCache, QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-const STALE_TIME_MS = 0;
+const STALE_TIME_MS = 60 * 1000;
 
 type ToastMessageGetter = (value: {
   data: unknown;

@@ -10,19 +10,29 @@ import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { orvalMutator } from "../../../orval-mutator";
 import type { CheckHandleAvailabilityParams } from "../schemas/check-handle-availability-params";
 import type { CheckHandleAvailability200 } from "../schemas/check-handle-availability200";
 import type { CheckHandleAvailability400 } from "../schemas/check-handle-availability400";
 import type { CheckHandleAvailability401 } from "../schemas/check-handle-availability401";
+import type { UpdateHandleBody } from "../schemas/update-handle-body";
+import type { UpdateHandle200 } from "../schemas/update-handle200";
+import type { UpdateHandle400 } from "../schemas/update-handle400";
+import type { UpdateHandle401 } from "../schemas/update-handle401";
+import type { UpdateHandle404 } from "../schemas/update-handle404";
+import type { UpdateHandle409 } from "../schemas/update-handle409";
+import type { UpdateHandle500 } from "../schemas/update-handle500";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -58,11 +68,11 @@ export type checkHandleAvailabilityResponse =
 export const getCheckHandleAvailabilityUrl = (params: CheckHandleAvailabilityParams) => {
   const normalizedParams = new URLSearchParams();
 
-  Object.entries(params || {}).forEach(([key, value]) => {
+  for (const [key, value] of Object.entries(params || {})) {
     if (value !== undefined) {
       normalizedParams.append(key, value === null ? "null" : value.toString());
     }
-  });
+  }
 
   const stringifiedParams = normalizedParams.toString();
 
@@ -206,3 +216,148 @@ export function useCheckHandleAvailability<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+export type updateHandleResponse200 = {
+  data: UpdateHandle200;
+  status: 200;
+};
+
+export type updateHandleResponse400 = {
+  data: UpdateHandle400;
+  status: 400;
+};
+
+export type updateHandleResponse401 = {
+  data: UpdateHandle401;
+  status: 401;
+};
+
+export type updateHandleResponse404 = {
+  data: UpdateHandle404;
+  status: 404;
+};
+
+export type updateHandleResponse409 = {
+  data: UpdateHandle409;
+  status: 409;
+};
+
+export type updateHandleResponse500 = {
+  data: UpdateHandle500;
+  status: 500;
+};
+
+export type updateHandleResponseSuccess = updateHandleResponse200 & {
+  headers: Headers;
+};
+export type updateHandleResponseError = (
+  | updateHandleResponse400
+  | updateHandleResponse401
+  | updateHandleResponse404
+  | updateHandleResponse409
+  | updateHandleResponse500
+) & {
+  headers: Headers;
+};
+
+export type updateHandleResponse = updateHandleResponseSuccess | updateHandleResponseError;
+
+export const getUpdateHandleUrl = () => {
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/handle`;
+};
+
+/**
+ * Updates the authenticated user's canonical profile handle.
+
+Rules:
+- Requires a valid session
+- The server trims whitespace and lowercases the submitted handle
+- Empty, malformed, and reserved handles are rejected with validation errors
+- The current user must already own a profile page
+- A handle owned by another user returns a conflict error
+- Sending the current canonical handle again is treated as a no-op and returns the current profile page
+- Successful responses are returned with `Cache-Control: no-store`
+ * @summary Change the current user's handle
+ */
+export const updateHandle = async (
+  updateHandleBody: UpdateHandleBody,
+  options?: RequestInit
+): Promise<updateHandleResponse> => {
+  return orvalMutator<updateHandleResponse>(getUpdateHandleUrl(), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateHandleBody),
+  });
+};
+
+export const getUpdateHandleMutationOptions = <
+  TError = UpdateHandle400 | UpdateHandle401 | UpdateHandle404 | UpdateHandle409 | UpdateHandle500,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateHandle>>,
+    TError,
+    { data: UpdateHandleBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalMutator>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateHandle>>,
+  TError,
+  { data: UpdateHandleBody },
+  TContext
+> => {
+  const mutationKey = ["updateHandle"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateHandle>>,
+    { data: UpdateHandleBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return updateHandle(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateHandleMutationResult = NonNullable<Awaited<ReturnType<typeof updateHandle>>>;
+export type UpdateHandleMutationBody = UpdateHandleBody;
+export type UpdateHandleMutationError =
+  | UpdateHandle400
+  | UpdateHandle401
+  | UpdateHandle404
+  | UpdateHandle409
+  | UpdateHandle500;
+
+/**
+ * @summary Change the current user's handle
+ */
+export const useUpdateHandle = <
+  TError = UpdateHandle400 | UpdateHandle401 | UpdateHandle404 | UpdateHandle409 | UpdateHandle500,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateHandle>>,
+      TError,
+      { data: UpdateHandleBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateHandle>>,
+  TError,
+  { data: UpdateHandleBody },
+  TContext
+> => {
+  return useMutation(getUpdateHandleMutationOptions(options), queryClient);
+};

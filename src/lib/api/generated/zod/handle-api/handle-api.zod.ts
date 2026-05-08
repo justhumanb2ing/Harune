@@ -22,3 +22,30 @@ export const CheckHandleAvailabilityQueryParams = zod.object({
 export const CheckHandleAvailabilityResponse = zod.object({
   available: zod.boolean(),
 });
+
+/**
+ * Updates the authenticated user's canonical profile handle.
+
+Rules:
+- Requires a valid session
+- The server trims whitespace and lowercases the submitted handle
+- Empty, malformed, and reserved handles are rejected with validation errors
+- The current user must already own a profile page
+- A handle owned by another user returns a conflict error
+- Sending the current canonical handle again is treated as a no-op and returns the current profile page
+- Successful responses are returned with `Cache-Control: no-store`
+ * @summary Change the current user's handle
+ */
+export const UpdateHandleBody = zod.object({
+  handle: zod.string(),
+});
+
+export const UpdateHandleResponse = zod.object({
+  previousHandle: zod.string(),
+  profilePage: zod.object({
+    id: zod.string(),
+    handle: zod.string(),
+    name: zod.string().nullable(),
+    image: zod.string().nullable(),
+  }),
+});

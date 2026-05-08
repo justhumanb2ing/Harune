@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { handleSchema } from "@/lib/validations/auth.schema";
 import {
   profileBentoSyncSchema,
   profilePageSyncSchema,
@@ -7,10 +6,6 @@ import {
 } from "@/lib/validations/profile-content.schema";
 
 export const profilePageUpdateJsonSchema = profilePageUpdateSchema;
-
-export const profileHandleAvailabilityQuerySchema = z.object({
-  handle: handleSchema,
-});
 
 export const profilePageSyncJsonSchema = profilePageSyncSchema;
 

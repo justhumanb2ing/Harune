@@ -3,7 +3,6 @@ import { apiFactory, jsonResponse, unauthorizedResponse } from "@/lib/api/hono-f
 import { createSessionMiddleware, getAuthenticatedSession } from "@/lib/api/middlewares/session";
 import {
   profileBentoSyncJsonSchema,
-  profileHandleAvailabilityQuerySchema,
   profileImageDeleteJsonSchema,
   profileImageFinalizeJsonSchema,
   profilePageSyncJsonSchema,
@@ -100,43 +99,6 @@ export const createProfileApi = ({
         error,
         "Failed to update profile page:",
         "Failed to update profile page."
-      );
-    }
-  });
-  app.get("/handle-availability", async (context) => {
-    const session = getAuthenticatedSession(context);
-
-    if (!session) {
-      return unauthorizedResponse(context, { noStore: true });
-    }
-
-    try {
-      const validation = profileHandleAvailabilityQuerySchema.safeParse({
-        handle: context.req.query("handle") ?? "",
-      });
-
-      if (!validation.success) {
-        return jsonResponse(
-          context,
-          { error: validation.error.issues[0]?.message ?? "Invalid handle." },
-          400
-        );
-      }
-
-      return jsonResponse(
-        context,
-        await services.isHandleAvailable({
-          handle: validation.data.handle,
-          userId: session.user.id,
-        }),
-        { noStore: true, status: 200 }
-      );
-    } catch (error) {
-      return routeErrorResponse(
-        context,
-        error,
-        "Failed to check handle availability:",
-        "Failed to check handle availability."
       );
     }
   });

@@ -11,7 +11,6 @@ import {
   putProfileMediaObject,
 } from "@/lib/profile/media-storage";
 import {
-  isHandleAvailableForUser,
   ProfilePageError,
   syncProfileBentoDraft,
   syncProfilePageDraft,
@@ -27,7 +26,6 @@ export const profileApi = createProfileApi({
   getProfileMediaObjectKeyFromUrl,
   getTemporaryProfileBentoMediaObjectKey,
   hashProfileMediaBuffer,
-  isHandleAvailableForUser,
   isProfilePageError: (error): error is ProfilePageError => error instanceof ProfilePageError,
   putProfileMediaObject,
   revalidatePath,

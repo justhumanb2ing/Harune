@@ -33,7 +33,6 @@ export type ProfileApiServices = {
   }): Promise<ServiceError | { imageUrl: string | null }>;
   getEditorData(input: { handle?: string; userId: string }): Promise<unknown | null>;
   getProfileError(error: unknown): ServiceError | null;
-  isHandleAvailable(input: { handle: string; userId: string }): Promise<{ available: boolean }>;
   syncBento(input: {
     userId: string;
     values: ProfileBentoSyncValues;
@@ -72,7 +71,6 @@ export type ProfileApiServiceDependencies = {
   getProfilePageEditorData: (userId: string, handle?: string) => Promise<unknown | null>;
   getTemporaryProfileBentoMediaObjectKey: (input: { bentoId: string; userId: string }) => string;
   hashProfileMediaBuffer: (buffer: Buffer) => string;
-  isHandleAvailableForUser: (input: { handle: string; userId: string }) => Promise<boolean>;
   isProfilePageError?: (error: unknown) => error is { message: string; status: number };
   putProfileMediaObject: (input: {
     body: Buffer;
@@ -107,7 +105,6 @@ export const createProfileApiServices = ({
   getProfilePageEditorData,
   getTemporaryProfileBentoMediaObjectKey,
   hashProfileMediaBuffer,
-  isHandleAvailableForUser,
   isProfilePageError = (_error): _error is { message: string; status: number } => false,
   putProfileMediaObject,
   revalidatePath,
@@ -179,9 +176,6 @@ export const createProfileApiServices = ({
         status: error.status,
       };
     },
-    isHandleAvailable: async ({ handle, userId }) => ({
-      available: await isHandleAvailableForUser({ handle, userId }),
-    }),
     syncBento: async (input) => {
       const data = await syncProfileBentoDraft(input);
       revalidateProfile(data.page.handle);

@@ -121,26 +121,6 @@ const getOwnedPageOrThrow = async (userId: string) => {
   return page;
 };
 
-export const isHandleAvailableForUser = async ({
-  userId,
-  handle,
-}: {
-  userId: string;
-  handle: string;
-}) => {
-  const ownedPage = await getOwnedPageOrThrow(userId);
-  const existingOwner = await db
-    .select({
-      id: profilePages.id,
-    })
-    .from(profilePages)
-    .where(eq(profilePages.handle, handle))
-    .limit(1)
-    .then((rows) => rows[0] ?? null);
-
-  return !existingOwner || existingOwner.id === ownedPage.id;
-};
-
 export const updateProfileMetadata = async ({
   userId,
   values,

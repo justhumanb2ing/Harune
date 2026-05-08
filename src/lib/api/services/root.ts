@@ -1,7 +1,6 @@
 import type { AuthSession } from "@/auth";
 
 export type RootApiServices = {
-  checkHandleAvailability(handle: string): Promise<{ available: boolean }>;
   resolveJoinRedirect(input: {
     getSession: () => Promise<AuthSession | null>;
     hasSessionCookie: boolean;
@@ -10,7 +9,6 @@ export type RootApiServices = {
 };
 
 export type RootApiServiceDependencies = {
-  getProfilePageByHandle: (handle: string) => Promise<{ id: string } | null>;
   getSafeRedirectPath: (path?: string) => string;
   logger?: Pick<Console, "error">;
   resolveAuthenticatedAppRedirect: (input: {
@@ -21,7 +19,6 @@ export type RootApiServiceDependencies = {
 };
 
 export const createRootApiServices = ({
-  getProfilePageByHandle,
   getSafeRedirectPath,
   logger = console,
   resolveAuthenticatedAppRedirect,
@@ -37,9 +34,6 @@ export const createRootApiServices = ({
   };
 
   return {
-    checkHandleAvailability: async (handle) => ({
-      available: !(await getProfilePageByHandle(handle)),
-    }),
     resolveJoinRedirect: async ({ getSession, hasSessionCookie, requestUrl }) => {
       if (!hasSessionCookie) {
         return {

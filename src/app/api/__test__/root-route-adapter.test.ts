@@ -5,11 +5,11 @@ import { toServerApiRequest } from "@/lib/api/server/adapter";
 
 describe("root route adapters", () => {
   test("normalizes root API trailing slashes for Hono route matching", () => {
-    const request = new Request("http://localhost/api/handle/availability/?handle=example");
+    const request = new Request("http://localhost/api/join/?handle=example");
 
     const honoRequest = toServerApiRequest(request);
 
-    expect(honoRequest.url).toBe("http://localhost/api/handle/availability?handle=example");
+    expect(honoRequest.url).toBe("http://localhost/api/join?handle=example");
     expect(honoRequest.method).toBe("GET");
   });
 

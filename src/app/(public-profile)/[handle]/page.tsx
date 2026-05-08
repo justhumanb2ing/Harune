@@ -22,7 +22,8 @@ type HandlePageProps = {
   }>;
 };
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 type PublicProfilePageData = {
   page: GetProfileByHandle200Page & {
@@ -54,7 +55,9 @@ const getPublicProfilePage = async (handle: string) => {
   try {
     return toPublicProfilePageData(
       await getProfileByHandle(handle, {
+        cache: "no-store",
         headers: cookieHeader ? { cookie: cookieHeader } : undefined,
+        next: { revalidate: 0 },
       })
     );
   } catch (error) {

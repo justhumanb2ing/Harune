@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckIcon, Loader2Icon, XIcon } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   Popover,
@@ -44,6 +44,7 @@ export function ChangeHandleButton({
   triggerClassName,
 }: ChangeHandleButtonProps = {}) {
   const pathname = usePathname();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const routeHandle = getProfileRouteHandle(pathname);
   const profilePageQuery = useQuery(profilePageQueryOptions(routeHandle));
@@ -115,7 +116,8 @@ export function ChangeHandleButton({
         },
       };
     });
-    window.history.replaceState(window.history.state, "", nextPath);
+    router.replace(nextPath);
+    router.refresh();
     setIsOpen(false);
   };
 

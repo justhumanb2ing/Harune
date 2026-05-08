@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { type ChangeEvent, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import {
@@ -22,6 +22,7 @@ import useUser from "@/lib/users/use-user";
 export function useProfilePageEditor() {
   const { isLoading: isUserLoading, mutate, user } = useUser();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const store = useProfilePageEditorStoreApi();
   const pathname = usePathname();
   const currentHandle = getProfileRouteHandle(pathname);
@@ -178,6 +179,7 @@ export function useProfilePageEditor() {
       });
       store.actions.rebaseFromServer(profilePageData);
       await mutate();
+      router.refresh();
       return profilePageData;
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to sync";

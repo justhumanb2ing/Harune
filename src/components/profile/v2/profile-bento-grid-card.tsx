@@ -782,13 +782,10 @@ function MediaPreview({ item }: { item: Extract<ProfileBentoItem, { type: "media
   }
 
   return (
-    <Image
-      alt={item.content.alt}
-      className="object-cover"
-      fill
-      sizes="(min-width: 1024px) 25vw, 100vw"
-      src={item.content.url}
-    />
+    // Media previews can point at blob URLs during editing and public R2 URLs after upload.
+    // Use a plain img so both cases render consistently.
+    // biome-ignore lint/performance/noImgElement: Media previews must support blob and public URLs.
+    <img alt={item.content.alt} className="size-full object-cover" src={item.content.url} />
   );
 }
 

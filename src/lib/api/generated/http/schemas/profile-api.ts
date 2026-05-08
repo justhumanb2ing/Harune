@@ -6,6 +6,239 @@
  * OpenAPI spec version: 1.0.0
  */
 
+export type DeleteProfileImageBody = {
+  imageUrl: string;
+};
+
+export type DeleteProfileImage200 = {
+  success: boolean;
+  deletedObjectKey: string;
+};
+
+export type DeleteProfileImage400ErrorCode =
+  (typeof DeleteProfileImage400ErrorCode)[keyof typeof DeleteProfileImage400ErrorCode];
+
+export const DeleteProfileImage400ErrorCode = {
+  validation_error: "validation_error",
+  profile_image_url_invalid: "profile_image_url_invalid",
+} as const;
+
+export type DeleteProfileImage400ErrorDetails = { [key: string]: unknown };
+
+export type DeleteProfileImage400Error = {
+  code: DeleteProfileImage400ErrorCode;
+  message: string;
+  details?: DeleteProfileImage400ErrorDetails;
+};
+
+export type DeleteProfileImage400 = {
+  error: DeleteProfileImage400Error;
+};
+
+export type DeleteProfileImage401ErrorCode =
+  (typeof DeleteProfileImage401ErrorCode)[keyof typeof DeleteProfileImage401ErrorCode];
+
+export const DeleteProfileImage401ErrorCode = {
+  unauthorized: "unauthorized",
+} as const;
+
+export type DeleteProfileImage401ErrorDetails = { [key: string]: unknown };
+
+export type DeleteProfileImage401Error = {
+  code: DeleteProfileImage401ErrorCode;
+  message: string;
+  details?: DeleteProfileImage401ErrorDetails;
+};
+
+export type DeleteProfileImage401 = {
+  error: DeleteProfileImage401Error;
+};
+
+export type DeleteProfileImage403ErrorCode =
+  (typeof DeleteProfileImage403ErrorCode)[keyof typeof DeleteProfileImage403ErrorCode];
+
+export const DeleteProfileImage403ErrorCode = {
+  profile_image_forbidden: "profile_image_forbidden",
+} as const;
+
+export type DeleteProfileImage403ErrorDetails = { [key: string]: unknown };
+
+export type DeleteProfileImage403Error = {
+  code: DeleteProfileImage403ErrorCode;
+  message: string;
+  details?: DeleteProfileImage403ErrorDetails;
+};
+
+export type DeleteProfileImage403 = {
+  error: DeleteProfileImage403Error;
+};
+
+export type DeleteProfileImage404ErrorCode =
+  (typeof DeleteProfileImage404ErrorCode)[keyof typeof DeleteProfileImage404ErrorCode];
+
+export const DeleteProfileImage404ErrorCode = {
+  profile_image_not_found: "profile_image_not_found",
+} as const;
+
+export type DeleteProfileImage404ErrorDetails = { [key: string]: unknown };
+
+export type DeleteProfileImage404Error = {
+  code: DeleteProfileImage404ErrorCode;
+  message: string;
+  details?: DeleteProfileImage404ErrorDetails;
+};
+
+export type DeleteProfileImage404 = {
+  error: DeleteProfileImage404Error;
+};
+
+export type DeleteProfileImage500ErrorCode =
+  (typeof DeleteProfileImage500ErrorCode)[keyof typeof DeleteProfileImage500ErrorCode];
+
+export const DeleteProfileImage500ErrorCode = {
+  profile_image_delete_failed: "profile_image_delete_failed",
+} as const;
+
+export type DeleteProfileImage500ErrorDetails = { [key: string]: unknown };
+
+export type DeleteProfileImage500Error = {
+  code: DeleteProfileImage500ErrorCode;
+  message: string;
+  details?: DeleteProfileImage500ErrorDetails;
+};
+
+export type DeleteProfileImage500 = {
+  error: DeleteProfileImage500Error;
+};
+
+export type FinalizeProfileImageBodyImageKind =
+  (typeof FinalizeProfileImageBodyImageKind)[keyof typeof FinalizeProfileImageBodyImageKind];
+
+export const FinalizeProfileImageBodyImageKind = {
+  profile: "profile",
+  background: "background",
+} as const;
+
+export type FinalizeProfileImageBody = {
+  imageKind: FinalizeProfileImageBodyImageKind;
+  imageUrl: string;
+};
+
+export type FinalizeProfileImage200ImageKind =
+  (typeof FinalizeProfileImage200ImageKind)[keyof typeof FinalizeProfileImage200ImageKind];
+
+export const FinalizeProfileImage200ImageKind = {
+  profile: "profile",
+  background: "background",
+} as const;
+
+export type FinalizeProfileImage200 = {
+  imageKind: FinalizeProfileImage200ImageKind;
+  imageUrl: string;
+  /** @nullable */
+  image: string | null;
+  /** @nullable */
+  backgroundImage: string | null;
+  updatedAt: string;
+};
+
+export type FinalizeProfileImage400ErrorCode =
+  (typeof FinalizeProfileImage400ErrorCode)[keyof typeof FinalizeProfileImage400ErrorCode];
+
+export const FinalizeProfileImage400ErrorCode = {
+  validation_error: "validation_error",
+  profile_image_url_invalid: "profile_image_url_invalid",
+} as const;
+
+export type FinalizeProfileImage400ErrorDetails = { [key: string]: unknown };
+
+export type FinalizeProfileImage400Error = {
+  code: FinalizeProfileImage400ErrorCode;
+  message: string;
+  details?: FinalizeProfileImage400ErrorDetails;
+};
+
+export type FinalizeProfileImage400 = {
+  error: FinalizeProfileImage400Error;
+};
+
+export type FinalizeProfileImage401ErrorCode =
+  (typeof FinalizeProfileImage401ErrorCode)[keyof typeof FinalizeProfileImage401ErrorCode];
+
+export const FinalizeProfileImage401ErrorCode = {
+  unauthorized: "unauthorized",
+} as const;
+
+export type FinalizeProfileImage401ErrorDetails = { [key: string]: unknown };
+
+export type FinalizeProfileImage401Error = {
+  code: FinalizeProfileImage401ErrorCode;
+  message: string;
+  details?: FinalizeProfileImage401ErrorDetails;
+};
+
+export type FinalizeProfileImage401 = {
+  error: FinalizeProfileImage401Error;
+};
+
+export type FinalizeProfileImage403ErrorCode =
+  (typeof FinalizeProfileImage403ErrorCode)[keyof typeof FinalizeProfileImage403ErrorCode];
+
+export const FinalizeProfileImage403ErrorCode = {
+  profile_image_forbidden: "profile_image_forbidden",
+} as const;
+
+export type FinalizeProfileImage403ErrorDetails = { [key: string]: unknown };
+
+export type FinalizeProfileImage403Error = {
+  code: FinalizeProfileImage403ErrorCode;
+  message: string;
+  details?: FinalizeProfileImage403ErrorDetails;
+};
+
+export type FinalizeProfileImage403 = {
+  error: FinalizeProfileImage403Error;
+};
+
+export type FinalizeProfileImage404ErrorCode =
+  (typeof FinalizeProfileImage404ErrorCode)[keyof typeof FinalizeProfileImage404ErrorCode];
+
+export const FinalizeProfileImage404ErrorCode = {
+  profile_page_not_found: "profile_page_not_found",
+  profile_image_not_found: "profile_image_not_found",
+} as const;
+
+export type FinalizeProfileImage404ErrorDetails = { [key: string]: unknown };
+
+export type FinalizeProfileImage404Error = {
+  code: FinalizeProfileImage404ErrorCode;
+  message: string;
+  details?: FinalizeProfileImage404ErrorDetails;
+};
+
+export type FinalizeProfileImage404 = {
+  error: FinalizeProfileImage404Error;
+};
+
+export type FinalizeProfileImage500ErrorCode =
+  (typeof FinalizeProfileImage500ErrorCode)[keyof typeof FinalizeProfileImage500ErrorCode];
+
+export const FinalizeProfileImage500ErrorCode = {
+  profile_image_finalize_failed: "profile_image_finalize_failed",
+} as const;
+
+export type FinalizeProfileImage500ErrorDetails = { [key: string]: unknown };
+
+export type FinalizeProfileImage500Error = {
+  code: FinalizeProfileImage500ErrorCode;
+  message: string;
+  details?: FinalizeProfileImage500ErrorDetails;
+};
+
+export type FinalizeProfileImage500 = {
+  error: FinalizeProfileImage500Error;
+};
+
 export type GetProfileByHandle200BentoItem =
   | {
       id: string;
@@ -178,4 +411,194 @@ export type GetProfileByHandle500Error = {
 
 export type GetProfileByHandle500 = {
   error: GetProfileByHandle500Error;
+};
+
+export type UploadProfileBentoMediaBody = {
+  bentoId: string;
+  file: Blob;
+};
+
+export type UploadProfileBentoMedia200MediaType =
+  (typeof UploadProfileBentoMedia200MediaType)[keyof typeof UploadProfileBentoMedia200MediaType];
+
+export const UploadProfileBentoMedia200MediaType = {
+  image: "image",
+  video: "video",
+} as const;
+
+export type UploadProfileBentoMedia200 = {
+  bentoId: string;
+  contentHash: string;
+  contentType: string;
+  mediaType: UploadProfileBentoMedia200MediaType;
+  tempObjectKey: string;
+  tempUrl: string;
+};
+
+export type UploadProfileBentoMedia400ErrorCode =
+  (typeof UploadProfileBentoMedia400ErrorCode)[keyof typeof UploadProfileBentoMedia400ErrorCode];
+
+export const UploadProfileBentoMedia400ErrorCode = {
+  validation_error: "validation_error",
+  profile_media_invalid_type: "profile_media_invalid_type",
+  profile_media_too_large: "profile_media_too_large",
+} as const;
+
+export type UploadProfileBentoMedia400ErrorDetails = { [key: string]: unknown };
+
+export type UploadProfileBentoMedia400Error = {
+  code: UploadProfileBentoMedia400ErrorCode;
+  message: string;
+  details?: UploadProfileBentoMedia400ErrorDetails;
+};
+
+export type UploadProfileBentoMedia400 = {
+  error: UploadProfileBentoMedia400Error;
+};
+
+export type UploadProfileBentoMedia401ErrorCode =
+  (typeof UploadProfileBentoMedia401ErrorCode)[keyof typeof UploadProfileBentoMedia401ErrorCode];
+
+export const UploadProfileBentoMedia401ErrorCode = {
+  unauthorized: "unauthorized",
+} as const;
+
+export type UploadProfileBentoMedia401ErrorDetails = { [key: string]: unknown };
+
+export type UploadProfileBentoMedia401Error = {
+  code: UploadProfileBentoMedia401ErrorCode;
+  message: string;
+  details?: UploadProfileBentoMedia401ErrorDetails;
+};
+
+export type UploadProfileBentoMedia401 = {
+  error: UploadProfileBentoMedia401Error;
+};
+
+export type UploadProfileBentoMedia403ErrorCode =
+  (typeof UploadProfileBentoMedia403ErrorCode)[keyof typeof UploadProfileBentoMedia403ErrorCode];
+
+export const UploadProfileBentoMedia403ErrorCode = {
+  profile_bento_forbidden: "profile_bento_forbidden",
+} as const;
+
+export type UploadProfileBentoMedia403ErrorDetails = { [key: string]: unknown };
+
+export type UploadProfileBentoMedia403Error = {
+  code: UploadProfileBentoMedia403ErrorCode;
+  message: string;
+  details?: UploadProfileBentoMedia403ErrorDetails;
+};
+
+export type UploadProfileBentoMedia403 = {
+  error: UploadProfileBentoMedia403Error;
+};
+
+export type UploadProfileBentoMedia500ErrorCode =
+  (typeof UploadProfileBentoMedia500ErrorCode)[keyof typeof UploadProfileBentoMedia500ErrorCode];
+
+export const UploadProfileBentoMedia500ErrorCode = {
+  profile_media_upload_failed: "profile_media_upload_failed",
+} as const;
+
+export type UploadProfileBentoMedia500ErrorDetails = { [key: string]: unknown };
+
+export type UploadProfileBentoMedia500Error = {
+  code: UploadProfileBentoMedia500ErrorCode;
+  message: string;
+  details?: UploadProfileBentoMedia500ErrorDetails;
+};
+
+export type UploadProfileBentoMedia500 = {
+  error: UploadProfileBentoMedia500Error;
+};
+
+export type UploadProfileImageBodyImageKind =
+  (typeof UploadProfileImageBodyImageKind)[keyof typeof UploadProfileImageBodyImageKind];
+
+export const UploadProfileImageBodyImageKind = {
+  profile: "profile",
+  background: "background",
+} as const;
+
+export type UploadProfileImageBody = {
+  file: Blob;
+  imageKind: UploadProfileImageBodyImageKind;
+  imageHash: string;
+};
+
+export type UploadProfileImage200ImageKind =
+  (typeof UploadProfileImage200ImageKind)[keyof typeof UploadProfileImage200ImageKind];
+
+export const UploadProfileImage200ImageKind = {
+  profile: "profile",
+  background: "background",
+} as const;
+
+export type UploadProfileImage200 = {
+  imageKind: UploadProfileImage200ImageKind;
+  imageUrl: string;
+  objectKey: string;
+  contentType: string;
+  contentLength: number;
+};
+
+export type UploadProfileImage400ErrorCode =
+  (typeof UploadProfileImage400ErrorCode)[keyof typeof UploadProfileImage400ErrorCode];
+
+export const UploadProfileImage400ErrorCode = {
+  validation_error: "validation_error",
+  profile_image_invalid_type: "profile_image_invalid_type",
+  profile_image_too_large: "profile_image_too_large",
+  profile_image_hash_mismatch: "profile_image_hash_mismatch",
+} as const;
+
+export type UploadProfileImage400ErrorDetails = { [key: string]: unknown };
+
+export type UploadProfileImage400Error = {
+  code: UploadProfileImage400ErrorCode;
+  message: string;
+  details?: UploadProfileImage400ErrorDetails;
+};
+
+export type UploadProfileImage400 = {
+  error: UploadProfileImage400Error;
+};
+
+export type UploadProfileImage401ErrorCode =
+  (typeof UploadProfileImage401ErrorCode)[keyof typeof UploadProfileImage401ErrorCode];
+
+export const UploadProfileImage401ErrorCode = {
+  unauthorized: "unauthorized",
+} as const;
+
+export type UploadProfileImage401ErrorDetails = { [key: string]: unknown };
+
+export type UploadProfileImage401Error = {
+  code: UploadProfileImage401ErrorCode;
+  message: string;
+  details?: UploadProfileImage401ErrorDetails;
+};
+
+export type UploadProfileImage401 = {
+  error: UploadProfileImage401Error;
+};
+
+export type UploadProfileImage500ErrorCode =
+  (typeof UploadProfileImage500ErrorCode)[keyof typeof UploadProfileImage500ErrorCode];
+
+export const UploadProfileImage500ErrorCode = {
+  profile_image_upload_failed: "profile_image_upload_failed",
+} as const;
+
+export type UploadProfileImage500ErrorDetails = { [key: string]: unknown };
+
+export type UploadProfileImage500Error = {
+  code: UploadProfileImage500ErrorCode;
+  message: string;
+  details?: UploadProfileImage500ErrorDetails;
+};
+
+export type UploadProfileImage500 = {
+  error: UploadProfileImage500Error;
 };

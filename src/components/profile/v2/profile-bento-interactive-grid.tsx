@@ -35,6 +35,7 @@ import {
 import { useGridDragMotion } from "@/hooks/use-grid-drag-motion";
 import { useProfilePageEditor } from "@/hooks/use-profile-editor";
 import { getMetadata } from "@/lib/api/generated/http/metadata-api/metadata-api";
+import { uploadProfileBentoMedia } from "@/lib/api/generated/http/profile-api/profile-api";
 import { appConfig } from "@/lib/config";
 import { BREAKPOINTS, COLS, GRID_MARGIN, getGridRowHeight } from "@/lib/grid/grid-config";
 import { normalizeLayouts } from "@/lib/grid/grid-layout-utils";
@@ -46,7 +47,6 @@ import {
   getProfileBentoMediaType,
   PROFILE_BENTO_MEDIA_ACCEPT,
   PROFILE_BENTO_MEDIA_MAX_SIZE_BYTES,
-  PROFILE_BENTO_MEDIA_UPLOAD_ROUTE,
 } from "@/lib/profile/media-upload";
 import type { ProfileBentoItem, PublicProfileBentoPageData } from "@/lib/profile/types";
 import { ApiError, apiFetch } from "@/lib/react-query/fetcher";
@@ -66,14 +66,6 @@ import { Separator } from "@/components/ui/separator";
 
 type ProfileBentoInteractiveGridProps = {
   initialBento: ProfileBentoItem[];
-};
-
-type MediaUploadResponse = {
-  contentHash: string;
-  contentType: string;
-  mediaType: "image" | "video";
-  tempObjectKey: string;
-  tempUrl: string;
 };
 
 const createPayload = (items: ProfileBentoItem[], layouts: GridLayouts) => ({
@@ -752,17 +744,9 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     setLayouts(toBentoGridLayouts(nextBento));
 
     try {
-      const formData = new FormData();
-      formData.set("file", uploadFile);
-      formData.set("bentoId", placeholderItem.id);
-
-      const response = await apiFetch<MediaUploadResponse>(PROFILE_BENTO_MEDIA_UPLOAD_ROUTE, {
-        method: "POST",
-        cache: "no-store",
-        headers: {
-          "Cache-Control": "no-store",
-        },
-        body: formData,
+      const response = await uploadProfileBentoMedia({
+        file: uploadFile,
+        bentoId: placeholderItem.id,
       });
 
       setBento((currentItems) =>
@@ -775,12 +759,12 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
             ...item,
             content: {
               ...item.content,
-              contentHash: response.contentHash,
-              contentType: response.contentType,
-              mediaType: response.mediaType,
-              objectKey: response.tempObjectKey,
-              tempObjectKey: response.tempObjectKey,
-              url: response.tempUrl,
+              contentHash: response.data.contentHash,
+              contentType: response.data.contentType,
+              mediaType: response.data.mediaType,
+              objectKey: response.data.tempObjectKey,
+              tempObjectKey: response.data.tempObjectKey,
+              url: response.data.tempUrl,
             },
           };
         })

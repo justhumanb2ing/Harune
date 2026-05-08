@@ -65,7 +65,7 @@ describe("profile image upload", () => {
     globalThis.fetch = ((input, init) => {
       fetchCalls.push({ input, init });
 
-      if (input === "/api/profile/upload-image" && init?.method === "POST") {
+      if (String(input).includes("/profile/image") && init?.method === "POST") {
         return Promise.resolve(
           new Response(
             JSON.stringify({
@@ -113,7 +113,7 @@ describe("profile image upload", () => {
 
     expect(uploadedUrl).toBe(finalizedUrl);
     expect(fetchCalls.length).toBe(2);
-    expect(fetchCalls[1]?.input).toBe("/api/profile/upload-image");
+    expect(String(fetchCalls[1]?.input)).toContain("/profile/image");
     expect(fetchCalls[1]?.init?.method).toBe("PATCH");
     expect(finalizeBody.imageKind).toBe("background");
     expect(finalizeBody.imageUrl.includes("/profile/background?v=")).toBe(true);

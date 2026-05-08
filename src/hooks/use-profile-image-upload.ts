@@ -1,13 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { deleteProfileImage } from "@/lib/api/generated/http/profile-api/profile-api";
 import { uploadProfileImageIfChanged } from "@/lib/profile/client-image-upload";
-import {
-  getProfileImageFileError,
-  PROFILE_IMAGE_UPLOAD_ROUTE,
-  type ProfileImageKind,
-} from "@/lib/profile/image-upload";
-import { apiFetch } from "@/lib/react-query/fetcher";
+import { getProfileImageFileError, type ProfileImageKind } from "@/lib/profile/image-upload";
 
 type ProfileImageUploadState = {
   error: string | null;
@@ -26,14 +22,8 @@ const initialState: ProfileImageUploadState = {
 };
 
 export async function deleteUploadedProfileImage(imageUrl: string) {
-  await apiFetch<{ success: true }>(PROFILE_IMAGE_UPLOAD_ROUTE, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      imageUrl,
-    }),
+  await deleteProfileImage({
+    imageUrl,
   });
 }
 

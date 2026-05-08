@@ -8,6 +8,110 @@
 import * as zod from "zod";
 
 /**
+ * Uploads a profile image or background image into the authenticated user's stable slot.
+
+Rules:
+- Requires a valid session
+- Accepts `multipart/form-data` with `file`, `imageKind`, and `imageHash`
+- `imageKind` must be `profile` or `background`
+- `imageHash` must be a 64-character SHA-256 hex string
+- File type must be JPEG, PNG, WebP, or AVIF
+- File size must be 5MB or smaller
+- The uploaded bytes hash must match `imageHash`
+- The response is `Cache-Control: no-store`
+- Upload only writes storage; DB finalize happens in `PATCH /profile/image`
+ * @summary Upload a profile image slot object
+ */
+export const UploadProfileImageBody = zod.object({
+  file: zod.instanceof(File),
+  imageKind: zod.enum(["profile", "background"]),
+  imageHash: zod.string(),
+});
+
+export const UploadProfileImageResponse = zod.object({
+  imageKind: zod.enum(["profile", "background"]),
+  imageUrl: zod.string(),
+  objectKey: zod.string(),
+  contentType: zod.string(),
+  contentLength: zod.number(),
+});
+
+/**
+ * Commits a previously uploaded profile image URL into the authenticated user's profile page row.
+
+Rules:
+- Requires a valid session
+- Accepts JSON with `imageKind` and `imageUrl`
+- `imageKind` must be `profile` or `background`
+- `imageUrl` must point to the authenticated user's stable object key
+- The object must already exist in storage
+- Only the matching DB column is updated
+- The response returns the committed persisted row and is `Cache-Control: no-store`
+ * @summary Finalize a profile image slot in the database
+ */
+export const FinalizeProfileImageBody = zod.object({
+  imageKind: zod.enum(["profile", "background"]),
+  imageUrl: zod.string(),
+});
+
+export const FinalizeProfileImageResponse = zod.object({
+  imageKind: zod.enum(["profile", "background"]),
+  imageUrl: zod.string(),
+  image: zod.string().nullable(),
+  backgroundImage: zod.string().nullable(),
+  updatedAt: zod.iso.datetime({ offset: true }),
+});
+
+/**
+ * Deletes a profile image or background image object from storage without mutating the row.
+
+Rules:
+- Requires a valid session
+- Accepts JSON with `imageUrl`
+- `imageUrl` must resolve to the authenticated user's profile image namespace
+- The object must exist before deletion
+- The row is not modified
+- The response is `Cache-Control: no-store`
+ * @summary Delete a profile image slot object
+ */
+export const DeleteProfileImageBody = zod.object({
+  imageUrl: zod.string(),
+});
+
+export const DeleteProfileImageResponse = zod.object({
+  success: zod.boolean(),
+  deletedObjectKey: zod.string(),
+});
+
+/**
+ * Uploads temporary media for a bento block and returns metadata for later sync.
+
+Rules:
+- Requires a valid session
+- Accepts `multipart/form-data` with `bentoId` and `file`
+- The bento must belong to the authenticated user
+- File type must be image or video
+- File size must be 5MB or smaller
+- A SHA-256 hash is computed before storage write
+- Temporary uploads only return metadata; no final DB write happens here
+- The response is `Cache-Control: no-store`
+ * @summary Upload temporary bento media
+ */
+export const UploadProfileBentoMediaBody = zod.object({
+  bentoId: zod.string(),
+  file: zod.instanceof(File),
+});
+
+export const UploadProfileBentoMediaResponse = zod.object({
+  bentoId: zod.string(),
+  contentHash: zod.string(),
+  contentType: zod.string(),
+  mediaType: zod.enum(["image", "video"]),
+  tempObjectKey: zod.string(),
+  tempUrl: zod.string(),
+});
+
+/**
  * Returns a profile page and its bento blocks for the provided handle. This endpoint is read-only and does not require authentication. If a session is present, the `viewer` object reflects whether the current user can edit the page.
  * @summary Get a profile by handle
  */

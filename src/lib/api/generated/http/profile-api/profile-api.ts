@@ -10,23 +10,659 @@ import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { orvalMutator } from "../../../orval-mutator";
 import type {
+  DeleteProfileImage200,
+  DeleteProfileImage400,
+  DeleteProfileImage401,
+  DeleteProfileImage403,
+  DeleteProfileImage404,
+  DeleteProfileImage500,
+  DeleteProfileImageBody,
+  FinalizeProfileImage200,
+  FinalizeProfileImage400,
+  FinalizeProfileImage401,
+  FinalizeProfileImage403,
+  FinalizeProfileImage404,
+  FinalizeProfileImage500,
+  FinalizeProfileImageBody,
   GetProfileByHandle200,
   GetProfileByHandle404,
   GetProfileByHandle500,
+  UploadProfileBentoMedia200,
+  UploadProfileBentoMedia400,
+  UploadProfileBentoMedia401,
+  UploadProfileBentoMedia403,
+  UploadProfileBentoMedia500,
+  UploadProfileBentoMediaBody,
+  UploadProfileImage200,
+  UploadProfileImage400,
+  UploadProfileImage401,
+  UploadProfileImage500,
+  UploadProfileImageBody,
 } from "../schemas/profile-api";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
+export type uploadProfileImageResponse200 = {
+  data: UploadProfileImage200;
+  status: 200;
+};
+
+export type uploadProfileImageResponse400 = {
+  data: UploadProfileImage400;
+  status: 400;
+};
+
+export type uploadProfileImageResponse401 = {
+  data: UploadProfileImage401;
+  status: 401;
+};
+
+export type uploadProfileImageResponse500 = {
+  data: UploadProfileImage500;
+  status: 500;
+};
+
+export type uploadProfileImageResponseSuccess = uploadProfileImageResponse200 & {
+  headers: Headers;
+};
+export type uploadProfileImageResponseError = (
+  | uploadProfileImageResponse400
+  | uploadProfileImageResponse401
+  | uploadProfileImageResponse500
+) & {
+  headers: Headers;
+};
+
+export type uploadProfileImageResponse =
+  | uploadProfileImageResponseSuccess
+  | uploadProfileImageResponseError;
+
+export const getUploadProfileImageUrl = () => {
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/image`;
+};
+
+/**
+ * Uploads a profile image or background image into the authenticated user's stable slot.
+
+Rules:
+- Requires a valid session
+- Accepts `multipart/form-data` with `file`, `imageKind`, and `imageHash`
+- `imageKind` must be `profile` or `background`
+- `imageHash` must be a 64-character SHA-256 hex string
+- File type must be JPEG, PNG, WebP, or AVIF
+- File size must be 5MB or smaller
+- The uploaded bytes hash must match `imageHash`
+- The response is `Cache-Control: no-store`
+- Upload only writes storage; DB finalize happens in `PATCH /profile/image`
+ * @summary Upload a profile image slot object
+ */
+export const uploadProfileImage = async (
+  uploadProfileImageBody: UploadProfileImageBody,
+  options?: RequestInit
+): Promise<uploadProfileImageResponse> => {
+  const formData = new FormData();
+  formData.append(`file`, uploadProfileImageBody.file);
+  formData.append(`imageKind`, uploadProfileImageBody.imageKind);
+  formData.append(`imageHash`, uploadProfileImageBody.imageHash);
+
+  return orvalMutator<uploadProfileImageResponse>(getUploadProfileImageUrl(), {
+    ...options,
+    method: "POST",
+    body: formData,
+  });
+};
+
+export const getUploadProfileImageMutationOptions = <
+  TError = UploadProfileImage400 | UploadProfileImage401 | UploadProfileImage500,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof uploadProfileImage>>,
+    TError,
+    { data: UploadProfileImageBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalMutator>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof uploadProfileImage>>,
+  TError,
+  { data: UploadProfileImageBody },
+  TContext
+> => {
+  const mutationKey = ["uploadProfileImage"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof uploadProfileImage>>,
+    { data: UploadProfileImageBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return uploadProfileImage(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UploadProfileImageMutationResult = NonNullable<
+  Awaited<ReturnType<typeof uploadProfileImage>>
+>;
+export type UploadProfileImageMutationBody = UploadProfileImageBody;
+export type UploadProfileImageMutationError =
+  | UploadProfileImage400
+  | UploadProfileImage401
+  | UploadProfileImage500;
+
+/**
+ * @summary Upload a profile image slot object
+ */
+export const useUploadProfileImage = <
+  TError = UploadProfileImage400 | UploadProfileImage401 | UploadProfileImage500,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof uploadProfileImage>>,
+      TError,
+      { data: UploadProfileImageBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof uploadProfileImage>>,
+  TError,
+  { data: UploadProfileImageBody },
+  TContext
+> => {
+  return useMutation(getUploadProfileImageMutationOptions(options), queryClient);
+};
+export type finalizeProfileImageResponse200 = {
+  data: FinalizeProfileImage200;
+  status: 200;
+};
+
+export type finalizeProfileImageResponse400 = {
+  data: FinalizeProfileImage400;
+  status: 400;
+};
+
+export type finalizeProfileImageResponse401 = {
+  data: FinalizeProfileImage401;
+  status: 401;
+};
+
+export type finalizeProfileImageResponse403 = {
+  data: FinalizeProfileImage403;
+  status: 403;
+};
+
+export type finalizeProfileImageResponse404 = {
+  data: FinalizeProfileImage404;
+  status: 404;
+};
+
+export type finalizeProfileImageResponse500 = {
+  data: FinalizeProfileImage500;
+  status: 500;
+};
+
+export type finalizeProfileImageResponseSuccess = finalizeProfileImageResponse200 & {
+  headers: Headers;
+};
+export type finalizeProfileImageResponseError = (
+  | finalizeProfileImageResponse400
+  | finalizeProfileImageResponse401
+  | finalizeProfileImageResponse403
+  | finalizeProfileImageResponse404
+  | finalizeProfileImageResponse500
+) & {
+  headers: Headers;
+};
+
+export type finalizeProfileImageResponse =
+  | finalizeProfileImageResponseSuccess
+  | finalizeProfileImageResponseError;
+
+export const getFinalizeProfileImageUrl = () => {
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/image`;
+};
+
+/**
+ * Commits a previously uploaded profile image URL into the authenticated user's profile page row.
+
+Rules:
+- Requires a valid session
+- Accepts JSON with `imageKind` and `imageUrl`
+- `imageKind` must be `profile` or `background`
+- `imageUrl` must point to the authenticated user's stable object key
+- The object must already exist in storage
+- Only the matching DB column is updated
+- The response returns the committed persisted row and is `Cache-Control: no-store`
+ * @summary Finalize a profile image slot in the database
+ */
+export const finalizeProfileImage = async (
+  finalizeProfileImageBody: FinalizeProfileImageBody,
+  options?: RequestInit
+): Promise<finalizeProfileImageResponse> => {
+  return orvalMutator<finalizeProfileImageResponse>(getFinalizeProfileImageUrl(), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(finalizeProfileImageBody),
+  });
+};
+
+export const getFinalizeProfileImageMutationOptions = <
+  TError =
+    | FinalizeProfileImage400
+    | FinalizeProfileImage401
+    | FinalizeProfileImage403
+    | FinalizeProfileImage404
+    | FinalizeProfileImage500,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof finalizeProfileImage>>,
+    TError,
+    { data: FinalizeProfileImageBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalMutator>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof finalizeProfileImage>>,
+  TError,
+  { data: FinalizeProfileImageBody },
+  TContext
+> => {
+  const mutationKey = ["finalizeProfileImage"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof finalizeProfileImage>>,
+    { data: FinalizeProfileImageBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return finalizeProfileImage(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type FinalizeProfileImageMutationResult = NonNullable<
+  Awaited<ReturnType<typeof finalizeProfileImage>>
+>;
+export type FinalizeProfileImageMutationBody = FinalizeProfileImageBody;
+export type FinalizeProfileImageMutationError =
+  | FinalizeProfileImage400
+  | FinalizeProfileImage401
+  | FinalizeProfileImage403
+  | FinalizeProfileImage404
+  | FinalizeProfileImage500;
+
+/**
+ * @summary Finalize a profile image slot in the database
+ */
+export const useFinalizeProfileImage = <
+  TError =
+    | FinalizeProfileImage400
+    | FinalizeProfileImage401
+    | FinalizeProfileImage403
+    | FinalizeProfileImage404
+    | FinalizeProfileImage500,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof finalizeProfileImage>>,
+      TError,
+      { data: FinalizeProfileImageBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof finalizeProfileImage>>,
+  TError,
+  { data: FinalizeProfileImageBody },
+  TContext
+> => {
+  return useMutation(getFinalizeProfileImageMutationOptions(options), queryClient);
+};
+export type deleteProfileImageResponse200 = {
+  data: DeleteProfileImage200;
+  status: 200;
+};
+
+export type deleteProfileImageResponse400 = {
+  data: DeleteProfileImage400;
+  status: 400;
+};
+
+export type deleteProfileImageResponse401 = {
+  data: DeleteProfileImage401;
+  status: 401;
+};
+
+export type deleteProfileImageResponse403 = {
+  data: DeleteProfileImage403;
+  status: 403;
+};
+
+export type deleteProfileImageResponse404 = {
+  data: DeleteProfileImage404;
+  status: 404;
+};
+
+export type deleteProfileImageResponse500 = {
+  data: DeleteProfileImage500;
+  status: 500;
+};
+
+export type deleteProfileImageResponseSuccess = deleteProfileImageResponse200 & {
+  headers: Headers;
+};
+export type deleteProfileImageResponseError = (
+  | deleteProfileImageResponse400
+  | deleteProfileImageResponse401
+  | deleteProfileImageResponse403
+  | deleteProfileImageResponse404
+  | deleteProfileImageResponse500
+) & {
+  headers: Headers;
+};
+
+export type deleteProfileImageResponse =
+  | deleteProfileImageResponseSuccess
+  | deleteProfileImageResponseError;
+
+export const getDeleteProfileImageUrl = () => {
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/image`;
+};
+
+/**
+ * Deletes a profile image or background image object from storage without mutating the row.
+
+Rules:
+- Requires a valid session
+- Accepts JSON with `imageUrl`
+- `imageUrl` must resolve to the authenticated user's profile image namespace
+- The object must exist before deletion
+- The row is not modified
+- The response is `Cache-Control: no-store`
+ * @summary Delete a profile image slot object
+ */
+export const deleteProfileImage = async (
+  deleteProfileImageBody: DeleteProfileImageBody,
+  options?: RequestInit
+): Promise<deleteProfileImageResponse> => {
+  return orvalMutator<deleteProfileImageResponse>(getDeleteProfileImageUrl(), {
+    ...options,
+    method: "DELETE",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(deleteProfileImageBody),
+  });
+};
+
+export const getDeleteProfileImageMutationOptions = <
+  TError =
+    | DeleteProfileImage400
+    | DeleteProfileImage401
+    | DeleteProfileImage403
+    | DeleteProfileImage404
+    | DeleteProfileImage500,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteProfileImage>>,
+    TError,
+    { data: DeleteProfileImageBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalMutator>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteProfileImage>>,
+  TError,
+  { data: DeleteProfileImageBody },
+  TContext
+> => {
+  const mutationKey = ["deleteProfileImage"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteProfileImage>>,
+    { data: DeleteProfileImageBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return deleteProfileImage(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteProfileImageMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteProfileImage>>
+>;
+export type DeleteProfileImageMutationBody = DeleteProfileImageBody;
+export type DeleteProfileImageMutationError =
+  | DeleteProfileImage400
+  | DeleteProfileImage401
+  | DeleteProfileImage403
+  | DeleteProfileImage404
+  | DeleteProfileImage500;
+
+/**
+ * @summary Delete a profile image slot object
+ */
+export const useDeleteProfileImage = <
+  TError =
+    | DeleteProfileImage400
+    | DeleteProfileImage401
+    | DeleteProfileImage403
+    | DeleteProfileImage404
+    | DeleteProfileImage500,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteProfileImage>>,
+      TError,
+      { data: DeleteProfileImageBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteProfileImage>>,
+  TError,
+  { data: DeleteProfileImageBody },
+  TContext
+> => {
+  return useMutation(getDeleteProfileImageMutationOptions(options), queryClient);
+};
+export type uploadProfileBentoMediaResponse200 = {
+  data: UploadProfileBentoMedia200;
+  status: 200;
+};
+
+export type uploadProfileBentoMediaResponse400 = {
+  data: UploadProfileBentoMedia400;
+  status: 400;
+};
+
+export type uploadProfileBentoMediaResponse401 = {
+  data: UploadProfileBentoMedia401;
+  status: 401;
+};
+
+export type uploadProfileBentoMediaResponse403 = {
+  data: UploadProfileBentoMedia403;
+  status: 403;
+};
+
+export type uploadProfileBentoMediaResponse500 = {
+  data: UploadProfileBentoMedia500;
+  status: 500;
+};
+
+export type uploadProfileBentoMediaResponseSuccess = uploadProfileBentoMediaResponse200 & {
+  headers: Headers;
+};
+export type uploadProfileBentoMediaResponseError = (
+  | uploadProfileBentoMediaResponse400
+  | uploadProfileBentoMediaResponse401
+  | uploadProfileBentoMediaResponse403
+  | uploadProfileBentoMediaResponse500
+) & {
+  headers: Headers;
+};
+
+export type uploadProfileBentoMediaResponse =
+  | uploadProfileBentoMediaResponseSuccess
+  | uploadProfileBentoMediaResponseError;
+
+export const getUploadProfileBentoMediaUrl = () => {
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/bento/media/upload`;
+};
+
+/**
+ * Uploads temporary media for a bento block and returns metadata for later sync.
+
+Rules:
+- Requires a valid session
+- Accepts `multipart/form-data` with `bentoId` and `file`
+- The bento must belong to the authenticated user
+- File type must be image or video
+- File size must be 5MB or smaller
+- A SHA-256 hash is computed before storage write
+- Temporary uploads only return metadata; no final DB write happens here
+- The response is `Cache-Control: no-store`
+ * @summary Upload temporary bento media
+ */
+export const uploadProfileBentoMedia = async (
+  uploadProfileBentoMediaBody: UploadProfileBentoMediaBody,
+  options?: RequestInit
+): Promise<uploadProfileBentoMediaResponse> => {
+  const formData = new FormData();
+  formData.append(`bentoId`, uploadProfileBentoMediaBody.bentoId);
+  formData.append(`file`, uploadProfileBentoMediaBody.file);
+
+  return orvalMutator<uploadProfileBentoMediaResponse>(getUploadProfileBentoMediaUrl(), {
+    ...options,
+    method: "POST",
+    body: formData,
+  });
+};
+
+export const getUploadProfileBentoMediaMutationOptions = <
+  TError =
+    | UploadProfileBentoMedia400
+    | UploadProfileBentoMedia401
+    | UploadProfileBentoMedia403
+    | UploadProfileBentoMedia500,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof uploadProfileBentoMedia>>,
+    TError,
+    { data: UploadProfileBentoMediaBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalMutator>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof uploadProfileBentoMedia>>,
+  TError,
+  { data: UploadProfileBentoMediaBody },
+  TContext
+> => {
+  const mutationKey = ["uploadProfileBentoMedia"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof uploadProfileBentoMedia>>,
+    { data: UploadProfileBentoMediaBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return uploadProfileBentoMedia(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UploadProfileBentoMediaMutationResult = NonNullable<
+  Awaited<ReturnType<typeof uploadProfileBentoMedia>>
+>;
+export type UploadProfileBentoMediaMutationBody = UploadProfileBentoMediaBody;
+export type UploadProfileBentoMediaMutationError =
+  | UploadProfileBentoMedia400
+  | UploadProfileBentoMedia401
+  | UploadProfileBentoMedia403
+  | UploadProfileBentoMedia500;
+
+/**
+ * @summary Upload temporary bento media
+ */
+export const useUploadProfileBentoMedia = <
+  TError =
+    | UploadProfileBentoMedia400
+    | UploadProfileBentoMedia401
+    | UploadProfileBentoMedia403
+    | UploadProfileBentoMedia500,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof uploadProfileBentoMedia>>,
+      TError,
+      { data: UploadProfileBentoMediaBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof uploadProfileBentoMedia>>,
+  TError,
+  { data: UploadProfileBentoMediaBody },
+  TContext
+> => {
+  return useMutation(getUploadProfileBentoMediaMutationOptions(options), queryClient);
+};
 export type getProfileByHandleResponse200 = {
   data: GetProfileByHandle200;
   status: 200;

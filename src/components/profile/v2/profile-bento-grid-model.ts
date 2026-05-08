@@ -72,6 +72,8 @@ export const toBentoGridItem = (item: ProfileBentoItem): GridItem => ({
   description: item.type,
 });
 
+export const createPreviewDraftBentoId = (id: string) => `preview:${id}`;
+
 export const mergeLayoutsIntoBento = (items: ProfileBentoItem[], layouts: GridLayouts) => {
   const desktopLayouts = new Map((layouts.desktop ?? []).map((item) => [item.i, item] as const));
   const compactLayouts = new Map((layouts.compact ?? []).map((item) => [item.i, item] as const));
@@ -95,7 +97,7 @@ export const mergeLayoutsIntoBento = (items: ProfileBentoItem[], layouts: GridLa
 };
 
 export function createAutoBentoItem(type: CreatableBentoType, currentItems: ProfileBentoItem[]) {
-  const id = `preview:${crypto.randomUUID()}`;
+  const id = crypto.randomUUID();
   const count = currentItems.filter((item) => item.type === type).length + 1;
   const desktopLayout = createLayoutItem(
     id,

@@ -2,12 +2,14 @@
 
 import { CompassIcon } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { ProfilePageEditorProvider } from "@/components/profile/layout/profile-editor-provider";
 import { ProfileBentoInteractiveGrid } from "@/components/profile/v2/profile-bento-interactive-grid";
 import { ProfileBentoOwnerSettingPopover } from "@/components/profile/v2/profile-bento-owner-setting-popover";
 import { ProfileBentoProfileEditor } from "@/components/profile/v2/profile-bento-profile-editor";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { getAppApiBaseURL } from "@/lib/api/base-url";
 import type { ProfileBentoItem, ProfilePageData } from "@/lib/profile/types";
 import { cn } from "@/lib/utils";
 
@@ -34,12 +36,56 @@ function ProfileBentoOwnerFooterAction({
   disableAnalytics: boolean;
   ownerHandle: string;
 }) {
+  const [displayAnalyticsViews, setDisplayAnalyticsViews] = useState(analyticsViews);
   const actionClassName =
     "inline-flex min-h-9 items-center gap-2 rounded-md px-3 py-2 text-neutral-500 transition-colors hover:bg-secondary/80 hover:text-neutral-500 focus-visible:outline-none focus-visible:ring-0";
   const iconButtonClassName =
     "border-0 bg-transparent text-neutral-500 shadow-none outline-none ring-0 hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-0";
   const analyticsViewsLabel =
-    analyticsViews === 0 ? "No Views Today" : `${numberFormatter.format(analyticsViews)} views`;
+    displayAnalyticsViews === 0
+      ? "No Views Today"
+      : `${numberFormatter.format(displayAnalyticsViews)} views`;
+
+  useEffect(() => {
+    if (disableAnalytics) {
+      return;
+    }
+
+    const controller = new AbortController();
+
+    void (async () => {
+      try {
+        const response = await fetch(`${getAppApiBaseURL()}/me/analytics`, {
+          cache: "no-store",
+          credentials: "include",
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data = (await response.json()) as {
+          state?: string;
+          summaries?: {
+            today?: {
+              pageViews?: number;
+            };
+          };
+        };
+
+        if (data.state === "ready") {
+          setDisplayAnalyticsViews(data.summaries?.today?.pageViews ?? 0);
+        }
+      } catch {
+        // Keep the server-rendered fallback when the client refresh fails.
+      }
+    })();
+
+    return () => {
+      controller.abort();
+    };
+  }, [disableAnalytics]);
 
   return (
     <footer className={cn("flex items-center justify-center gap-0", className)}>

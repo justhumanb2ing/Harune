@@ -61,6 +61,7 @@ import { ProfileBentoEmptyGridState } from "./profile-bento-empty-grid-state";
 import {
   type CreatableBentoType,
   createAutoBentoItem,
+  createPreviewDraftBentoId,
   mergeLayoutsIntoBento,
   toBentoGridItem,
   toBentoGridLayouts,
@@ -752,8 +753,9 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
 
     try {
       const contentHash = await getProfileBentoMediaHash(uploadFile);
+      const previewBentoId = createPreviewDraftBentoId(placeholderItem.id);
       const response = await uploadProfileBentoMedia({
-        bentoId: placeholderItem.id,
+        bentoId: previewBentoId,
         contentHash,
         contentLength: uploadFile.size,
         contentType: uploadFile.type,

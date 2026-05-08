@@ -14,7 +14,6 @@ import { appConfig } from "@/lib/config";
 import { toProfilePageEditorDataFromPublicPage } from "@/lib/profile/public-profile-page";
 import { absoluteUrl, createPageMetadata } from "@/lib/seo";
 import { getServerMe } from "@/lib/users/server-me";
-import { getServerMeAnalytics } from "@/lib/users/server-me-analytics";
 
 type HandlePageProps = {
   params: Promise<{
@@ -91,20 +90,17 @@ export async function generateMetadata({ params }: HandlePageProps): Promise<Met
 
 export default async function HandlePage({ params }: HandlePageProps) {
   const { handle } = await params;
-  const [data, me] = await Promise.all([getPublicProfilePage(handle), getServerMe()]);
+  const dataPromise = getPublicProfilePage(handle);
+  const mePromise = getServerMe();
+  const data = await dataPromise;
 
   if (!data?.page.handle) {
     notFound();
   }
 
   const isOwner = data.viewer.canEdit;
-  const editorData =
-    isOwner && me?.user?.id ? toProfilePageEditorDataFromPublicPage(data.page) : null;
-  const analytics = isOwner ? await getServerMeAnalytics() : null;
-  const analyticsViews =
-    analytics && analytics.status === 200 && analytics.data.state === "ready"
-      ? analytics.data.summaries.today.pageViews
-      : 0;
+  const me = isOwner ? null : await mePromise;
+  const editorData = isOwner ? toProfilePageEditorDataFromPublicPage(data.page) : null;
   const title = `${data.page.name || data.page.userName || data.page.handle} on ${appConfig.projectName}`;
 
   return (
@@ -131,7 +127,7 @@ export default async function HandlePage({ params }: HandlePageProps) {
           bento={data.bento}
           editorData={editorData}
           isOwner={isOwner}
-          analyticsViews={analyticsViews}
+          analyticsViews={0}
           viewerProfilePage={me?.profilePage ?? null}
         />
       </main>

@@ -1,6 +1,5 @@
 import type { ProfileMediaType } from "@/lib/profile/types";
 
-export const PROFILE_BENTO_MEDIA_UPLOAD_ROUTE = "/api/profile/bento/media/upload";
 export const PROFILE_BENTO_MEDIA_MAX_SIZE_BYTES = 5 * 1024 * 1024;
 
 export const PROFILE_BENTO_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];

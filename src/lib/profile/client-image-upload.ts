@@ -1,11 +1,11 @@
 "use client";
 
 import {
-  getProfileImageCacheVersion,
-  PROFILE_IMAGE_UPLOAD_ROUTE,
-  type ProfileImageKind,
-} from "@/lib/profile/image-upload";
-import { apiFetch } from "@/lib/react-query/fetcher";
+  finalizeProfileImage,
+  uploadProfileImage,
+} from "@/lib/api/generated/http/profile-api/profile-api";
+import { getProfileImageCacheVersion, type ProfileImageKind } from "@/lib/profile/image-upload";
+import { uploadToPresignedUrl } from "@/lib/s3/upload-to-presigned-url";
 
 export async function getFileSha256Hex(file: File) {
   const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
@@ -29,30 +29,35 @@ export async function uploadProfileImageIfChanged({
     return currentUrl;
   }
 
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("imageHash", imageHash);
-  formData.append("imageKind", kind);
+  const uploaded = await uploadProfileImage({
+    contentLength: file.size,
+    contentType: file.type,
+    imageHash,
+    imageKind: kind,
+  });
 
-  const uploaded = await apiFetch<{ imageUrl: string }>(PROFILE_IMAGE_UPLOAD_ROUTE, {
-    method: "POST",
-    body: formData,
+  if (uploaded.status !== 200) {
+    throw new Error("Failed to upload profile image.");
+  }
+
+  await uploadToPresignedUrl({
+    contentType: uploaded.data.contentType,
+    file,
+    uploadUrl: uploaded.data.uploadUrl,
   });
 
   if (!persist) {
-    return uploaded.imageUrl;
+    return uploaded.data.imageUrl;
   }
 
-  const finalized = await apiFetch<{ imageUrl: string | null }>(PROFILE_IMAGE_UPLOAD_ROUTE, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      imageKind: kind,
-      imageUrl: uploaded.imageUrl,
-    }),
+  const finalized = await finalizeProfileImage({
+    imageKind: kind,
+    imageUrl: uploaded.data.imageUrl,
   });
 
-  return finalized.imageUrl ?? uploaded.imageUrl;
+  if (finalized.status !== 200) {
+    return uploaded.data.imageUrl;
+  }
+
+  return finalized.data.imageUrl ?? uploaded.data.imageUrl;
 }

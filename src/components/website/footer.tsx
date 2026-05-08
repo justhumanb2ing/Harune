@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AppEntryCtaButton } from "@/components/website/app-entry-cta-button";
 
 export function Footer() {
   return (
@@ -33,9 +34,9 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/api/join" prefetch={false} className="inline-block hover:text-primary">
+                <AppEntryCtaButton next="/app" size="sm" variant="link" className="inline-block text-muted-foreground!">
                   Log In
-                </Link>
+                </AppEntryCtaButton>
               </li>
               <li>
                 <Link href="/explore" className="inline-block hover:text-primary">

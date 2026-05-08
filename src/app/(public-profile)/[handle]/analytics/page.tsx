@@ -1,12 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { AnalyticsPageClient } from "@/app/(public-profile)/[handle]/analytics/page-client";
-import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
-import { appConfig } from "@/lib/config";
-import { getProfileAnalyticsPath, getProfileAppPath } from "@/lib/profile/app-paths";
-import { getOwnedProfilePage, getOwnedProfilePageByHandle } from "@/lib/profile/queries";
 
 type AnalyticsPageProps = {
   params: Promise<{
@@ -15,26 +9,11 @@ type AnalyticsPageProps = {
 };
 
 export async function generateMetadata({ params }: AnalyticsPageProps): Promise<Metadata> {
-  const [{ handle }, session] = await Promise.all([params, auth()]);
-
-  if (!session?.user?.id) {
-    return {
-      title: "Analytics",
-      description: `View your ${appConfig.projectName} profile page analytics.`,
-      robots: {
-        follow: false,
-        index: false,
-      },
-    };
-  }
-
-  const profilePage = await getOwnedProfilePageByHandle(session.user.id, handle);
-  const ownedProfilePage = profilePage ?? (await getOwnedProfilePage(session.user.id));
-  const displayName = ownedProfilePage?.name || ownedProfilePage?.handle || handle;
+  const { handle } = await params;
 
   return {
-    title: `${displayName} analytics`,
-    description: `View clicks, visits, and engagement for @${ownedProfilePage?.handle || handle}.`,
+    title: `${handle} analytics`,
+    description: `View clicks, visits, and engagement for @${handle}.`,
     robots: {
       follow: false,
       index: false,
@@ -43,29 +22,20 @@ export async function generateMetadata({ params }: AnalyticsPageProps): Promise<
 }
 
 export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    redirect("/sign-in");
-  }
-
   const { handle } = await params;
-  const profilePage = await getOwnedProfilePageByHandle(session.user.id, handle);
-
-  if (!profilePage?.handle) {
-    const ownedProfilePage = await getOwnedProfilePage(session.user.id);
-
-    if (ownedProfilePage?.handle) {
-      redirect(getProfileAnalyticsPath(ownedProfilePage.handle));
-    }
-
-    redirect("/create");
-  }
 
   return (
     <>
       <main className="flex h-full min-h-0 flex-col gap-12 overflow-y-auto p-4 pt-10 pb-24 sm:p-8 sm:pb-24 lg:pb-8">
-        <AnalyticsPageClient />
+        <section className="space-y-3 rounded-3xl border bg-card p-6 shadow-sm">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            Analytics
+          </p>
+          <h1 className="text-3xl font-semibold tracking-tight">{handle} analytics</h1>
+          <p className="text-muted-foreground">
+            Analytics remains as layout only while the backend is being split out of the frontend.
+          </p>
+        </section>
       </main>
       <aside className="fixed inset-x-0 bottom-0 block bg-background p-2 lg:hidden">
         <Button
@@ -74,7 +44,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
           variant="outline"
           size="lg"
           className="h-12 w-full text-lg font-bold! brand-button"
-          render={<Link href={getProfileAppPath(profilePage.handle)}>My Page</Link>}
+          render={<Link href={`/${handle}`}>Back to page</Link>}
         />
       </aside>
     </>

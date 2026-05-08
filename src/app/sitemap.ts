@@ -1,51 +1,67 @@
 import type { MetadataRoute } from "next";
-import { db } from "@/db";
-import { profilePages } from "@/db/schema/profile";
-import { isReservedHandle } from "@/lib/handles";
+import { env } from "@/env";
 import { absoluteUrl } from "@/lib/seo";
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const publicProfilePages = await db
-    .select({
-      handle: profilePages.handle,
-      updatedAt: profilePages.updatedAt,
-    })
-    .from(profilePages);
+type ListProfilePages200 = {
+  pages: Array<{
+    id: string;
+    userId: string;
+    handle: string;
+    name: string | null;
+    location: string | null;
+    role: string | null;
+    bio: string | null;
+    image: string | null;
+    backgroundImage: string | null;
+    linkBlockPosition: number;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+};
 
-  // Static pages
+async function getProfilePagesForSitemap(): Promise<ListProfilePages200["pages"]> {
+  const response = await fetch(`${env.NEXT_PUBLIC_API_BASE_URL}/profile/pages`, {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to load profile pages for sitemap: ${response.status}`);
+  }
+
+  const data = (await response.json()) as ListProfilePages200;
+  return data.pages;
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPageRoutes = [
-    "",
+    "/",
     "/sign-in",
     "/sign-up",
     "/explore",
     "/changelog",
     "/roadmap",
   ] as const;
+  const policyPageRoutes = ["/privacy", "/terms", "/refund"] as const;
+  const handlePages = await getProfilePagesForSitemap();
 
-  const staticPages = staticPageRoutes.map((route) => ({
-    url: absoluteUrl(route === "" ? "/" : route),
-    lastModified: new Date(),
-    changeFrequency: "monthly" as const,
-    priority: route === "" ? 1 : route === "/sign-in" || route === "/sign-up" ? 0.6 : 0.4,
-  }));
-
-  // Policy pages
-  const policyPages = ["/privacy", "/terms", "/refund"].map((route) => ({
-    url: absoluteUrl(route),
-    lastModified: new Date(),
-    changeFrequency: "monthly" as const,
-    priority: 0.5,
-  }));
-
-  // Public profile pages
-  const profilePagesForSitemap = publicProfilePages
-    .filter((page) => !isReservedHandle(page.handle))
-    .map((page) => ({
+  return [
+    ...staticPageRoutes.map((route) => ({
+      url: absoluteUrl(route),
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: route === "/" ? 1 : route === "/sign-in" || route === "/sign-up" ? 0.6 : 0.4,
+    })),
+    ...policyPageRoutes.map((route) => ({
+      url: absoluteUrl(route),
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    })),
+    ...handlePages.map((page) => ({
       url: absoluteUrl(`/${page.handle}`),
-      lastModified: page.updatedAt,
+      lastModified: new Date(page.updatedAt),
       changeFrequency: "daily" as const,
-      priority: 0.7,
-    }));
-
-  return [...staticPages, ...policyPages, ...profilePagesForSitemap];
+      priority: 0.8,
+    })),
+  ];
 }

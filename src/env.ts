@@ -1,6 +1,9 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
+const defaultApiBaseUrl =
+  process.env.NODE_ENV === "development" ? "http://localhost:8787" : "https://api.harune.me";
+
 export const env = createEnv({
   server: {
     AUTH_SECRET: z.string().optional(),
@@ -11,7 +14,6 @@ export const env = createEnv({
     AWS_REGION: z.string().optional(),
     AWS_S3_BUCKET_NAME: z.string().optional(),
     AWS_SECRET_ACCESS_KEY: z.string().optional(),
-    DATABASE_URL: z.string().optional(),
     DODO_CREDITS_PRODUCT_ID: z.string().optional(),
     DODO_PAYMENTS_API_KEY: z.string().optional(),
     DODO_PAYMENTS_API_URL: z.string().optional(),
@@ -49,6 +51,8 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_ANALYTICS_PROVIDER: z.string().optional(),
     NEXT_PUBLIC_APP_URL: z.string().optional(),
+    NEXT_PUBLIC_AUTH_URL: z.string().optional(),
+    NEXT_PUBLIC_API_BASE_URL: z.string().url().default(defaultApiBaseUrl),
     NEXT_PUBLIC_BETTERLYTICS_SCRIPT_SRC: z.string().optional(),
     NEXT_PUBLIC_BETTERLYTICS_SITE_ID: z.string().optional(),
     NEXT_PUBLIC_PADDLE_CLIENT_TOKEN: z.string().optional(),
@@ -63,6 +67,8 @@ export const env = createEnv({
   experimental__runtimeEnv: {
     NEXT_PUBLIC_ANALYTICS_PROVIDER: process.env.NEXT_PUBLIC_ANALYTICS_PROVIDER,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_AUTH_URL: process.env.NEXT_PUBLIC_AUTH_URL,
+    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
     NEXT_PUBLIC_BETTERLYTICS_SCRIPT_SRC: process.env.NEXT_PUBLIC_BETTERLYTICS_SCRIPT_SRC,
     NEXT_PUBLIC_BETTERLYTICS_SITE_ID: process.env.NEXT_PUBLIC_BETTERLYTICS_SITE_ID,
     NEXT_PUBLIC_PADDLE_CLIENT_TOKEN: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,

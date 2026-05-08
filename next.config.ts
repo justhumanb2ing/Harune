@@ -40,6 +40,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "cdn.harune.me",
+      },
+      {
+        protocol: "https",
         hostname: "**",
       },
       ...(s3Host

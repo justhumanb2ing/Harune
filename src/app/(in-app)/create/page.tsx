@@ -1,11 +1,8 @@
 import { SsgoiTransition } from "@ssgoi/react";
-import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
 import { OnboardingForm } from "@/components/onboarding/onboarding-form";
-import { db } from "@/db";
-import { profilePages } from "@/db/schema/profile";
-import { getProfileAppPath } from "@/lib/profile/app-paths";
+import { resolveAppEntryHref } from "@/lib/auth/app-entry";
+import { getServerMe } from "@/lib/users/server-me";
 
 type OnboardingPageProps = {
   searchParams: Promise<{
@@ -14,25 +11,22 @@ type OnboardingPageProps = {
 };
 
 export default async function OnboardingPage({ searchParams }: OnboardingPageProps) {
-  const session = await auth();
+  const { handle } = await searchParams;
+  const me = await getServerMe();
+  const callbackTarget = new URLSearchParams();
+  if (handle) callbackTarget.set("handle", handle);
+  const callbackUrl = `/create${callbackTarget.toString() ? `?${callbackTarget.toString()}` : ""}`;
 
-  if (!session?.user?.id) {
-    redirect("/sign-in");
+  if (!me) {
+    redirect(`/sign-in?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
 
-  const ownedPage = await db
-    .select({
-      handle: profilePages.handle,
-    })
-    .from(profilePages)
-    .where(eq(profilePages.userId, session.user.id))
-    .limit(1)
-    .then((rows) => rows[0]);
-
-  const { handle } = await searchParams;
-
-  if (ownedPage) {
-    redirect(getProfileAppPath(ownedPage.handle));
+  if (me.profilePage) {
+    redirect(
+      resolveAppEntryHref({
+        profilePage: me.profilePage,
+      })
+    );
   }
 
   return (

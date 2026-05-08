@@ -2,13 +2,15 @@
 
 import { queryOptions } from "@tanstack/react-query";
 import type { ProfileAnalyticsResponse } from "@/lib/analytics/types";
-import { apiFetch } from "@/lib/react-query/fetcher";
-import { queryKeys } from "@/lib/react-query/query-keys";
+import { getGetMeAnalyticsQueryOptions } from "@/lib/api/generated/http/me-api/me-api";
 
 export const profileAnalyticsQueryOptions = () =>
   queryOptions({
-    queryKey: queryKeys.app.profileAnalytics(),
-    queryFn: ({ signal }) => apiFetch<ProfileAnalyticsResponse>("/api/analytics", { signal }),
-    refetchOnWindowFocus: false,
-    staleTime: 60_000,
+    ...getGetMeAnalyticsQueryOptions({
+      query: {
+        refetchOnWindowFocus: false,
+        select: (response) => response.data as ProfileAnalyticsResponse,
+        staleTime: 60_000,
+      },
+    }),
   });

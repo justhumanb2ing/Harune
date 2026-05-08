@@ -41,6 +41,8 @@ Do not recreate one-file-per-endpoint route handlers for Hono-backed APIs. Add r
 | `/api/me`, `/api/analytics`, `/api/create`, `/api/upload-input-images` | `src/lib/api/routes/app.ts` |
 | `/api/profile/*` | `src/lib/api/routes/profile.ts` |
 
+Metadata fetching now uses the `/metadata` transport in `src/lib/metadata/url-metadata.ts` and the generated HTTP client in `src/lib/api/generated/http/metadata-api/metadata-api.ts`. Keep that path as the only consumer-facing metadata fetch contract.
+
 Keep request path normalization inside the server adapter:
 
 ```text
@@ -123,3 +125,4 @@ bun run build
 - `docs/plans/2026-05-02-001-refactor-hono-profile-api-plan.md`
 - `docs/plans/2026-05-03-001-refactor-hono-better-auth-next-api-plan.md`
 - `docs/solutions/best-practices/better-auth-supabase-rls-boundary-2026-04-28.md`
+- `docs/solutions/best-practices/api-me-app-context-contract-2026-05-07.md`

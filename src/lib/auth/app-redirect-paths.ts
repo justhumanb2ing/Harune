@@ -7,8 +7,11 @@ export function getSafeRedirectPath(value?: string) {
 }
 
 export function resolveAppRedirectPath(path: string, handle: string) {
-  if (path === "/app" || path.startsWith("/app/")) {
-    return `/${handle}`;
+  const [pathname, search = ""] = path.split("?");
+  const suffix = search ? `?${search}` : "";
+
+  if (pathname === "/app" || pathname.startsWith("/app/")) {
+    return `/${handle}${suffix}`;
   }
 
   const legacyHandleAppPath = resolveLegacyHandleAppPath(path);
@@ -36,7 +39,7 @@ function resolveLegacyHandleAppPath(path: string) {
     return `/${handle}/analytics${restPath}${suffix}`;
   }
 
-  return `/${handle}`;
+  return `/${handle}${suffix}`;
 }
 
 function unwrapJoinRedirectPath(value: string) {

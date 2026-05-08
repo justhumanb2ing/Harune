@@ -23,10 +23,10 @@ import {
 } from "@/components/ui/input-group";
 import { Textarea } from "@/components/ui/textarea";
 import { useHandleAvailability } from "@/hooks/use-handle-availability";
-import {
-  deleteUploadedProfileImage,
-  useProfileImageUpload,
-} from "@/hooks/use-profile-image-upload";
+import { useProfileImageUpload } from "@/hooks/use-profile-image-upload";
+import { getCheckHandleAvailabilityQueryKey } from "@/lib/api/generated/http/handle-api/handle-api";
+import { createProfilePage } from "@/lib/api/generated/http/profile-api/profile-api";
+import { CreateProfilePageBody as createProfilePageBodySchema } from "@/lib/api/generated/zod/profile-api/profile-api.zod";
 import { authClient } from "@/lib/auth-client";
 import { normalizeHandle, validateHandle } from "@/lib/handles";
 import { PROFILE_IMAGE_ACCEPT } from "@/lib/profile/image-upload";
@@ -34,10 +34,7 @@ import {
   clearAuthenticatedAppQueries,
   invalidateAuthenticatedAppQueries,
 } from "@/lib/react-query/app-cache";
-import { type ApiError, apiFetch } from "@/lib/react-query/fetcher";
-import { queryKeys } from "@/lib/react-query/query-keys";
 import { cn } from "@/lib/utils";
-import { TextLoop } from "../ui/text-loop";
 
 type OnboardingFormProps = {
   handle?: string;
@@ -70,6 +67,23 @@ const runOnboardingStepTransition = (direction: "forward" | "back", updateStep: 
   startTransition(() => {
     updateStep();
   });
+};
+
+const normalizeOptionalField = (value: string) => {
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+};
+
+const getFailureMessage = (response: Awaited<ReturnType<typeof createProfilePage>>) => {
+  if (response.status === 400 || response.status === 401 || response.status === 404) {
+    return response.data.error.message;
+  }
+
+  if (response.status === 409 || response.status === 500) {
+    return response.data.error.message;
+  }
+
+  return "Something went wrong while creating your page.";
 };
 
 export function OnboardingForm({ handle }: OnboardingFormProps) {
@@ -211,14 +225,6 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
     try {
       uploadedImageUrl = await profileImageUpload.uploadSelectedFile("profile");
     } catch (uploadError) {
-      if (uploadedImageUrl) {
-        try {
-          await deleteUploadedProfileImage(uploadedImageUrl);
-        } catch (rollbackError) {
-          console.error("Failed to rollback uploaded onboarding profile image:", rollbackError);
-        }
-      }
-
       transitionToStep(1, () => {
         setError(uploadError instanceof Error ? uploadError.message : "Failed to upload image.");
         setIsSubmitting(false);
@@ -227,37 +233,39 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
     }
 
     try {
-      const response = await apiFetch<{ success: true; page: { handle: string } }>("/api/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      const response = await createProfilePage(
+        createProfilePageBodySchema.parse({
           handle: pageHandle,
-          image: uploadedImageUrl || undefined,
+          image: uploadedImageUrl ?? undefined,
           name: trimmedName,
-          role,
-          location,
-          bio,
+          role: normalizeOptionalField(role),
+          location: normalizeOptionalField(location),
+          bio: normalizeOptionalField(bio),
         }),
-      });
-      await invalidateAuthenticatedAppQueries(queryClient);
-      router.push(`/create/success?handle=${encodeURIComponent(response.page.handle)}`);
-    } catch (submitError) {
-      if (uploadedImageUrl) {
-        try {
-          await deleteUploadedProfileImage(uploadedImageUrl);
-        } catch (rollbackError) {
-          console.error("Failed to rollback uploaded onboarding profile image:", rollbackError);
+        {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-store",
+          },
         }
+      );
+
+      if (response.status !== 200) {
+        const message = getFailureMessage(response);
+        transitionToStep(1, () => setError(message));
+        return;
       }
 
+      await invalidateAuthenticatedAppQueries(queryClient);
+      router.push(`/create/success?handle=${encodeURIComponent(response.data.page.handle)}`);
+    } catch (submitError) {
       console.error("Failed to complete onboarding:", submitError);
-      const apiError = submitError as ApiError;
+      const apiError = submitError as Error & { status?: number };
+
       if (apiError.status === 409) {
         transitionToStep(0, () => setError(apiError.message || "This handle is already taken."));
         await queryClient.invalidateQueries({
-          queryKey: queryKeys.handles.availability(pageHandle),
+          queryKey: getCheckHandleAvailabilityQueryKey({ handle: pageHandle }),
         });
         return;
       }
@@ -590,47 +598,13 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
         </form>
       </div>
       <section className="hidden h-full flex-1 lg:block">
-        <div className="h-full flex items-center justify-center">
-          <div className='inline-flex gap-4  whitespace-pre-wrap text-3xl'>
-            <span>for</span>
-            <TextLoop
-              className='overflow-y-clip flex-1 min-w-80'
-              transition={{
-                    type: 'spring',
-                    stiffness: 900,
-                    damping: 80,
-                    mass: 10,
-                  }}
-                  variants={{
-                    initial: {
-                      y: 20,
-                      rotateX: 90,
-                      opacity: 0,
-                      filter: 'blur(4px)',
-                    },
-                    animate: {
-                      y: 0,
-                      rotateX: 0,
-                      opacity: 1,
-                      filter: 'blur(0px)',
-                    },
-                    exit: {
-                      y: -20,
-                      rotateX: -90,
-                      opacity: 0,
-                      filter: 'blur(4px)',
-                    },
-                  }}
-                >
-              <span>Founders</span>
-              <span>Developers</span>
-              <span>Designers</span>
-              <span>Makers</span>
-              <span>Musician</span>
-              <span>Writers</span>
-              <span>Everyone</span>
-            </TextLoop>
-          </div>
+        <div className="relative h-full">
+          <Image
+            src="https://images.unsplash.com/photo-1713508298272-7d0db139dc54?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            alt="img"
+            fill
+            className="object-cover"
+          />
         </div>
       </section>
     </div>

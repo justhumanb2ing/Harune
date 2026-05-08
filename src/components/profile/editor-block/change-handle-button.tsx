@@ -18,15 +18,14 @@ import {
   InputGroupInput,
   InputGroupText,
 } from "@/components/ui/input-group";
-import { buildSyncPayload, createDraftData } from "@/hooks/profile-editor-store";
 import { useProfilePageHandleAvailability } from "@/hooks/use-profile-handle-availability";
-import type { MeResponse } from "@/lib/api/app/types";
+import { updateHandle } from "@/lib/api/generated/http/handle-api/handle-api";
+import { getGetMeQueryKey } from "@/lib/api/generated/http/me-api/me-api";
+import type { GetMe200 } from "@/lib/api/generated/http/schemas/me-api";
 import { normalizeHandle, validateHandle } from "@/lib/handles";
 import { getProfileRouteHandle, replaceProfileRouteHandle } from "@/lib/profile/app-paths";
 import { profilePageQueryOptions } from "@/lib/profile/query-options";
 import type { ProfilePageData } from "@/lib/profile/types";
-import { apiFetch } from "@/lib/react-query/fetcher";
-import { queryKeys } from "@/lib/react-query/query-keys";
 import { cn } from "@/lib/utils";
 
 type ChangeHandleButtonProps = {
@@ -78,49 +77,46 @@ export function ChangeHandleButton({
     }
 
     const profilePageQueryKey = profilePageQueryOptions(routeHandle).queryKey;
-    const draftData = createDraftData(profilePageData);
-    const nextDraftData = {
-      ...draftData,
-      page: {
-        ...draftData.page,
-        handle: currentHandle,
-      },
-    };
     const nextPath = replaceProfileRouteHandle(pathname, currentHandle);
 
     setIsSavingHandle(true);
 
-    const syncedData = await apiFetch<ProfilePageData>("/api/profile/sync", {
-      method: "POST",
-      cache: "no-store",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(buildSyncPayload(nextDraftData)),
-    }).finally(() => {
+    const response = await updateHandle({ handle: currentHandle }).finally(() => {
       setIsSavingHandle(false);
     });
 
-    if (syncedData.page.handle === currentHandle) {
-      queryClient.setQueryData(profilePageQueryKey, syncedData);
-      queryClient.setQueryData<MeResponse>(queryKeys.app.me(), (current) => {
-        if (!current?.profilePage) {
-          return current;
-        }
-
-        return {
-          ...current,
-          profilePage: {
-            ...current.profilePage,
-            handle: syncedData.page.handle,
-            image: syncedData.page.image,
-            name: syncedData.page.name,
-          },
-        };
-      });
-      window.history.replaceState(window.history.state, "", nextPath);
-      setIsOpen(false);
+    if (response.status !== 200) {
+      return;
     }
+
+    const { data } = response;
+
+    const syncedData: ProfilePageData = {
+      page: {
+        ...profilePageData.page,
+        ...data.profilePage,
+      },
+    };
+
+    queryClient.setQueryData(profilePageQueryKey, syncedData);
+    queryClient.setQueryData(profilePageQueryOptions(data.profilePage.handle).queryKey, syncedData);
+    queryClient.setQueryData<GetMe200>(getGetMeQueryKey(), (current) => {
+      if (!current?.profilePage) {
+        return current;
+      }
+
+      return {
+        ...current,
+        profilePage: {
+          ...current.profilePage,
+          handle: data.profilePage.handle,
+          image: data.profilePage.image,
+          name: data.profilePage.name,
+        },
+      };
+    });
+    window.history.replaceState(window.history.state, "", nextPath);
+    setIsOpen(false);
   };
 
   return (

@@ -34,7 +34,13 @@ import {
 } from "@/components/ui/input-group";
 import { useGridDragMotion } from "@/hooks/use-grid-drag-motion";
 import { useProfilePageEditor } from "@/hooks/use-profile-editor";
-import { apiClient } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/error";
+import { getMetadata } from "@/lib/api/generated/http/metadata-api/metadata-api";
+import {
+  replaceProfileBentoGraph,
+  uploadProfileBentoMedia,
+} from "@/lib/api/generated/http/profile-api/profile-api";
+import type { ReplaceProfileBentoGraphBody } from "@/lib/api/generated/http/schemas/profile-api";
 import { appConfig } from "@/lib/config";
 import { BREAKPOINTS, COLS, GRID_MARGIN, getGridRowHeight } from "@/lib/grid/grid-config";
 import { normalizeLayouts } from "@/lib/grid/grid-layout-utils";
@@ -43,13 +49,13 @@ import type { MetadataErrorResponse, NormalizedMetadata } from "@/lib/metadata/u
 import { getProfileAppPath, getProfileRouteHandle } from "@/lib/profile/app-paths";
 import {
   getProfileBentoMediaFileError,
+  getProfileBentoMediaHash,
   getProfileBentoMediaType,
   PROFILE_BENTO_MEDIA_ACCEPT,
   PROFILE_BENTO_MEDIA_MAX_SIZE_BYTES,
-  PROFILE_BENTO_MEDIA_UPLOAD_ROUTE,
 } from "@/lib/profile/media-upload";
-import type { ProfileBentoItem, PublicProfileBentoPageData } from "@/lib/profile/types";
-import { apiFetch } from "@/lib/react-query/fetcher";
+import type { ProfileBentoItem } from "@/lib/profile/types";
+import { uploadToPresignedUrl } from "@/lib/s3/upload-to-presigned-url";
 import { cn } from "@/lib/utils";
 import { ProfileBentoEmptyGridState } from "./profile-bento-empty-grid-state";
 import {
@@ -66,14 +72,6 @@ import { Separator } from "@/components/ui/separator";
 
 type ProfileBentoInteractiveGridProps = {
   initialBento: ProfileBentoItem[];
-};
-
-type MediaUploadResponse = {
-  contentHash: string;
-  contentType: string;
-  mediaType: "image" | "video";
-  tempObjectKey: string;
-  tempUrl: string;
 };
 
 const createPayload = (items: ProfileBentoItem[], layouts: GridLayouts) => ({
@@ -103,6 +101,20 @@ const TOOLBAR_EXPAND_TRANSITION = { duration: 0.36, ease: TOOLBAR_EXPAND_EASE } 
 const LINK_INPUT_COLLAPSE_TRANSITION = {
   gridTemplateRows: { duration: 0.44, ease: TOOLBAR_EXPAND_EASE },
 } as const;
+
+const getMetadataErrorMessage = (error: ApiError) => {
+  if (typeof error.body !== "string") {
+    return error.message;
+  }
+
+  try {
+    const body = JSON.parse(error.body) as Partial<MetadataErrorResponse>;
+
+    return body.message ?? error.message;
+  } catch {
+    return error.message;
+  }
+};
 
 function createLinkBentoSkeleton(
   rawUrl: string,
@@ -666,18 +678,13 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     setLinkUrl("");
 
     try {
-      const response = await apiClient.metadata.$get({ query: { url: rawUrl } });
-      const body = (await response.json()) as NormalizedMetadata | MetadataErrorResponse;
+      const response = await getMetadata({ url: rawUrl });
 
-      if (!response.ok) {
-        throw new Error("message" in body ? body.message : "Could not fetch link details");
+      if (response.status !== 200) {
+        throw new Error("Could not fetch link details");
       }
 
-      if ("error" in body) {
-        throw new Error(body.message);
-      }
-
-      const nextItem = createLinkBentoFromCrawl(placeholderItem, rawUrl, body);
+      const nextItem = createLinkBentoFromCrawl(placeholderItem, rawUrl, response.data);
 
       setBento((currentItems) =>
         currentItems.map((item) => (item.id === placeholderItem.id ? nextItem : item))
@@ -685,7 +692,11 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
       removeLoadingLinkId(placeholderItem.id);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message.replace(/\./g, "") : "Could not fetch link details"
+        error instanceof ApiError
+          ? getMetadataErrorMessage(error).replace(/\./g, "")
+          : error instanceof Error
+            ? error.message.replace(/\./g, "")
+            : "Could not fetch link details"
       );
       removeLoadingLinkId(placeholderItem.id);
       removeItemFromGrid(placeholderItem.id);
@@ -739,17 +750,24 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     setLayouts(toBentoGridLayouts(nextBento));
 
     try {
-      const formData = new FormData();
-      formData.set("file", uploadFile);
-      formData.set("bentoId", placeholderItem.id);
+      const contentHash = await getProfileBentoMediaHash(uploadFile);
+      const response = await uploadProfileBentoMedia({
+        bentoId: placeholderItem.id,
+        contentHash,
+        contentLength: uploadFile.size,
+        contentType: uploadFile.type,
+      });
 
-      const response = await apiFetch<MediaUploadResponse>(PROFILE_BENTO_MEDIA_UPLOAD_ROUTE, {
-        method: "POST",
-        cache: "no-store",
-        headers: {
-          "Cache-Control": "no-store",
-        },
-        body: formData,
+      if (response.status !== 200) {
+        throw new Error("Failed to upload bento media");
+      }
+
+      const mediaUpload = response.data;
+
+      await uploadToPresignedUrl({
+        contentType: mediaUpload.contentType,
+        file: uploadFile,
+        uploadUrl: mediaUpload.uploadUrl,
       });
 
       setBento((currentItems) =>
@@ -762,12 +780,12 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
             ...item,
             content: {
               ...item.content,
-              contentHash: response.contentHash,
-              contentType: response.contentType,
-              mediaType: response.mediaType,
-              objectKey: response.tempObjectKey,
-              tempObjectKey: response.tempObjectKey,
-              url: response.tempUrl,
+              contentHash: mediaUpload.contentHash,
+              contentType: mediaUpload.contentType,
+              mediaType: mediaUpload.mediaType,
+              objectKey: mediaUpload.tempObjectKey,
+              tempObjectKey: mediaUpload.tempObjectKey,
+              url: mediaUpload.tempUrl,
             },
           };
         })
@@ -829,20 +847,26 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
         }
 
         if (isDirty) {
-          const response = await apiFetch<PublicProfileBentoPageData>("/api/profile/bento/sync", {
-            method: "POST",
-            cache: "no-store",
-            headers: {
-              "Content-Type": "application/json",
-              "Cache-Control": "no-store",
-            },
-            body: JSON.stringify(currentPayload),
-          });
-          const nextLayouts = toBentoGridLayouts(response.bento);
+          const response = await replaceProfileBentoGraph(
+            currentPayload as ReplaceProfileBentoGraphBody,
+            {
+              cache: "no-store",
+              headers: {
+                "Cache-Control": "no-store",
+              },
+            }
+          );
 
-          setBento(response.bento);
+          if (response.status !== 200) {
+            throw new Error("Failed to sync bento");
+          }
+
+          const responseData = response.data;
+          const nextLayouts = toBentoGridLayouts(responseData.bento);
+
+          setBento(responseData.bento);
           setLayouts(nextLayouts);
-          setSavedSnapshot(createPayloadSnapshot(response.bento, nextLayouts));
+          setSavedSnapshot(createPayloadSnapshot(responseData.bento, nextLayouts));
         }
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Failed to sync bento");
@@ -946,7 +970,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
             onClick={handlePrimaryAction}
             type="button"
             size={"lg"}
-            className={"brand-button w-36 font-semibold py-5 text-base surface-bevel border-0"}
+            className={"brand-button w-36 font-semibold py-5 text-base shadow-none border-0"}
           >
             {isSaving ? <SpinnerGapIcon className="size-4 animate-spin" /> : null}
             {!isSaving && isCopied ? <CheckIcon className="size-4" /> : null}

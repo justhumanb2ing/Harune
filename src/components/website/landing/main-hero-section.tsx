@@ -3,8 +3,7 @@
 import type { Variants } from "motion/react";
 import * as motion from "motion/react-client";
 import Image from "next/image";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { AppEntryCtaButton } from "@/components/website/app-entry-cta-button";
 import {
   getLandingCardShowcaseSize,
   LandingShowcaseItem,
@@ -188,28 +187,18 @@ export default function MainHeroSection() {
         </header>
 
         <div className="flex flex-col items-center gap-1">
-          <Button
-            nativeButton={false}
+          <AppEntryCtaButton
+            next="/app"
             size="lg"
-            className={"h-12 min-w-48 font-bold! brand-button text-base px-24 py-8 rounded-xl"}
-            render={
-              <Link href="/api/join" prefetch={false} className="inline-block uppercase">
-                <span className="uppercase sm:hidden">Sign up</span>
-                <span className="hidden uppercase sm:inline">Sign Up For Free</span>
-              </Link>
-            }
-          />
+            className="brand-button h-12 min-w-48 rounded-xl px-24 py-8 text-base font-bold!"
+          >
+            <span className="uppercase sm:hidden">Sign up</span>
+            <span className="hidden uppercase sm:inline">Sign Up For Free</span>
+          </AppEntryCtaButton>
           {signInEnabled && (
-            <Button
-              nativeButton={false}
-              size="lg"
-              variant="link"
-              render={
-                <Link href="/api/join" prefetch={false} className="text-xs font-medium">
-                  Log In
-                </Link>
-              }
-            />
+            <AppEntryCtaButton next="/app" size="sm" variant="link" className="text-xs font-medium">
+              Log In
+            </AppEntryCtaButton>
           )}
         </div>
       </div>

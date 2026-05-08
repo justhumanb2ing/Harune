@@ -1,19 +1,14 @@
 "use client";
 
-import { queryOptions } from "@tanstack/react-query";
-import type { MeResponse } from "@/lib/api/app/types";
-import { apiFetch } from "@/lib/react-query/fetcher";
-import { queryKeys } from "@/lib/react-query/query-keys";
+import { getGetMeQueryOptions } from "@/lib/api/generated/http/me-api/me-api";
+import type { GetMe200 } from "@/lib/api/generated/http/schemas/me-api";
 import { ME_GC_TIME_MS, ME_STALE_TIME_MS } from "@/lib/users/query-policy";
 
 export const meQueryOptions = () =>
-  queryOptions({
-    gcTime: ME_GC_TIME_MS,
-    queryKey: queryKeys.app.me(),
-    queryFn: ({ signal }) =>
-      apiFetch<MeResponse>("/api/me", {
-        cache: "no-store",
-        signal,
-      }),
-    staleTime: ME_STALE_TIME_MS,
+  getGetMeQueryOptions<GetMe200>({
+    query: {
+      gcTime: ME_GC_TIME_MS,
+      select: (response) => response.data as GetMe200,
+      staleTime: ME_STALE_TIME_MS,
+    },
   });

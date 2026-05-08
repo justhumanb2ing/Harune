@@ -8,7 +8,7 @@
     "dev": "next dev",
     "build": "NODE_ENV=production next build",
     "start": "next start",
-    "api:generate": "orval --config ./orval.config.ts",
+    "api:generate": "orval --config ./orval.config.ts && tsx scripts/postprocess-orval-schemas.ts",
     "vercel:env:sync": "tsx scripts/vercel-sync-env.ts",
     "deploy": "vercel --prod --yes",
     "lint": "biome check src next.config.ts drizzle.config.ts",

@@ -35,9 +35,11 @@ Do not recreate one-file-per-endpoint route handlers for Hono-backed APIs. Add r
 | Public URL prefix | Add route in |
 |---|---|
 | `/api/auth/*` | `src/lib/api/routes/auth.ts` |
-| `/api/join`, `/api/crawl`, `/api/handle/*` | `src/lib/api/routes/root.ts` |
+| `/api/join`, `/api/handle/*` | `src/lib/api/routes/root.ts` |
 | `/api/me`, `/api/analytics`, `/api/create`, `/api/upload-input-images` | `src/lib/api/routes/app.ts` |
 | `/api/profile/*` | `src/lib/api/routes/profile.ts` |
+
+Metadata fetching now uses the `/metadata` transport in `src/lib/metadata/url-metadata.ts` and the generated HTTP client in `src/lib/api/generated/http/metadata-api/metadata-api.ts`. Keep that path as the only consumer-facing metadata fetch contract.
 
 Keep request path normalization inside the server adapter:
 

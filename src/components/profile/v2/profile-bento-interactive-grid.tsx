@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/input-group";
 import { useGridDragMotion } from "@/hooks/use-grid-drag-motion";
 import { useProfilePageEditor } from "@/hooks/use-profile-editor";
-import { apiClient } from "@/lib/api/client";
+import { getMetadata } from "@/lib/api/generated/http/metadata-api/metadata-api";
 import { appConfig } from "@/lib/config";
 import { BREAKPOINTS, COLS, GRID_MARGIN, getGridRowHeight } from "@/lib/grid/grid-config";
 import { normalizeLayouts } from "@/lib/grid/grid-layout-utils";
@@ -49,7 +49,7 @@ import {
   PROFILE_BENTO_MEDIA_UPLOAD_ROUTE,
 } from "@/lib/profile/media-upload";
 import type { ProfileBentoItem, PublicProfileBentoPageData } from "@/lib/profile/types";
-import { apiFetch } from "@/lib/react-query/fetcher";
+import { ApiError, apiFetch } from "@/lib/react-query/fetcher";
 import { cn } from "@/lib/utils";
 import { ProfileBentoEmptyGridState } from "./profile-bento-empty-grid-state";
 import {
@@ -103,6 +103,20 @@ const TOOLBAR_EXPAND_TRANSITION = { duration: 0.36, ease: TOOLBAR_EXPAND_EASE } 
 const LINK_INPUT_COLLAPSE_TRANSITION = {
   gridTemplateRows: { duration: 0.44, ease: TOOLBAR_EXPAND_EASE },
 } as const;
+
+const getMetadataErrorMessage = (error: ApiError) => {
+  if (typeof error.body !== "string") {
+    return error.message;
+  }
+
+  try {
+    const body = JSON.parse(error.body) as Partial<MetadataErrorResponse>;
+
+    return body.message ?? error.message;
+  } catch {
+    return error.message;
+  }
+};
 
 function createLinkBentoSkeleton(
   rawUrl: string,
@@ -666,18 +680,13 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     setLinkUrl("");
 
     try {
-      const response = await apiClient.api.crawl.$get({ query: { url: rawUrl } });
-      const body = (await response.json()) as NormalizedMetadata | MetadataErrorResponse;
+      const response = await getMetadata({ url: rawUrl });
 
-      if (!response.ok) {
-        throw new Error("message" in body ? body.message : "Could not fetch link details");
+      if (response.status !== 200) {
+        throw new Error("Could not fetch link details");
       }
 
-      if ("error" in body) {
-        throw new Error(body.message);
-      }
-
-      const nextItem = createLinkBentoFromCrawl(placeholderItem, rawUrl, body);
+      const nextItem = createLinkBentoFromCrawl(placeholderItem, rawUrl, response.data);
 
       setBento((currentItems) =>
         currentItems.map((item) => (item.id === placeholderItem.id ? nextItem : item))
@@ -685,7 +694,11 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
       removeLoadingLinkId(placeholderItem.id);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message.replace(/\./g, "") : "Could not fetch link details"
+        error instanceof ApiError
+          ? getMetadataErrorMessage(error).replace(/\./g, "")
+          : error instanceof Error
+            ? error.message.replace(/\./g, "")
+            : "Could not fetch link details"
       );
       removeLoadingLinkId(placeholderItem.id);
       removeItemFromGrid(placeholderItem.id);

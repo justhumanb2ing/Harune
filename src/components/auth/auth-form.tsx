@@ -13,6 +13,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group";
+import { getAppUrl } from "@/lib/auth/app-url";
 import { authClient } from "@/lib/auth-client";
 import { appConfig } from "@/lib/config";
 import { invalidateAuthenticatedAppQueries } from "@/lib/react-query/app-cache";
@@ -45,6 +46,7 @@ export function AuthForm({
   const router = useRouter();
   const queryClient = useQueryClient();
   const resolvedCallbackUrl = callbackUrl || searchParams?.get("callbackUrl") || "/create";
+  const resolvedCallbackAbsoluteUrl = getAppUrl(resolvedCallbackUrl);
   const errorCallbackParams = new URLSearchParams();
   const callbackUrlParam = searchParams?.get("callbackUrl");
   const handleParam = searchParams?.get("handle");
@@ -62,6 +64,7 @@ export function AuthForm({
   }
 
   errorCallbackParams.set("oauth", "failed");
+  const signInErrorCallbackUrl = getAppUrl(`/sign-in?${errorCallbackParams.toString()}`);
 
   const handleGoogleSignIn = async () => {
     setErrorMessage(null);
@@ -70,8 +73,8 @@ export function AuthForm({
     try {
       const result = await authClient.signIn.social({
         provider: "google",
-        callbackURL: "https://harune.me",
-        errorCallbackURL: `https://harune.me/sign-in?${errorCallbackParams.toString()}`,
+        callbackURL: resolvedCallbackAbsoluteUrl,
+        errorCallbackURL: signInErrorCallbackUrl,
       });
 
       if (result.error) {
@@ -101,13 +104,13 @@ export function AuthForm({
           ? await authClient.signIn.email({
               email,
               password,
-              callbackURL: "https://harune.me/create"
+              callbackURL: resolvedCallbackAbsoluteUrl,
             })
           : await authClient.signUp.email({
               name: name || email.split("@")[0] || `${appConfig.projectName} User`,
               email,
               password,
-              callbackURL: "https://harune.me/create"
+              callbackURL: resolvedCallbackAbsoluteUrl,
             });
 
       if (result.error) {

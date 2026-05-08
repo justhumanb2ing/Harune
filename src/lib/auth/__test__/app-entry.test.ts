@@ -4,6 +4,7 @@ import type { GetMe200 } from "@/lib/api/generated/http/schemas/me-api";
 import { createSignInCallbackHref, resolveAppEntryHref } from "@/lib/auth/app-entry";
 
 const me: GetMe200 = {
+  currentPlan: null,
   profilePage: {
     handle: "demo",
     id: "page-1",
@@ -16,6 +17,8 @@ const me: GetMe200 = {
     image: null,
     name: "Demo",
     createdAt: "2026-05-07T00:00:00.000Z",
+    credits: {},
+    planId: null,
     updatedAt: "2026-05-07T00:00:00.000Z",
   },
 };

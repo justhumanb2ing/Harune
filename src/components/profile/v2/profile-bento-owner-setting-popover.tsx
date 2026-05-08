@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/animate-ui/components/base/popover";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { getAppUrl } from "@/lib/auth/app-url";
 import { authClient } from "@/lib/auth-client";
 import { clearAuthenticatedAppQueries } from "@/lib/react-query/app-cache";
 
@@ -64,7 +65,7 @@ export function ProfileBentoOwnerSettingPopover() {
 
     try {
       const result = await authClient.deleteUser({
-        callbackURL: "/sign-in",
+        callbackURL: getAppUrl("/sign-in"),
       });
 
       if (result.error) {

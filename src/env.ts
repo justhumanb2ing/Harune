@@ -11,7 +11,6 @@ export const env = createEnv({
     AWS_REGION: z.string().optional(),
     AWS_S3_BUCKET_NAME: z.string().optional(),
     AWS_SECRET_ACCESS_KEY: z.string().optional(),
-    DATABASE_URL: z.string().optional(),
     DODO_CREDITS_PRODUCT_ID: z.string().optional(),
     DODO_PAYMENTS_API_KEY: z.string().optional(),
     DODO_PAYMENTS_API_URL: z.string().optional(),

@@ -11,6 +11,7 @@ export const profilePageQueryOptions = (handle: string) =>
   queryOptions({
     queryKey: getGetProfileByHandleQueryKey(handle),
     enabled: !!handle,
+    staleTime: 0,
     queryFn: async ({ signal }) => {
       const response = await getProfileByHandle(handle, {
         cache: "no-store",

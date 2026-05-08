@@ -96,6 +96,7 @@ function ProfileBentoOwnerFooterAction({
             <Link
               aria-label="Explore"
               href="/explore"
+              prefetch={false}
               className={cn(
                 "inline-flex size-9 items-center justify-center rounded-md",
                 iconButtonClassName

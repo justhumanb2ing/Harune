@@ -34,12 +34,17 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <AppEntryCtaButton next="/app" size="sm" variant="link" className="inline-block text-muted-foreground!">
+                <AppEntryCtaButton
+                  next="/app"
+                  size="sm"
+                  variant="link"
+                  className="inline-block text-muted-foreground!"
+                >
                   Log In
                 </AppEntryCtaButton>
               </li>
               <li>
-                <Link href="/explore" className="inline-block hover:text-primary">
+                <Link prefetch={false} href="/explore" className="inline-block hover:text-primary">
                   Explore
                 </Link>
               </li>

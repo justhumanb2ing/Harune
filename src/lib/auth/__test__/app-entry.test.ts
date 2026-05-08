@@ -1,10 +1,9 @@
 import { describe, expect, test } from "bun:test";
 
-import type { MeResponse } from "@/lib/api/app/types";
+import type { GetMe200 } from "@/lib/api/generated/http/schemas/me-api";
 import { createSignInCallbackHref, resolveAppEntryHref } from "@/lib/auth/app-entry";
 
-const me = {
-  currentPlan: null,
+const me: GetMe200 = {
   profilePage: {
     handle: "demo",
     id: "page-1",
@@ -12,26 +11,14 @@ const me = {
     name: "Demo",
   },
   user: {
-    credits: {},
-    createdAt: "2026-05-07T00:00:00.000Z",
-    dodoCustomerId: null,
-    dodoSubscriptionId: null,
     email: "demo@example.com",
-    emailVerified: false,
-    emailVerifiedBool: false,
     id: "user-1",
     image: null,
-    lemonSqueezyCustomerId: null,
-    lemonSqueezySubscriptionId: null,
     name: "Demo",
-    paddleCustomerId: null,
-    paddleSubscriptionId: null,
-    planId: null,
-    stripeCustomerId: null,
-    stripeSubscriptionId: null,
+    createdAt: "2026-05-07T00:00:00.000Z",
     updatedAt: "2026-05-07T00:00:00.000Z",
   },
-} as unknown as MeResponse;
+};
 
 describe("app entry resolver", () => {
   test("redirects anonymous users to sign-in with a safe callback", () => {

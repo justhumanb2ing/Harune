@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ApiError } from "@/lib/api/error";
+import type { GetMe200 } from "@/lib/api/generated/http/schemas/me-api";
 import { createSignInCallbackHref, resolveAppEntryHref } from "@/lib/auth/app-entry";
-import { ApiError } from "@/lib/react-query/fetcher";
 import { meQueryOptions } from "@/lib/users/queries";
 import { cn } from "@/lib/utils";
 
@@ -40,7 +41,7 @@ export function AppEntryCtaButton({
     setIsResolving(true);
 
     try {
-      const me = await queryClient.fetchQuery(meQueryOptions());
+      const me = (await queryClient.fetchQuery(meQueryOptions())) as unknown as GetMe200;
       router.push(resolveAppEntryHref({ next, profilePage: me.profilePage }));
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {

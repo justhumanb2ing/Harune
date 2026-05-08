@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/input-group";
 import { useGridDragMotion } from "@/hooks/use-grid-drag-motion";
 import { useProfilePageEditor } from "@/hooks/use-profile-editor";
+import { ApiError } from "@/lib/api/error";
 import { getMetadata } from "@/lib/api/generated/http/metadata-api/metadata-api";
 import {
   replaceProfileBentoGraph,
@@ -53,7 +54,6 @@ import {
   PROFILE_BENTO_MEDIA_MAX_SIZE_BYTES,
 } from "@/lib/profile/media-upload";
 import type { ProfileBentoItem } from "@/lib/profile/types";
-import { ApiError } from "@/lib/react-query/fetcher";
 import { cn } from "@/lib/utils";
 import { ProfileBentoEmptyGridState } from "./profile-bento-empty-grid-state";
 import {

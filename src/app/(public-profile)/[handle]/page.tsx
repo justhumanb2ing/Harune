@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { ProfileBentoPage } from "@/components/profile/v2/profile-bento-page";
 import { WebPageJsonLd } from "@/components/site-instrumentation/structured-data";
+import { ApiError } from "@/lib/api/error";
 import { getProfileByHandle } from "@/lib/api/generated/http/profile-api/profile-api";
 import type {
   GetProfileByHandle200BentoItem,
@@ -11,7 +12,6 @@ import type {
 } from "@/lib/api/generated/http/schemas/profile-api";
 import { appConfig } from "@/lib/config";
 import { toProfilePageEditorDataFromPublicPage } from "@/lib/profile/public-profile-page";
-import { ApiError } from "@/lib/react-query/fetcher";
 import { absoluteUrl, createPageMetadata } from "@/lib/seo";
 import { getServerMe } from "@/lib/users/server-me";
 import { getServerMeAnalytics } from "@/lib/users/server-me-analytics";
@@ -25,8 +25,7 @@ type HandlePageProps = {
 export const revalidate = 300;
 
 type PublicProfilePageData = {
-  page: Omit<GetProfileByHandle200Page, "updatedAt"> & {
-    updatedAt: Date;
+  page: GetProfileByHandle200Page & {
     userName: string | null;
   };
   bento: GetProfileByHandle200BentoItem[];
@@ -41,7 +40,6 @@ const toPublicProfilePageData = (data: Awaited<ReturnType<typeof getProfileByHan
   return {
     page: {
       ...data.data.page,
-      updatedAt: new Date(data.data.page.updatedAt),
       userName: null,
     },
     bento: data.data.bento,
@@ -112,7 +110,7 @@ export default async function HandlePage({ params }: HandlePageProps) {
         id={absoluteUrl(`/${data.page.handle}`)}
         description={data.page.bio || `Visit @${data.page.handle}'s page.`}
         title={title}
-        lastUpdated={data.page.updatedAt.toISOString()}
+        lastUpdated={data.page.updatedAt}
         isAccessibleForFree
         publisher={{
           "@type": "Organization",

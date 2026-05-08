@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/react-query/query-keys";
+import { getGetMeQueryKey } from "@/lib/api/generated/http/me-api/me-api";
 import { meQueryOptions } from "@/lib/users/queries";
 
 const useUser = () => {
@@ -13,7 +13,7 @@ const useUser = () => {
     profilePage: data?.profilePage,
     isLoading: isPending,
     error,
-    mutate: () => queryClient.invalidateQueries({ queryKey: queryKeys.app.me() }),
+    mutate: () => queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() }),
   };
 };
 

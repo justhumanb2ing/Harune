@@ -597,21 +597,6 @@ export type GetMeAnalytics500 = {
 /**
  * @nullable
  */
-export type GetMe200CurrentPlan = {
-  id: string;
-  name: string;
-  codename: string;
-  quotas: {
-    permiumSupport: boolean;
-    monthlyImages: number;
-    somethingElse: string;
-  };
-  default: boolean;
-} | null;
-
-/**
- * @nullable
- */
 export type GetMe200ProfilePage = {
   id: string;
   handle: string;
@@ -620,8 +605,6 @@ export type GetMe200ProfilePage = {
   /** @nullable */
   image: string | null;
 } | null;
-
-export type GetMe200UserCredits = { [key: string]: number };
 
 export type GetMe200User = {
   id: string;
@@ -632,14 +615,9 @@ export type GetMe200User = {
   image: string | null;
   createdAt: string;
   updatedAt: string;
-  /** @nullable */
-  planId: string | null;
-  credits: GetMe200UserCredits;
 };
 
 export type GetMe200 = {
-  /** @nullable */
-  currentPlan: GetMe200CurrentPlan;
   /** @nullable */
   profilePage: GetMe200ProfilePage;
   user: GetMe200User;

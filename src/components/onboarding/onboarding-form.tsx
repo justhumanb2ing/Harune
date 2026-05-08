@@ -24,6 +24,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useHandleAvailability } from "@/hooks/use-handle-availability";
 import { useProfileImageUpload } from "@/hooks/use-profile-image-upload";
+import { getCheckHandleAvailabilityQueryKey } from "@/lib/api/generated/http/handle-api/handle-api";
 import { createProfilePage } from "@/lib/api/generated/http/profile-api/profile-api";
 import { CreateProfilePageBody as createProfilePageBodySchema } from "@/lib/api/generated/zod/profile-api/profile-api.zod";
 import { authClient } from "@/lib/auth-client";
@@ -33,7 +34,6 @@ import {
   clearAuthenticatedAppQueries,
   invalidateAuthenticatedAppQueries,
 } from "@/lib/react-query/app-cache";
-import { queryKeys } from "@/lib/react-query/query-keys";
 import { cn } from "@/lib/utils";
 
 type OnboardingFormProps = {
@@ -265,7 +265,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
       if (apiError.status === 409) {
         transitionToStep(0, () => setError(apiError.message || "This handle is already taken."));
         await queryClient.invalidateQueries({
-          queryKey: queryKeys.handles.availability(pageHandle),
+          queryKey: getCheckHandleAvailabilityQueryKey({ handle: pageHandle }),
         });
         return;
       }

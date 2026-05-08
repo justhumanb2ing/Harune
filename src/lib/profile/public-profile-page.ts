@@ -2,7 +2,7 @@ import type { GetProfileByHandle200 } from "@/lib/api/generated/http/schemas/pro
 import type { ProfilePageData } from "@/lib/profile/types";
 
 export const toProfilePageEditorDataFromPublicPage = (
-  page: Omit<GetProfileByHandle200["page"], 'updatedAt'> & { updatedAt: Date; }
+  page: GetProfileByHandle200["page"]
 ): ProfilePageData => ({
   page: {
     id: page.id,

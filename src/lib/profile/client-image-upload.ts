@@ -34,6 +34,10 @@ export async function uploadProfileImageIfChanged({
     imageKind: kind,
   });
 
+  if (uploaded.status !== 200) {
+    throw new Error("Failed to upload profile image.");
+  }
+
   if (!persist) {
     return uploaded.data.imageUrl;
   }
@@ -42,6 +46,10 @@ export async function uploadProfileImageIfChanged({
     imageKind: kind,
     imageUrl: uploaded.data.imageUrl,
   });
+
+  if (finalized.status !== 200) {
+    return uploaded.data.imageUrl;
+  }
 
   return finalized.data.imageUrl ?? uploaded.data.imageUrl;
 }

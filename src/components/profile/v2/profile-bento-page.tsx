@@ -10,8 +10,7 @@ import type { ProfileBentoItem, ProfilePageData } from "@/lib/profile/types";
 import { cn } from "@/lib/utils";
 
 type ProfileBentoPageProps = {
-  page: Omit<GetProfileByHandle200Page, "updatedAt"> & {
-    updatedAt: Date;
+  page: GetProfileByHandle200Page & {
     userName: string | null;
   };
   bento: GetProfileByHandle200BentoItem[];

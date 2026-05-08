@@ -46,7 +46,7 @@ export function ProfilePageEditorProvider({
 }) {
   const profilePageQuery = useQuery({
     ...profilePageQueryOptions(handle),
-    initialData,
+    initialData: initialData ?? undefined,
   });
   const storeRef = React.useRef<ProfilePageEditorStore | null>(null);
 

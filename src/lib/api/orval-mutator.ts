@@ -1,4 +1,4 @@
-import { ApiError } from "@/lib/react-query/fetcher";
+import { createApiError } from "@/lib/api/error";
 
 type OrvalResponseBody = string | undefined;
 
@@ -18,19 +18,6 @@ const getResponseBody = async (response: Response): Promise<OrvalResponseBody> =
   return await response.text();
 };
 
-const getErrorMessage = (body: string) => {
-  try {
-    const parsed = JSON.parse(body) as {
-      error?: string;
-      message?: string;
-    };
-
-    return parsed.error || parsed.message || body;
-  } catch {
-    return body;
-  }
-};
-
 export const orvalMutator = async <T>(url: string, init?: RequestInit): Promise<T> => {
   const response = await fetch(getRequestUrl(url), {
     ...init,
@@ -39,10 +26,7 @@ export const orvalMutator = async <T>(url: string, init?: RequestInit): Promise<
 
   if (!response.ok) {
     const body = await response.text();
-    const error = new ApiError(getErrorMessage(body) || "Request Failed");
-    error.status = response.status;
-    error.body = body;
-    throw error;
+    throw createApiError(body, response.status);
   }
 
   const body = await getResponseBody(response);

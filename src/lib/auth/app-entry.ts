@@ -1,4 +1,4 @@
-import type { MeResponse } from "@/lib/api/app/types";
+import type { GetMe200 } from "@/lib/api/generated/http/schemas/me-api";
 
 function normalizeCtaPath(value?: string) {
   if (!value?.startsWith("/") || value.startsWith("//")) {
@@ -21,7 +21,7 @@ export function createSignInCallbackHref(next = "/") {
 
 export function resolveAppEntryHref(input: {
   next?: string;
-  profilePage: MeResponse["profilePage"];
+  profilePage: GetMe200["profilePage"];
 }) {
   const handle = input.profilePage?.handle;
 

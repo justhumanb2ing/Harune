@@ -9,14 +9,14 @@ import {
   useProfilePageEditorStoreApi,
 } from "@/components/profile/layout/profile-editor-provider";
 import { buildSyncPayload } from "@/hooks/profile-editor-store";
-import type { MeResponse } from "@/lib/api/app/types";
+import { getGetMeQueryKey } from "@/lib/api/generated/http/me-api/me-api";
 import { updateProfilePage } from "@/lib/api/generated/http/profile-api/profile-api";
+import type { GetMe200 } from "@/lib/api/generated/http/schemas/me-api";
 import { getProfileRouteHandle } from "@/lib/profile/app-paths";
 import { uploadProfileImageIfChanged } from "@/lib/profile/client-image-upload";
 import { toProfilePageEditorDataFromPublicPage } from "@/lib/profile/public-profile-page";
 import { profilePageQueryOptions } from "@/lib/profile/query-options";
 import type { ProfilePageData, ProfilePageDraftData } from "@/lib/profile/types";
-import { queryKeys } from "@/lib/react-query/query-keys";
 import useUser from "@/lib/users/use-user";
 
 export function useProfilePageEditor() {
@@ -161,7 +161,7 @@ export function useProfilePageEditor() {
       );
 
       queryClient.setQueryData(profilePageQueryKey, profilePageData);
-      queryClient.setQueryData<MeResponse>(queryKeys.app.me(), (current) => {
+      queryClient.setQueryData<GetMe200>(getGetMeQueryKey(), (current) => {
         if (!current?.profilePage) {
           return current;
         }

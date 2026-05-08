@@ -1,9 +1,11 @@
 "use client";
 
 import { useDebounce } from "@/hooks/use-debounce";
-import { useCheckHandleAvailability } from "@/lib/api/generated/http/handle-api/handle-api";
+import {
+  getCheckHandleAvailabilityQueryKey,
+  useCheckHandleAvailability,
+} from "@/lib/api/generated/http/handle-api/handle-api";
 import { normalizeHandle, validateHandle } from "@/lib/handles";
-import { queryKeys } from "@/lib/react-query/query-keys";
 
 export function useHandleAvailability(handle: string) {
   const normalizedHandle = normalizeHandle(handle);
@@ -15,7 +17,7 @@ export function useHandleAvailability(handle: string) {
     {
       query: {
         enabled: !!debouncedHandle && !validationError,
-        queryKey: queryKeys.handles.availability(debouncedHandle),
+        queryKey: getCheckHandleAvailabilityQueryKey({ handle: debouncedHandle }),
         retry: false,
         staleTime: 30_000,
       },
@@ -28,7 +30,7 @@ export function useHandleAvailability(handle: string) {
     !!normalizedHandle && !validationError && (isDebouncing || availabilityQuery.isFetching);
   const availabilityError =
     hasResolvedCurrentHandle && availabilityQuery.error
-      ? availabilityQuery.error.message || "Could not check handle availability."
+      ? availabilityQuery.error.error.message || "Could not check handle availability."
       : null;
   const isHandleAvailable =
     hasResolvedCurrentHandle &&

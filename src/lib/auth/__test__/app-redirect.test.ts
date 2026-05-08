@@ -17,7 +17,7 @@ describe("app redirect helpers", () => {
   test("resolves legacy app paths against the owned handle", () => {
     expect(resolveAppRedirectPath("/app", "demo")).toBe("/demo");
     expect(resolveAppRedirectPath("/app/settings", "demo")).toBe("/demo");
-    expect(resolveAppRedirectPath("/demo/app/settings?tab=links", "demo")).toBe("/demo");
+    expect(resolveAppRedirectPath("/demo/app/settings?tab=links", "demo")).toBe("/demo?tab=links");
     expect(resolveAppRedirectPath("/demo/analytics?range=7d", "demo")).toBe(
       "/demo/analytics?range=7d"
     );

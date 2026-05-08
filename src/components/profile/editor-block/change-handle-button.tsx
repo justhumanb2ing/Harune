@@ -19,13 +19,13 @@ import {
   InputGroupText,
 } from "@/components/ui/input-group";
 import { useProfilePageHandleAvailability } from "@/hooks/use-profile-handle-availability";
-import type { MeResponse } from "@/lib/api/app/types";
 import { updateHandle } from "@/lib/api/generated/http/handle-api/handle-api";
+import { getGetMeQueryKey } from "@/lib/api/generated/http/me-api/me-api";
+import type { GetMe200 } from "@/lib/api/generated/http/schemas/me-api";
 import { normalizeHandle, validateHandle } from "@/lib/handles";
 import { getProfileRouteHandle, replaceProfileRouteHandle } from "@/lib/profile/app-paths";
 import { profilePageQueryOptions } from "@/lib/profile/query-options";
 import type { ProfilePageData } from "@/lib/profile/types";
-import { queryKeys } from "@/lib/react-query/query-keys";
 import { cn } from "@/lib/utils";
 
 type ChangeHandleButtonProps = {
@@ -100,7 +100,7 @@ export function ChangeHandleButton({
 
     queryClient.setQueryData(profilePageQueryKey, syncedData);
     queryClient.setQueryData(profilePageQueryOptions(data.profilePage.handle).queryKey, syncedData);
-    queryClient.setQueryData<MeResponse>(queryKeys.app.me(), (current) => {
+    queryClient.setQueryData<GetMe200>(getGetMeQueryKey(), (current) => {
       if (!current?.profilePage) {
         return current;
       }

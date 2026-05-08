@@ -2,9 +2,9 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { env } from "@/env";
-import type { MeResponse } from "@/lib/api/app/types";
+import type { GetMe200 } from "@/lib/api/generated/http/schemas/me-api";
 
-export async function getServerMe() {
+export async function getServerMe(): Promise<GetMe200 | null> {
   const requestCookies = await cookies();
   const cookieHeader = requestCookies.toString();
 
@@ -27,5 +27,5 @@ export async function getServerMe() {
     throw new Error(`Failed to load current user: ${response.status}`);
   }
 
-  return (await response.json()) as MeResponse;
+  return (await response.json()) as GetMe200;
 }

@@ -1,5 +1,3 @@
-import { normalizeAnalyticsTimezone } from "@/lib/analytics/analytics-ranges";
-import type { ProfileAnalyticsResponse } from "@/lib/analytics/types";
 import type { MeResponse } from "@/lib/api/app/types";
 import type { OnboardingInput } from "@/lib/validations/auth.schema";
 import type { ProfileUpdateValues } from "@/lib/validations/profile.schema";
@@ -29,10 +27,6 @@ export type AppApiServices = {
     | { error: string; status: number }
     | { page: { handle: string; id: string; name: string }; success: true }
   >;
-  getAnalytics(input: {
-    timezoneHeader?: string | null;
-    userId: string;
-  }): Promise<ProfileAnalyticsResponse>;
   getMe(userId: string): Promise<MeResponse>;
   updateMe(input: {
     userId: string;
@@ -51,11 +45,6 @@ export type AppApiServiceDependencies = {
     path: string;
   }) => Promise<{ fields: Record<string, string>; url: string }>;
   getMissingS3ConfigKeys: () => string[];
-  getOwnedProfilePage: (userId: string) => Promise<{ id: string } | null>;
-  getProfileAnalyticsResponse: (input: {
-    profilePageId: string | null;
-    timezone?: string | null;
-  }) => Promise<ProfileAnalyticsResponse>;
   getPublicS3ObjectUrl: (key: string) => string;
   getMeForUser: (userId: string) => Promise<MeResponse>;
   getProfilePageByHandle: (handle: string) => Promise<{ id: string } | null>;
@@ -70,8 +59,6 @@ export const createAppApiServices = ({
   createProfilePage,
   createS3UploadFields,
   getMissingS3ConfigKeys,
-  getOwnedProfilePage,
-  getProfileAnalyticsResponse,
   getPublicS3ObjectUrl,
   getMeForUser,
   getProfilePageByHandle,
@@ -157,15 +144,6 @@ export const createAppApiServices = ({
       page: await createProfilePage({ userId, values }),
       success: true,
     };
-  },
-  getAnalytics: async ({ timezoneHeader, userId }) => {
-    const timezone = normalizeAnalyticsTimezone(timezoneHeader);
-    const profilePage = await getOwnedProfilePage(userId);
-
-    return getProfileAnalyticsResponse({
-      profilePageId: profilePage?.id ?? null,
-      timezone,
-    });
   },
   getMe: getMeForUser,
   updateMe: updateUserProfile,

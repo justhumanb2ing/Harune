@@ -75,27 +75,6 @@ export const createAppApi = ({
       return jsonResponse(context, { error: "Failed to update profile" }, 500);
     }
   });
-  app.get("/analytics", async (context) => {
-    const session = getAuthenticatedSession(context);
-
-    if (!session) {
-      return unauthorizedResponse(context);
-    }
-
-    try {
-      return jsonResponse(
-        context,
-        await services.getAnalytics({
-          timezoneHeader: context.req.header("x-vercel-ip-timezone"),
-          userId: session.user.id,
-        }),
-        200
-      );
-    } catch (error) {
-      logger.error("Failed to load profile analytics:", error);
-      return jsonResponse(context, { error: "Failed to load profile analytics." }, 500);
-    }
-  });
   app.post("/me/upload-avatar", async (context) => {
     const session = getAuthenticatedSession(context);
 

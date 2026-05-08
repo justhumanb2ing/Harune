@@ -1,7 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { ProfileAnalyticsResponse } from "@/lib/analytics/types";
 import type { MeResponse } from "@/lib/api/app/types";
 import { createAppApi } from "@/lib/api/routes/app";
 import type { OnboardingInput } from "@/lib/validations/auth.schema";
@@ -40,13 +39,6 @@ const defaultMeResponse = {
   },
 } satisfies MeResponse;
 
-const defaultAnalyticsResponse = {
-  profilePageId: "page-1",
-  state: "ready",
-  summaries: {},
-  timezone: "Asia/Seoul",
-} as unknown as ProfileAnalyticsResponse;
-
 const validOnboardingPayload: OnboardingInput = {
   handle: "demo",
   name: "Demo",
@@ -65,8 +57,6 @@ const createTestAppApi = (overrides: Partial<AppApiOptions> = {}) =>
       url: "https://storage.example.com",
     }),
     getMissingS3ConfigKeys: () => [],
-    getOwnedProfilePage: async () => ({ id: "page-1" }),
-    getProfileAnalyticsResponse: async () => defaultAnalyticsResponse,
     getPublicS3ObjectUrl: (key) => `https://cdn.example.com/${key}`,
     getMeForUser: async () => defaultMeResponse,
     createProfilePage: async () => ({
@@ -226,41 +216,6 @@ describe("app Hono API", () => {
     expect(notFoundBody).toEqual({ error: "User not found" });
     expect(unknownErrorResponse.status).toBe(500);
     expect(unknownErrorBody).toEqual({ error: "Failed to update profile" });
-  });
-
-  test("loads profile analytics with the request timezone header", async () => {
-    const calls: Array<{ profilePageId: string | null; timezone?: string | null }> = [];
-    const app = createTestAppApi({
-      getProfileAnalyticsResponse: async (input) => {
-        calls.push(input);
-        return defaultAnalyticsResponse;
-      },
-    });
-
-    const response = await app.request("/analytics", {
-      headers: {
-        "x-vercel-ip-timezone": "Asia/Seoul",
-      },
-    });
-    const body = (await response.json()) as ProfileAnalyticsResponse;
-
-    expect(response.status).toBe(200);
-    expect(body).toEqual(defaultAnalyticsResponse);
-    expect(calls).toEqual([{ profilePageId: "page-1", timezone: "Asia/Seoul" }]);
-  });
-
-  test("maps profile analytics errors to the existing JSON response shape", async () => {
-    const app = createTestAppApi({
-      getProfileAnalyticsResponse: async () => {
-        throw new Error("analytics unavailable");
-      },
-    });
-
-    const response = await app.request("/analytics");
-    const body = (await response.json()) as { error: string };
-
-    expect(response.status).toBe(500);
-    expect(body).toEqual({ error: "Failed to load profile analytics." });
   });
 
   test("creates avatar upload fields for authenticated users", async () => {

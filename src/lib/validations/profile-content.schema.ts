@@ -46,6 +46,15 @@ const googleMapsUrlSchema = z
     );
   }, "Enter a valid Google Maps URL.");
 
+export const profileUpdateSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .max(100, "Name must be less than 100 characters")
+    .trim(),
+  image: z.string().url("Profile picture must be a valid URL").optional().nullable(),
+});
+
 export const profilePageUpdateSchema = z.object({
   handle: handleSchema,
   name: requiredText("Name", 100),
@@ -217,3 +226,4 @@ export const profilePageSyncSchema = z.object({
 export type ProfilePageUpdateValues = z.infer<typeof profilePageUpdateSchema>;
 export type ProfilePageSyncValues = z.infer<typeof profilePageSyncSchema>;
 export type ProfileBentoSyncValues = z.infer<typeof profileBentoSyncSchema>;
+export type ProfileUpdateValues = z.infer<typeof profileUpdateSchema>;

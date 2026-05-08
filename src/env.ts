@@ -1,6 +1,9 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
+const defaultApiBaseUrl =
+  process.env.NODE_ENV === "development" ? "http://localhost:8787" : "https://api.harune.me";
+
 export const env = createEnv({
   server: {
     AUTH_SECRET: z.string().optional(),
@@ -48,7 +51,7 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_ANALYTICS_PROVIDER: z.string().optional(),
     NEXT_PUBLIC_APP_URL: z.string().optional(),
-    NEXT_PUBLIC_API_BASE_URL: z.string().optional(),
+    NEXT_PUBLIC_API_BASE_URL: z.string().url().default(defaultApiBaseUrl),
     NEXT_PUBLIC_BETTERLYTICS_SCRIPT_SRC: z.string().optional(),
     NEXT_PUBLIC_BETTERLYTICS_SITE_ID: z.string().optional(),
     NEXT_PUBLIC_PADDLE_CLIENT_TOKEN: z.string().optional(),

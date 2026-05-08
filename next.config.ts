@@ -20,6 +20,16 @@ const getSupabaseStorageHost = () => {
 const supabaseStorageHost = getSupabaseStorageHost();
 
 const nextConfig: NextConfig = {
+  async rewrites() {
+    const apiBaseUrl = env.NEXT_PUBLIC_API_BASE_URL.replace(/\/+$/, "");
+
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${apiBaseUrl}/:path*`,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

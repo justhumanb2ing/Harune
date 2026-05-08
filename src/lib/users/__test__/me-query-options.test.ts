@@ -21,7 +21,8 @@ describe("me query options", () => {
     expect(source.includes('import "server-only"')).toBe(true);
     expect(source.includes("fetch(")).toBe(true);
     expect(source.includes("/me")).toBe(true);
-    expect(source.includes("NEXT_PUBLIC_API_BASE_URL")).toBe(true);
+    expect(source.includes("getAppApiBaseURL")).toBe(true);
+    expect(source.includes("NEXT_PUBLIC_API_BASE_URL")).toBe(false);
     expect(source.includes("headers: {")).toBe(true);
     expect(source.includes("cookie: cookieHeader")).toBe(true);
   });

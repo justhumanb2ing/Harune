@@ -3,7 +3,7 @@ import { describe, expect, test } from "bun:test";
 import { getAuthClientBaseURL } from "@/lib/auth-client";
 
 describe("auth client config", () => {
-  test("trims trailing slashes from the API base URL", () => {
-    expect(getAuthClientBaseURL("https://api.harune.me/")).toBe("https://api.harune.me");
+  test("uses the app-origin api proxy base URL", () => {
+    expect(getAuthClientBaseURL()).toBe("https://harune.me/api");
   });
 });

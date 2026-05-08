@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { env } from "@/env";
+import { getAppApiBaseURL } from "@/lib/api/base-url";
 import { absoluteUrl } from "@/lib/seo";
 
 type ListProfilePages200 = {
@@ -20,7 +20,7 @@ type ListProfilePages200 = {
 };
 
 async function getProfilePagesForSitemap(): Promise<ListProfilePages200["pages"]> {
-  const response = await fetch(`${env.NEXT_PUBLIC_API_BASE_URL}/profile/pages`, {
+  const response = await fetch(`${getAppApiBaseURL()}/profile/pages`, {
     cache: "no-store",
   });
 

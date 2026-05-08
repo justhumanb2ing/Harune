@@ -1,15 +1,13 @@
-import { getSessionCookie } from "better-auth/cookies";
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
 import { AuthForm } from "@/components/auth/auth-form";
 import PolicyBox from "@/components/auth/policy-box";
 import { env } from "@/env";
-import { resolveAuthenticatedAppRedirect } from "@/lib/auth/app-redirect";
+import { resolveAppEntryHref } from "@/lib/auth/app-entry";
 import { getSafeRedirectPath } from "@/lib/auth/app-redirect-paths";
 import { appConfig } from "@/lib/config";
 import { createPageMetadata } from "@/lib/seo";
+import { getServerMe } from "@/lib/users/server-me";
 
 export const metadata: Metadata = createPageMetadata({
   path: "/sign-in",
@@ -28,34 +26,25 @@ type SignInPageProps = {
 };
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
-  const requestHeaders = await headers();
   const { callbackUrl, error, error_description, handle, oauth } = await searchParams;
   const resolvedCallbackPath = getSafeRedirectPath(callbackUrl);
-  const session = getSessionCookie(requestHeaders) ? await auth() : null;
+  const me = await getServerMe();
 
-  if (session?.user?.id) {
+  if (me) {
     redirect(
-      await resolveAuthenticatedAppRedirect({
-        handle,
+      resolveAppEntryHref({
         next: resolvedCallbackPath,
-        userId: session.user.id,
+        profilePage: me.profilePage,
       })
     );
   }
 
   const redirectTarget = new URLSearchParams();
-
-  if (resolvedCallbackPath !== "/app") {
-    redirectTarget.set("next", resolvedCallbackPath);
-  }
-
   if (handle) {
     redirectTarget.set("handle", handle);
   }
 
-  const resolvedCallbackUrl = `/api/join${
-    redirectTarget.toString() ? `?${redirectTarget.toString()}` : ""
-  }`;
+  const resolvedCallbackUrl = `/create${redirectTarget.toString() ? `?${redirectTarget.toString()}` : ""}`;
   const oauthErrorMessage =
     oauth === "failed" || error
       ? error_description ||

@@ -44,7 +44,7 @@ export function AuthForm({
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const resolvedCallbackUrl = callbackUrl || searchParams?.get("callbackUrl") || "/api/join";
+  const resolvedCallbackUrl = callbackUrl || searchParams?.get("callbackUrl") || "/create";
   const errorCallbackParams = new URLSearchParams();
   const callbackUrlParam = searchParams?.get("callbackUrl");
   const handleParam = searchParams?.get("handle");
@@ -62,7 +62,6 @@ export function AuthForm({
   }
 
   errorCallbackParams.set("oauth", "failed");
-  const errorCallbackUrl = `/sign-in?${errorCallbackParams.toString()}`;
 
   const handleGoogleSignIn = async () => {
     setErrorMessage(null);
@@ -71,8 +70,8 @@ export function AuthForm({
     try {
       const result = await authClient.signIn.social({
         provider: "google",
-        callbackURL: resolvedCallbackUrl,
-        errorCallbackURL: errorCallbackUrl,
+        callbackURL: "http://localhost:3000/create",
+        errorCallbackURL: `/sign-in?${errorCallbackParams.toString()}`,
       });
 
       if (result.error) {
@@ -102,13 +101,11 @@ export function AuthForm({
           ? await authClient.signIn.email({
               email,
               password,
-              callbackURL: resolvedCallbackUrl,
             })
           : await authClient.signUp.email({
               name: name || email.split("@")[0] || `${appConfig.projectName} User`,
               email,
               password,
-              callbackURL: resolvedCallbackUrl,
             });
 
       if (result.error) {
@@ -135,7 +132,6 @@ export function AuthForm({
       const result = await authClient.signIn.email({
         email: DEMO_ACCOUNT.email,
         password: DEMO_ACCOUNT.password,
-        callbackURL: resolvedCallbackUrl,
       });
 
       if (result.error) {

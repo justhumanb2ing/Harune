@@ -15,7 +15,7 @@ export default function PaddleCheckoutPage() {
   const [error, setError] = useState<string | null>(null);
   const [showRetry, setShowRetry] = useState(false);
   const { profilePage, user } = useUser();
-  const sectionHref = profilePage?.handle ? getProfileAppPath(profilePage.handle) : "/api/join";
+  const sectionHref = profilePage?.handle ? getProfileAppPath(profilePage.handle) : "/create";
   useEffect(() => {
     // Show retry button after 3 seconds
     const timer = setTimeout(() => {

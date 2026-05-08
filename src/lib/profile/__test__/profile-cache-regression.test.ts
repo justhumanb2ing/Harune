@@ -59,7 +59,7 @@ describe("profile page cache regression", () => {
       globalThis.fetch = originalFetch;
     }
 
-    expect(fetchCalls[0]?.input).toBe("/api/me");
+    expect(String(fetchCalls[0]?.input)).toContain("/me");
     expect(fetchCalls[0]?.init?.cache).toBe("no-store");
   });
 

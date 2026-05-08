@@ -43,7 +43,10 @@ export const getApiErrorDescription = (error: unknown) => {
 };
 
 export const apiFetch = async <T>(params: FetcherParams, init?: RequestInit): Promise<T> => {
-  const response = await fetch(getRequestUrl(params), init);
+  const response = await fetch(getRequestUrl(params), {
+    ...init,
+    credentials: "include",
+  });
 
   if (!response.ok) {
     const body = await response.text();

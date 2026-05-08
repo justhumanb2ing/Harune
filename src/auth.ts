@@ -1,20 +1,4 @@
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { APIError, createAuthMiddleware } from "better-auth/api";
-import { betterAuth } from "better-auth/minimal";
-import { nextCookies } from "better-auth/next-js";
-import { jwt } from "better-auth/plugins";
-import { and, eq, isNull } from "drizzle-orm";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-
-import { db } from "./db";
-import { coupons } from "./db/schema/coupons";
-import { authAccounts, authJwks, authSessions, authVerifications, users } from "./db/schema/user";
-import { env } from "./env";
-import { passwordHashing } from "./lib/auth/password";
-import { betterAuthSupabaseJwtOptions } from "./lib/auth/supabase-jwt";
-import { appConfig } from "./lib/config";
-import onUserCreate from "./lib/users/on-user-create";
 
 export interface AuthSession {
   user: {
@@ -24,124 +8,20 @@ export interface AuthSession {
   expires: string;
 }
 
-const isSignInEnabled = () => env.NEXT_PUBLIC_SIGNIN_ENABLED === "true";
-
-const socialProviders = {
-  ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
-    ? {
-        google: {
-          clientId: env.GOOGLE_CLIENT_ID,
-          clientSecret: env.GOOGLE_CLIENT_SECRET,
-        },
-      }
-    : {}),
+// Backend auth wiring is intentionally disabled while the frontend is
+// detached from the new server.
+export const betterAuthServer = {
+  api: {
+    getSession: async () => null,
+    signOut: async () => {
+      return;
+    },
+  },
+  handler: () => new Response("Auth backend is disabled.", { status: 503 }),
 };
 
-export const betterAuthServer = betterAuth({
-  appName: appConfig.projectName,
-  baseURL: {
-    allowedHosts: ["localhost:3000", "harune.me", "www.harune.me", "*.vercel.app"],
-    protocol: process.env.NODE_ENV === "production" ? "https" : "http",
-  },
-  database: drizzleAdapter(db, {
-    provider: "pg",
-    schema: {
-      user: users,
-      account: authAccounts,
-      session: authSessions,
-      verification: authVerifications,
-      jwks: authJwks,
-    },
-  }),
-  session: {
-    freshAge: 60 * 60 * 24 * 7, // 7 days
-    cookieCache: {
-      enabled: true,
-      maxAge: 5 * 60,
-    },
-  },
-  user: {
-    fields: {
-      emailVerified: "emailVerifiedBool",
-    },
-    deleteUser: {
-      enabled: true,
-      beforeDelete: async (user) => {
-        await db.delete(authSessions).where(eq(authSessions.userId, user.id));
-        await db.update(coupons).set({ userId: null }).where(eq(coupons.userId, user.id));
-      },
-    },
-  },
-  account: {
-    accountLinking: {
-      enabled: true,
-      trustedProviders: ["google", "email-password"],
-    },
-  },
-  emailAndPassword: {
-    enabled: true,
-    minPasswordLength: 8,
-    password: passwordHashing,
-  },
-  socialProviders: Object.keys(socialProviders).length > 0 ? socialProviders : undefined,
-  hooks: {
-    before: createAuthMiddleware(async (ctx) => {
-      if (!isSignInEnabled() && ctx.path.startsWith("/sign-in")) {
-        throw new APIError("FORBIDDEN", {
-          message: "Sign in is currently disabled",
-        });
-      }
-    }),
-  },
-  databaseHooks: {
-    user: {
-      create: {
-        after: async (user) => {
-          await onUserCreate({
-            id: user.id,
-            email: user.email,
-            name: user.name,
-          });
-        },
-      },
-      update: {
-        after: async (user) => {
-          if (!user.emailVerified) {
-            return;
-          }
-
-          await db
-            .update(users)
-            .set({
-              emailVerified: new Date(),
-              emailVerifiedBool: true,
-              updatedAt: new Date(),
-            })
-            .where(and(eq(users.id, user.id), isNull(users.emailVerified)));
-        },
-      },
-    },
-  },
-  plugins: [jwt(betterAuthSupabaseJwtOptions), nextCookies()],
-});
-
 export const auth = async (): Promise<AuthSession | null> => {
-  const requestHeaders = await headers();
-  const session = await betterAuthServer.api.getSession({
-    headers: requestHeaders,
-  });
-
-  if (!session?.user?.email) {
-    return null;
-  }
-
-  return {
-    user: {
-      id: session.user.id,
-      email: session.user.email,
-    },
-    expires: session.session.expiresAt.toISOString(),
-  };
+  return null;
 };
 
 export const signIn = (callbackUrl?: string) => {
@@ -150,7 +30,5 @@ export const signIn = (callbackUrl?: string) => {
 };
 
 export const signOut = async () => {
-  await betterAuthServer.api.signOut({
-    headers: await headers(),
-  });
+  return;
 };

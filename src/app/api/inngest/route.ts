@@ -1,8 +1,15 @@
-import { serve } from "inngest/next";
-import { inngest } from "@/lib/inngest/client";
-import { functions } from "@/lib/inngest/functions";
-// Create an API that serves zero functions
-export const { GET, POST, PUT } = serve({
-  client: inngest,
-  functions,
-});
+import { NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
+
+const disabledInngestResponse = () =>
+  NextResponse.json(
+    {
+      error: "Inngest backend is disabled.",
+    },
+    { status: 503 }
+  );
+
+export const GET = disabledInngestResponse;
+export const POST = disabledInngestResponse;
+export const PUT = disabledInngestResponse;

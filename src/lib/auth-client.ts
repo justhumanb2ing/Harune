@@ -1,6 +1,9 @@
-import { jwtClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
-  plugins: [jwtClient()],
+  baseURL: "http://localhost:8787",
+  basePath: "/auth",
+  fetchOptions: {
+    credentials: "include",
+  },
 });

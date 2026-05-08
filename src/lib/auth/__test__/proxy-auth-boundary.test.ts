@@ -11,45 +11,42 @@ const decide = (path: string, hasSessionSignal = false) =>
   });
 
 describe("proxy auth boundary", () => {
-  test("redirects legacy app entry to join", () => {
+  test("redirects legacy app entry to create", () => {
     const decision = decide("/app?from=legacy");
 
     expect(decision.kind).toBe("redirect");
     if (decision.kind === "redirect") {
-      expect(decision.url.pathname).toBe("/api/join");
+      expect(decision.url.pathname).toBe("/create");
       expect(decision.url.search).toBe("?from=legacy");
     }
   });
 
-  test("redirects authenticated auth-page access to join with callback", () => {
+  test("redirects authenticated auth-page access to create with callback", () => {
     const decision = decide("/sign-in?callbackUrl=/create", true);
 
     expect(decision.kind).toBe("redirect");
     if (decision.kind === "redirect") {
-      expect(decision.url.pathname).toBe("/api/join");
+      expect(decision.url.pathname).toBe("/create");
       expect(decision.url.searchParams.get("next")).toBe("/create");
     }
   });
 
-  test("collapses nested join callbacks before resolving authenticated redirects", () => {
-    const decision = decide(
-      "/sign-in?callbackUrl=/api/join?next=%2Fapi%2Fjoin%3Fnext%3D%2Fcreate",
-      true
-    );
+  test("collapses nested create callbacks before resolving authenticated redirects", () => {
+    const decision = decide("/sign-in?callbackUrl=/create?next=%2Fcreate", true);
 
     expect(decision.kind).toBe("redirect");
     if (decision.kind === "redirect") {
-      expect(decision.url.pathname).toBe("/api/join");
-      expect(decision.url.searchParams.get("next")).toBe("/create");
+      expect(decision.url.pathname).toBe("/create");
+      expect(decision.url.searchParams.get("next")).toBe("/create?next=/create");
     }
   });
 
-  test("lets join normalize external callback attempts", () => {
+  test("lets create normalize external callback attempts", () => {
     const decision = decide("/sign-in?callbackUrl=//evil.example", true);
 
     expect(decision.kind).toBe("redirect");
     if (decision.kind === "redirect") {
-      expect(decision.url.pathname).toBe("/api/join");
+      expect(decision.url.pathname).toBe("/create");
       expect(decision.url.searchParams.get("next")).toBe("/app");
     }
   });

@@ -1,12 +1,16 @@
-import { handle } from "hono/vercel";
-import routes from "@/lib/api/server";
+import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-export const DELETE = handle(routes);
+const disabledApiResponse = () =>
+  NextResponse.json(
+    {
+      error: "Backend API is disabled.",
+    },
+    { status: 503 }
+  );
 
-export const GET = handle(routes);
-
-export const PATCH = handle(routes);
-
-export const POST = handle(routes);
+export const DELETE = disabledApiResponse;
+export const GET = disabledApiResponse;
+export const PATCH = disabledApiResponse;
+export const POST = disabledApiResponse;

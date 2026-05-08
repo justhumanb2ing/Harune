@@ -49,6 +49,7 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_ANALYTICS_PROVIDER: z.string().optional(),
     NEXT_PUBLIC_APP_URL: z.string().optional(),
+    NEXT_PUBLIC_API_BASE_URL: z.string().optional(),
     NEXT_PUBLIC_BETTERLYTICS_SCRIPT_SRC: z.string().optional(),
     NEXT_PUBLIC_BETTERLYTICS_SITE_ID: z.string().optional(),
     NEXT_PUBLIC_PADDLE_CLIENT_TOKEN: z.string().optional(),
@@ -63,6 +64,7 @@ export const env = createEnv({
   experimental__runtimeEnv: {
     NEXT_PUBLIC_ANALYTICS_PROVIDER: process.env.NEXT_PUBLIC_ANALYTICS_PROVIDER,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
     NEXT_PUBLIC_BETTERLYTICS_SCRIPT_SRC: process.env.NEXT_PUBLIC_BETTERLYTICS_SCRIPT_SRC,
     NEXT_PUBLIC_BETTERLYTICS_SITE_ID: process.env.NEXT_PUBLIC_BETTERLYTICS_SITE_ID,
     NEXT_PUBLIC_PADDLE_CLIENT_TOKEN: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,

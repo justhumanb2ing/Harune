@@ -120,3 +120,4 @@ bun run build
 - `docs/plans/2026-05-02-001-refactor-hono-profile-api-plan.md`
 - `docs/plans/2026-05-03-001-refactor-hono-better-auth-next-api-plan.md`
 - `docs/solutions/best-practices/better-auth-supabase-rls-boundary-2026-04-28.md`
+- `docs/solutions/best-practices/api-me-app-context-contract-2026-05-07.md`

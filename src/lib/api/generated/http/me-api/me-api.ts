@@ -7,61 +7,66 @@
  */
 
 import type {
-  DataTag,
-  DefinedInitialDataOptions,
-  DefinedUseQueryResult,
-  QueryClient,
-  QueryFunction,
-  QueryKey,
-  UndefinedInitialDataOptions,
-  UseQueryOptions,
-  UseQueryResult,
+	DataTag,
+	DefinedInitialDataOptions,
+	DefinedUseQueryResult,
+	QueryClient,
+	QueryFunction,
+	QueryKey,
+	UndefinedInitialDataOptions,
+	UseQueryOptions,
+	UseQueryResult,
 } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
+import { getAppApiBaseURL } from "@/lib/api/base-url";
 import { orvalMutator } from "../../../orval-mutator";
 import type {
-  GetMe200,
-  GetMe401,
-  GetMe404,
-  GetMe500,
-  GetMeAnalytics200,
-  GetMeAnalytics401,
-  GetMeAnalytics500,
+	GetMe200,
+	GetMe401,
+	GetMe404,
+	GetMe500,
+	GetMeAnalytics200,
+	GetMeAnalytics401,
+	GetMeAnalytics500,
 } from "../schemas/me-api";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export type getMeResponse200 = {
-  data: GetMe200;
-  status: 200;
+	data: GetMe200;
+	status: 200;
 };
 
 export type getMeResponse401 = {
-  data: GetMe401;
-  status: 401;
+	data: GetMe401;
+	status: 401;
 };
 
 export type getMeResponse404 = {
-  data: GetMe404;
-  status: 404;
+	data: GetMe404;
+	status: 404;
 };
 
 export type getMeResponse500 = {
-  data: GetMe500;
-  status: 500;
+	data: GetMe500;
+	status: 500;
 };
 
 export type getMeResponseSuccess = getMeResponse200 & {
-  headers: Headers;
+	headers: Headers;
 };
-export type getMeResponseError = (getMeResponse401 | getMeResponse404 | getMeResponse500) & {
-  headers: Headers;
+export type getMeResponseError = (
+	| getMeResponse401
+	| getMeResponse404
+	| getMeResponse500
+) & {
+	headers: Headers;
 };
 
 export type getMeResponse = getMeResponseSuccess | getMeResponseError;
 
 export const getGetMeUrl = () => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/me`;
+	return `${getAppApiBaseURL()}/me`;
 };
 
 /**
@@ -69,244 +74,294 @@ export const getGetMeUrl = () => {
  * @summary Get current user app context
  */
 export const getMe = async (options?: RequestInit): Promise<getMeResponse> => {
-  return orvalMutator<getMeResponse>(getGetMeUrl(), {
-    ...options,
-    method: "GET",
-  });
+	return orvalMutator<getMeResponse>(getGetMeUrl(), {
+		...options,
+		method: "GET",
+	});
 };
 
 export const getGetMeQueryKey = () => {
-  return [`${process.env.NEXT_PUBLIC_API_BASE_URL}/me`] as const;
+	return [`${getAppApiBaseURL()}/me`] as const;
 };
 
 export const getGetMeQueryOptions = <
-  TData = Awaited<ReturnType<typeof getMe>>,
-  TError = GetMe401 | GetMe404 | GetMe500,
+	TData = Awaited<ReturnType<typeof getMe>>,
+	TError = GetMe401 | GetMe404 | GetMe500,
 >(options?: {
-  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>>;
-  request?: SecondParameter<typeof orvalMutator>;
+	query?: Partial<
+		UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>
+	>;
+	request?: SecondParameter<typeof orvalMutator>;
 }) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
+	const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetMeQueryKey();
+	const queryKey = queryOptions?.queryKey ?? getGetMeQueryKey();
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMe>>> = ({ signal }) =>
-    getMe({ signal, ...requestOptions });
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof getMe>>> = ({
+		signal,
+	}) => getMe({ signal, ...requestOptions });
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getMe>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
+	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+		Awaited<ReturnType<typeof getMe>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type GetMeQueryResult = NonNullable<Awaited<ReturnType<typeof getMe>>>;
 export type GetMeQueryError = GetMe401 | GetMe404 | GetMe500;
 
 export function useGetMe<
-  TData = Awaited<ReturnType<typeof getMe>>,
-  TError = GetMe401 | GetMe404 | GetMe500,
+	TData = Awaited<ReturnType<typeof getMe>>,
+	TError = GetMe401 | GetMe404 | GetMe500,
 >(
-  options: {
-    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>> &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getMe>>,
-          TError,
-          Awaited<ReturnType<typeof getMe>>
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
-): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+	options: {
+		query: Partial<
+			UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>
+		> &
+			Pick<
+				DefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getMe>>,
+					TError,
+					Awaited<ReturnType<typeof getMe>>
+				>,
+				"initialData"
+			>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
 export function useGetMe<
-  TData = Awaited<ReturnType<typeof getMe>>,
-  TError = GetMe401 | GetMe404 | GetMe500,
+	TData = Awaited<ReturnType<typeof getMe>>,
+	TError = GetMe401 | GetMe404 | GetMe500,
 >(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>> &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getMe>>,
-          TError,
-          Awaited<ReturnType<typeof getMe>>
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+	options?: {
+		query?: Partial<
+			UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>
+		> &
+			Pick<
+				UndefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getMe>>,
+					TError,
+					Awaited<ReturnType<typeof getMe>>
+				>,
+				"initialData"
+			>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
 export function useGetMe<
-  TData = Awaited<ReturnType<typeof getMe>>,
-  TError = GetMe401 | GetMe404 | GetMe500,
+	TData = Awaited<ReturnType<typeof getMe>>,
+	TError = GetMe401 | GetMe404 | GetMe500,
 >(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>>;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+	options?: {
+		query?: Partial<
+			UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>
+		>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get current user app context
  */
 
 export function useGetMe<
-  TData = Awaited<ReturnType<typeof getMe>>,
-  TError = GetMe401 | GetMe404 | GetMe500,
+	TData = Awaited<ReturnType<typeof getMe>>,
+	TError = GetMe401 | GetMe404 | GetMe500,
 >(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>>;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getGetMeQueryOptions(options);
+	options?: {
+		query?: Partial<
+			UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>
+		>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const queryOptions = getGetMeQueryOptions(options);
 
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+		TData,
+		TError
+	> & {
+		queryKey: DataTag<QueryKey, TData, TError>;
+	};
 
-  return { ...query, queryKey: queryOptions.queryKey };
+	return { ...query, queryKey: queryOptions.queryKey };
 }
 
 export type getMeAnalyticsResponse200 = {
-  data: GetMeAnalytics200;
-  status: 200;
+	data: GetMeAnalytics200;
+	status: 200;
 };
 
 export type getMeAnalyticsResponse401 = {
-  data: GetMeAnalytics401;
-  status: 401;
+	data: GetMeAnalytics401;
+	status: 401;
 };
 
 export type getMeAnalyticsResponse500 = {
-  data: GetMeAnalytics500;
-  status: 500;
+	data: GetMeAnalytics500;
+	status: 500;
 };
 
 export type getMeAnalyticsResponseSuccess = getMeAnalyticsResponse200 & {
-  headers: Headers;
+	headers: Headers;
 };
 export type getMeAnalyticsResponseError = (
-  | getMeAnalyticsResponse401
-  | getMeAnalyticsResponse500
+	| getMeAnalyticsResponse401
+	| getMeAnalyticsResponse500
 ) & {
-  headers: Headers;
+	headers: Headers;
 };
 
-export type getMeAnalyticsResponse = getMeAnalyticsResponseSuccess | getMeAnalyticsResponseError;
+export type getMeAnalyticsResponse =
+	| getMeAnalyticsResponseSuccess
+	| getMeAnalyticsResponseError;
 
 export const getGetMeAnalyticsUrl = () => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/me/analytics`;
+	return `${getAppApiBaseURL()}/me/analytics`;
 };
 
 /**
  * Returns the authenticated owner's analytics summary for the current profile page. The response is a stateful DTO with ready, no-profile, and disabled variants. The server normalizes timezone input, reads ownership from the authenticated session, and returns no-store headers on success.
  * @summary Get current user analytics summary
  */
-export const getMeAnalytics = async (options?: RequestInit): Promise<getMeAnalyticsResponse> => {
-  return orvalMutator<getMeAnalyticsResponse>(getGetMeAnalyticsUrl(), {
-    ...options,
-    method: "GET",
-  });
+export const getMeAnalytics = async (
+	options?: RequestInit,
+): Promise<getMeAnalyticsResponse> => {
+	return orvalMutator<getMeAnalyticsResponse>(getGetMeAnalyticsUrl(), {
+		...options,
+		method: "GET",
+	});
 };
 
 export const getGetMeAnalyticsQueryKey = () => {
-  return [`${process.env.NEXT_PUBLIC_API_BASE_URL}/me/analytics`] as const;
+	return [`${getAppApiBaseURL()}/me/analytics`] as const;
 };
 
 export const getGetMeAnalyticsQueryOptions = <
-  TData = Awaited<ReturnType<typeof getMeAnalytics>>,
-  TError = GetMeAnalytics401 | GetMeAnalytics500,
+	TData = Awaited<ReturnType<typeof getMeAnalytics>>,
+	TError = GetMeAnalytics401 | GetMeAnalytics500,
 >(options?: {
-  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMeAnalytics>>, TError, TData>>;
-  request?: SecondParameter<typeof orvalMutator>;
+	query?: Partial<
+		UseQueryOptions<Awaited<ReturnType<typeof getMeAnalytics>>, TError, TData>
+	>;
+	request?: SecondParameter<typeof orvalMutator>;
 }) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
+	const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetMeAnalyticsQueryKey();
+	const queryKey = queryOptions?.queryKey ?? getGetMeAnalyticsQueryKey();
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeAnalytics>>> = ({ signal }) =>
-    getMeAnalytics({ signal, ...requestOptions });
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeAnalytics>>> = ({
+		signal,
+	}) => getMeAnalytics({ signal, ...requestOptions });
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getMeAnalytics>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
+	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+		Awaited<ReturnType<typeof getMeAnalytics>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type GetMeAnalyticsQueryResult = NonNullable<Awaited<ReturnType<typeof getMeAnalytics>>>;
+export type GetMeAnalyticsQueryResult = NonNullable<
+	Awaited<ReturnType<typeof getMeAnalytics>>
+>;
 export type GetMeAnalyticsQueryError = GetMeAnalytics401 | GetMeAnalytics500;
 
 export function useGetMeAnalytics<
-  TData = Awaited<ReturnType<typeof getMeAnalytics>>,
-  TError = GetMeAnalytics401 | GetMeAnalytics500,
+	TData = Awaited<ReturnType<typeof getMeAnalytics>>,
+	TError = GetMeAnalytics401 | GetMeAnalytics500,
 >(
-  options: {
-    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMeAnalytics>>, TError, TData>> &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getMeAnalytics>>,
-          TError,
-          Awaited<ReturnType<typeof getMeAnalytics>>
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
-): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+	options: {
+		query: Partial<
+			UseQueryOptions<Awaited<ReturnType<typeof getMeAnalytics>>, TError, TData>
+		> &
+			Pick<
+				DefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getMeAnalytics>>,
+					TError,
+					Awaited<ReturnType<typeof getMeAnalytics>>
+				>,
+				"initialData"
+			>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
 export function useGetMeAnalytics<
-  TData = Awaited<ReturnType<typeof getMeAnalytics>>,
-  TError = GetMeAnalytics401 | GetMeAnalytics500,
+	TData = Awaited<ReturnType<typeof getMeAnalytics>>,
+	TError = GetMeAnalytics401 | GetMeAnalytics500,
 >(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMeAnalytics>>, TError, TData>> &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getMeAnalytics>>,
-          TError,
-          Awaited<ReturnType<typeof getMeAnalytics>>
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+	options?: {
+		query?: Partial<
+			UseQueryOptions<Awaited<ReturnType<typeof getMeAnalytics>>, TError, TData>
+		> &
+			Pick<
+				UndefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getMeAnalytics>>,
+					TError,
+					Awaited<ReturnType<typeof getMeAnalytics>>
+				>,
+				"initialData"
+			>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
 export function useGetMeAnalytics<
-  TData = Awaited<ReturnType<typeof getMeAnalytics>>,
-  TError = GetMeAnalytics401 | GetMeAnalytics500,
+	TData = Awaited<ReturnType<typeof getMeAnalytics>>,
+	TError = GetMeAnalytics401 | GetMeAnalytics500,
 >(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMeAnalytics>>, TError, TData>>;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+	options?: {
+		query?: Partial<
+			UseQueryOptions<Awaited<ReturnType<typeof getMeAnalytics>>, TError, TData>
+		>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get current user analytics summary
  */
 
 export function useGetMeAnalytics<
-  TData = Awaited<ReturnType<typeof getMeAnalytics>>,
-  TError = GetMeAnalytics401 | GetMeAnalytics500,
+	TData = Awaited<ReturnType<typeof getMeAnalytics>>,
+	TError = GetMeAnalytics401 | GetMeAnalytics500,
 >(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMeAnalytics>>, TError, TData>>;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getGetMeAnalyticsQueryOptions(options);
+	options?: {
+		query?: Partial<
+			UseQueryOptions<Awaited<ReturnType<typeof getMeAnalytics>>, TError, TData>
+		>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const queryOptions = getGetMeAnalyticsQueryOptions(options);
 
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+		TData,
+		TError
+	> & {
+		queryKey: DataTag<QueryKey, TData, TError>;
+	};
 
-  return { ...query, queryKey: queryOptions.queryKey };
+	return { ...query, queryKey: queryOptions.queryKey };
 }

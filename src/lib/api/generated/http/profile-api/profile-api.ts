@@ -7,124 +7,125 @@
  */
 
 import type {
-  DataTag,
-  DefinedInitialDataOptions,
-  DefinedUseQueryResult,
-  MutationFunction,
-  QueryClient,
-  QueryFunction,
-  QueryKey,
-  UndefinedInitialDataOptions,
-  UseMutationOptions,
-  UseMutationResult,
-  UseQueryOptions,
-  UseQueryResult,
+	DataTag,
+	DefinedInitialDataOptions,
+	DefinedUseQueryResult,
+	MutationFunction,
+	QueryClient,
+	QueryFunction,
+	QueryKey,
+	UndefinedInitialDataOptions,
+	UseMutationOptions,
+	UseMutationResult,
+	UseQueryOptions,
+	UseQueryResult,
 } from "@tanstack/react-query";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { getAppApiBaseURL } from "@/lib/api/base-url";
 import { orvalMutator } from "../../../orval-mutator";
 import type {
-  CreateProfilePage200,
-  CreateProfilePage400,
-  CreateProfilePage401,
-  CreateProfilePage404,
-  CreateProfilePage409,
-  CreateProfilePage500,
-  CreateProfilePageBody,
-  DeleteProfileImage200,
-  DeleteProfileImage400,
-  DeleteProfileImage401,
-  DeleteProfileImage403,
-  DeleteProfileImage404,
-  DeleteProfileImage500,
-  DeleteProfileImageBody,
-  FinalizeProfileImage200,
-  FinalizeProfileImage400,
-  FinalizeProfileImage401,
-  FinalizeProfileImage403,
-  FinalizeProfileImage404,
-  FinalizeProfileImage500,
-  FinalizeProfileImageBody,
-  GetProfileByHandle200,
-  GetProfileByHandle404,
-  GetProfileByHandle500,
-  ListProfilePages200,
-  ListProfilePages500,
-  ReplaceProfileBentoGraph200,
-  ReplaceProfileBentoGraph400,
-  ReplaceProfileBentoGraph401,
-  ReplaceProfileBentoGraph404,
-  ReplaceProfileBentoGraph500,
-  ReplaceProfileBentoGraphBody,
-  UpdateProfilePage200,
-  UpdateProfilePage400,
-  UpdateProfilePage401,
-  UpdateProfilePage404,
-  UpdateProfilePage500,
-  UpdateProfilePageBody,
-  UploadProfileBentoMedia200,
-  UploadProfileBentoMedia400,
-  UploadProfileBentoMedia401,
-  UploadProfileBentoMedia403,
-  UploadProfileBentoMedia500,
-  UploadProfileBentoMediaBody,
-  UploadProfileImage200,
-  UploadProfileImage400,
-  UploadProfileImage401,
-  UploadProfileImage500,
-  UploadProfileImageBody,
+	CreateProfilePage200,
+	CreateProfilePage400,
+	CreateProfilePage401,
+	CreateProfilePage404,
+	CreateProfilePage409,
+	CreateProfilePage500,
+	CreateProfilePageBody,
+	DeleteProfileImage200,
+	DeleteProfileImage400,
+	DeleteProfileImage401,
+	DeleteProfileImage403,
+	DeleteProfileImage404,
+	DeleteProfileImage500,
+	DeleteProfileImageBody,
+	FinalizeProfileImage200,
+	FinalizeProfileImage400,
+	FinalizeProfileImage401,
+	FinalizeProfileImage403,
+	FinalizeProfileImage404,
+	FinalizeProfileImage500,
+	FinalizeProfileImageBody,
+	GetProfileByHandle200,
+	GetProfileByHandle404,
+	GetProfileByHandle500,
+	ListProfilePages200,
+	ListProfilePages500,
+	ReplaceProfileBentoGraph200,
+	ReplaceProfileBentoGraph400,
+	ReplaceProfileBentoGraph401,
+	ReplaceProfileBentoGraph404,
+	ReplaceProfileBentoGraph500,
+	ReplaceProfileBentoGraphBody,
+	UpdateProfilePage200,
+	UpdateProfilePage400,
+	UpdateProfilePage401,
+	UpdateProfilePage404,
+	UpdateProfilePage500,
+	UpdateProfilePageBody,
+	UploadProfileBentoMedia200,
+	UploadProfileBentoMedia400,
+	UploadProfileBentoMedia401,
+	UploadProfileBentoMedia403,
+	UploadProfileBentoMedia500,
+	UploadProfileBentoMediaBody,
+	UploadProfileImage200,
+	UploadProfileImage400,
+	UploadProfileImage401,
+	UploadProfileImage500,
+	UploadProfileImageBody,
 } from "../schemas/profile-api";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export type createProfilePageResponse200 = {
-  data: CreateProfilePage200;
-  status: 200;
+	data: CreateProfilePage200;
+	status: 200;
 };
 
 export type createProfilePageResponse400 = {
-  data: CreateProfilePage400;
-  status: 400;
+	data: CreateProfilePage400;
+	status: 400;
 };
 
 export type createProfilePageResponse401 = {
-  data: CreateProfilePage401;
-  status: 401;
+	data: CreateProfilePage401;
+	status: 401;
 };
 
 export type createProfilePageResponse404 = {
-  data: CreateProfilePage404;
-  status: 404;
+	data: CreateProfilePage404;
+	status: 404;
 };
 
 export type createProfilePageResponse409 = {
-  data: CreateProfilePage409;
-  status: 409;
+	data: CreateProfilePage409;
+	status: 409;
 };
 
 export type createProfilePageResponse500 = {
-  data: CreateProfilePage500;
-  status: 500;
+	data: CreateProfilePage500;
+	status: 500;
 };
 
 export type createProfilePageResponseSuccess = createProfilePageResponse200 & {
-  headers: Headers;
+	headers: Headers;
 };
 export type createProfilePageResponseError = (
-  | createProfilePageResponse400
-  | createProfilePageResponse401
-  | createProfilePageResponse404
-  | createProfilePageResponse409
-  | createProfilePageResponse500
+	| createProfilePageResponse400
+	| createProfilePageResponse401
+	| createProfilePageResponse404
+	| createProfilePageResponse409
+	| createProfilePageResponse500
 ) & {
-  headers: Headers;
+	headers: Headers;
 };
 
 export type createProfilePageResponse =
-  | createProfilePageResponseSuccess
-  | createProfilePageResponseError;
+	| createProfilePageResponseSuccess
+	| createProfilePageResponseError;
 
 export const getCreateProfilePageUrl = () => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/me`;
+	return `${getAppApiBaseURL()}/profile/me`;
 };
 
 /**
@@ -132,142 +133,144 @@ export const getCreateProfilePageUrl = () => {
  * @summary Create my profile page
  */
 export const createProfilePage = async (
-  createProfilePageBody: CreateProfilePageBody,
-  options?: RequestInit
+	createProfilePageBody: CreateProfilePageBody,
+	options?: RequestInit,
 ): Promise<createProfilePageResponse> => {
-  return orvalMutator<createProfilePageResponse>(getCreateProfilePageUrl(), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(createProfilePageBody),
-  });
+	return orvalMutator<createProfilePageResponse>(getCreateProfilePageUrl(), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(createProfilePageBody),
+	});
 };
 
 export const getCreateProfilePageMutationOptions = <
-  TError =
-    | CreateProfilePage400
-    | CreateProfilePage401
-    | CreateProfilePage404
-    | CreateProfilePage409
-    | CreateProfilePage500,
-  TContext = unknown,
+	TError =
+		| CreateProfilePage400
+		| CreateProfilePage401
+		| CreateProfilePage404
+		| CreateProfilePage409
+		| CreateProfilePage500,
+	TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createProfilePage>>,
-    TError,
-    { data: CreateProfilePageBody },
-    TContext
-  >;
-  request?: SecondParameter<typeof orvalMutator>;
+	mutation?: UseMutationOptions<
+		Awaited<ReturnType<typeof createProfilePage>>,
+		TError,
+		{ data: CreateProfilePageBody },
+		TContext
+	>;
+	request?: SecondParameter<typeof orvalMutator>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof createProfilePage>>,
-  TError,
-  { data: CreateProfilePageBody },
-  TContext
+	Awaited<ReturnType<typeof createProfilePage>>,
+	TError,
+	{ data: CreateProfilePageBody },
+	TContext
 > => {
-  const mutationKey = ["createProfilePage"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
+	const mutationKey = ["createProfilePage"];
+	const { mutation: mutationOptions, request: requestOptions } = options
+		? options.mutation &&
+			"mutationKey" in options.mutation &&
+			options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, request: undefined };
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof createProfilePage>>,
-    { data: CreateProfilePageBody }
-  > = (props) => {
-    const { data } = props ?? {};
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof createProfilePage>>,
+		{ data: CreateProfilePageBody }
+	> = (props) => {
+		const { data } = props ?? {};
 
-    return createProfilePage(data, requestOptions);
-  };
+		return createProfilePage(data, requestOptions);
+	};
 
-  return { mutationFn, ...mutationOptions };
+	return { mutationFn, ...mutationOptions };
 };
 
 export type CreateProfilePageMutationResult = NonNullable<
-  Awaited<ReturnType<typeof createProfilePage>>
+	Awaited<ReturnType<typeof createProfilePage>>
 >;
 export type CreateProfilePageMutationBody = CreateProfilePageBody;
 export type CreateProfilePageMutationError =
-  | CreateProfilePage400
-  | CreateProfilePage401
-  | CreateProfilePage404
-  | CreateProfilePage409
-  | CreateProfilePage500;
+	| CreateProfilePage400
+	| CreateProfilePage401
+	| CreateProfilePage404
+	| CreateProfilePage409
+	| CreateProfilePage500;
 
 /**
  * @summary Create my profile page
  */
 export const useCreateProfilePage = <
-  TError =
-    | CreateProfilePage400
-    | CreateProfilePage401
-    | CreateProfilePage404
-    | CreateProfilePage409
-    | CreateProfilePage500,
-  TContext = unknown,
+	TError =
+		| CreateProfilePage400
+		| CreateProfilePage401
+		| CreateProfilePage404
+		| CreateProfilePage409
+		| CreateProfilePage500,
+	TContext = unknown,
 >(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof createProfilePage>>,
-      TError,
-      { data: CreateProfilePageBody },
-      TContext
-    >;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
+	options?: {
+		mutation?: UseMutationOptions<
+			Awaited<ReturnType<typeof createProfilePage>>,
+			TError,
+			{ data: CreateProfilePageBody },
+			TContext
+		>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
 ): UseMutationResult<
-  Awaited<ReturnType<typeof createProfilePage>>,
-  TError,
-  { data: CreateProfilePageBody },
-  TContext
+	Awaited<ReturnType<typeof createProfilePage>>,
+	TError,
+	{ data: CreateProfilePageBody },
+	TContext
 > => {
-  return useMutation(getCreateProfilePageMutationOptions(options), queryClient);
+	return useMutation(getCreateProfilePageMutationOptions(options), queryClient);
 };
 export type updateProfilePageResponse200 = {
-  data: UpdateProfilePage200;
-  status: 200;
+	data: UpdateProfilePage200;
+	status: 200;
 };
 
 export type updateProfilePageResponse400 = {
-  data: UpdateProfilePage400;
-  status: 400;
+	data: UpdateProfilePage400;
+	status: 400;
 };
 
 export type updateProfilePageResponse401 = {
-  data: UpdateProfilePage401;
-  status: 401;
+	data: UpdateProfilePage401;
+	status: 401;
 };
 
 export type updateProfilePageResponse404 = {
-  data: UpdateProfilePage404;
-  status: 404;
+	data: UpdateProfilePage404;
+	status: 404;
 };
 
 export type updateProfilePageResponse500 = {
-  data: UpdateProfilePage500;
-  status: 500;
+	data: UpdateProfilePage500;
+	status: 500;
 };
 
 export type updateProfilePageResponseSuccess = updateProfilePageResponse200 & {
-  headers: Headers;
+	headers: Headers;
 };
 export type updateProfilePageResponseError = (
-  | updateProfilePageResponse400
-  | updateProfilePageResponse401
-  | updateProfilePageResponse404
-  | updateProfilePageResponse500
+	| updateProfilePageResponse400
+	| updateProfilePageResponse401
+	| updateProfilePageResponse404
+	| updateProfilePageResponse500
 ) & {
-  headers: Headers;
+	headers: Headers;
 };
 
 export type updateProfilePageResponse =
-  | updateProfilePageResponseSuccess
-  | updateProfilePageResponseError;
+	| updateProfilePageResponseSuccess
+	| updateProfilePageResponseError;
 
 export const getUpdateProfilePageUrl = () => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/me`;
+	return `${getAppApiBaseURL()}/profile/me`;
 };
 
 /**
@@ -275,139 +278,142 @@ export const getUpdateProfilePageUrl = () => {
  * @summary Update my profile page
  */
 export const updateProfilePage = async (
-  updateProfilePageBody: UpdateProfilePageBody,
-  options?: RequestInit
+	updateProfilePageBody: UpdateProfilePageBody,
+	options?: RequestInit,
 ): Promise<updateProfilePageResponse> => {
-  return orvalMutator<updateProfilePageResponse>(getUpdateProfilePageUrl(), {
-    ...options,
-    method: "PUT",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(updateProfilePageBody),
-  });
+	return orvalMutator<updateProfilePageResponse>(getUpdateProfilePageUrl(), {
+		...options,
+		method: "PUT",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(updateProfilePageBody),
+	});
 };
 
 export const getUpdateProfilePageMutationOptions = <
-  TError =
-    | UpdateProfilePage400
-    | UpdateProfilePage401
-    | UpdateProfilePage404
-    | UpdateProfilePage500,
-  TContext = unknown,
+	TError =
+		| UpdateProfilePage400
+		| UpdateProfilePage401
+		| UpdateProfilePage404
+		| UpdateProfilePage500,
+	TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof updateProfilePage>>,
-    TError,
-    { data: UpdateProfilePageBody },
-    TContext
-  >;
-  request?: SecondParameter<typeof orvalMutator>;
+	mutation?: UseMutationOptions<
+		Awaited<ReturnType<typeof updateProfilePage>>,
+		TError,
+		{ data: UpdateProfilePageBody },
+		TContext
+	>;
+	request?: SecondParameter<typeof orvalMutator>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof updateProfilePage>>,
-  TError,
-  { data: UpdateProfilePageBody },
-  TContext
+	Awaited<ReturnType<typeof updateProfilePage>>,
+	TError,
+	{ data: UpdateProfilePageBody },
+	TContext
 > => {
-  const mutationKey = ["updateProfilePage"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
+	const mutationKey = ["updateProfilePage"];
+	const { mutation: mutationOptions, request: requestOptions } = options
+		? options.mutation &&
+			"mutationKey" in options.mutation &&
+			options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, request: undefined };
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof updateProfilePage>>,
-    { data: UpdateProfilePageBody }
-  > = (props) => {
-    const { data } = props ?? {};
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof updateProfilePage>>,
+		{ data: UpdateProfilePageBody }
+	> = (props) => {
+		const { data } = props ?? {};
 
-    return updateProfilePage(data, requestOptions);
-  };
+		return updateProfilePage(data, requestOptions);
+	};
 
-  return { mutationFn, ...mutationOptions };
+	return { mutationFn, ...mutationOptions };
 };
 
 export type UpdateProfilePageMutationResult = NonNullable<
-  Awaited<ReturnType<typeof updateProfilePage>>
+	Awaited<ReturnType<typeof updateProfilePage>>
 >;
 export type UpdateProfilePageMutationBody = UpdateProfilePageBody;
 export type UpdateProfilePageMutationError =
-  | UpdateProfilePage400
-  | UpdateProfilePage401
-  | UpdateProfilePage404
-  | UpdateProfilePage500;
+	| UpdateProfilePage400
+	| UpdateProfilePage401
+	| UpdateProfilePage404
+	| UpdateProfilePage500;
 
 /**
  * @summary Update my profile page
  */
 export const useUpdateProfilePage = <
-  TError =
-    | UpdateProfilePage400
-    | UpdateProfilePage401
-    | UpdateProfilePage404
-    | UpdateProfilePage500,
-  TContext = unknown,
+	TError =
+		| UpdateProfilePage400
+		| UpdateProfilePage401
+		| UpdateProfilePage404
+		| UpdateProfilePage500,
+	TContext = unknown,
 >(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof updateProfilePage>>,
-      TError,
-      { data: UpdateProfilePageBody },
-      TContext
-    >;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
+	options?: {
+		mutation?: UseMutationOptions<
+			Awaited<ReturnType<typeof updateProfilePage>>,
+			TError,
+			{ data: UpdateProfilePageBody },
+			TContext
+		>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
 ): UseMutationResult<
-  Awaited<ReturnType<typeof updateProfilePage>>,
-  TError,
-  { data: UpdateProfilePageBody },
-  TContext
+	Awaited<ReturnType<typeof updateProfilePage>>,
+	TError,
+	{ data: UpdateProfilePageBody },
+	TContext
 > => {
-  return useMutation(getUpdateProfilePageMutationOptions(options), queryClient);
+	return useMutation(getUpdateProfilePageMutationOptions(options), queryClient);
 };
 export type replaceProfileBentoGraphResponse200 = {
-  data: ReplaceProfileBentoGraph200;
-  status: 200;
+	data: ReplaceProfileBentoGraph200;
+	status: 200;
 };
 
 export type replaceProfileBentoGraphResponse400 = {
-  data: ReplaceProfileBentoGraph400;
-  status: 400;
+	data: ReplaceProfileBentoGraph400;
+	status: 400;
 };
 
 export type replaceProfileBentoGraphResponse401 = {
-  data: ReplaceProfileBentoGraph401;
-  status: 401;
+	data: ReplaceProfileBentoGraph401;
+	status: 401;
 };
 
 export type replaceProfileBentoGraphResponse404 = {
-  data: ReplaceProfileBentoGraph404;
-  status: 404;
+	data: ReplaceProfileBentoGraph404;
+	status: 404;
 };
 
 export type replaceProfileBentoGraphResponse500 = {
-  data: ReplaceProfileBentoGraph500;
-  status: 500;
+	data: ReplaceProfileBentoGraph500;
+	status: 500;
 };
 
-export type replaceProfileBentoGraphResponseSuccess = replaceProfileBentoGraphResponse200 & {
-  headers: Headers;
-};
+export type replaceProfileBentoGraphResponseSuccess =
+	replaceProfileBentoGraphResponse200 & {
+		headers: Headers;
+	};
 export type replaceProfileBentoGraphResponseError = (
-  | replaceProfileBentoGraphResponse400
-  | replaceProfileBentoGraphResponse401
-  | replaceProfileBentoGraphResponse404
-  | replaceProfileBentoGraphResponse500
+	| replaceProfileBentoGraphResponse400
+	| replaceProfileBentoGraphResponse401
+	| replaceProfileBentoGraphResponse404
+	| replaceProfileBentoGraphResponse500
 ) & {
-  headers: Headers;
+	headers: Headers;
 };
 
 export type replaceProfileBentoGraphResponse =
-  | replaceProfileBentoGraphResponseSuccess
-  | replaceProfileBentoGraphResponseError;
+	| replaceProfileBentoGraphResponseSuccess
+	| replaceProfileBentoGraphResponseError;
 
 export const getReplaceProfileBentoGraphUrl = () => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/me/bento`;
+	return `${getAppApiBaseURL()}/profile/me/bento`;
 };
 
 /**
@@ -415,133 +421,142 @@ export const getReplaceProfileBentoGraphUrl = () => {
  * @summary Replace my bento graph
  */
 export const replaceProfileBentoGraph = async (
-  replaceProfileBentoGraphBody: ReplaceProfileBentoGraphBody,
-  options?: RequestInit
+	replaceProfileBentoGraphBody: ReplaceProfileBentoGraphBody,
+	options?: RequestInit,
 ): Promise<replaceProfileBentoGraphResponse> => {
-  return orvalMutator<replaceProfileBentoGraphResponse>(getReplaceProfileBentoGraphUrl(), {
-    ...options,
-    method: "PUT",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(replaceProfileBentoGraphBody),
-  });
+	return orvalMutator<replaceProfileBentoGraphResponse>(
+		getReplaceProfileBentoGraphUrl(),
+		{
+			...options,
+			method: "PUT",
+			headers: { "Content-Type": "application/json", ...options?.headers },
+			body: JSON.stringify(replaceProfileBentoGraphBody),
+		},
+	);
 };
 
 export const getReplaceProfileBentoGraphMutationOptions = <
-  TError =
-    | ReplaceProfileBentoGraph400
-    | ReplaceProfileBentoGraph401
-    | ReplaceProfileBentoGraph404
-    | ReplaceProfileBentoGraph500,
-  TContext = unknown,
+	TError =
+		| ReplaceProfileBentoGraph400
+		| ReplaceProfileBentoGraph401
+		| ReplaceProfileBentoGraph404
+		| ReplaceProfileBentoGraph500,
+	TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof replaceProfileBentoGraph>>,
-    TError,
-    { data: ReplaceProfileBentoGraphBody },
-    TContext
-  >;
-  request?: SecondParameter<typeof orvalMutator>;
+	mutation?: UseMutationOptions<
+		Awaited<ReturnType<typeof replaceProfileBentoGraph>>,
+		TError,
+		{ data: ReplaceProfileBentoGraphBody },
+		TContext
+	>;
+	request?: SecondParameter<typeof orvalMutator>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof replaceProfileBentoGraph>>,
-  TError,
-  { data: ReplaceProfileBentoGraphBody },
-  TContext
+	Awaited<ReturnType<typeof replaceProfileBentoGraph>>,
+	TError,
+	{ data: ReplaceProfileBentoGraphBody },
+	TContext
 > => {
-  const mutationKey = ["replaceProfileBentoGraph"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
+	const mutationKey = ["replaceProfileBentoGraph"];
+	const { mutation: mutationOptions, request: requestOptions } = options
+		? options.mutation &&
+			"mutationKey" in options.mutation &&
+			options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, request: undefined };
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof replaceProfileBentoGraph>>,
-    { data: ReplaceProfileBentoGraphBody }
-  > = (props) => {
-    const { data } = props ?? {};
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof replaceProfileBentoGraph>>,
+		{ data: ReplaceProfileBentoGraphBody }
+	> = (props) => {
+		const { data } = props ?? {};
 
-    return replaceProfileBentoGraph(data, requestOptions);
-  };
+		return replaceProfileBentoGraph(data, requestOptions);
+	};
 
-  return { mutationFn, ...mutationOptions };
+	return { mutationFn, ...mutationOptions };
 };
 
 export type ReplaceProfileBentoGraphMutationResult = NonNullable<
-  Awaited<ReturnType<typeof replaceProfileBentoGraph>>
+	Awaited<ReturnType<typeof replaceProfileBentoGraph>>
 >;
 export type ReplaceProfileBentoGraphMutationBody = ReplaceProfileBentoGraphBody;
 export type ReplaceProfileBentoGraphMutationError =
-  | ReplaceProfileBentoGraph400
-  | ReplaceProfileBentoGraph401
-  | ReplaceProfileBentoGraph404
-  | ReplaceProfileBentoGraph500;
+	| ReplaceProfileBentoGraph400
+	| ReplaceProfileBentoGraph401
+	| ReplaceProfileBentoGraph404
+	| ReplaceProfileBentoGraph500;
 
 /**
  * @summary Replace my bento graph
  */
 export const useReplaceProfileBentoGraph = <
-  TError =
-    | ReplaceProfileBentoGraph400
-    | ReplaceProfileBentoGraph401
-    | ReplaceProfileBentoGraph404
-    | ReplaceProfileBentoGraph500,
-  TContext = unknown,
+	TError =
+		| ReplaceProfileBentoGraph400
+		| ReplaceProfileBentoGraph401
+		| ReplaceProfileBentoGraph404
+		| ReplaceProfileBentoGraph500,
+	TContext = unknown,
 >(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof replaceProfileBentoGraph>>,
-      TError,
-      { data: ReplaceProfileBentoGraphBody },
-      TContext
-    >;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
+	options?: {
+		mutation?: UseMutationOptions<
+			Awaited<ReturnType<typeof replaceProfileBentoGraph>>,
+			TError,
+			{ data: ReplaceProfileBentoGraphBody },
+			TContext
+		>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
 ): UseMutationResult<
-  Awaited<ReturnType<typeof replaceProfileBentoGraph>>,
-  TError,
-  { data: ReplaceProfileBentoGraphBody },
-  TContext
+	Awaited<ReturnType<typeof replaceProfileBentoGraph>>,
+	TError,
+	{ data: ReplaceProfileBentoGraphBody },
+	TContext
 > => {
-  return useMutation(getReplaceProfileBentoGraphMutationOptions(options), queryClient);
+	return useMutation(
+		getReplaceProfileBentoGraphMutationOptions(options),
+		queryClient,
+	);
 };
 export type uploadProfileImageResponse200 = {
-  data: UploadProfileImage200;
-  status: 200;
+	data: UploadProfileImage200;
+	status: 200;
 };
 
 export type uploadProfileImageResponse400 = {
-  data: UploadProfileImage400;
-  status: 400;
+	data: UploadProfileImage400;
+	status: 400;
 };
 
 export type uploadProfileImageResponse401 = {
-  data: UploadProfileImage401;
-  status: 401;
+	data: UploadProfileImage401;
+	status: 401;
 };
 
 export type uploadProfileImageResponse500 = {
-  data: UploadProfileImage500;
-  status: 500;
+	data: UploadProfileImage500;
+	status: 500;
 };
 
-export type uploadProfileImageResponseSuccess = uploadProfileImageResponse200 & {
-  headers: Headers;
-};
+export type uploadProfileImageResponseSuccess =
+	uploadProfileImageResponse200 & {
+		headers: Headers;
+	};
 export type uploadProfileImageResponseError = (
-  | uploadProfileImageResponse400
-  | uploadProfileImageResponse401
-  | uploadProfileImageResponse500
+	| uploadProfileImageResponse400
+	| uploadProfileImageResponse401
+	| uploadProfileImageResponse500
 ) & {
-  headers: Headers;
+	headers: Headers;
 };
 
 export type uploadProfileImageResponse =
-  | uploadProfileImageResponseSuccess
-  | uploadProfileImageResponseError;
+	| uploadProfileImageResponseSuccess
+	| uploadProfileImageResponseError;
 
 export const getUploadProfileImageUrl = () => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/image`;
+	return `${getAppApiBaseURL()}/profile/image`;
 };
 
 /**
@@ -560,136 +575,148 @@ Rules:
  * @summary Create a presigned profile image upload
  */
 export const uploadProfileImage = async (
-  uploadProfileImageBody: UploadProfileImageBody,
-  options?: RequestInit
+	uploadProfileImageBody: UploadProfileImageBody,
+	options?: RequestInit,
 ): Promise<uploadProfileImageResponse> => {
-  return orvalMutator<uploadProfileImageResponse>(getUploadProfileImageUrl(), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(uploadProfileImageBody),
-  });
+	return orvalMutator<uploadProfileImageResponse>(getUploadProfileImageUrl(), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(uploadProfileImageBody),
+	});
 };
 
 export const getUploadProfileImageMutationOptions = <
-  TError = UploadProfileImage400 | UploadProfileImage401 | UploadProfileImage500,
-  TContext = unknown,
+	TError =
+		| UploadProfileImage400
+		| UploadProfileImage401
+		| UploadProfileImage500,
+	TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof uploadProfileImage>>,
-    TError,
-    { data: UploadProfileImageBody },
-    TContext
-  >;
-  request?: SecondParameter<typeof orvalMutator>;
+	mutation?: UseMutationOptions<
+		Awaited<ReturnType<typeof uploadProfileImage>>,
+		TError,
+		{ data: UploadProfileImageBody },
+		TContext
+	>;
+	request?: SecondParameter<typeof orvalMutator>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof uploadProfileImage>>,
-  TError,
-  { data: UploadProfileImageBody },
-  TContext
+	Awaited<ReturnType<typeof uploadProfileImage>>,
+	TError,
+	{ data: UploadProfileImageBody },
+	TContext
 > => {
-  const mutationKey = ["uploadProfileImage"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
+	const mutationKey = ["uploadProfileImage"];
+	const { mutation: mutationOptions, request: requestOptions } = options
+		? options.mutation &&
+			"mutationKey" in options.mutation &&
+			options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, request: undefined };
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof uploadProfileImage>>,
-    { data: UploadProfileImageBody }
-  > = (props) => {
-    const { data } = props ?? {};
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof uploadProfileImage>>,
+		{ data: UploadProfileImageBody }
+	> = (props) => {
+		const { data } = props ?? {};
 
-    return uploadProfileImage(data, requestOptions);
-  };
+		return uploadProfileImage(data, requestOptions);
+	};
 
-  return { mutationFn, ...mutationOptions };
+	return { mutationFn, ...mutationOptions };
 };
 
 export type UploadProfileImageMutationResult = NonNullable<
-  Awaited<ReturnType<typeof uploadProfileImage>>
+	Awaited<ReturnType<typeof uploadProfileImage>>
 >;
 export type UploadProfileImageMutationBody = UploadProfileImageBody;
 export type UploadProfileImageMutationError =
-  | UploadProfileImage400
-  | UploadProfileImage401
-  | UploadProfileImage500;
+	| UploadProfileImage400
+	| UploadProfileImage401
+	| UploadProfileImage500;
 
 /**
  * @summary Create a presigned profile image upload
  */
 export const useUploadProfileImage = <
-  TError = UploadProfileImage400 | UploadProfileImage401 | UploadProfileImage500,
-  TContext = unknown,
+	TError =
+		| UploadProfileImage400
+		| UploadProfileImage401
+		| UploadProfileImage500,
+	TContext = unknown,
 >(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof uploadProfileImage>>,
-      TError,
-      { data: UploadProfileImageBody },
-      TContext
-    >;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
+	options?: {
+		mutation?: UseMutationOptions<
+			Awaited<ReturnType<typeof uploadProfileImage>>,
+			TError,
+			{ data: UploadProfileImageBody },
+			TContext
+		>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
 ): UseMutationResult<
-  Awaited<ReturnType<typeof uploadProfileImage>>,
-  TError,
-  { data: UploadProfileImageBody },
-  TContext
+	Awaited<ReturnType<typeof uploadProfileImage>>,
+	TError,
+	{ data: UploadProfileImageBody },
+	TContext
 > => {
-  return useMutation(getUploadProfileImageMutationOptions(options), queryClient);
+	return useMutation(
+		getUploadProfileImageMutationOptions(options),
+		queryClient,
+	);
 };
 export type finalizeProfileImageResponse200 = {
-  data: FinalizeProfileImage200;
-  status: 200;
+	data: FinalizeProfileImage200;
+	status: 200;
 };
 
 export type finalizeProfileImageResponse400 = {
-  data: FinalizeProfileImage400;
-  status: 400;
+	data: FinalizeProfileImage400;
+	status: 400;
 };
 
 export type finalizeProfileImageResponse401 = {
-  data: FinalizeProfileImage401;
-  status: 401;
+	data: FinalizeProfileImage401;
+	status: 401;
 };
 
 export type finalizeProfileImageResponse403 = {
-  data: FinalizeProfileImage403;
-  status: 403;
+	data: FinalizeProfileImage403;
+	status: 403;
 };
 
 export type finalizeProfileImageResponse404 = {
-  data: FinalizeProfileImage404;
-  status: 404;
+	data: FinalizeProfileImage404;
+	status: 404;
 };
 
 export type finalizeProfileImageResponse500 = {
-  data: FinalizeProfileImage500;
-  status: 500;
+	data: FinalizeProfileImage500;
+	status: 500;
 };
 
-export type finalizeProfileImageResponseSuccess = finalizeProfileImageResponse200 & {
-  headers: Headers;
-};
+export type finalizeProfileImageResponseSuccess =
+	finalizeProfileImageResponse200 & {
+		headers: Headers;
+	};
 export type finalizeProfileImageResponseError = (
-  | finalizeProfileImageResponse400
-  | finalizeProfileImageResponse401
-  | finalizeProfileImageResponse403
-  | finalizeProfileImageResponse404
-  | finalizeProfileImageResponse500
+	| finalizeProfileImageResponse400
+	| finalizeProfileImageResponse401
+	| finalizeProfileImageResponse403
+	| finalizeProfileImageResponse404
+	| finalizeProfileImageResponse500
 ) & {
-  headers: Headers;
+	headers: Headers;
 };
 
 export type finalizeProfileImageResponse =
-  | finalizeProfileImageResponseSuccess
-  | finalizeProfileImageResponseError;
+	| finalizeProfileImageResponseSuccess
+	| finalizeProfileImageResponseError;
 
 export const getFinalizeProfileImageUrl = () => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/image`;
+	return `${getAppApiBaseURL()}/profile/image`;
 };
 
 /**
@@ -706,148 +733,157 @@ Rules:
  * @summary Finalize a profile image slot in the database
  */
 export const finalizeProfileImage = async (
-  finalizeProfileImageBody: FinalizeProfileImageBody,
-  options?: RequestInit
+	finalizeProfileImageBody: FinalizeProfileImageBody,
+	options?: RequestInit,
 ): Promise<finalizeProfileImageResponse> => {
-  return orvalMutator<finalizeProfileImageResponse>(getFinalizeProfileImageUrl(), {
-    ...options,
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(finalizeProfileImageBody),
-  });
+	return orvalMutator<finalizeProfileImageResponse>(
+		getFinalizeProfileImageUrl(),
+		{
+			...options,
+			method: "PATCH",
+			headers: { "Content-Type": "application/json", ...options?.headers },
+			body: JSON.stringify(finalizeProfileImageBody),
+		},
+	);
 };
 
 export const getFinalizeProfileImageMutationOptions = <
-  TError =
-    | FinalizeProfileImage400
-    | FinalizeProfileImage401
-    | FinalizeProfileImage403
-    | FinalizeProfileImage404
-    | FinalizeProfileImage500,
-  TContext = unknown,
+	TError =
+		| FinalizeProfileImage400
+		| FinalizeProfileImage401
+		| FinalizeProfileImage403
+		| FinalizeProfileImage404
+		| FinalizeProfileImage500,
+	TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof finalizeProfileImage>>,
-    TError,
-    { data: FinalizeProfileImageBody },
-    TContext
-  >;
-  request?: SecondParameter<typeof orvalMutator>;
+	mutation?: UseMutationOptions<
+		Awaited<ReturnType<typeof finalizeProfileImage>>,
+		TError,
+		{ data: FinalizeProfileImageBody },
+		TContext
+	>;
+	request?: SecondParameter<typeof orvalMutator>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof finalizeProfileImage>>,
-  TError,
-  { data: FinalizeProfileImageBody },
-  TContext
+	Awaited<ReturnType<typeof finalizeProfileImage>>,
+	TError,
+	{ data: FinalizeProfileImageBody },
+	TContext
 > => {
-  const mutationKey = ["finalizeProfileImage"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
+	const mutationKey = ["finalizeProfileImage"];
+	const { mutation: mutationOptions, request: requestOptions } = options
+		? options.mutation &&
+			"mutationKey" in options.mutation &&
+			options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, request: undefined };
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof finalizeProfileImage>>,
-    { data: FinalizeProfileImageBody }
-  > = (props) => {
-    const { data } = props ?? {};
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof finalizeProfileImage>>,
+		{ data: FinalizeProfileImageBody }
+	> = (props) => {
+		const { data } = props ?? {};
 
-    return finalizeProfileImage(data, requestOptions);
-  };
+		return finalizeProfileImage(data, requestOptions);
+	};
 
-  return { mutationFn, ...mutationOptions };
+	return { mutationFn, ...mutationOptions };
 };
 
 export type FinalizeProfileImageMutationResult = NonNullable<
-  Awaited<ReturnType<typeof finalizeProfileImage>>
+	Awaited<ReturnType<typeof finalizeProfileImage>>
 >;
 export type FinalizeProfileImageMutationBody = FinalizeProfileImageBody;
 export type FinalizeProfileImageMutationError =
-  | FinalizeProfileImage400
-  | FinalizeProfileImage401
-  | FinalizeProfileImage403
-  | FinalizeProfileImage404
-  | FinalizeProfileImage500;
+	| FinalizeProfileImage400
+	| FinalizeProfileImage401
+	| FinalizeProfileImage403
+	| FinalizeProfileImage404
+	| FinalizeProfileImage500;
 
 /**
  * @summary Finalize a profile image slot in the database
  */
 export const useFinalizeProfileImage = <
-  TError =
-    | FinalizeProfileImage400
-    | FinalizeProfileImage401
-    | FinalizeProfileImage403
-    | FinalizeProfileImage404
-    | FinalizeProfileImage500,
-  TContext = unknown,
+	TError =
+		| FinalizeProfileImage400
+		| FinalizeProfileImage401
+		| FinalizeProfileImage403
+		| FinalizeProfileImage404
+		| FinalizeProfileImage500,
+	TContext = unknown,
 >(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof finalizeProfileImage>>,
-      TError,
-      { data: FinalizeProfileImageBody },
-      TContext
-    >;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
+	options?: {
+		mutation?: UseMutationOptions<
+			Awaited<ReturnType<typeof finalizeProfileImage>>,
+			TError,
+			{ data: FinalizeProfileImageBody },
+			TContext
+		>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
 ): UseMutationResult<
-  Awaited<ReturnType<typeof finalizeProfileImage>>,
-  TError,
-  { data: FinalizeProfileImageBody },
-  TContext
+	Awaited<ReturnType<typeof finalizeProfileImage>>,
+	TError,
+	{ data: FinalizeProfileImageBody },
+	TContext
 > => {
-  return useMutation(getFinalizeProfileImageMutationOptions(options), queryClient);
+	return useMutation(
+		getFinalizeProfileImageMutationOptions(options),
+		queryClient,
+	);
 };
 export type deleteProfileImageResponse200 = {
-  data: DeleteProfileImage200;
-  status: 200;
+	data: DeleteProfileImage200;
+	status: 200;
 };
 
 export type deleteProfileImageResponse400 = {
-  data: DeleteProfileImage400;
-  status: 400;
+	data: DeleteProfileImage400;
+	status: 400;
 };
 
 export type deleteProfileImageResponse401 = {
-  data: DeleteProfileImage401;
-  status: 401;
+	data: DeleteProfileImage401;
+	status: 401;
 };
 
 export type deleteProfileImageResponse403 = {
-  data: DeleteProfileImage403;
-  status: 403;
+	data: DeleteProfileImage403;
+	status: 403;
 };
 
 export type deleteProfileImageResponse404 = {
-  data: DeleteProfileImage404;
-  status: 404;
+	data: DeleteProfileImage404;
+	status: 404;
 };
 
 export type deleteProfileImageResponse500 = {
-  data: DeleteProfileImage500;
-  status: 500;
+	data: DeleteProfileImage500;
+	status: 500;
 };
 
-export type deleteProfileImageResponseSuccess = deleteProfileImageResponse200 & {
-  headers: Headers;
-};
+export type deleteProfileImageResponseSuccess =
+	deleteProfileImageResponse200 & {
+		headers: Headers;
+	};
 export type deleteProfileImageResponseError = (
-  | deleteProfileImageResponse400
-  | deleteProfileImageResponse401
-  | deleteProfileImageResponse403
-  | deleteProfileImageResponse404
-  | deleteProfileImageResponse500
+	| deleteProfileImageResponse400
+	| deleteProfileImageResponse401
+	| deleteProfileImageResponse403
+	| deleteProfileImageResponse404
+	| deleteProfileImageResponse500
 ) & {
-  headers: Headers;
+	headers: Headers;
 };
 
 export type deleteProfileImageResponse =
-  | deleteProfileImageResponseSuccess
-  | deleteProfileImageResponseError;
+	| deleteProfileImageResponseSuccess
+	| deleteProfileImageResponseError;
 
 export const getDeleteProfileImageUrl = () => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/image`;
+	return `${getAppApiBaseURL()}/profile/image`;
 };
 
 /**
@@ -863,142 +899,148 @@ Rules:
  * @summary Delete a profile image slot object
  */
 export const deleteProfileImage = async (
-  deleteProfileImageBody: DeleteProfileImageBody,
-  options?: RequestInit
+	deleteProfileImageBody: DeleteProfileImageBody,
+	options?: RequestInit,
 ): Promise<deleteProfileImageResponse> => {
-  return orvalMutator<deleteProfileImageResponse>(getDeleteProfileImageUrl(), {
-    ...options,
-    method: "DELETE",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(deleteProfileImageBody),
-  });
+	return orvalMutator<deleteProfileImageResponse>(getDeleteProfileImageUrl(), {
+		...options,
+		method: "DELETE",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(deleteProfileImageBody),
+	});
 };
 
 export const getDeleteProfileImageMutationOptions = <
-  TError =
-    | DeleteProfileImage400
-    | DeleteProfileImage401
-    | DeleteProfileImage403
-    | DeleteProfileImage404
-    | DeleteProfileImage500,
-  TContext = unknown,
+	TError =
+		| DeleteProfileImage400
+		| DeleteProfileImage401
+		| DeleteProfileImage403
+		| DeleteProfileImage404
+		| DeleteProfileImage500,
+	TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteProfileImage>>,
-    TError,
-    { data: DeleteProfileImageBody },
-    TContext
-  >;
-  request?: SecondParameter<typeof orvalMutator>;
+	mutation?: UseMutationOptions<
+		Awaited<ReturnType<typeof deleteProfileImage>>,
+		TError,
+		{ data: DeleteProfileImageBody },
+		TContext
+	>;
+	request?: SecondParameter<typeof orvalMutator>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof deleteProfileImage>>,
-  TError,
-  { data: DeleteProfileImageBody },
-  TContext
+	Awaited<ReturnType<typeof deleteProfileImage>>,
+	TError,
+	{ data: DeleteProfileImageBody },
+	TContext
 > => {
-  const mutationKey = ["deleteProfileImage"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
+	const mutationKey = ["deleteProfileImage"];
+	const { mutation: mutationOptions, request: requestOptions } = options
+		? options.mutation &&
+			"mutationKey" in options.mutation &&
+			options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, request: undefined };
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof deleteProfileImage>>,
-    { data: DeleteProfileImageBody }
-  > = (props) => {
-    const { data } = props ?? {};
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof deleteProfileImage>>,
+		{ data: DeleteProfileImageBody }
+	> = (props) => {
+		const { data } = props ?? {};
 
-    return deleteProfileImage(data, requestOptions);
-  };
+		return deleteProfileImage(data, requestOptions);
+	};
 
-  return { mutationFn, ...mutationOptions };
+	return { mutationFn, ...mutationOptions };
 };
 
 export type DeleteProfileImageMutationResult = NonNullable<
-  Awaited<ReturnType<typeof deleteProfileImage>>
+	Awaited<ReturnType<typeof deleteProfileImage>>
 >;
 export type DeleteProfileImageMutationBody = DeleteProfileImageBody;
 export type DeleteProfileImageMutationError =
-  | DeleteProfileImage400
-  | DeleteProfileImage401
-  | DeleteProfileImage403
-  | DeleteProfileImage404
-  | DeleteProfileImage500;
+	| DeleteProfileImage400
+	| DeleteProfileImage401
+	| DeleteProfileImage403
+	| DeleteProfileImage404
+	| DeleteProfileImage500;
 
 /**
  * @summary Delete a profile image slot object
  */
 export const useDeleteProfileImage = <
-  TError =
-    | DeleteProfileImage400
-    | DeleteProfileImage401
-    | DeleteProfileImage403
-    | DeleteProfileImage404
-    | DeleteProfileImage500,
-  TContext = unknown,
+	TError =
+		| DeleteProfileImage400
+		| DeleteProfileImage401
+		| DeleteProfileImage403
+		| DeleteProfileImage404
+		| DeleteProfileImage500,
+	TContext = unknown,
 >(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof deleteProfileImage>>,
-      TError,
-      { data: DeleteProfileImageBody },
-      TContext
-    >;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
+	options?: {
+		mutation?: UseMutationOptions<
+			Awaited<ReturnType<typeof deleteProfileImage>>,
+			TError,
+			{ data: DeleteProfileImageBody },
+			TContext
+		>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
 ): UseMutationResult<
-  Awaited<ReturnType<typeof deleteProfileImage>>,
-  TError,
-  { data: DeleteProfileImageBody },
-  TContext
+	Awaited<ReturnType<typeof deleteProfileImage>>,
+	TError,
+	{ data: DeleteProfileImageBody },
+	TContext
 > => {
-  return useMutation(getDeleteProfileImageMutationOptions(options), queryClient);
+	return useMutation(
+		getDeleteProfileImageMutationOptions(options),
+		queryClient,
+	);
 };
 export type uploadProfileBentoMediaResponse200 = {
-  data: UploadProfileBentoMedia200;
-  status: 200;
+	data: UploadProfileBentoMedia200;
+	status: 200;
 };
 
 export type uploadProfileBentoMediaResponse400 = {
-  data: UploadProfileBentoMedia400;
-  status: 400;
+	data: UploadProfileBentoMedia400;
+	status: 400;
 };
 
 export type uploadProfileBentoMediaResponse401 = {
-  data: UploadProfileBentoMedia401;
-  status: 401;
+	data: UploadProfileBentoMedia401;
+	status: 401;
 };
 
 export type uploadProfileBentoMediaResponse403 = {
-  data: UploadProfileBentoMedia403;
-  status: 403;
+	data: UploadProfileBentoMedia403;
+	status: 403;
 };
 
 export type uploadProfileBentoMediaResponse500 = {
-  data: UploadProfileBentoMedia500;
-  status: 500;
+	data: UploadProfileBentoMedia500;
+	status: 500;
 };
 
-export type uploadProfileBentoMediaResponseSuccess = uploadProfileBentoMediaResponse200 & {
-  headers: Headers;
-};
+export type uploadProfileBentoMediaResponseSuccess =
+	uploadProfileBentoMediaResponse200 & {
+		headers: Headers;
+	};
 export type uploadProfileBentoMediaResponseError = (
-  | uploadProfileBentoMediaResponse400
-  | uploadProfileBentoMediaResponse401
-  | uploadProfileBentoMediaResponse403
-  | uploadProfileBentoMediaResponse500
+	| uploadProfileBentoMediaResponse400
+	| uploadProfileBentoMediaResponse401
+	| uploadProfileBentoMediaResponse403
+	| uploadProfileBentoMediaResponse500
 ) & {
-  headers: Headers;
+	headers: Headers;
 };
 
 export type uploadProfileBentoMediaResponse =
-  | uploadProfileBentoMediaResponseSuccess
-  | uploadProfileBentoMediaResponseError;
+	| uploadProfileBentoMediaResponseSuccess
+	| uploadProfileBentoMediaResponseError;
 
 export const getUploadProfileBentoMediaUrl = () => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/bento/media/upload`;
+	return `${getAppApiBaseURL()}/profile/bento/media/upload`;
 };
 
 /**
@@ -1018,119 +1060,127 @@ Rules:
  * @summary Create a presigned bento media upload
  */
 export const uploadProfileBentoMedia = async (
-  uploadProfileBentoMediaBody: UploadProfileBentoMediaBody,
-  options?: RequestInit
+	uploadProfileBentoMediaBody: UploadProfileBentoMediaBody,
+	options?: RequestInit,
 ): Promise<uploadProfileBentoMediaResponse> => {
-  return orvalMutator<uploadProfileBentoMediaResponse>(getUploadProfileBentoMediaUrl(), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(uploadProfileBentoMediaBody),
-  });
+	return orvalMutator<uploadProfileBentoMediaResponse>(
+		getUploadProfileBentoMediaUrl(),
+		{
+			...options,
+			method: "POST",
+			headers: { "Content-Type": "application/json", ...options?.headers },
+			body: JSON.stringify(uploadProfileBentoMediaBody),
+		},
+	);
 };
 
 export const getUploadProfileBentoMediaMutationOptions = <
-  TError =
-    | UploadProfileBentoMedia400
-    | UploadProfileBentoMedia401
-    | UploadProfileBentoMedia403
-    | UploadProfileBentoMedia500,
-  TContext = unknown,
+	TError =
+		| UploadProfileBentoMedia400
+		| UploadProfileBentoMedia401
+		| UploadProfileBentoMedia403
+		| UploadProfileBentoMedia500,
+	TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof uploadProfileBentoMedia>>,
-    TError,
-    { data: UploadProfileBentoMediaBody },
-    TContext
-  >;
-  request?: SecondParameter<typeof orvalMutator>;
+	mutation?: UseMutationOptions<
+		Awaited<ReturnType<typeof uploadProfileBentoMedia>>,
+		TError,
+		{ data: UploadProfileBentoMediaBody },
+		TContext
+	>;
+	request?: SecondParameter<typeof orvalMutator>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof uploadProfileBentoMedia>>,
-  TError,
-  { data: UploadProfileBentoMediaBody },
-  TContext
+	Awaited<ReturnType<typeof uploadProfileBentoMedia>>,
+	TError,
+	{ data: UploadProfileBentoMediaBody },
+	TContext
 > => {
-  const mutationKey = ["uploadProfileBentoMedia"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
+	const mutationKey = ["uploadProfileBentoMedia"];
+	const { mutation: mutationOptions, request: requestOptions } = options
+		? options.mutation &&
+			"mutationKey" in options.mutation &&
+			options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, request: undefined };
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof uploadProfileBentoMedia>>,
-    { data: UploadProfileBentoMediaBody }
-  > = (props) => {
-    const { data } = props ?? {};
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof uploadProfileBentoMedia>>,
+		{ data: UploadProfileBentoMediaBody }
+	> = (props) => {
+		const { data } = props ?? {};
 
-    return uploadProfileBentoMedia(data, requestOptions);
-  };
+		return uploadProfileBentoMedia(data, requestOptions);
+	};
 
-  return { mutationFn, ...mutationOptions };
+	return { mutationFn, ...mutationOptions };
 };
 
 export type UploadProfileBentoMediaMutationResult = NonNullable<
-  Awaited<ReturnType<typeof uploadProfileBentoMedia>>
+	Awaited<ReturnType<typeof uploadProfileBentoMedia>>
 >;
 export type UploadProfileBentoMediaMutationBody = UploadProfileBentoMediaBody;
 export type UploadProfileBentoMediaMutationError =
-  | UploadProfileBentoMedia400
-  | UploadProfileBentoMedia401
-  | UploadProfileBentoMedia403
-  | UploadProfileBentoMedia500;
+	| UploadProfileBentoMedia400
+	| UploadProfileBentoMedia401
+	| UploadProfileBentoMedia403
+	| UploadProfileBentoMedia500;
 
 /**
  * @summary Create a presigned bento media upload
  */
 export const useUploadProfileBentoMedia = <
-  TError =
-    | UploadProfileBentoMedia400
-    | UploadProfileBentoMedia401
-    | UploadProfileBentoMedia403
-    | UploadProfileBentoMedia500,
-  TContext = unknown,
+	TError =
+		| UploadProfileBentoMedia400
+		| UploadProfileBentoMedia401
+		| UploadProfileBentoMedia403
+		| UploadProfileBentoMedia500,
+	TContext = unknown,
 >(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof uploadProfileBentoMedia>>,
-      TError,
-      { data: UploadProfileBentoMediaBody },
-      TContext
-    >;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
+	options?: {
+		mutation?: UseMutationOptions<
+			Awaited<ReturnType<typeof uploadProfileBentoMedia>>,
+			TError,
+			{ data: UploadProfileBentoMediaBody },
+			TContext
+		>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
 ): UseMutationResult<
-  Awaited<ReturnType<typeof uploadProfileBentoMedia>>,
-  TError,
-  { data: UploadProfileBentoMediaBody },
-  TContext
+	Awaited<ReturnType<typeof uploadProfileBentoMedia>>,
+	TError,
+	{ data: UploadProfileBentoMediaBody },
+	TContext
 > => {
-  return useMutation(getUploadProfileBentoMediaMutationOptions(options), queryClient);
+	return useMutation(
+		getUploadProfileBentoMediaMutationOptions(options),
+		queryClient,
+	);
 };
 export type listProfilePagesResponse200 = {
-  data: ListProfilePages200;
-  status: 200;
+	data: ListProfilePages200;
+	status: 200;
 };
 
 export type listProfilePagesResponse500 = {
-  data: ListProfilePages500;
-  status: 500;
+	data: ListProfilePages500;
+	status: 500;
 };
 
 export type listProfilePagesResponseSuccess = listProfilePagesResponse200 & {
-  headers: Headers;
+	headers: Headers;
 };
 export type listProfilePagesResponseError = listProfilePagesResponse500 & {
-  headers: Headers;
+	headers: Headers;
 };
 
 export type listProfilePagesResponse =
-  | listProfilePagesResponseSuccess
-  | listProfilePagesResponseError;
+	| listProfilePagesResponseSuccess
+	| listProfilePagesResponseError;
 
 export const getListProfilePagesUrl = () => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/pages`;
+	return `${getAppApiBaseURL()}/profile/pages`;
 };
 
 /**
@@ -1138,142 +1188,183 @@ export const getListProfilePagesUrl = () => {
  * @summary List profile page rows
  */
 export const listProfilePages = async (
-  options?: RequestInit
+	options?: RequestInit,
 ): Promise<listProfilePagesResponse> => {
-  return orvalMutator<listProfilePagesResponse>(getListProfilePagesUrl(), {
-    ...options,
-    method: "GET",
-  });
+	return orvalMutator<listProfilePagesResponse>(getListProfilePagesUrl(), {
+		...options,
+		method: "GET",
+	});
 };
 
 export const getListProfilePagesQueryKey = () => {
-  return [`${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/pages`] as const;
+	return [`${getAppApiBaseURL()}/profile/pages`] as const;
 };
 
 export const getListProfilePagesQueryOptions = <
-  TData = Awaited<ReturnType<typeof listProfilePages>>,
-  TError = ListProfilePages500,
+	TData = Awaited<ReturnType<typeof listProfilePages>>,
+	TError = ListProfilePages500,
 >(options?: {
-  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProfilePages>>, TError, TData>>;
-  request?: SecondParameter<typeof orvalMutator>;
+	query?: Partial<
+		UseQueryOptions<Awaited<ReturnType<typeof listProfilePages>>, TError, TData>
+	>;
+	request?: SecondParameter<typeof orvalMutator>;
 }) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
+	const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getListProfilePagesQueryKey();
+	const queryKey = queryOptions?.queryKey ?? getListProfilePagesQueryKey();
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof listProfilePages>>> = ({ signal }) =>
-    listProfilePages({ signal, ...requestOptions });
+	const queryFn: QueryFunction<
+		Awaited<ReturnType<typeof listProfilePages>>
+	> = ({ signal }) => listProfilePages({ signal, ...requestOptions });
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof listProfilePages>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
+	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+		Awaited<ReturnType<typeof listProfilePages>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type ListProfilePagesQueryResult = NonNullable<Awaited<ReturnType<typeof listProfilePages>>>;
+export type ListProfilePagesQueryResult = NonNullable<
+	Awaited<ReturnType<typeof listProfilePages>>
+>;
 export type ListProfilePagesQueryError = ListProfilePages500;
 
 export function useListProfilePages<
-  TData = Awaited<ReturnType<typeof listProfilePages>>,
-  TError = ListProfilePages500,
+	TData = Awaited<ReturnType<typeof listProfilePages>>,
+	TError = ListProfilePages500,
 >(
-  options: {
-    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProfilePages>>, TError, TData>> &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listProfilePages>>,
-          TError,
-          Awaited<ReturnType<typeof listProfilePages>>
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
-): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+	options: {
+		query: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof listProfilePages>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				DefinedInitialDataOptions<
+					Awaited<ReturnType<typeof listProfilePages>>,
+					TError,
+					Awaited<ReturnType<typeof listProfilePages>>
+				>,
+				"initialData"
+			>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
 export function useListProfilePages<
-  TData = Awaited<ReturnType<typeof listProfilePages>>,
-  TError = ListProfilePages500,
+	TData = Awaited<ReturnType<typeof listProfilePages>>,
+	TError = ListProfilePages500,
 >(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProfilePages>>, TError, TData>> &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listProfilePages>>,
-          TError,
-          Awaited<ReturnType<typeof listProfilePages>>
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof listProfilePages>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				UndefinedInitialDataOptions<
+					Awaited<ReturnType<typeof listProfilePages>>,
+					TError,
+					Awaited<ReturnType<typeof listProfilePages>>
+				>,
+				"initialData"
+			>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
 export function useListProfilePages<
-  TData = Awaited<ReturnType<typeof listProfilePages>>,
-  TError = ListProfilePages500,
+	TData = Awaited<ReturnType<typeof listProfilePages>>,
+	TError = ListProfilePages500,
 >(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProfilePages>>, TError, TData>>;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof listProfilePages>>,
+				TError,
+				TData
+			>
+		>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary List profile page rows
  */
 
 export function useListProfilePages<
-  TData = Awaited<ReturnType<typeof listProfilePages>>,
-  TError = ListProfilePages500,
+	TData = Awaited<ReturnType<typeof listProfilePages>>,
+	TError = ListProfilePages500,
 >(
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProfilePages>>, TError, TData>>;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getListProfilePagesQueryOptions(options);
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof listProfilePages>>,
+				TError,
+				TData
+			>
+		>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const queryOptions = getListProfilePagesQueryOptions(options);
 
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+		TData,
+		TError
+	> & {
+		queryKey: DataTag<QueryKey, TData, TError>;
+	};
 
-  return { ...query, queryKey: queryOptions.queryKey };
+	return { ...query, queryKey: queryOptions.queryKey };
 }
 
 export type getProfileByHandleResponse200 = {
-  data: GetProfileByHandle200;
-  status: 200;
+	data: GetProfileByHandle200;
+	status: 200;
 };
 
 export type getProfileByHandleResponse404 = {
-  data: GetProfileByHandle404;
-  status: 404;
+	data: GetProfileByHandle404;
+	status: 404;
 };
 
 export type getProfileByHandleResponse500 = {
-  data: GetProfileByHandle500;
-  status: 500;
+	data: GetProfileByHandle500;
+	status: 500;
 };
 
-export type getProfileByHandleResponseSuccess = getProfileByHandleResponse200 & {
-  headers: Headers;
-};
+export type getProfileByHandleResponseSuccess =
+	getProfileByHandleResponse200 & {
+		headers: Headers;
+	};
 export type getProfileByHandleResponseError = (
-  | getProfileByHandleResponse404
-  | getProfileByHandleResponse500
+	| getProfileByHandleResponse404
+	| getProfileByHandleResponse500
 ) & {
-  headers: Headers;
+	headers: Headers;
 };
 
 export type getProfileByHandleResponse =
-  | getProfileByHandleResponseSuccess
-  | getProfileByHandleResponseError;
+	| getProfileByHandleResponseSuccess
+	| getProfileByHandleResponseError;
 
 export const getGetProfileByHandleUrl = (handle: string) => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/${handle}`;
+	return `${getAppApiBaseURL()}/profile/${handle}`;
 };
 
 /**
@@ -1281,119 +1372,170 @@ export const getGetProfileByHandleUrl = (handle: string) => {
  * @summary Get a profile by handle
  */
 export const getProfileByHandle = async (
-  handle: string,
-  options?: RequestInit
+	handle: string,
+	options?: RequestInit,
 ): Promise<getProfileByHandleResponse> => {
-  return orvalMutator<getProfileByHandleResponse>(getGetProfileByHandleUrl(handle), {
-    ...options,
-    method: "GET",
-  });
+	return orvalMutator<getProfileByHandleResponse>(
+		getGetProfileByHandleUrl(handle),
+		{
+			...options,
+			method: "GET",
+		},
+	);
 };
 
 export const getGetProfileByHandleQueryKey = (handle: string) => {
-  return [`${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/${handle}`] as const;
+	return [`${getAppApiBaseURL()}/profile/${handle}`] as const;
 };
 
 export const getGetProfileByHandleQueryOptions = <
-  TData = Awaited<ReturnType<typeof getProfileByHandle>>,
-  TError = GetProfileByHandle404 | GetProfileByHandle500,
+	TData = Awaited<ReturnType<typeof getProfileByHandle>>,
+	TError = GetProfileByHandle404 | GetProfileByHandle500,
 >(
-  handle: string,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProfileByHandle>>, TError, TData>>;
-    request?: SecondParameter<typeof orvalMutator>;
-  }
+	handle: string,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getProfileByHandle>>,
+				TError,
+				TData
+			>
+		>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
 ) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
+	const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetProfileByHandleQueryKey(handle);
+	const queryKey =
+		queryOptions?.queryKey ?? getGetProfileByHandleQueryKey(handle);
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getProfileByHandle>>> = ({ signal }) =>
-    getProfileByHandle(handle, { signal, ...requestOptions });
+	const queryFn: QueryFunction<
+		Awaited<ReturnType<typeof getProfileByHandle>>
+	> = ({ signal }) => getProfileByHandle(handle, { signal, ...requestOptions });
 
-  return { queryKey, queryFn, enabled: !!handle, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getProfileByHandle>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
+	return {
+		queryKey,
+		queryFn,
+		enabled: !!handle,
+		...queryOptions,
+	} as UseQueryOptions<
+		Awaited<ReturnType<typeof getProfileByHandle>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type GetProfileByHandleQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getProfileByHandle>>
+	Awaited<ReturnType<typeof getProfileByHandle>>
 >;
-export type GetProfileByHandleQueryError = GetProfileByHandle404 | GetProfileByHandle500;
+export type GetProfileByHandleQueryError =
+	| GetProfileByHandle404
+	| GetProfileByHandle500;
 
 export function useGetProfileByHandle<
-  TData = Awaited<ReturnType<typeof getProfileByHandle>>,
-  TError = GetProfileByHandle404 | GetProfileByHandle500,
+	TData = Awaited<ReturnType<typeof getProfileByHandle>>,
+	TError = GetProfileByHandle404 | GetProfileByHandle500,
 >(
-  handle: string,
-  options: {
-    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProfileByHandle>>, TError, TData>> &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProfileByHandle>>,
-          TError,
-          Awaited<ReturnType<typeof getProfileByHandle>>
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
-): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+	handle: string,
+	options: {
+		query: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getProfileByHandle>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				DefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getProfileByHandle>>,
+					TError,
+					Awaited<ReturnType<typeof getProfileByHandle>>
+				>,
+				"initialData"
+			>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
 export function useGetProfileByHandle<
-  TData = Awaited<ReturnType<typeof getProfileByHandle>>,
-  TError = GetProfileByHandle404 | GetProfileByHandle500,
+	TData = Awaited<ReturnType<typeof getProfileByHandle>>,
+	TError = GetProfileByHandle404 | GetProfileByHandle500,
 >(
-  handle: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<Awaited<ReturnType<typeof getProfileByHandle>>, TError, TData>
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getProfileByHandle>>,
-          TError,
-          Awaited<ReturnType<typeof getProfileByHandle>>
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+	handle: string,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getProfileByHandle>>,
+				TError,
+				TData
+			>
+		> &
+			Pick<
+				UndefinedInitialDataOptions<
+					Awaited<ReturnType<typeof getProfileByHandle>>,
+					TError,
+					Awaited<ReturnType<typeof getProfileByHandle>>
+				>,
+				"initialData"
+			>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
 export function useGetProfileByHandle<
-  TData = Awaited<ReturnType<typeof getProfileByHandle>>,
-  TError = GetProfileByHandle404 | GetProfileByHandle500,
+	TData = Awaited<ReturnType<typeof getProfileByHandle>>,
+	TError = GetProfileByHandle404 | GetProfileByHandle500,
 >(
-  handle: string,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProfileByHandle>>, TError, TData>>;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+	handle: string,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getProfileByHandle>>,
+				TError,
+				TData
+			>
+		>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get a profile by handle
  */
 
 export function useGetProfileByHandle<
-  TData = Awaited<ReturnType<typeof getProfileByHandle>>,
-  TError = GetProfileByHandle404 | GetProfileByHandle500,
+	TData = Awaited<ReturnType<typeof getProfileByHandle>>,
+	TError = GetProfileByHandle404 | GetProfileByHandle500,
 >(
-  handle: string,
-  options?: {
-    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProfileByHandle>>, TError, TData>>;
-    request?: SecondParameter<typeof orvalMutator>;
-  },
-  queryClient?: QueryClient
-): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-  const queryOptions = getGetProfileByHandleQueryOptions(handle, options);
+	handle: string,
+	options?: {
+		query?: Partial<
+			UseQueryOptions<
+				Awaited<ReturnType<typeof getProfileByHandle>>,
+				TError,
+				TData
+			>
+		>;
+		request?: SecondParameter<typeof orvalMutator>;
+	},
+	queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const queryOptions = getGetProfileByHandleQueryOptions(handle, options);
 
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
-    queryKey: DataTag<QueryKey, TData, TError>;
-  };
+	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+		TData,
+		TError
+	> & {
+		queryKey: DataTag<QueryKey, TData, TError>;
+	};
 
-  return { ...query, queryKey: queryOptions.queryKey };
+	return { ...query, queryKey: queryOptions.queryKey };
 }

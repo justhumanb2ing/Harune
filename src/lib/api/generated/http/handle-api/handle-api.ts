@@ -7,84 +7,80 @@
  */
 
 import type {
-	DataTag,
-	DefinedInitialDataOptions,
-	DefinedUseQueryResult,
-	MutationFunction,
-	QueryClient,
-	QueryFunction,
-	QueryKey,
-	UndefinedInitialDataOptions,
-	UseMutationOptions,
-	UseMutationResult,
-	UseQueryOptions,
-	UseQueryResult,
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
+  MutationFunction,
+  QueryClient,
+  QueryFunction,
+  QueryKey,
+  UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
+  UseQueryOptions,
+  UseQueryResult,
 } from "@tanstack/react-query";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { getAppApiBaseURL } from "@/lib/api/base-url";
 import { orvalMutator } from "../../../orval-mutator";
 import type {
-	CheckHandleAvailability200,
-	CheckHandleAvailability400,
-	CheckHandleAvailability401,
-	CheckHandleAvailabilityParams,
-	UpdateHandle200,
-	UpdateHandle400,
-	UpdateHandle401,
-	UpdateHandle404,
-	UpdateHandle409,
-	UpdateHandle500,
-	UpdateHandleBody,
+  CheckHandleAvailability200,
+  CheckHandleAvailability400,
+  CheckHandleAvailability401,
+  CheckHandleAvailabilityParams,
+  UpdateHandle200,
+  UpdateHandle400,
+  UpdateHandle401,
+  UpdateHandle404,
+  UpdateHandle409,
+  UpdateHandle500,
+  UpdateHandleBody,
 } from "../schemas/handle-api";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export type checkHandleAvailabilityResponse200 = {
-	data: CheckHandleAvailability200;
-	status: 200;
+  data: CheckHandleAvailability200;
+  status: 200;
 };
 
 export type checkHandleAvailabilityResponse400 = {
-	data: CheckHandleAvailability400;
-	status: 400;
+  data: CheckHandleAvailability400;
+  status: 400;
 };
 
 export type checkHandleAvailabilityResponse401 = {
-	data: CheckHandleAvailability401;
-	status: 401;
+  data: CheckHandleAvailability401;
+  status: 401;
 };
 
-export type checkHandleAvailabilityResponseSuccess =
-	checkHandleAvailabilityResponse200 & {
-		headers: Headers;
-	};
+export type checkHandleAvailabilityResponseSuccess = checkHandleAvailabilityResponse200 & {
+  headers: Headers;
+};
 export type checkHandleAvailabilityResponseError = (
-	| checkHandleAvailabilityResponse400
-	| checkHandleAvailabilityResponse401
+  | checkHandleAvailabilityResponse400
+  | checkHandleAvailabilityResponse401
 ) & {
-	headers: Headers;
+  headers: Headers;
 };
 
 export type checkHandleAvailabilityResponse =
-	| checkHandleAvailabilityResponseSuccess
-	| checkHandleAvailabilityResponseError;
+  | checkHandleAvailabilityResponseSuccess
+  | checkHandleAvailabilityResponseError;
 
-export const getCheckHandleAvailabilityUrl = (
-	params: CheckHandleAvailabilityParams,
-) => {
-	const normalizedParams = new URLSearchParams();
+export const getCheckHandleAvailabilityUrl = (params: CheckHandleAvailabilityParams) => {
+  const normalizedParams = new URLSearchParams();
 
-	for (const [key, value] of Object.entries(params || {})) {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	}
+  for (const [key, value] of Object.entries(params || {})) {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  }
 
-	const stringifiedParams = normalizedParams.toString();
+  const stringifiedParams = normalizedParams.toString();
 
-	return stringifiedParams.length > 0
-		? `${getAppApiBaseURL()}/handle/check?${stringifiedParams}`
-		: `${getAppApiBaseURL()}/handle/check`;
+  return stringifiedParams.length > 0
+    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/handle/check?${stringifiedParams}`
+    : `${process.env.NEXT_PUBLIC_API_BASE_URL}/handle/check`;
 };
 
 /**
@@ -92,224 +88,184 @@ export const getCheckHandleAvailabilityUrl = (
  * @summary Check handle availability
  */
 export const checkHandleAvailability = async (
-	params: CheckHandleAvailabilityParams,
-	options?: RequestInit,
+  params: CheckHandleAvailabilityParams,
+  options?: RequestInit
 ): Promise<checkHandleAvailabilityResponse> => {
-	return orvalMutator<checkHandleAvailabilityResponse>(
-		getCheckHandleAvailabilityUrl(params),
-		{
-			...options,
-			method: "GET",
-		},
-	);
+  return orvalMutator<checkHandleAvailabilityResponse>(getCheckHandleAvailabilityUrl(params), {
+    ...options,
+    method: "GET",
+  });
 };
 
-export const getCheckHandleAvailabilityQueryKey = (
-	params?: CheckHandleAvailabilityParams,
-) => {
-	return [
-		`${getAppApiBaseURL()}/handle/check`,
-		...(params ? [params] : []),
-	] as const;
+export const getCheckHandleAvailabilityQueryKey = (params?: CheckHandleAvailabilityParams) => {
+  return [
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/handle/check`,
+    ...(params ? [params] : []),
+  ] as const;
 };
 
 export const getCheckHandleAvailabilityQueryOptions = <
-	TData = Awaited<ReturnType<typeof checkHandleAvailability>>,
-	TError = CheckHandleAvailability400 | CheckHandleAvailability401,
+  TData = Awaited<ReturnType<typeof checkHandleAvailability>>,
+  TError = CheckHandleAvailability400 | CheckHandleAvailability401,
 >(
-	params: CheckHandleAvailabilityParams,
-	options?: {
-		query?: Partial<
-			UseQueryOptions<
-				Awaited<ReturnType<typeof checkHandleAvailability>>,
-				TError,
-				TData
-			>
-		>;
-		request?: SecondParameter<typeof orvalMutator>;
-	},
+  params: CheckHandleAvailabilityParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof checkHandleAvailability>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  }
 ) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-	const queryKey =
-		queryOptions?.queryKey ?? getCheckHandleAvailabilityQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getCheckHandleAvailabilityQueryKey(params);
 
-	const queryFn: QueryFunction<
-		Awaited<ReturnType<typeof checkHandleAvailability>>
-	> = ({ signal }) =>
-		checkHandleAvailability(params, { signal, ...requestOptions });
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof checkHandleAvailability>>> = ({
+    signal,
+  }) => checkHandleAvailability(params, { signal, ...requestOptions });
 
-	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-		Awaited<ReturnType<typeof checkHandleAvailability>>,
-		TError,
-		TData
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof checkHandleAvailability>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type CheckHandleAvailabilityQueryResult = NonNullable<
-	Awaited<ReturnType<typeof checkHandleAvailability>>
+  Awaited<ReturnType<typeof checkHandleAvailability>>
 >;
 export type CheckHandleAvailabilityQueryError =
-	| CheckHandleAvailability400
-	| CheckHandleAvailability401;
+  | CheckHandleAvailability400
+  | CheckHandleAvailability401;
 
 export function useCheckHandleAvailability<
-	TData = Awaited<ReturnType<typeof checkHandleAvailability>>,
-	TError = CheckHandleAvailability400 | CheckHandleAvailability401,
+  TData = Awaited<ReturnType<typeof checkHandleAvailability>>,
+  TError = CheckHandleAvailability400 | CheckHandleAvailability401,
 >(
-	params: CheckHandleAvailabilityParams,
-	options: {
-		query: Partial<
-			UseQueryOptions<
-				Awaited<ReturnType<typeof checkHandleAvailability>>,
-				TError,
-				TData
-			>
-		> &
-			Pick<
-				DefinedInitialDataOptions<
-					Awaited<ReturnType<typeof checkHandleAvailability>>,
-					TError,
-					Awaited<ReturnType<typeof checkHandleAvailability>>
-				>,
-				"initialData"
-			>;
-		request?: SecondParameter<typeof orvalMutator>;
-	},
-	queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-};
+  params: CheckHandleAvailabilityParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof checkHandleAvailability>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof checkHandleAvailability>>,
+          TError,
+          Awaited<ReturnType<typeof checkHandleAvailability>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 export function useCheckHandleAvailability<
-	TData = Awaited<ReturnType<typeof checkHandleAvailability>>,
-	TError = CheckHandleAvailability400 | CheckHandleAvailability401,
+  TData = Awaited<ReturnType<typeof checkHandleAvailability>>,
+  TError = CheckHandleAvailability400 | CheckHandleAvailability401,
 >(
-	params: CheckHandleAvailabilityParams,
-	options?: {
-		query?: Partial<
-			UseQueryOptions<
-				Awaited<ReturnType<typeof checkHandleAvailability>>,
-				TError,
-				TData
-			>
-		> &
-			Pick<
-				UndefinedInitialDataOptions<
-					Awaited<ReturnType<typeof checkHandleAvailability>>,
-					TError,
-					Awaited<ReturnType<typeof checkHandleAvailability>>
-				>,
-				"initialData"
-			>;
-		request?: SecondParameter<typeof orvalMutator>;
-	},
-	queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-};
+  params: CheckHandleAvailabilityParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof checkHandleAvailability>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof checkHandleAvailability>>,
+          TError,
+          Awaited<ReturnType<typeof checkHandleAvailability>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 export function useCheckHandleAvailability<
-	TData = Awaited<ReturnType<typeof checkHandleAvailability>>,
-	TError = CheckHandleAvailability400 | CheckHandleAvailability401,
+  TData = Awaited<ReturnType<typeof checkHandleAvailability>>,
+  TError = CheckHandleAvailability400 | CheckHandleAvailability401,
 >(
-	params: CheckHandleAvailabilityParams,
-	options?: {
-		query?: Partial<
-			UseQueryOptions<
-				Awaited<ReturnType<typeof checkHandleAvailability>>,
-				TError,
-				TData
-			>
-		>;
-		request?: SecondParameter<typeof orvalMutator>;
-	},
-	queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-};
+  params: CheckHandleAvailabilityParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof checkHandleAvailability>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
  * @summary Check handle availability
  */
 
 export function useCheckHandleAvailability<
-	TData = Awaited<ReturnType<typeof checkHandleAvailability>>,
-	TError = CheckHandleAvailability400 | CheckHandleAvailability401,
+  TData = Awaited<ReturnType<typeof checkHandleAvailability>>,
+  TError = CheckHandleAvailability400 | CheckHandleAvailability401,
 >(
-	params: CheckHandleAvailabilityParams,
-	options?: {
-		query?: Partial<
-			UseQueryOptions<
-				Awaited<ReturnType<typeof checkHandleAvailability>>,
-				TError,
-				TData
-			>
-		>;
-		request?: SecondParameter<typeof orvalMutator>;
-	},
-	queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-} {
-	const queryOptions = getCheckHandleAvailabilityQueryOptions(params, options);
+  params: CheckHandleAvailabilityParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof checkHandleAvailability>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getCheckHandleAvailabilityQueryOptions(params, options);
 
-	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-		TData,
-		TError
-	> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-	return { ...query, queryKey: queryOptions.queryKey };
+  return { ...query, queryKey: queryOptions.queryKey };
 }
 
 export type updateHandleResponse200 = {
-	data: UpdateHandle200;
-	status: 200;
+  data: UpdateHandle200;
+  status: 200;
 };
 
 export type updateHandleResponse400 = {
-	data: UpdateHandle400;
-	status: 400;
+  data: UpdateHandle400;
+  status: 400;
 };
 
 export type updateHandleResponse401 = {
-	data: UpdateHandle401;
-	status: 401;
+  data: UpdateHandle401;
+  status: 401;
 };
 
 export type updateHandleResponse404 = {
-	data: UpdateHandle404;
-	status: 404;
+  data: UpdateHandle404;
+  status: 404;
 };
 
 export type updateHandleResponse409 = {
-	data: UpdateHandle409;
-	status: 409;
+  data: UpdateHandle409;
+  status: 409;
 };
 
 export type updateHandleResponse500 = {
-	data: UpdateHandle500;
-	status: 500;
+  data: UpdateHandle500;
+  status: 500;
 };
 
 export type updateHandleResponseSuccess = updateHandleResponse200 & {
-	headers: Headers;
+  headers: Headers;
 };
 export type updateHandleResponseError = (
-	| updateHandleResponse400
-	| updateHandleResponse401
-	| updateHandleResponse404
-	| updateHandleResponse409
-	| updateHandleResponse500
+  | updateHandleResponse400
+  | updateHandleResponse401
+  | updateHandleResponse404
+  | updateHandleResponse409
+  | updateHandleResponse500
 ) & {
-	headers: Headers;
+  headers: Headers;
 };
 
-export type updateHandleResponse =
-	| updateHandleResponseSuccess
-	| updateHandleResponseError;
+export type updateHandleResponse = updateHandleResponseSuccess | updateHandleResponseError;
 
 export const getUpdateHandleUrl = () => {
-	return `${getAppApiBaseURL()}/handle`;
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/handle`;
 };
 
 /**
@@ -326,98 +282,84 @@ Rules:
  * @summary Change the current user's handle
  */
 export const updateHandle = async (
-	updateHandleBody: UpdateHandleBody,
-	options?: RequestInit,
+  updateHandleBody: UpdateHandleBody,
+  options?: RequestInit
 ): Promise<updateHandleResponse> => {
-	return orvalMutator<updateHandleResponse>(getUpdateHandleUrl(), {
-		...options,
-		method: "PATCH",
-		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(updateHandleBody),
-	});
+  return orvalMutator<updateHandleResponse>(getUpdateHandleUrl(), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateHandleBody),
+  });
 };
 
 export const getUpdateHandleMutationOptions = <
-	TError =
-		| UpdateHandle400
-		| UpdateHandle401
-		| UpdateHandle404
-		| UpdateHandle409
-		| UpdateHandle500,
-	TContext = unknown,
+  TError = UpdateHandle400 | UpdateHandle401 | UpdateHandle404 | UpdateHandle409 | UpdateHandle500,
+  TContext = unknown,
 >(options?: {
-	mutation?: UseMutationOptions<
-		Awaited<ReturnType<typeof updateHandle>>,
-		TError,
-		{ data: UpdateHandleBody },
-		TContext
-	>;
-	request?: SecondParameter<typeof orvalMutator>;
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateHandle>>,
+    TError,
+    { data: UpdateHandleBody },
+    TContext
+  >;
+  request?: SecondParameter<typeof orvalMutator>;
 }): UseMutationOptions<
-	Awaited<ReturnType<typeof updateHandle>>,
-	TError,
-	{ data: UpdateHandleBody },
-	TContext
+  Awaited<ReturnType<typeof updateHandle>>,
+  TError,
+  { data: UpdateHandleBody },
+  TContext
 > => {
-	const mutationKey = ["updateHandle"];
-	const { mutation: mutationOptions, request: requestOptions } = options
-		? options.mutation &&
-			"mutationKey" in options.mutation &&
-			options.mutation.mutationKey
-			? options
-			: { ...options, mutation: { ...options.mutation, mutationKey } }
-		: { mutation: { mutationKey }, request: undefined };
+  const mutationKey = ["updateHandle"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-	const mutationFn: MutationFunction<
-		Awaited<ReturnType<typeof updateHandle>>,
-		{ data: UpdateHandleBody }
-	> = (props) => {
-		const { data } = props ?? {};
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateHandle>>,
+    { data: UpdateHandleBody }
+  > = (props) => {
+    const { data } = props ?? {};
 
-		return updateHandle(data, requestOptions);
-	};
+    return updateHandle(data, requestOptions);
+  };
 
-	return { mutationFn, ...mutationOptions };
+  return { mutationFn, ...mutationOptions };
 };
 
-export type UpdateHandleMutationResult = NonNullable<
-	Awaited<ReturnType<typeof updateHandle>>
->;
+export type UpdateHandleMutationResult = NonNullable<Awaited<ReturnType<typeof updateHandle>>>;
 export type UpdateHandleMutationBody = UpdateHandleBody;
 export type UpdateHandleMutationError =
-	| UpdateHandle400
-	| UpdateHandle401
-	| UpdateHandle404
-	| UpdateHandle409
-	| UpdateHandle500;
+  | UpdateHandle400
+  | UpdateHandle401
+  | UpdateHandle404
+  | UpdateHandle409
+  | UpdateHandle500;
 
 /**
  * @summary Change the current user's handle
  */
 export const useUpdateHandle = <
-	TError =
-		| UpdateHandle400
-		| UpdateHandle401
-		| UpdateHandle404
-		| UpdateHandle409
-		| UpdateHandle500,
-	TContext = unknown,
+  TError = UpdateHandle400 | UpdateHandle401 | UpdateHandle404 | UpdateHandle409 | UpdateHandle500,
+  TContext = unknown,
 >(
-	options?: {
-		mutation?: UseMutationOptions<
-			Awaited<ReturnType<typeof updateHandle>>,
-			TError,
-			{ data: UpdateHandleBody },
-			TContext
-		>;
-		request?: SecondParameter<typeof orvalMutator>;
-	},
-	queryClient?: QueryClient,
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateHandle>>,
+      TError,
+      { data: UpdateHandleBody },
+      TContext
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
 ): UseMutationResult<
-	Awaited<ReturnType<typeof updateHandle>>,
-	TError,
-	{ data: UpdateHandleBody },
-	TContext
+  Awaited<ReturnType<typeof updateHandle>>,
+  TError,
+  { data: UpdateHandleBody },
+  TContext
 > => {
-	return useMutation(getUpdateHandleMutationOptions(options), queryClient);
+  return useMutation(getUpdateHandleMutationOptions(options), queryClient);
 };

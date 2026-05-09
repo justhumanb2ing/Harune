@@ -8,35 +8,7 @@
 import * as zod from "zod";
 
 /**
- * Creates the authenticated user's first profile page. The server normalizes the submitted handle to lowercase, rejects reserved or malformed handles, trims text fields, treats empty `role` and `location` strings as null, returns 409 when a profile page already exists or the handle is already taken, and returns only the committed page snapshot on success.
- * @summary Create my profile page
- */
-export const CreateProfilePageBody = zod.object({
-  handle: zod.string(),
-  name: zod.string(),
-  bio: zod.string().optional(),
-  role: zod.string().optional(),
-  location: zod.string().optional(),
-  image: zod.string().optional(),
-});
-
-export const CreateProfilePageResponse = zod.object({
-  page: zod.object({
-    id: zod.string(),
-    userId: zod.string(),
-    handle: zod.string(),
-    name: zod.string().nullable(),
-    role: zod.string().nullable(),
-    bio: zod.string().nullable(),
-    image: zod.string().nullable(),
-    backgroundImage: zod.string().nullable(),
-    location: zod.string().nullable(),
-    updatedAt: zod.iso.datetime({ offset: true }),
-  }),
-});
-
-/**
- * Partially updates the authenticated user's profile page. The server trims text fields, allows null to clear fields, treats empty `role` and `location` strings as null, validates image/backgroundImage as absolute http or https URLs when provided, and returns the committed profile snapshot with no-store headers on success.
+ * Partially updates the authenticated user's profile page. The server trims text fields, allows null to clear fields, treats empty `role` and `location` strings as null, validates image/backgroundImage as absolute http or https URLs when provided, and can also accept a full `bento` snapshot in the same request so profile fields and bento graph commit together with no-store headers on success. When the authenticated user does not yet have a profile page, the same endpoint accepts the onboarding create payload with `handle` and `name` and creates the page before returning the committed profile snapshot.
  * @summary Update my profile page
  */
 export const UpdateProfilePageBody = zod.object({
@@ -47,284 +19,136 @@ export const UpdateProfilePageBody = zod.object({
   bio: zod.string().nullish(),
   image: zod.string().nullish(),
   backgroundImage: zod.string().nullish(),
-  bento: zod.lazy(() => ReplaceProfileBentoGraphBody.shape.bento).optional(),
+  bento: zod
+    .array(
+      zod.union([
+        zod.object({
+          id: zod.string(),
+          type: zod.enum(["link"]),
+          layout: zod.object({
+            desktop: zod.object({
+              x: zod.number(),
+              y: zod.number(),
+              w: zod.number(),
+              h: zod.number(),
+            }),
+            compact: zod.object({
+              x: zod.number(),
+              y: zod.number(),
+              w: zod.number(),
+              h: zod.number(),
+            }),
+          }),
+          content: zod.object({
+            title: zod.string(),
+            description: zod.string().nullish(),
+            favicon: zod.string().nullish(),
+            thumbnail: zod.string().nullish(),
+            url: zod.string(),
+          }),
+        }),
+        zod.object({
+          id: zod.string(),
+          type: zod.enum(["text"]),
+          layout: zod.object({
+            desktop: zod.object({
+              x: zod.number(),
+              y: zod.number(),
+              w: zod.number(),
+              h: zod.number(),
+            }),
+            compact: zod.object({
+              x: zod.number(),
+              y: zod.number(),
+              w: zod.number(),
+              h: zod.number(),
+            }),
+          }),
+          content: zod.object({
+            content: zod.string(),
+          }),
+        }),
+        zod.object({
+          id: zod.string(),
+          type: zod.enum(["section"]),
+          layout: zod.object({
+            desktop: zod.object({
+              x: zod.number(),
+              y: zod.number(),
+              w: zod.number(),
+              h: zod.number(),
+            }),
+            compact: zod.object({
+              x: zod.number(),
+              y: zod.number(),
+              w: zod.number(),
+              h: zod.number(),
+            }),
+          }),
+          content: zod.object({
+            title: zod.string(),
+          }),
+        }),
+        zod.object({
+          id: zod.string(),
+          type: zod.enum(["media"]),
+          layout: zod.object({
+            desktop: zod.object({
+              x: zod.number(),
+              y: zod.number(),
+              w: zod.number(),
+              h: zod.number(),
+            }),
+            compact: zod.object({
+              x: zod.number(),
+              y: zod.number(),
+              w: zod.number(),
+              h: zod.number(),
+            }),
+          }),
+          content: zod.object({
+            mediaType: zod.enum(["image", "video"]),
+            url: zod.string(),
+            objectKey: zod.string(),
+            tempObjectKey: zod.string().nullish(),
+            contentHash: zod.string().nullish(),
+            contentType: zod.string().nullish(),
+            href: zod.string().nullish(),
+            alt: zod.string(),
+            caption: zod.string(),
+          }),
+        }),
+        zod.object({
+          id: zod.string(),
+          type: zod.enum(["map"]),
+          layout: zod.object({
+            desktop: zod.object({
+              x: zod.number(),
+              y: zod.number(),
+              w: zod.number(),
+              h: zod.number(),
+            }),
+            compact: zod.object({
+              x: zod.number(),
+              y: zod.number(),
+              w: zod.number(),
+              h: zod.number(),
+            }),
+          }),
+          content: zod.object({
+            latitude: zod.number(),
+            longitude: zod.number(),
+            zoom: zod.number(),
+            caption: zod.string().optional(),
+            url: zod.string(),
+          }),
+        }),
+      ])
+    )
+    .optional(),
 });
 
 export const UpdateProfilePageResponse = zod.object({
-  page: zod.object({
-    id: zod.string(),
-    userId: zod.string(),
-    handle: zod.string(),
-    name: zod.string().nullable(),
-    role: zod.string().nullable(),
-    bio: zod.string().nullable(),
-    image: zod.string().nullable(),
-    backgroundImage: zod.string().nullable(),
-    location: zod.string().nullable(),
-    updatedAt: zod.iso.datetime({ offset: true }),
-  }),
-  bento: zod.array(
-    zod.union([
-      zod.object({
-        id: zod.string(),
-        type: zod.enum(["link"]),
-        layout: zod.object({
-          desktop: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-          compact: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-        }),
-        content: zod.object({
-          title: zod.string(),
-          description: zod.string().nullable(),
-          favicon: zod.string().nullable(),
-          thumbnail: zod.string().nullable(),
-          url: zod.string(),
-        }),
-      }),
-      zod.object({
-        id: zod.string(),
-        type: zod.enum(["text"]),
-        layout: zod.object({
-          desktop: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-          compact: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-        }),
-        content: zod.object({
-          content: zod.string(),
-        }),
-      }),
-      zod.object({
-        id: zod.string(),
-        type: zod.enum(["section"]),
-        layout: zod.object({
-          desktop: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-          compact: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-        }),
-        content: zod.object({
-          title: zod.string(),
-        }),
-      }),
-      zod.object({
-        id: zod.string(),
-        type: zod.enum(["media"]),
-        layout: zod.object({
-          desktop: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-          compact: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-        }),
-        content: zod.object({
-          mediaType: zod.enum(["image", "video"]),
-          url: zod.string(),
-          objectKey: zod.string(),
-          href: zod.string().nullable(),
-          alt: zod.string(),
-          caption: zod.string(),
-        }),
-      }),
-      zod.object({
-        id: zod.string(),
-        type: zod.enum(["map"]),
-        layout: zod.object({
-          desktop: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-          compact: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-        }),
-        content: zod.object({
-          latitude: zod.number(),
-          longitude: zod.number(),
-          zoom: zod.number(),
-          caption: zod.string(),
-          url: zod.string(),
-        }),
-      }),
-    ])
-  ),
-  viewer: zod.object({
-    isAuthenticated: zod.boolean(),
-    userId: zod.string().nullable(),
-    canEdit: zod.boolean(),
-  }),
-});
-
-/**
- * Replaces the authenticated user's bento graph with the provided snapshot. The server validates each bento item, deletes bentos missing from the snapshot, promotes legacy temporary media objects when tempObjectKey is present, accepts a public preview object key in tempObjectKey without copying, accepts existing `public/.../preview:` media object keys as-is, accepts percent-encoded `public/.../preview%3A` media object keys from older preview uploads when the object exists, accepts existing media URLs from an older public R2 origin when their path matches `objectKey`, allows empty media alt text, and also resolves a preview draft media object when objectKey still points at a client-generated `preview:` bento id. It returns the saved profile graph assembled from the accepted payload after the database write with no-store headers on success.
- * @summary Replace my bento graph
- */
-export const ReplaceProfileBentoGraphBody = zod.object({
-  bento: zod.array(
-    zod.union([
-      zod.object({
-        id: zod.string(),
-        type: zod.enum(["link"]),
-        layout: zod.object({
-          desktop: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-          compact: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-        }),
-        content: zod.object({
-          title: zod.string(),
-          description: zod.string().nullish(),
-          favicon: zod.string().nullish(),
-          thumbnail: zod.string().nullish(),
-          url: zod.string(),
-        }),
-      }),
-      zod.object({
-        id: zod.string(),
-        type: zod.enum(["text"]),
-        layout: zod.object({
-          desktop: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-          compact: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-        }),
-        content: zod.object({
-          content: zod.string(),
-        }),
-      }),
-      zod.object({
-        id: zod.string(),
-        type: zod.enum(["section"]),
-        layout: zod.object({
-          desktop: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-          compact: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-        }),
-        content: zod.object({
-          title: zod.string(),
-        }),
-      }),
-      zod.object({
-        id: zod.string(),
-        type: zod.enum(["media"]),
-        layout: zod.object({
-          desktop: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-          compact: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-        }),
-        content: zod.object({
-          mediaType: zod.enum(["image", "video"]),
-          url: zod.string(),
-          objectKey: zod.string(),
-          tempObjectKey: zod.string().nullish(),
-          contentHash: zod.string().nullish(),
-          contentType: zod.string().nullish(),
-          href: zod.string().nullish(),
-          alt: zod.string(),
-          caption: zod.string(),
-        }),
-      }),
-      zod.object({
-        id: zod.string(),
-        type: zod.enum(["map"]),
-        layout: zod.object({
-          desktop: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-          compact: zod.object({
-            x: zod.number(),
-            y: zod.number(),
-            w: zod.number(),
-            h: zod.number(),
-          }),
-        }),
-        content: zod.object({
-          latitude: zod.number(),
-          longitude: zod.number(),
-          zoom: zod.number(),
-          caption: zod.string().optional(),
-          url: zod.string(),
-        }),
-      }),
-    ])
-  ),
-});
-
-export const ReplaceProfileBentoGraphResponse = zod.object({
   page: zod.object({
     id: zod.string(),
     userId: zod.string(),

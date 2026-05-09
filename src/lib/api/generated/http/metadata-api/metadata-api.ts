@@ -7,85 +7,82 @@
  */
 
 import type {
-	DataTag,
-	DefinedInitialDataOptions,
-	DefinedUseQueryResult,
-	QueryClient,
-	QueryFunction,
-	QueryKey,
-	UndefinedInitialDataOptions,
-	UseQueryOptions,
-	UseQueryResult,
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
+  QueryClient,
+  QueryFunction,
+  QueryKey,
+  UndefinedInitialDataOptions,
+  UseQueryOptions,
+  UseQueryResult,
 } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
-import { getAppApiBaseURL } from "@/lib/api/base-url";
 import { orvalMutator } from "../../../orval-mutator";
 import type {
-	GetMetadata200,
-	GetMetadata400,
-	GetMetadata404,
-	GetMetadata500,
-	GetMetadata502,
-	GetMetadataParams,
+  GetMetadata200,
+  GetMetadata400,
+  GetMetadata404,
+  GetMetadata500,
+  GetMetadata502,
+  GetMetadataParams,
 } from "../schemas/metadata-api";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export type getMetadataResponse200 = {
-	data: GetMetadata200;
-	status: 200;
+  data: GetMetadata200;
+  status: 200;
 };
 
 export type getMetadataResponse400 = {
-	data: GetMetadata400;
-	status: 400;
+  data: GetMetadata400;
+  status: 400;
 };
 
 export type getMetadataResponse404 = {
-	data: GetMetadata404;
-	status: 404;
+  data: GetMetadata404;
+  status: 404;
 };
 
 export type getMetadataResponse500 = {
-	data: GetMetadata500;
-	status: 500;
+  data: GetMetadata500;
+  status: 500;
 };
 
 export type getMetadataResponse502 = {
-	data: GetMetadata502;
-	status: 502;
+  data: GetMetadata502;
+  status: 502;
 };
 
 export type getMetadataResponseSuccess = getMetadataResponse200 & {
-	headers: Headers;
+  headers: Headers;
 };
 export type getMetadataResponseError = (
-	| getMetadataResponse400
-	| getMetadataResponse404
-	| getMetadataResponse500
-	| getMetadataResponse502
+  | getMetadataResponse400
+  | getMetadataResponse404
+  | getMetadataResponse500
+  | getMetadataResponse502
 ) & {
-	headers: Headers;
+  headers: Headers;
 };
 
-export type getMetadataResponse =
-	| getMetadataResponseSuccess
-	| getMetadataResponseError;
+export type getMetadataResponse = getMetadataResponseSuccess | getMetadataResponseError;
 
 export const getGetMetadataUrl = (params: GetMetadataParams) => {
-	const normalizedParams = new URLSearchParams();
+  const normalizedParams = new URLSearchParams();
 
-	for (const [key, value] of Object.entries(params || {})) {
-		if (value !== undefined) {
-			normalizedParams.append(key, value === null ? "null" : value.toString());
-		}
-	}
+  for (const [key, value] of Object.entries(params || {})) {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  }
 
-	const stringifiedParams = normalizedParams.toString();
+  const stringifiedParams = normalizedParams.toString();
 
-	return stringifiedParams.length > 0
-		? `${getAppApiBaseURL()}/metadata?${stringifiedParams}`
-		: `${getAppApiBaseURL()}/metadata`;
+  return stringifiedParams.length > 0
+    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/metadata?${stringifiedParams}`
+    : `${process.env.NEXT_PUBLIC_API_BASE_URL}/metadata`;
 };
 
 /**
@@ -93,146 +90,119 @@ export const getGetMetadataUrl = (params: GetMetadataParams) => {
  * @summary Fetch metadata for a URL
  */
 export const getMetadata = async (
-	params: GetMetadataParams,
-	options?: RequestInit,
+  params: GetMetadataParams,
+  options?: RequestInit
 ): Promise<getMetadataResponse> => {
-	return orvalMutator<getMetadataResponse>(getGetMetadataUrl(params), {
-		...options,
-		method: "GET",
-	});
+  return orvalMutator<getMetadataResponse>(getGetMetadataUrl(params), {
+    ...options,
+    method: "GET",
+  });
 };
 
 export const getGetMetadataQueryKey = (params?: GetMetadataParams) => {
-	return [
-		`${getAppApiBaseURL()}/metadata`,
-		...(params ? [params] : []),
-	] as const;
+  return [`${process.env.NEXT_PUBLIC_API_BASE_URL}/metadata`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetMetadataQueryOptions = <
-	TData = Awaited<ReturnType<typeof getMetadata>>,
-	TError = GetMetadata400 | GetMetadata404 | GetMetadata500 | GetMetadata502,
+  TData = Awaited<ReturnType<typeof getMetadata>>,
+  TError = GetMetadata400 | GetMetadata404 | GetMetadata500 | GetMetadata502,
 >(
-	params: GetMetadataParams,
-	options?: {
-		query?: Partial<
-			UseQueryOptions<Awaited<ReturnType<typeof getMetadata>>, TError, TData>
-		>;
-		request?: SecondParameter<typeof orvalMutator>;
-	},
+  params: GetMetadataParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMetadata>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalMutator>;
+  }
 ) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-	const queryKey = queryOptions?.queryKey ?? getGetMetadataQueryKey(params);
+  const queryKey = queryOptions?.queryKey ?? getGetMetadataQueryKey(params);
 
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof getMetadata>>> = ({
-		signal,
-	}) => getMetadata(params, { signal, ...requestOptions });
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMetadata>>> = ({ signal }) =>
+    getMetadata(params, { signal, ...requestOptions });
 
-	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-		Awaited<ReturnType<typeof getMetadata>>,
-		TError,
-		TData
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMetadata>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type GetMetadataQueryResult = NonNullable<
-	Awaited<ReturnType<typeof getMetadata>>
->;
+export type GetMetadataQueryResult = NonNullable<Awaited<ReturnType<typeof getMetadata>>>;
 export type GetMetadataQueryError =
-	| GetMetadata400
-	| GetMetadata404
-	| GetMetadata500
-	| GetMetadata502;
+  | GetMetadata400
+  | GetMetadata404
+  | GetMetadata500
+  | GetMetadata502;
 
 export function useGetMetadata<
-	TData = Awaited<ReturnType<typeof getMetadata>>,
-	TError = GetMetadata400 | GetMetadata404 | GetMetadata500 | GetMetadata502,
+  TData = Awaited<ReturnType<typeof getMetadata>>,
+  TError = GetMetadata400 | GetMetadata404 | GetMetadata500 | GetMetadata502,
 >(
-	params: GetMetadataParams,
-	options: {
-		query: Partial<
-			UseQueryOptions<Awaited<ReturnType<typeof getMetadata>>, TError, TData>
-		> &
-			Pick<
-				DefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getMetadata>>,
-					TError,
-					Awaited<ReturnType<typeof getMetadata>>
-				>,
-				"initialData"
-			>;
-		request?: SecondParameter<typeof orvalMutator>;
-	},
-	queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-};
+  params: GetMetadataParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMetadata>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMetadata>>,
+          TError,
+          Awaited<ReturnType<typeof getMetadata>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 export function useGetMetadata<
-	TData = Awaited<ReturnType<typeof getMetadata>>,
-	TError = GetMetadata400 | GetMetadata404 | GetMetadata500 | GetMetadata502,
+  TData = Awaited<ReturnType<typeof getMetadata>>,
+  TError = GetMetadata400 | GetMetadata404 | GetMetadata500 | GetMetadata502,
 >(
-	params: GetMetadataParams,
-	options?: {
-		query?: Partial<
-			UseQueryOptions<Awaited<ReturnType<typeof getMetadata>>, TError, TData>
-		> &
-			Pick<
-				UndefinedInitialDataOptions<
-					Awaited<ReturnType<typeof getMetadata>>,
-					TError,
-					Awaited<ReturnType<typeof getMetadata>>
-				>,
-				"initialData"
-			>;
-		request?: SecondParameter<typeof orvalMutator>;
-	},
-	queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-};
+  params: GetMetadataParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMetadata>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMetadata>>,
+          TError,
+          Awaited<ReturnType<typeof getMetadata>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 export function useGetMetadata<
-	TData = Awaited<ReturnType<typeof getMetadata>>,
-	TError = GetMetadata400 | GetMetadata404 | GetMetadata500 | GetMetadata502,
+  TData = Awaited<ReturnType<typeof getMetadata>>,
+  TError = GetMetadata400 | GetMetadata404 | GetMetadata500 | GetMetadata502,
 >(
-	params: GetMetadataParams,
-	options?: {
-		query?: Partial<
-			UseQueryOptions<Awaited<ReturnType<typeof getMetadata>>, TError, TData>
-		>;
-		request?: SecondParameter<typeof orvalMutator>;
-	},
-	queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-};
+  params: GetMetadataParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMetadata>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
  * @summary Fetch metadata for a URL
  */
 
 export function useGetMetadata<
-	TData = Awaited<ReturnType<typeof getMetadata>>,
-	TError = GetMetadata400 | GetMetadata404 | GetMetadata500 | GetMetadata502,
+  TData = Awaited<ReturnType<typeof getMetadata>>,
+  TError = GetMetadata400 | GetMetadata404 | GetMetadata500 | GetMetadata502,
 >(
-	params: GetMetadataParams,
-	options?: {
-		query?: Partial<
-			UseQueryOptions<Awaited<ReturnType<typeof getMetadata>>, TError, TData>
-		>;
-		request?: SecondParameter<typeof orvalMutator>;
-	},
-	queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-} {
-	const queryOptions = getGetMetadataQueryOptions(params, options);
+  params: GetMetadataParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMetadata>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetMetadataQueryOptions(params, options);
 
-	const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-		TData,
-		TError
-	> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-	return { ...query, queryKey: queryOptions.queryKey };
+  return { ...query, queryKey: queryOptions.queryKey };
 }

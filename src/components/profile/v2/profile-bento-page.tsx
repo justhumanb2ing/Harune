@@ -52,7 +52,6 @@ export function ProfileBentoProfileAside({ page }: Pick<ProfileBentoPageProps, "
               />
             ) : (
               <span className="flex size-full flex-col items-center justify-center gap-2 rounded-full text-muted-foreground">
-                <span className="font-semibold text-lg">Avatar</span>
               </span>
             )}
           </div>

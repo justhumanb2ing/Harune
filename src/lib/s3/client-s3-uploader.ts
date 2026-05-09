@@ -1,3 +1,5 @@
+import { getErrorMessage } from "@/lib/error-message";
+
 export interface ClientS3UploaderOptions {
   presignedRouteProvider: string;
 }
@@ -45,8 +47,8 @@ export class ClientS3Uploader {
       });
 
       if (!createUploadUrlResponse.ok) {
-        const response = await createUploadUrlResponse.json();
-        throw new Error(response.error || "Failed to get upload URL");
+        const response = await createUploadUrlResponse.json().catch(() => null);
+        throw new Error(getErrorMessage(response, "Failed to get upload URL"));
       }
 
       const uploadData = (await createUploadUrlResponse.json()) as PresignedUploadResponse;

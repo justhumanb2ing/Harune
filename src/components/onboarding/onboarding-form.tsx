@@ -25,8 +25,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useHandleAvailability } from "@/hooks/use-handle-availability";
 import { useProfileImageUpload } from "@/hooks/use-profile-image-upload";
 import { getCheckHandleAvailabilityQueryKey } from "@/lib/api/generated/http/handle-api/handle-api";
-import { createProfilePage } from "@/lib/api/generated/http/profile-api/profile-api";
-import { CreateProfilePageBody as createProfilePageBodySchema } from "@/lib/api/generated/zod/profile-api/profile-api.zod";
+import { updateProfilePage } from "@/lib/api/generated/http/profile-api/profile-api";
+import { UpdateProfilePageBody as updateProfilePageBodySchema } from "@/lib/api/generated/zod/profile-api/profile-api.zod";
 import { authClient } from "@/lib/auth-client";
 import { normalizeHandle, validateHandle } from "@/lib/handles";
 import { PROFILE_IMAGE_ACCEPT } from "@/lib/profile/image-upload";
@@ -74,17 +74,8 @@ const normalizeOptionalField = (value: string) => {
   return trimmed.length > 0 ? trimmed : undefined;
 };
 
-const getFailureMessage = (response: Awaited<ReturnType<typeof createProfilePage>>) => {
-  if (response.status === 400 || response.status === 401 || response.status === 404) {
-    return response.data.error.message;
-  }
-
-  if (response.status === 409 || response.status === 500) {
-    return response.data.error.message;
-  }
-
-  return "Something went wrong while creating your page.";
-};
+const getFailureMessage = (response: { status: number; data?: { error?: { message?: string } } }) =>
+  response.data?.error?.message ?? "Something went wrong while creating your page.";
 
 export function OnboardingForm({ handle }: OnboardingFormProps) {
   const router = useRouter();
@@ -233,15 +224,17 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
     }
 
     try {
-      const response = await createProfilePage(
-        createProfilePageBodySchema.parse({
-          handle: pageHandle,
-          image: uploadedImageUrl ?? undefined,
-          name: trimmedName,
-          role: normalizeOptionalField(role),
-          location: normalizeOptionalField(location),
-          bio: normalizeOptionalField(bio),
-        }),
+      const updateBody = updateProfilePageBodySchema.parse({
+        handle: pageHandle,
+        image: uploadedImageUrl ?? undefined,
+        name: trimmedName,
+        role: normalizeOptionalField(role),
+        location: normalizeOptionalField(location),
+        bio: normalizeOptionalField(bio),
+      });
+
+      const response = await updateProfilePage(
+        updateBody as Parameters<typeof updateProfilePage>[0],
         {
           cache: "no-store",
           headers: {

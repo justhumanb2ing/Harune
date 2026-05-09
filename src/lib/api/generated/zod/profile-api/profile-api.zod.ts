@@ -8,7 +8,7 @@
 import * as zod from "zod";
 
 /**
- * Creates the authenticated user's first profile page. The server normalizes the submitted handle to lowercase, rejects reserved or malformed handles, returns 409 when a profile page already exists or the handle is already taken, and returns only the committed page snapshot on success.
+ * Creates the authenticated user's first profile page. The server normalizes the submitted handle to lowercase, rejects reserved or malformed handles, trims text fields, treats empty `role` and `location` strings as null, returns 409 when a profile page already exists or the handle is already taken, and returns only the committed page snapshot on success.
  * @summary Create my profile page
  */
 export const CreateProfilePageBody = zod.object({
@@ -36,16 +36,18 @@ export const CreateProfilePageResponse = zod.object({
 });
 
 /**
- * Partially updates the authenticated user's profile page. The server trims text fields, allows null to clear fields, validates image/backgroundImage as absolute http or https URLs when provided, and returns the committed profile snapshot with no-store headers on success.
+ * Partially updates the authenticated user's profile page. The server trims text fields, allows null to clear fields, treats empty `role` and `location` strings as null, validates image/backgroundImage as absolute http or https URLs when provided, and returns the committed profile snapshot with no-store headers on success.
  * @summary Update my profile page
  */
 export const UpdateProfilePageBody = zod.object({
+  handle: zod.string().optional(),
   name: zod.string().nullish(),
   location: zod.string().nullish(),
   role: zod.string().nullish(),
   bio: zod.string().nullish(),
   image: zod.string().nullish(),
   backgroundImage: zod.string().nullish(),
+  bento: zod.lazy(() => ReplaceProfileBentoGraphBody.shape.bento).optional(),
 });
 
 export const UpdateProfilePageResponse = zod.object({
@@ -191,7 +193,7 @@ export const UpdateProfilePageResponse = zod.object({
 });
 
 /**
- * Replaces the authenticated user's bento graph with the provided snapshot. The server validates each bento item, deletes bentos missing from the snapshot, promotes legacy temporary media objects when tempObjectKey is present, accepts a public preview object key in tempObjectKey without copying, accepts existing `public/.../preview:` media object keys as-is, and also resolves a preview draft media object when objectKey still points at a client-generated `preview:` bento id. It returns the saved profile graph assembled from the accepted payload after the database write with no-store headers on success.
+ * Replaces the authenticated user's bento graph with the provided snapshot. The server validates each bento item, deletes bentos missing from the snapshot, promotes legacy temporary media objects when tempObjectKey is present, accepts a public preview object key in tempObjectKey without copying, accepts existing `public/.../preview:` media object keys as-is, accepts percent-encoded `public/.../preview%3A` media object keys from older preview uploads when the object exists, accepts existing media URLs from an older public R2 origin when their path matches `objectKey`, allows empty media alt text, and also resolves a preview draft media object when objectKey still points at a client-generated `preview:` bento id. It returns the saved profile graph assembled from the accepted payload after the database write with no-store headers on success.
  * @summary Replace my bento graph
  */
 export const ReplaceProfileBentoGraphBody = zod.object({

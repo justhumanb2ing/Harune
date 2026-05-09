@@ -21,7 +21,6 @@ import type {
   UseQueryResult,
 } from "@tanstack/react-query";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { getAppApiBaseURL } from "@/lib/api/base-url";
 import { orvalMutator } from "../../../orval-mutator";
 import type {
   CreateProfilePage200,
@@ -125,11 +124,11 @@ export type createProfilePageResponse =
   | createProfilePageResponseError;
 
 export const getCreateProfilePageUrl = () => {
-  return `${getAppApiBaseURL()}/profile/me`;
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/me`;
 };
 
 /**
- * Creates the authenticated user's first profile page. The server normalizes the submitted handle to lowercase, rejects reserved or malformed handles, returns 409 when a profile page already exists or the handle is already taken, and returns only the committed page snapshot on success.
+ * Creates the authenticated user's first profile page. The server normalizes the submitted handle to lowercase, rejects reserved or malformed handles, trims text fields, treats empty `role` and `location` strings as null, returns 409 when a profile page already exists or the handle is already taken, and returns only the committed page snapshot on success.
  * @summary Create my profile page
  */
 export const createProfilePage = async (
@@ -268,11 +267,11 @@ export type updateProfilePageResponse =
   | updateProfilePageResponseError;
 
 export const getUpdateProfilePageUrl = () => {
-  return `${getAppApiBaseURL()}/profile/me`;
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/me`;
 };
 
 /**
- * Partially updates the authenticated user's profile page. The server trims text fields, allows null to clear fields, validates image/backgroundImage as absolute http or https URLs when provided, and returns the committed profile snapshot with no-store headers on success.
+ * Partially updates the authenticated user's profile page. The server trims text fields, allows null to clear fields, treats empty `role` and `location` strings as null, validates image/backgroundImage as absolute http or https URLs when provided, and returns the committed profile snapshot with no-store headers on success.
  * @summary Update my profile page
  */
 export const updateProfilePage = async (
@@ -408,11 +407,11 @@ export type replaceProfileBentoGraphResponse =
   | replaceProfileBentoGraphResponseError;
 
 export const getReplaceProfileBentoGraphUrl = () => {
-  return `${getAppApiBaseURL()}/profile/me/bento`;
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/me/bento`;
 };
 
 /**
- * Replaces the authenticated user's bento graph with the provided snapshot. The server validates each bento item, deletes bentos missing from the snapshot, promotes legacy temporary media objects when tempObjectKey is present, accepts a public preview object key in tempObjectKey without copying, accepts existing `public/.../preview:` media object keys as-is, and also resolves a preview draft media object when objectKey still points at a client-generated `preview:` bento id. It returns the saved profile graph assembled from the accepted payload after the database write with no-store headers on success.
+ * Replaces the authenticated user's bento graph with the provided snapshot. The server validates each bento item, deletes bentos missing from the snapshot, promotes legacy temporary media objects when tempObjectKey is present, accepts a public preview object key in tempObjectKey without copying, accepts existing `public/.../preview:` media object keys as-is, accepts percent-encoded `public/.../preview%3A` media object keys from older preview uploads when the object exists, accepts existing media URLs from an older public R2 origin when their path matches `objectKey`, allows empty media alt text, and also resolves a preview draft media object when objectKey still points at a client-generated `preview:` bento id. It returns the saved profile graph assembled from the accepted payload after the database write with no-store headers on success.
  * @summary Replace my bento graph
  */
 export const replaceProfileBentoGraph = async (
@@ -542,7 +541,7 @@ export type uploadProfileImageResponse =
   | uploadProfileImageResponseError;
 
 export const getUploadProfileImageUrl = () => {
-  return `${getAppApiBaseURL()}/profile/image`;
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/image`;
 };
 
 /**
@@ -690,7 +689,7 @@ export type finalizeProfileImageResponse =
   | finalizeProfileImageResponseError;
 
 export const getFinalizeProfileImageUrl = () => {
-  return `${getAppApiBaseURL()}/profile/image`;
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/image`;
 };
 
 /**
@@ -848,7 +847,7 @@ export type deleteProfileImageResponse =
   | deleteProfileImageResponseError;
 
 export const getDeleteProfileImageUrl = () => {
-  return `${getAppApiBaseURL()}/profile/image`;
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/image`;
 };
 
 /**
@@ -999,7 +998,7 @@ export type uploadProfileBentoMediaResponse =
   | uploadProfileBentoMediaResponseError;
 
 export const getUploadProfileBentoMediaUrl = () => {
-  return `${getAppApiBaseURL()}/profile/bento/media/upload`;
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/bento/media/upload`;
 };
 
 /**
@@ -1131,7 +1130,7 @@ export type listProfilePagesResponse =
   | listProfilePagesResponseError;
 
 export const getListProfilePagesUrl = () => {
-  return `${getAppApiBaseURL()}/profile/pages`;
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/pages`;
 };
 
 /**
@@ -1148,7 +1147,7 @@ export const listProfilePages = async (
 };
 
 export const getListProfilePagesQueryKey = () => {
-  return [`${getAppApiBaseURL()}/profile/pages`] as const;
+  return [`${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/pages`] as const;
 };
 
 export const getListProfilePagesQueryOptions = <
@@ -1274,7 +1273,7 @@ export type getProfileByHandleResponse =
   | getProfileByHandleResponseError;
 
 export const getGetProfileByHandleUrl = (handle: string) => {
-  return `${getAppApiBaseURL()}/profile/${handle}`;
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/${handle}`;
 };
 
 /**
@@ -1292,7 +1291,7 @@ export const getProfileByHandle = async (
 };
 
 export const getGetProfileByHandleQueryKey = (handle: string) => {
-  return [`${getAppApiBaseURL()}/profile/${handle}`] as const;
+  return [`${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/${handle}`] as const;
 };
 
 export const getGetProfileByHandleQueryOptions = <

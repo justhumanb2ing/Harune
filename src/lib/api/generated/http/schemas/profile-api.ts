@@ -955,6 +955,7 @@ export type ReplaceProfileBentoGraph500 = {
 };
 
 export type UpdateProfilePageBody = {
+  handle?: string;
   /** @nullable */
   name?: string | null;
   /** @nullable */
@@ -967,6 +968,7 @@ export type UpdateProfilePageBody = {
   image?: string | null;
   /** @nullable */
   backgroundImage?: string | null;
+  bento?: UpdateProfilePage200BentoItem[];
 };
 
 export type UpdateProfilePage200BentoItem =

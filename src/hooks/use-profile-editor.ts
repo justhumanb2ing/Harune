@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { type ChangeEvent, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import {
@@ -16,13 +16,12 @@ import { getProfileRouteHandle } from "@/lib/profile/app-paths";
 import { uploadProfileImageIfChanged } from "@/lib/profile/client-image-upload";
 import { toProfilePageEditorDataFromPublicPage } from "@/lib/profile/public-profile-page";
 import { profilePageQueryOptions } from "@/lib/profile/query-options";
-import type { ProfilePageData, ProfilePageDraftData } from "@/lib/profile/types";
+import type { ProfileBentoItem, ProfilePageData, ProfilePageDraftData } from "@/lib/profile/types";
 import useUser from "@/lib/users/use-user";
 
 export function useProfilePageEditor() {
   const { isLoading: isUserLoading, mutate, user } = useUser();
   const queryClient = useQueryClient();
-  const router = useRouter();
   const store = useProfilePageEditorStoreApi();
   const pathname = usePathname();
   const currentHandle = getProfileRouteHandle(pathname);
@@ -90,7 +89,13 @@ export function useProfilePageEditor() {
     }
   };
 
-  const handleSync = async (draftDataOverride?: ProfilePageDraftData) => {
+  const handleSync = async ({
+    draftDataOverride,
+    bento,
+  }: {
+    draftDataOverride?: ProfilePageDraftData;
+    bento?: ProfileBentoItem[];
+  } = {}) => {
     const currentState = store.getState();
     const profilePageQueryKey = profilePageQueryOptions(currentHandle).queryKey;
     const syncDraftData = draftDataOverride ?? currentState.draftData;
@@ -103,50 +108,16 @@ export function useProfilePageEditor() {
       store.actions.setSyncStatus("syncing");
       await queryClient.cancelQueries({ queryKey: profilePageQueryKey });
 
-      let nextDraftData = syncDraftData;
-
-      if (currentState.pendingImageFile) {
-        const uploadedImageUrl = await uploadProfileImageIfChanged({
-          currentUrl: syncDraftData.page.image,
-          file: currentState.pendingImageFile,
-          kind: "profile",
-        });
-        nextDraftData = {
-          ...nextDraftData,
-          page: {
-            ...nextDraftData.page,
-            image: uploadedImageUrl,
-          },
-        };
-      }
-
-      if (currentState.pendingBackgroundImageFile) {
-        const uploadedBackgroundImageUrl = await uploadProfileImageIfChanged({
-          currentUrl: syncDraftData.page.backgroundImage,
-          file: currentState.pendingBackgroundImageFile,
-          kind: "background",
-        });
-        nextDraftData = {
-          ...nextDraftData,
-          page: {
-            ...nextDraftData.page,
-            backgroundImage: uploadedBackgroundImageUrl,
-          },
-        };
-      }
-
-      const latestDraftData = draftDataOverride ?? store.getState().draftData ?? nextDraftData;
-      const requestDraftData: ProfilePageDraftData = {
-        ...latestDraftData,
-        page: {
-          ...latestDraftData.page,
-          image: nextDraftData.page.image,
-          backgroundImage: nextDraftData.page.backgroundImage,
-        },
-      };
+      const requestDraftData = syncDraftData;
       const { handle: _handle, ...updateProfilePageBody } = buildSyncPayload(requestDraftData).page;
+      const requestBody = bento
+        ? {
+            ...updateProfilePageBody,
+            bento: bento as Parameters<typeof updateProfilePage>[0]["bento"],
+          }
+        : updateProfilePageBody;
 
-      const response = await updateProfilePage(updateProfilePageBody, {
+      const response = await updateProfilePage(requestBody, {
         cache: "no-store",
         headers: {
           "Cache-Control": "no-store",
@@ -183,13 +154,62 @@ export function useProfilePageEditor() {
         queryKey: profilePageQueryKey,
         refetchType: "active",
       });
-      router.refresh();
-      return profilePageData;
+      return response;
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to sync";
       store.actions.setSyncError(message);
       return null;
     }
+  };
+
+  const uploadPendingImages = async (syncDraftData: ProfilePageDraftData) => {
+    const currentState = store.getState();
+
+    const pendingImageUpload = currentState.pendingImageFile
+      ? uploadProfileImageIfChanged({
+          currentUrl: syncDraftData.page.image,
+          file: currentState.pendingImageFile,
+          kind: "profile",
+          persist: false,
+        })
+      : Promise.resolve(syncDraftData.page.image);
+    const pendingBackgroundImageUpload = currentState.pendingBackgroundImageFile
+      ? uploadProfileImageIfChanged({
+          currentUrl: syncDraftData.page.backgroundImage,
+          file: currentState.pendingBackgroundImageFile,
+          kind: "background",
+          persist: false,
+        })
+      : Promise.resolve(syncDraftData.page.backgroundImage);
+
+    const [uploadedImageUrl, uploadedBackgroundImageUrl] = await Promise.all([
+      pendingImageUpload,
+      pendingBackgroundImageUpload,
+    ]);
+
+    let nextDraftData = syncDraftData;
+
+    if (uploadedImageUrl !== syncDraftData.page.image) {
+      nextDraftData = {
+        ...nextDraftData,
+        page: {
+          ...nextDraftData.page,
+          image: uploadedImageUrl,
+        },
+      };
+    }
+
+    if (uploadedBackgroundImageUrl !== syncDraftData.page.backgroundImage) {
+      nextDraftData = {
+        ...nextDraftData,
+        page: {
+          ...nextDraftData.page,
+          backgroundImage: uploadedBackgroundImageUrl,
+        },
+      };
+    }
+
+    return nextDraftData;
   };
 
   return {
@@ -207,6 +227,7 @@ export function useProfilePageEditor() {
     previewBackgroundImageSrc,
     previewImageSrc,
     profileForm,
+    uploadPendingImages,
     removeBackgroundImage: () => store.actions.removeBackgroundImage(),
     removeProfileImage: () => store.actions.removeImage(),
     setProfileField: (field: "bio" | "handle" | "location" | "name" | "role", value: string) =>

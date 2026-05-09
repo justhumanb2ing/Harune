@@ -18,7 +18,6 @@ import type {
   UseQueryResult,
 } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
-import { getAppApiBaseURL } from "@/lib/api/base-url";
 import { orvalMutator } from "../../../orval-mutator";
 import type {
   GetMetadata200,
@@ -82,8 +81,8 @@ export const getGetMetadataUrl = (params: GetMetadataParams) => {
   const stringifiedParams = normalizedParams.toString();
 
   return stringifiedParams.length > 0
-    ? `${getAppApiBaseURL()}/metadata?${stringifiedParams}`
-    : `${getAppApiBaseURL()}/metadata`;
+    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/metadata?${stringifiedParams}`
+    : `${process.env.NEXT_PUBLIC_API_BASE_URL}/metadata`;
 };
 
 /**
@@ -101,7 +100,7 @@ export const getMetadata = async (
 };
 
 export const getGetMetadataQueryKey = (params?: GetMetadataParams) => {
-  return [`${getAppApiBaseURL()}/metadata`, ...(params ? [params] : [])] as const;
+  return [`${process.env.NEXT_PUBLIC_API_BASE_URL}/metadata`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetMetadataQueryOptions = <

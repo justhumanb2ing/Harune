@@ -36,11 +36,7 @@ import { useGridDragMotion } from "@/hooks/use-grid-drag-motion";
 import { useProfilePageEditor } from "@/hooks/use-profile-editor";
 import { ApiError } from "@/lib/api/error";
 import { getMetadata } from "@/lib/api/generated/http/metadata-api/metadata-api";
-import {
-  replaceProfileBentoGraph,
-  uploadProfileBentoMedia,
-} from "@/lib/api/generated/http/profile-api/profile-api";
-import type { ReplaceProfileBentoGraphBody } from "@/lib/api/generated/http/schemas/profile-api";
+import { uploadProfileBentoMedia } from "@/lib/api/generated/http/profile-api/profile-api";
 import { appConfig } from "@/lib/config";
 import { BREAKPOINTS, COLS, GRID_MARGIN, getGridRowHeight } from "@/lib/grid/grid-config";
 import { normalizeLayouts } from "@/lib/grid/grid-layout-utils";
@@ -67,6 +63,11 @@ import {
   toBentoGridLayouts,
   toBentoItemTypeById,
 } from "./profile-bento-grid-model";
+import {
+  materializePendingProfileBentoMediaUploads,
+  type PendingProfileBentoMediaUpload,
+  type PendingProfileBentoMediaUploadsById,
+} from "./profile-bento-media-upload";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { Separator } from "@/components/ui/separator";
@@ -343,6 +344,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   const mediaInputRef = useRef<HTMLInputElement>(null);
   const toolbarRef = useRef<HTMLElement>(null);
   const mediaObjectUrlsByIdRef = useRef<Record<string, string>>({});
+  const pendingMediaUploadByIdRef = useRef<PendingProfileBentoMediaUploadsById>({});
   const removeTimerByIdRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const [pendingScrollItemId, setPendingScrollItemId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -431,6 +433,8 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
       for (const objectUrl of Object.values(mediaObjectUrlsByIdRef.current)) {
         URL.revokeObjectURL(objectUrl);
       }
+
+      pendingMediaUploadByIdRef.current = {};
     };
   }, []);
 
@@ -558,6 +562,8 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
       URL.revokeObjectURL(objectUrl);
       delete mediaObjectUrlsByIdRef.current[id];
     }
+
+    delete pendingMediaUploadByIdRef.current[id];
 
     setBento((currentItems) => currentItems.filter((item) => item.id !== id));
     setActiveMapInteractionItemId((current) => (current === id ? null : current));
@@ -745,79 +751,19 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
 
     setPendingScrollItemId(placeholderItem.id);
     mediaObjectUrlsByIdRef.current[placeholderItem.id] = previewUrl;
-    setUploadingMediaItemIds((current) => new Set(current).add(placeholderItem.id));
     setItemMotionPhaseById((current) => ({ ...current, [placeholderItem.id]: "entering" }));
     setFocusItemId(null);
     setBento(nextBento);
     setLayouts(toBentoGridLayouts(nextBento));
 
-    try {
-      const contentHash = await getProfileBentoMediaHash(uploadFile);
-      const previewBentoId = createPreviewDraftBentoId(placeholderItem.id);
-      const response = await uploadProfileBentoMedia({
-        bentoId: previewBentoId,
-        contentHash,
-        contentLength: uploadFile.size,
-        contentType: uploadFile.type,
-      });
-
-      if (response.status !== 200) {
-        throw new Error("Failed to upload bento media");
-      }
-
-      const mediaUpload = response.data;
-
-      await uploadToPresignedUrl({
-        contentType: mediaUpload.contentType,
-        file: uploadFile,
-        uploadUrl: mediaUpload.uploadUrl,
-      });
-
-      setBento((currentItems) =>
-        currentItems.map((item) => {
-          if (item.id !== placeholderItem.id || item.type !== "media") {
-            return item;
-          }
-
-          return {
-            ...item,
-            content: {
-              ...item.content,
-              contentHash: mediaUpload.contentHash,
-              contentType: mediaUpload.contentType,
-              mediaType: mediaUpload.mediaType,
-              objectKey: mediaUpload.tempObjectKey,
-              tempObjectKey: mediaUpload.tempObjectKey,
-              url: mediaUpload.tempUrl,
-            },
-          };
-        })
-      );
-      URL.revokeObjectURL(previewUrl);
-      delete mediaObjectUrlsByIdRef.current[placeholderItem.id];
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "미디어 업로드에 실패했어요.");
-      removeItemFromGrid(placeholderItem.id);
-      setItemMotionPhaseById((current) => {
-        if (!current[placeholderItem.id]) {
-          return current;
-        }
-
-        const next = { ...current };
-        delete next[placeholderItem.id];
-        return next;
-      });
-    } finally {
-      setUploadingMediaItemIds((current) => {
-        if (!current.has(placeholderItem.id)) {
-          return current;
-        }
-
-        const next = new Set(current);
-        next.delete(placeholderItem.id);
-        return next;
-      });
+    if (!mediaObjectUrlsByIdRef.current[placeholderItem.id]) {
+      return;
     }
+
+    pendingMediaUploadByIdRef.current[placeholderItem.id] = {
+      file: uploadFile,
+      uploaded: false,
+    };
   };
 
   const resizeItem = (id: string, breakpoint: GridBreakpoint, option: ResizeOption) => {
@@ -844,28 +790,106 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     }
 
     startTransition(async () => {
+      const syncDraftData = profileEditor.data;
+
+      if (!syncDraftData) {
+        return;
+      }
+
+      const pendingMediaUploadIds = Object.entries(pendingMediaUploadByIdRef.current)
+        .filter(([id, upload]) => bentoById.has(id) && !upload.uploaded)
+        .map(([id]) => id);
+
       try {
-        if (hasProfileChanges) {
-          await profileEditor.handleSync();
+        const pendingMediaUploads = pendingMediaUploadIds
+          .map((id) => [id, pendingMediaUploadByIdRef.current[id]] as const)
+          .filter((entry): entry is readonly [string, PendingProfileBentoMediaUpload] =>
+            Boolean(entry[1])
+          );
+        const pendingProfileImageUpload = profileEditor.uploadPendingImages(syncDraftData);
+
+        if (pendingMediaUploadIds.length > 0) {
+          setUploadingMediaItemIds((current) => new Set([...current, ...pendingMediaUploadIds]));
         }
 
-        if (isDirty) {
-          const response = await replaceProfileBentoGraph(
-            currentPayload as ReplaceProfileBentoGraphBody,
-            {
-              cache: "no-store",
-              headers: {
-                "Cache-Control": "no-store",
-              },
+        const pendingMediaUploadTask = Promise.all(
+          pendingMediaUploads.map(async ([id, upload]) => {
+            const contentHash = await getProfileBentoMediaHash(upload.file);
+            const previewBentoId = createPreviewDraftBentoId(id);
+            const response = await uploadProfileBentoMedia({
+              bentoId: previewBentoId,
+              contentHash,
+              contentLength: upload.file.size,
+              contentType: upload.file.type,
+            });
+
+            if (response.status !== 200) {
+              throw new Error("Failed to upload bento media");
             }
+
+            const mediaUpload = response.data;
+
+            await uploadToPresignedUrl({
+              contentType: mediaUpload.contentType,
+              file: upload.file,
+              uploadUrl: mediaUpload.uploadUrl,
+            });
+
+            return [
+              id,
+              {
+                ...upload,
+                uploaded: true,
+                contentHash: mediaUpload.contentHash,
+                contentType: mediaUpload.contentType,
+                mediaType: mediaUpload.mediaType,
+                tempObjectKey: mediaUpload.tempObjectKey,
+                tempUrl: mediaUpload.tempUrl,
+                uploadUrl: mediaUpload.uploadUrl,
+              },
+            ] as const;
+          })
+        );
+
+        const [nextDraftData, uploadedMedia] = await Promise.all([
+          pendingProfileImageUpload,
+          pendingMediaUploadTask,
+        ]);
+
+        for (const [id, upload] of uploadedMedia) {
+          pendingMediaUploadByIdRef.current[id] = upload;
+        }
+
+        if (hasProfileChanges || isDirty) {
+          const payloadBento = isDirty
+            ? materializePendingProfileBentoMediaUploads(bento, pendingMediaUploadByIdRef.current)
+            : null;
+          const response = await profileEditor.handleSync(
+            payloadBento
+              ? {
+                  draftDataOverride: nextDraftData,
+                  bento: createPayload(payloadBento, layouts).bento,
+                }
+              : { draftDataOverride: nextDraftData }
           );
 
-          if (response.status !== 200) {
-            throw new Error("Failed to sync bento");
+          if (!response || response.status !== 200) {
+            return;
           }
 
           const responseData = response.data;
           const nextLayouts = toBentoGridLayouts(responseData.bento);
+
+          for (const id of pendingMediaUploadIds) {
+            const objectUrl = mediaObjectUrlsByIdRef.current[id];
+
+            if (objectUrl) {
+              URL.revokeObjectURL(objectUrl);
+              delete mediaObjectUrlsByIdRef.current[id];
+            }
+
+            delete pendingMediaUploadByIdRef.current[id];
+          }
 
           setBento(responseData.bento);
           setLayouts(nextLayouts);
@@ -874,6 +898,22 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
         }
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Failed to sync bento");
+      } finally {
+        if (pendingMediaUploadIds.length > 0) {
+          setUploadingMediaItemIds((current) => {
+            if (current.size === 0) {
+              return current;
+            }
+
+            const next = new Set(current);
+
+            for (const id of pendingMediaUploadIds) {
+              next.delete(id);
+            }
+
+            return next;
+          });
+        }
       }
     });
   };

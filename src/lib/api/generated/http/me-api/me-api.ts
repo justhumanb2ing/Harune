@@ -18,7 +18,6 @@ import type {
   UseQueryResult,
 } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
-import { getAppApiBaseURL } from "@/lib/api/base-url";
 import { orvalMutator } from "../../../orval-mutator";
 import type {
   GetMe200,
@@ -62,7 +61,7 @@ export type getMeResponseError = (getMeResponse401 | getMeResponse404 | getMeRes
 export type getMeResponse = getMeResponseSuccess | getMeResponseError;
 
 export const getGetMeUrl = () => {
-  return `${getAppApiBaseURL()}/me`;
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/me`;
 };
 
 /**
@@ -77,7 +76,7 @@ export const getMe = async (options?: RequestInit): Promise<getMeResponse> => {
 };
 
 export const getGetMeQueryKey = () => {
-  return [`${getAppApiBaseURL()}/me`] as const;
+  return [`${process.env.NEXT_PUBLIC_API_BASE_URL}/me`] as const;
 };
 
 export const getGetMeQueryOptions = <
@@ -201,7 +200,7 @@ export type getMeAnalyticsResponseError = (
 export type getMeAnalyticsResponse = getMeAnalyticsResponseSuccess | getMeAnalyticsResponseError;
 
 export const getGetMeAnalyticsUrl = () => {
-  return `${getAppApiBaseURL()}/me/analytics`;
+  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/me/analytics`;
 };
 
 /**
@@ -216,7 +215,7 @@ export const getMeAnalytics = async (options?: RequestInit): Promise<getMeAnalyt
 };
 
 export const getGetMeAnalyticsQueryKey = () => {
-  return [`${getAppApiBaseURL()}/me/analytics`] as const;
+  return [`${process.env.NEXT_PUBLIC_API_BASE_URL}/me/analytics`] as const;
 };
 
 export const getGetMeAnalyticsQueryOptions = <

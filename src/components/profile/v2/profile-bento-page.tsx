@@ -34,7 +34,7 @@ export function ProfileBentoProfileAside({ page }: Pick<ProfileBentoPageProps, "
   return (
     <aside className={cn(PROFILE_BENTO_PROFILE_SHELL_CLASS)}>
       <div className="flex flex-col gap-8 overflow-hidden">
-        <div className="flex px-4">
+        <div className="flex ">
           <div className="relative flex size-32 items-center justify-center overflow-hidden rounded-full bg-secondary xl:size-44">
             {page.image ? (
               // Public profile images must render without Next.js image optimization so the
@@ -55,7 +55,7 @@ export function ProfileBentoProfileAside({ page }: Pick<ProfileBentoPageProps, "
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 p-4 pt-0">
+        <div className="flex flex-col gap-3 pt-0">
           {page.name ? (
             <h1 className="min-h-8 whitespace-pre-line break-all p-0 font-bold text-3xl! xl:text-5xl! tracking-tighter">
               {page.name}
@@ -69,9 +69,9 @@ export function ProfileBentoProfileAside({ page }: Pick<ProfileBentoPageProps, "
           ) : null}
 
           {page.role || page.location ? (
-            <div className="flex flex-col gap-2 text-neutral-500">
-              {page.role ? <p className="h-fit p-0 text-base!">{page.role}</p> : null}
-              {page.location ? <p className="h-fit p-0 text-base!">{page.location}</p> : null}
+            <div className="flex flex-col gap-2 text-neutral-500 text-sm">
+              {page.role ? <p className="h-fit p-0">{page.role}</p> : null}
+              {page.location ? <p className="h-fit p-0">{page.location}</p> : null}
             </div>
           ) : null}
         </div>
@@ -92,7 +92,7 @@ function ProfileBentoFooterAction({
   } | null;
 }) {
   const href = viewerProfilePage?.handle ? `/${viewerProfilePage.handle}` : "/sign-in";
-  const label = viewerProfilePage?.handle ? "my page" : "create my page";
+  const label = viewerProfilePage?.handle ? "my page" : "Create";
   const imageAlt = viewerProfilePage?.name ?? viewerProfilePage?.handle ?? "My page";
 
   return (
@@ -118,6 +118,13 @@ function ProfileBentoFooterAction({
           </span>
         ) : null}
         <span>{label}</span>
+      </Link>
+      <Link
+        href="/explore"
+        prefetch={false}
+        className="inline-flex items-center rounded-md p-2 py-1.5 font-normal text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+      >
+        <span>Explore</span>
       </Link>
     </footer>
   );

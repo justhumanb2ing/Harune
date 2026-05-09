@@ -167,7 +167,7 @@ export function ProfileBentoOwnerEditorSurface({
         <ProfileBentoProfileEditor />
         <ProfileBentoInteractiveGrid initialBento={bento} />
         <ProfileBentoOwnerFooterAction
-          className="w-full py-16 md:fixed md:bottom-12 md:left-12 md:z-30 md:w-auto md:justify-start md:p-0"
+          className="w-full py-16 xl:fixed xl:bottom-12 xl:left-12 xl:z-30 xl:w-auto xl:justify-start xl:p-0"
           analyticsViews={analyticsViews}
           disableAnalytics={disableAnalytics}
           ownerHandle={ownerHandle}

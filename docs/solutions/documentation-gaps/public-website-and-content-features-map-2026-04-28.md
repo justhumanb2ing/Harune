@@ -27,7 +27,7 @@ Harune의 공개 웹사이트는 단순 marketing shell이 아니라 신규 가�
 | Join shortcut | `/join` | active | 비로그인은 `/sign-up`, 로그인은 app redirect |
 | Login shortcut | `/login` | active | 비로그인은 `/sign-in`, 로그인은 app redirect |
 | Public profile | `/{handle}` | active | 사용자가 만든 link-in-bio page |
-| Explore | `/explore` | placeholder | 메타/페이지는 있으나 "in the works" 상태 |
+| Explore | `/explore` | active | 공개 profile 페이지 목록을 이름, handle, image로 탐색 |
 | Roadmap | `/roadmap` | content active | `src/content/policies/roadmap.md` 기반 예정 기능 목록 |
 | Changelog | `/changelog` | content active | `src/content/policies/changelog.md` 기반 공개 변경 로그 |
 | Policies | `/terms`, `/privacy`, `/refund` | active | MD/MDX 정책 콘텐츠 렌더링 |
@@ -63,14 +63,14 @@ src/content/policies/{slug}.md
 ```
 
 ## Why This Matters
-공개 웹사이트 문서를 SEO나 컴포넌트 위치만으로 설명하면 제품 상태를 놓친다. 예를 들어 `/explore`는 route와 metadata가 있지만 아직 실제 탐색 기능은 없다. 반대로 `/roadmap`은 정책 레이아웃을 재사용하지만 사용자에게는 제품 예정 기능을 알리는 공개 페이지다.
+공개 웹사이트 문서를 SEO나 컴포넌트 위치만으로 설명하면 제품 상태를 놓친다. 예를 들어 `/explore`는 route와 metadata만 있는 placeholder가 아니라 이제 공개 profile 목록을 보여주는 실제 탐색 페이지다. 반대로 `/roadmap`은 정책 레이아웃을 재사용하지만 사용자에게는 제품 예정 기능을 알리는 공개 페이지다.
 
 작업 전 active 기능과 placeholder 기능을 구분해야 사용자에게 이미 제공되는 경험을 깨지 않고, 예정 기능을 실제 기능으로 전환할 때 필요한 backend/data 요구사항을 다시 볼 수 있다.
 
 ## When to Apply
 - 랜딩 CTA, hero, public navigation을 바꿀 때
 - roadmap/changelog/policy 콘텐츠를 추가하거나 route를 바꿀 때
-- explore를 placeholder에서 실제 기능으로 전환할 때
+- explore를 profile discovery 페이지로 유지 보수할 때
 - public profile page를 공개 웹사이트 navigation과 연결할 때
 
 ## Examples

@@ -1,5 +1,9 @@
 import type { Variants } from "motion/react";
 import * as motion from "motion/react-client";
+import Image from "next/image";
+import Link from "next/link";
+import type { ListProfilePages200PagesItem } from "@/lib/api/generated/http/schemas/profile-api";
+import { absoluteUrl } from "@/lib/seo";
 
 const variants: Variants = {
   hidden: {
@@ -23,7 +27,21 @@ const variants: Variants = {
   },
 };
 
-export default function ExploreSection() {
+type ExploreSectionProps = {
+  pages: ListProfilePages200PagesItem[];
+};
+
+const resolveImageUrl = (image: string | null) => {
+  if (!image) return null;
+
+  try {
+    return new URL(image).toString();
+  } catch {
+    return absoluteUrl(image.startsWith("/") ? image : `/${image}`);
+  }
+};
+
+export default function ExploreSection({ pages }: ExploreSectionProps) {
   return (
     <section className="h-full flex flex-col">
       <header className="h-[12rem] flex flex-col justify-center items-center mt-8">
@@ -49,10 +67,56 @@ export default function ExploreSection() {
           </h2>
         </motion.div>
       </header>
-      <main className="flex-1 flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8 rounded-2xl mx-8">
-        <div className="flex flex-col gap-2 items-center">
-          <p className="font-medium text-lg">Explore is on the horizon. 🚀</p>
-          <p>It's in the works.</p>
+      <main className="flex-1 px-6 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 ">
+          {pages.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {pages.map((page) => {
+                const imageUrl = resolveImageUrl(page.image);
+                const displayName = page.name ?? page.handle;
+                const handle = `@${page.handle}`;
+
+                return (
+                  <Link
+                    key={page.id}
+                    href={`/${page.handle}`}
+                    className="group flex flex-row items-center gap-4 overflow-hidden bg-background transition-transform duration-200 hover:-translate-y-1"
+                  >
+                    <div className="relative aspect-square size-12 overflow-hidden bg-muted/40 rounded-full">
+                      {imageUrl ? (
+                        <Image
+                          alt={`${displayName} profile image`}
+                          className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                          fill
+                          sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                          src={imageUrl}
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-secondary"></div>
+                      )}
+                    </div>
+
+                    <div className="flex flex-1 flex-col gap-0 py-2">
+                      <p className="line-clamp-1 text-base font-semibold tracking-tight truncate">
+                        {displayName}
+                      </p>
+                      <p className="line-clamp-1 text-sm text-muted-foreground">{handle}</p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex min-h-[16rem] items-center justify-center rounded-[1.5rem] border border-dashed border-border/70 bg-muted/20 px-6 py-12 text-center">
+              <div className="max-w-sm space-y-2">
+                <p className="text-base font-medium">No public profiles yet.</p>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  Profiles will appear here once creators publish their pages.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </section>

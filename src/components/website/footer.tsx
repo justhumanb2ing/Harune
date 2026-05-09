@@ -37,8 +37,8 @@ export function Footer() {
                 <AppEntryCtaButton
                   next="/app"
                   size="sm"
-                  variant="link"
-                  className="inline-block text-muted-foreground!"
+                  variant="ghost"
+                  className="inline-block text-sm text-muted-foreground! hover:text-primary! hover:bg-inherit"
                 >
                   Log In
                 </AppEntryCtaButton>

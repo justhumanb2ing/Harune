@@ -7,6 +7,9 @@ import type {
 } from "@/lib/api/generated/http/schemas/profile-api";
 import type { ProfileBentoItem, ProfilePageData } from "@/lib/profile/types";
 import { cn } from "@/lib/utils";
+import { CompassIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 type ProfileBentoPageProps = {
   page: GetProfileByHandle200Page & {
@@ -97,35 +100,41 @@ function ProfileBentoFooterAction({
 
   return (
     <footer className={cn("flex items-center justify-center gap-2", className)}>
-      <Link
-        href={href}
-        className="inline-flex items-center gap-2 rounded-md p-2 py-1.5 font-normal text-sm text-muted-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-      >
-        {viewerProfilePage ? (
-          <span className="relative size-5 shrink-0 overflow-hidden rounded-full bg-secondary">
-            {viewerProfilePage.image ? (
-              // biome-ignore lint/performance/noImgElement: This is a user-generated remote image.
-              <img
-                alt={imageAlt}
-                className="size-full object-cover"
-                height={24}
-                src={viewerProfilePage.image}
-                width={24}
-              />
-            ) : (
-              <span aria-hidden className="block size-full" />
-            )}
-          </span>
-        ) : null}
-        <span>{label}</span>
-      </Link>
-      <Link
-        href="/explore"
-        prefetch={false}
-        className="inline-flex items-center rounded-md p-2 py-1.5 font-normal text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-      >
-        <span>Explore</span>
-      </Link>
+      <Button nativeButton={false} variant={'ghost'} render={
+        <Link
+          href={href}
+          className="inline-flex items-center gap-2 rounded-md p-2 py-1.5 font-normal text-sm text-muted-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+        >
+          {viewerProfilePage ? (
+            <span className="relative size-5 shrink-0 overflow-hidden rounded-full bg-secondary">
+              {viewerProfilePage.image ? (
+                // biome-ignore lint/performance/noImgElement: This is a user-generated remote image.
+                <img
+                  alt={imageAlt}
+                  className="size-full object-cover"
+                  height={24}
+                  src={viewerProfilePage.image}
+                  width={24}
+                />
+              ) : (
+                <span aria-hidden className="block size-full" />
+              )}
+            </span>
+          ) : null}
+          <span>{label}</span>
+        </Link>
+      } />
+      <Separator orientation="vertical" className={'rounded-lg data-vertical:w-[2.5px] data-vertical:my-2'}/>
+      <Button nativeButton={false} variant={'ghost'} size={'icon-lg'} className={'size-8'} render={
+        <Link
+          href="/explore"
+          prefetch={false}
+          className="inline-flex items-center rounded-md font-normal"
+        >
+          <span className="text-sm text-muted-foreground!"><CompassIcon /></span>
+        </Link>
+      } />
+
     </footer>
   );
 }

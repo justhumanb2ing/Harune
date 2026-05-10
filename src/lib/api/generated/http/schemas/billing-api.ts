@@ -6,44 +6,44 @@
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * @nullable
+ */
+export type ListBillingProducts200ItemsItemQuotas = {
+  permiumSupport: boolean;
+  monthlyImages: number;
+  somethingElse: string;
+} | null;
+
 export type ListBillingProducts200ItemsItem = {
+  id: string;
   slug: string;
   productId: string;
-  businessId: string;
   /** @nullable */
   name: string | null;
   /** @nullable */
-  description: string | null;
-  /** @nullable */
-  image: string | null;
-  isRecurring: boolean;
-  /** @nullable */
-  currency: string | null;
-  /** @nullable */
   price: number | null;
-  taxCategory: string;
+  default: boolean;
   /** @nullable */
-  taxInclusive: boolean | null;
-  createdAt: string;
-  updatedAt: string;
+  quotas: ListBillingProducts200ItemsItemQuotas;
 };
 
 export type ListBillingProducts200 = {
   items: ListBillingProducts200ItemsItem[];
 };
 
-export type ListBillingProducts502ErrorCode =
-  (typeof ListBillingProducts502ErrorCode)[keyof typeof ListBillingProducts502ErrorCode];
+export type ListBillingProducts500ErrorCode =
+  (typeof ListBillingProducts500ErrorCode)[keyof typeof ListBillingProducts500ErrorCode];
 
-export const ListBillingProducts502ErrorCode = {
-  dodo_payments_unavailable: "dodo_payments_unavailable",
+export const ListBillingProducts500ErrorCode = {
+  billing_products_unavailable: "billing_products_unavailable",
 } as const;
 
-export type ListBillingProducts502Error = {
-  code: ListBillingProducts502ErrorCode;
+export type ListBillingProducts500Error = {
+  code: ListBillingProducts500ErrorCode;
   message: string;
 };
 
-export type ListBillingProducts502 = {
-  error: ListBillingProducts502Error;
+export type ListBillingProducts500 = {
+  error: ListBillingProducts500Error;
 };

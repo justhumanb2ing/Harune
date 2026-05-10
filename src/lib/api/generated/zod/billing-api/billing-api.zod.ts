@@ -8,32 +8,25 @@
 import * as zod from "zod";
 
 /**
- * Returns the products registered in DodoPayments for frontend display.
-
-Rules:
-- This route is public and does not require a session
-- The server reads DodoPayments with the server-side API key only
-- Products are returned with a stable `slug` field
-- `slug` is derived from `metadata.slug` when present, otherwise the product id is used
-- The response is `Cache-Control: no-store`
- * @summary List DodoPayments products
+ * Returns the locally configured billing plans from `plans`. The route is public and does not require a session. Only rows with monthly pricing and a monthly Dodo product mapping are returned. The response is `Cache-Control: no-store`.
+ * @summary List billing plans
  */
 export const ListBillingProductsResponse = zod.object({
   items: zod.array(
     zod.object({
+      id: zod.string(),
       slug: zod.string(),
       productId: zod.string(),
-      businessId: zod.string(),
       name: zod.string().nullable(),
-      description: zod.string().nullable(),
-      image: zod.string().nullable(),
-      isRecurring: zod.boolean(),
-      currency: zod.string().nullable(),
       price: zod.number().nullable(),
-      taxCategory: zod.string(),
-      taxInclusive: zod.boolean().nullable(),
-      createdAt: zod.iso.datetime({ offset: true }),
-      updatedAt: zod.iso.datetime({ offset: true }),
+      default: zod.boolean(),
+      quotas: zod
+        .object({
+          permiumSupport: zod.boolean(),
+          monthlyImages: zod.number(),
+          somethingElse: zod.string(),
+        })
+        .nullable(),
     })
   ),
 });

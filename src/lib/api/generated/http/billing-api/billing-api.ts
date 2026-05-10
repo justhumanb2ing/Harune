@@ -19,10 +19,7 @@ import type {
 } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import { orvalMutator } from "../../../orval-mutator";
-import type {
-  ListBillingProducts200,
-  ListBillingProducts502,
-} from "../schemas/billing-api";
+import type { ListBillingProducts200, ListBillingProducts500 } from "../schemas/billing-api";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -31,15 +28,15 @@ export type listBillingProductsResponse200 = {
   status: 200;
 };
 
-export type listBillingProductsResponse502 = {
-  data: ListBillingProducts502;
-  status: 502;
+export type listBillingProductsResponse500 = {
+  data: ListBillingProducts500;
+  status: 500;
 };
 
 export type listBillingProductsResponseSuccess = listBillingProductsResponse200 & {
   headers: Headers;
 };
-export type listBillingProductsResponseError = listBillingProductsResponse502 & {
+export type listBillingProductsResponseError = listBillingProductsResponse500 & {
   headers: Headers;
 };
 
@@ -52,15 +49,8 @@ export const getListBillingProductsUrl = () => {
 };
 
 /**
- * Returns the products registered in DodoPayments for frontend display.
-
-Rules:
-- This route is public and does not require a session
-- The server reads DodoPayments with the server-side API key only
-- Products are returned with a stable `slug` field
-- `slug` is derived from `metadata.slug` when present, otherwise the product id is used
-- The response is `Cache-Control: no-store`
- * @summary List DodoPayments products
+ * Returns the locally configured billing plans from `plans`. The route is public and does not require a session. Only rows with monthly pricing and a monthly Dodo product mapping are returned. The response is `Cache-Control: no-store`.
+ * @summary List billing plans
  */
 export const listBillingProducts = async (
   options?: RequestInit
@@ -77,7 +67,7 @@ export const getListBillingProductsQueryKey = () => {
 
 export const getListBillingProductsQueryOptions = <
   TData = Awaited<ReturnType<typeof listBillingProducts>>,
-  TError = ListBillingProducts502,
+  TError = ListBillingProducts500,
 >(options?: {
   query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listBillingProducts>>, TError, TData>>;
   request?: SecondParameter<typeof orvalMutator>;
@@ -99,11 +89,11 @@ export const getListBillingProductsQueryOptions = <
 export type ListBillingProductsQueryResult = NonNullable<
   Awaited<ReturnType<typeof listBillingProducts>>
 >;
-export type ListBillingProductsQueryError = ListBillingProducts502;
+export type ListBillingProductsQueryError = ListBillingProducts500;
 
 export function useListBillingProducts<
   TData = Awaited<ReturnType<typeof listBillingProducts>>,
-  TError = ListBillingProducts502,
+  TError = ListBillingProducts500,
 >(
   options: {
     query: Partial<
@@ -123,7 +113,7 @@ export function useListBillingProducts<
 ): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 export function useListBillingProducts<
   TData = Awaited<ReturnType<typeof listBillingProducts>>,
-  TError = ListBillingProducts502,
+  TError = ListBillingProducts500,
 >(
   options?: {
     query?: Partial<
@@ -143,7 +133,7 @@ export function useListBillingProducts<
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 export function useListBillingProducts<
   TData = Awaited<ReturnType<typeof listBillingProducts>>,
-  TError = ListBillingProducts502,
+  TError = ListBillingProducts500,
 >(
   options?: {
     query?: Partial<
@@ -154,12 +144,12 @@ export function useListBillingProducts<
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
- * @summary List DodoPayments products
+ * @summary List billing plans
  */
 
 export function useListBillingProducts<
   TData = Awaited<ReturnType<typeof listBillingProducts>>,
-  TError = ListBillingProducts502,
+  TError = ListBillingProducts500,
 >(
   options?: {
     query?: Partial<

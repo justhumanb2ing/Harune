@@ -3,10 +3,11 @@ import "server-only";
 import { cookies } from "next/headers";
 import { ApiError } from "@/lib/api/error";
 import { getMeAnalytics } from "@/lib/api/generated/http/me-api/me-api";
+import { buildAuthSessionCookieHeader } from "@/lib/auth/request-cookies";
 
 export async function getServerMeAnalytics() {
   const requestCookies = await cookies();
-  const cookieHeader = requestCookies.toString();
+  const cookieHeader = buildAuthSessionCookieHeader(requestCookies);
 
   if (!cookieHeader) {
     return null;

@@ -10,6 +10,7 @@ import type {
   GetProfileByHandle200Page,
   GetProfileByHandle200Viewer,
 } from "@/lib/api/generated/http/schemas/profile-api";
+import { buildAuthSessionCookieHeader } from "@/lib/auth/request-cookies";
 import { appConfig } from "@/lib/config";
 import { toProfilePageEditorDataFromPublicPage } from "@/lib/profile/public-profile-page";
 import { absoluteUrl, createPageMetadata } from "@/lib/seo";
@@ -48,7 +49,7 @@ const toPublicProfilePageData = (data: Awaited<ReturnType<typeof getProfileByHan
 
 const getPublicProfilePage = async (handle: string) => {
   const requestCookies = await cookies();
-  const cookieHeader = requestCookies.toString();
+  const cookieHeader = buildAuthSessionCookieHeader(requestCookies);
 
   try {
     return toPublicProfilePageData(

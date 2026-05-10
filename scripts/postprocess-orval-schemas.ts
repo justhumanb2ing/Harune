@@ -176,13 +176,18 @@ const rewriteClientFile = async (apiModule: string, importedSchemas: string[]) =
     .trimEnd();
 
   const mutatorImportLine = 'import { orvalMutator } from "../../../orval-mutator";';
+  const apiBaseImportLine = 'import { getAppApiBaseURL } from "../../../base-url";';
 
   if (!withoutLeafImports.includes(mutatorImportLine)) {
     throw new Error(`Unable to locate mutator import in ${clientFilePath}`);
   }
 
   const rewritten = withoutLeafImports
-    .replace(`${mutatorImportLine}\n`, `${mutatorImportLine}\n${schemaImportLine}\n`)
+    .replace(
+      `${mutatorImportLine}\n`,
+      `${mutatorImportLine}\n${apiBaseImportLine}\n${schemaImportLine}\n`
+    )
+    .replaceAll("process.env.NEXT_PUBLIC_API_BASE_URL", "getAppApiBaseURL()")
     .replace(
       / {2}Object\.entries\(params \|\| {}\)\.forEach\(\(\[key, value\]\) => \{\n([\s\S]*?) {2}\}\);\n/g,
       "  for (const [key, value] of Object.entries(params || {})) {\n$1  }\n"

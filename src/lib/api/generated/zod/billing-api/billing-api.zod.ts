@@ -8,7 +8,7 @@
 import * as zod from "zod";
 
 /**
- * Returns the locally configured billing plans from `plans`. The route is public and does not require a session. Only rows with monthly pricing and a monthly Dodo product mapping are returned. The response is `Cache-Control: no-store`.
+ * Returns the locally configured billing plans from `plans`, including the free plan. The route is public and does not require a session. Rows without monthly pricing keep `price` null and fall back to the plan id for `productId`. The response is `Cache-Control: no-store`.
  * @summary List billing plans
  */
 export const ListBillingProductsResponse = zod.object({
@@ -16,9 +16,11 @@ export const ListBillingProductsResponse = zod.object({
     zod.object({
       id: zod.string(),
       slug: zod.string(),
-      productId: zod.string(),
+      productId: zod
+        .string()
+        .describe("Dodo product id for paid plans, or the plan id for free plans."),
       name: zod.string().nullable(),
-      price: zod.number().nullable(),
+      price: zod.number().nullable().describe("Monthly price in cents, or null for free plans."),
       default: zod.boolean(),
       quotas: zod
         .object({

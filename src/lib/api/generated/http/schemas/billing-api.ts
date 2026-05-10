@@ -18,10 +18,14 @@ export type ListBillingProducts200ItemsItemQuotas = {
 export type ListBillingProducts200ItemsItem = {
   id: string;
   slug: string;
+  /** Dodo product id for paid plans, or the plan id for free plans. */
   productId: string;
   /** @nullable */
   name: string | null;
-  /** @nullable */
+  /**
+   * Monthly price in cents, or null for free plans.
+   * @nullable
+   */
   price: number | null;
   default: boolean;
   /** @nullable */

@@ -18,6 +18,7 @@ import type {
   UseQueryResult,
 } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
+import { getAppApiBaseURL } from "../../../base-url";
 import { orvalMutator } from "../../../orval-mutator";
 import type { ListBillingProducts200, ListBillingProducts500 } from "../schemas/billing-api";
 
@@ -45,11 +46,11 @@ export type listBillingProductsResponse =
   | listBillingProductsResponseError;
 
 export const getListBillingProductsUrl = () => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/billing/products`;
+  return `${getAppApiBaseURL()}/billing/products`;
 };
 
 /**
- * Returns the locally configured billing plans from `plans`. The route is public and does not require a session. Only rows with monthly pricing and a monthly Dodo product mapping are returned. The response is `Cache-Control: no-store`.
+ * Returns the locally configured billing plans from `plans`, including the free plan. The route is public and does not require a session. Rows without monthly pricing keep `price` null and fall back to the plan id for `productId`. The response is `Cache-Control: no-store`.
  * @summary List billing plans
  */
 export const listBillingProducts = async (
@@ -62,7 +63,7 @@ export const listBillingProducts = async (
 };
 
 export const getListBillingProductsQueryKey = () => {
-  return [`${process.env.NEXT_PUBLIC_API_BASE_URL}/billing/products`] as const;
+  return [`${getAppApiBaseURL()}/billing/products`] as const;
 };
 
 export const getListBillingProductsQueryOptions = <

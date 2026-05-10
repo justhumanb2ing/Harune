@@ -21,6 +21,7 @@ import type {
   UseQueryResult,
 } from "@tanstack/react-query";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { getAppApiBaseURL } from "../../../base-url";
 import { orvalMutator } from "../../../orval-mutator";
 import type {
   CheckHandleAvailability200,
@@ -79,8 +80,8 @@ export const getCheckHandleAvailabilityUrl = (params: CheckHandleAvailabilityPar
   const stringifiedParams = normalizedParams.toString();
 
   return stringifiedParams.length > 0
-    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/handle/check?${stringifiedParams}`
-    : `${process.env.NEXT_PUBLIC_API_BASE_URL}/handle/check`;
+    ? `${getAppApiBaseURL()}/handle/check?${stringifiedParams}`
+    : `${getAppApiBaseURL()}/handle/check`;
 };
 
 /**
@@ -98,10 +99,7 @@ export const checkHandleAvailability = async (
 };
 
 export const getCheckHandleAvailabilityQueryKey = (params?: CheckHandleAvailabilityParams) => {
-  return [
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/handle/check`,
-    ...(params ? [params] : []),
-  ] as const;
+  return [`${getAppApiBaseURL()}/handle/check`, ...(params ? [params] : [])] as const;
 };
 
 export const getCheckHandleAvailabilityQueryOptions = <
@@ -265,7 +263,7 @@ export type updateHandleResponseError = (
 export type updateHandleResponse = updateHandleResponseSuccess | updateHandleResponseError;
 
 export const getUpdateHandleUrl = () => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/handle`;
+  return `${getAppApiBaseURL()}/handle`;
 };
 
 /**

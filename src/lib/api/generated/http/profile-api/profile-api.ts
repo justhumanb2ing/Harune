@@ -21,6 +21,7 @@ import type {
   UseQueryResult,
 } from "@tanstack/react-query";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { getAppApiBaseURL } from "../../../base-url";
 import { orvalMutator } from "../../../orval-mutator";
 import type {
   DeleteProfileImage200,
@@ -105,7 +106,7 @@ export type updateProfilePageResponse =
   | updateProfilePageResponseError;
 
 export const getUpdateProfilePageUrl = () => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/me`;
+  return `${getAppApiBaseURL()}/profile/me`;
 };
 
 /**
@@ -239,7 +240,7 @@ export type uploadProfileImageResponse =
   | uploadProfileImageResponseError;
 
 export const getUploadProfileImageUrl = () => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/image`;
+  return `${getAppApiBaseURL()}/profile/image`;
 };
 
 /**
@@ -387,7 +388,7 @@ export type finalizeProfileImageResponse =
   | finalizeProfileImageResponseError;
 
 export const getFinalizeProfileImageUrl = () => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/image`;
+  return `${getAppApiBaseURL()}/profile/image`;
 };
 
 /**
@@ -545,7 +546,7 @@ export type deleteProfileImageResponse =
   | deleteProfileImageResponseError;
 
 export const getDeleteProfileImageUrl = () => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/image`;
+  return `${getAppApiBaseURL()}/profile/image`;
 };
 
 /**
@@ -696,7 +697,7 @@ export type uploadProfileBentoMediaResponse =
   | uploadProfileBentoMediaResponseError;
 
 export const getUploadProfileBentoMediaUrl = () => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/bento/media/upload`;
+  return `${getAppApiBaseURL()}/profile/bento/media/upload`;
 };
 
 /**
@@ -828,7 +829,7 @@ export type listProfilePagesResponse =
   | listProfilePagesResponseError;
 
 export const getListProfilePagesUrl = () => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/pages`;
+  return `${getAppApiBaseURL()}/profile/pages`;
 };
 
 /**
@@ -845,7 +846,7 @@ export const listProfilePages = async (
 };
 
 export const getListProfilePagesQueryKey = () => {
-  return [`${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/pages`] as const;
+  return [`${getAppApiBaseURL()}/profile/pages`] as const;
 };
 
 export const getListProfilePagesQueryOptions = <
@@ -971,7 +972,7 @@ export type getProfileByHandleResponse =
   | getProfileByHandleResponseError;
 
 export const getGetProfileByHandleUrl = (handle: string) => {
-  return `${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/${handle}`;
+  return `${getAppApiBaseURL()}/profile/${handle}`;
 };
 
 /**
@@ -989,7 +990,7 @@ export const getProfileByHandle = async (
 };
 
 export const getGetProfileByHandleQueryKey = (handle: string) => {
-  return [`${process.env.NEXT_PUBLIC_API_BASE_URL}/profile/${handle}`] as const;
+  return [`${getAppApiBaseURL()}/profile/${handle}`] as const;
 };
 
 export const getGetProfileByHandleQueryOptions = <

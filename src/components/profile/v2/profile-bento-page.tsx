@@ -191,7 +191,7 @@ export async function ProfileBentoPage({
       />
       <ProfileBentoReadonlyGrid bento={bento as ProfileBentoItem[]} />
       <ProfileBentoFooterAction
-        className="fixed bottom-6 left-6 z-30 w-auto justify-start p-0"
+        className="w-full py-16 xl:fixed xl:bottom-12 xl:left-12 xl:z-30 xl:w-auto xl:justify-start xl:p-0"
         viewerProfilePage={viewerProfilePage}
       />
     </section>

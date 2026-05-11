@@ -10,6 +10,7 @@ import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  InvalidateOptions,
   MutationFunction,
   QueryClient,
   QueryFunction,
@@ -19,10 +20,12 @@ import type {
   UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
+  UseSuspenseQueryOptions,
+  UseSuspenseQueryResult,
 } from "@tanstack/react-query";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { getAppApiBaseURL } from "../../../base-url";
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { orvalMutator } from "../../../orval-mutator";
+import { getAppApiBaseURL } from "../../../base-url";
 import type {
   DeleteProfileImage200,
   DeleteProfileImage400,
@@ -942,6 +945,156 @@ export function useListProfilePages<
   return { ...query, queryKey: queryOptions.queryKey };
 }
 
+/**
+ * @summary List profile page rows
+ */
+export const prefetchListProfilePagesQuery = async <
+  TData = Awaited<ReturnType<typeof listProfilePages>>,
+  TError = ListProfilePages500,
+>(
+  queryClient: QueryClient,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof listProfilePages>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalMutator>;
+  }
+): Promise<QueryClient> => {
+  const queryOptions = getListProfilePagesQueryOptions(options);
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+};
+
+/**
+ * @summary List profile page rows
+ */
+export const invalidateListProfilePages = async (
+  queryClient: QueryClient,
+  options?: InvalidateOptions
+): Promise<QueryClient> => {
+  await queryClient.invalidateQueries({ queryKey: getListProfilePagesQueryKey() }, options);
+
+  return queryClient;
+};
+
+/**
+ * @summary List profile page rows
+ */
+export const useSetListProfilePagesQueryData = () => {
+  const queryClient = useQueryClient();
+  return (
+    updater:
+      | Awaited<ReturnType<typeof listProfilePages>>
+      | undefined
+      | ((
+          old: Awaited<ReturnType<typeof listProfilePages>> | undefined
+        ) => Awaited<ReturnType<typeof listProfilePages>> | undefined)
+  ) => {
+    queryClient.setQueryData(getListProfilePagesQueryKey(), updater);
+  };
+};
+
+/**
+ * @summary List profile page rows
+ */
+export const useGetListProfilePagesQueryData = () => {
+  const queryClient = useQueryClient();
+  return () =>
+    queryClient.getQueryData<Awaited<ReturnType<typeof listProfilePages>>>(
+      getListProfilePagesQueryKey()
+    );
+};
+
+export const getListProfilePagesSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof listProfilePages>>,
+  TError = ListProfilePages500,
+>(options?: {
+  query?: Partial<
+    UseSuspenseQueryOptions<Awaited<ReturnType<typeof listProfilePages>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof orvalMutator>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListProfilePagesQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listProfilePages>>> = ({ signal }) =>
+    listProfilePages({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof listProfilePages>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ListProfilePagesSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listProfilePages>>
+>;
+export type ListProfilePagesSuspenseQueryError = ListProfilePages500;
+
+export function useListProfilePagesSuspense<
+  TData = Awaited<ReturnType<typeof listProfilePages>>,
+  TError = ListProfilePages500,
+>(
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof listProfilePages>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useListProfilePagesSuspense<
+  TData = Awaited<ReturnType<typeof listProfilePages>>,
+  TError = ListProfilePages500,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof listProfilePages>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useListProfilePagesSuspense<
+  TData = Awaited<ReturnType<typeof listProfilePages>>,
+  TError = ListProfilePages500,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof listProfilePages>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary List profile page rows
+ */
+
+export function useListProfilePagesSuspense<
+  TData = Awaited<ReturnType<typeof listProfilePages>>,
+  TError = ListProfilePages500,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof listProfilePages>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListProfilePagesSuspenseQueryOptions(options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
 export type getProfileByHandleResponse200 = {
   data: GetProfileByHandle200;
   status: 200;
@@ -1093,6 +1246,166 @@ export function useGetProfileByHandle<
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;
   };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get a profile by handle
+ */
+export const prefetchGetProfileByHandleQuery = async <
+  TData = Awaited<ReturnType<typeof getProfileByHandle>>,
+  TError = GetProfileByHandle404 | GetProfileByHandle500,
+>(
+  queryClient: QueryClient,
+  handle: string,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getProfileByHandle>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalMutator>;
+  }
+): Promise<QueryClient> => {
+  const queryOptions = getGetProfileByHandleQueryOptions(handle, options);
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+};
+
+/**
+ * @summary Get a profile by handle
+ */
+export const invalidateGetProfileByHandle = async (
+  queryClient: QueryClient,
+  handle: string,
+  options?: InvalidateOptions
+): Promise<QueryClient> => {
+  await queryClient.invalidateQueries({ queryKey: getGetProfileByHandleQueryKey(handle) }, options);
+
+  return queryClient;
+};
+
+/**
+ * @summary Get a profile by handle
+ */
+export const useSetGetProfileByHandleQueryData = () => {
+  const queryClient = useQueryClient();
+  return (
+    handle: string,
+    updater:
+      | Awaited<ReturnType<typeof getProfileByHandle>>
+      | undefined
+      | ((
+          old: Awaited<ReturnType<typeof getProfileByHandle>> | undefined
+        ) => Awaited<ReturnType<typeof getProfileByHandle>> | undefined)
+  ) => {
+    queryClient.setQueryData(getGetProfileByHandleQueryKey(handle), updater);
+  };
+};
+
+/**
+ * @summary Get a profile by handle
+ */
+export const useGetGetProfileByHandleQueryData = () => {
+  const queryClient = useQueryClient();
+  return (handle: string) =>
+    queryClient.getQueryData<Awaited<ReturnType<typeof getProfileByHandle>>>(
+      getGetProfileByHandleQueryKey(handle)
+    );
+};
+
+export const getGetProfileByHandleSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getProfileByHandle>>,
+  TError = GetProfileByHandle404 | GetProfileByHandle500,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getProfileByHandle>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetProfileByHandleQueryKey(handle);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getProfileByHandle>>> = ({ signal }) =>
+    getProfileByHandle(handle, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getProfileByHandle>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetProfileByHandleSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getProfileByHandle>>
+>;
+export type GetProfileByHandleSuspenseQueryError = GetProfileByHandle404 | GetProfileByHandle500;
+
+export function useGetProfileByHandleSuspense<
+  TData = Awaited<ReturnType<typeof getProfileByHandle>>,
+  TError = GetProfileByHandle404 | GetProfileByHandle500,
+>(
+  handle: string,
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getProfileByHandle>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetProfileByHandleSuspense<
+  TData = Awaited<ReturnType<typeof getProfileByHandle>>,
+  TError = GetProfileByHandle404 | GetProfileByHandle500,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getProfileByHandle>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetProfileByHandleSuspense<
+  TData = Awaited<ReturnType<typeof getProfileByHandle>>,
+  TError = GetProfileByHandle404 | GetProfileByHandle500,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getProfileByHandle>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Get a profile by handle
+ */
+
+export function useGetProfileByHandleSuspense<
+  TData = Awaited<ReturnType<typeof getProfileByHandle>>,
+  TError = GetProfileByHandle404 | GetProfileByHandle500,
+>(
+  handle: string,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getProfileByHandle>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetProfileByHandleSuspenseQueryOptions(handle, options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return { ...query, queryKey: queryOptions.queryKey };
 }

@@ -10,16 +10,19 @@ import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  InvalidateOptions,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
   UseQueryOptions,
   UseQueryResult,
+  UseSuspenseQueryOptions,
+  UseSuspenseQueryResult,
 } from "@tanstack/react-query";
-import { useQuery } from "@tanstack/react-query";
-import { getAppApiBaseURL } from "../../../base-url";
+import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { orvalMutator } from "../../../orval-mutator";
+import { getAppApiBaseURL } from "../../../base-url";
 import type {
   GetMe200,
   GetMe401,
@@ -173,6 +176,141 @@ export function useGetMe<
   return { ...query, queryKey: queryOptions.queryKey };
 }
 
+/**
+ * @summary Get current user app context
+ */
+export const prefetchGetMeQuery = async <
+  TData = Awaited<ReturnType<typeof getMe>>,
+  TError = GetMe401 | GetMe404 | GetMe500,
+>(
+  queryClient: QueryClient,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalMutator>;
+  }
+): Promise<QueryClient> => {
+  const queryOptions = getGetMeQueryOptions(options);
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+};
+
+/**
+ * @summary Get current user app context
+ */
+export const invalidateGetMe = async (
+  queryClient: QueryClient,
+  options?: InvalidateOptions
+): Promise<QueryClient> => {
+  await queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() }, options);
+
+  return queryClient;
+};
+
+/**
+ * @summary Get current user app context
+ */
+export const useSetGetMeQueryData = () => {
+  const queryClient = useQueryClient();
+  return (
+    updater:
+      | Awaited<ReturnType<typeof getMe>>
+      | undefined
+      | ((
+          old: Awaited<ReturnType<typeof getMe>> | undefined
+        ) => Awaited<ReturnType<typeof getMe>> | undefined)
+  ) => {
+    queryClient.setQueryData(getGetMeQueryKey(), updater);
+  };
+};
+
+/**
+ * @summary Get current user app context
+ */
+export const useGetGetMeQueryData = () => {
+  const queryClient = useQueryClient();
+  return () => queryClient.getQueryData<Awaited<ReturnType<typeof getMe>>>(getGetMeQueryKey());
+};
+
+export const getGetMeSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMe>>,
+  TError = GetMe401 | GetMe404 | GetMe500,
+>(options?: {
+  query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>>;
+  request?: SecondParameter<typeof orvalMutator>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMeQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMe>>> = ({ signal }) =>
+    getMe({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getMe>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetMeSuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof getMe>>>;
+export type GetMeSuspenseQueryError = GetMe401 | GetMe404 | GetMe500;
+
+export function useGetMeSuspense<
+  TData = Awaited<ReturnType<typeof getMe>>,
+  TError = GetMe401 | GetMe404 | GetMe500,
+>(
+  options: {
+    query: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetMeSuspense<
+  TData = Awaited<ReturnType<typeof getMe>>,
+  TError = GetMe401 | GetMe404 | GetMe500,
+>(
+  options?: {
+    query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetMeSuspense<
+  TData = Awaited<ReturnType<typeof getMe>>,
+  TError = GetMe401 | GetMe404 | GetMe500,
+>(
+  options?: {
+    query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Get current user app context
+ */
+
+export function useGetMeSuspense<
+  TData = Awaited<ReturnType<typeof getMe>>,
+  TError = GetMe401 | GetMe404 | GetMe500,
+>(
+  options?: {
+    query?: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetMeSuspenseQueryOptions(options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
 export type getMeAnalyticsResponse200 = {
   data: GetMeAnalytics200;
   status: 200;
@@ -308,6 +446,156 @@ export function useGetMeAnalytics<
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;
   };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get current user analytics summary
+ */
+export const prefetchGetMeAnalyticsQuery = async <
+  TData = Awaited<ReturnType<typeof getMeAnalytics>>,
+  TError = GetMeAnalytics401 | GetMeAnalytics500,
+>(
+  queryClient: QueryClient,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMeAnalytics>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalMutator>;
+  }
+): Promise<QueryClient> => {
+  const queryOptions = getGetMeAnalyticsQueryOptions(options);
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+};
+
+/**
+ * @summary Get current user analytics summary
+ */
+export const invalidateGetMeAnalytics = async (
+  queryClient: QueryClient,
+  options?: InvalidateOptions
+): Promise<QueryClient> => {
+  await queryClient.invalidateQueries({ queryKey: getGetMeAnalyticsQueryKey() }, options);
+
+  return queryClient;
+};
+
+/**
+ * @summary Get current user analytics summary
+ */
+export const useSetGetMeAnalyticsQueryData = () => {
+  const queryClient = useQueryClient();
+  return (
+    updater:
+      | Awaited<ReturnType<typeof getMeAnalytics>>
+      | undefined
+      | ((
+          old: Awaited<ReturnType<typeof getMeAnalytics>> | undefined
+        ) => Awaited<ReturnType<typeof getMeAnalytics>> | undefined)
+  ) => {
+    queryClient.setQueryData(getGetMeAnalyticsQueryKey(), updater);
+  };
+};
+
+/**
+ * @summary Get current user analytics summary
+ */
+export const useGetGetMeAnalyticsQueryData = () => {
+  const queryClient = useQueryClient();
+  return () =>
+    queryClient.getQueryData<Awaited<ReturnType<typeof getMeAnalytics>>>(
+      getGetMeAnalyticsQueryKey()
+    );
+};
+
+export const getGetMeAnalyticsSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMeAnalytics>>,
+  TError = GetMeAnalytics401 | GetMeAnalytics500,
+>(options?: {
+  query?: Partial<
+    UseSuspenseQueryOptions<Awaited<ReturnType<typeof getMeAnalytics>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof orvalMutator>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMeAnalyticsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeAnalytics>>> = ({ signal }) =>
+    getMeAnalytics({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getMeAnalytics>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetMeAnalyticsSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMeAnalytics>>
+>;
+export type GetMeAnalyticsSuspenseQueryError = GetMeAnalytics401 | GetMeAnalytics500;
+
+export function useGetMeAnalyticsSuspense<
+  TData = Awaited<ReturnType<typeof getMeAnalytics>>,
+  TError = GetMeAnalytics401 | GetMeAnalytics500,
+>(
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getMeAnalytics>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetMeAnalyticsSuspense<
+  TData = Awaited<ReturnType<typeof getMeAnalytics>>,
+  TError = GetMeAnalytics401 | GetMeAnalytics500,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getMeAnalytics>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetMeAnalyticsSuspense<
+  TData = Awaited<ReturnType<typeof getMeAnalytics>>,
+  TError = GetMeAnalytics401 | GetMeAnalytics500,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getMeAnalytics>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Get current user analytics summary
+ */
+
+export function useGetMeAnalyticsSuspense<
+  TData = Awaited<ReturnType<typeof getMeAnalytics>>,
+  TError = GetMeAnalytics401 | GetMeAnalytics500,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getMeAnalytics>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetMeAnalyticsSuspenseQueryOptions(options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return { ...query, queryKey: queryOptions.queryKey };
 }

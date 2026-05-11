@@ -10,16 +10,19 @@ import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  InvalidateOptions,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
   UseQueryOptions,
   UseQueryResult,
+  UseSuspenseQueryOptions,
+  UseSuspenseQueryResult,
 } from "@tanstack/react-query";
-import { useQuery } from "@tanstack/react-query";
-import { getAppApiBaseURL } from "../../../base-url";
+import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { orvalMutator } from "../../../orval-mutator";
+import { getAppApiBaseURL } from "../../../base-url";
 import type {
   GetMetadata200,
   GetMetadata400,
@@ -204,6 +207,166 @@ export function useGetMetadata<
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;
   };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Fetch metadata for a URL
+ */
+export const prefetchGetMetadataQuery = async <
+  TData = Awaited<ReturnType<typeof getMetadata>>,
+  TError = GetMetadata400 | GetMetadata404 | GetMetadata500 | GetMetadata502,
+>(
+  queryClient: QueryClient,
+  params: GetMetadataParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getMetadata>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalMutator>;
+  }
+): Promise<QueryClient> => {
+  const queryOptions = getGetMetadataQueryOptions(params, options);
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+};
+
+/**
+ * @summary Fetch metadata for a URL
+ */
+export const invalidateGetMetadata = async (
+  queryClient: QueryClient,
+  params: GetMetadataParams,
+  options?: InvalidateOptions
+): Promise<QueryClient> => {
+  await queryClient.invalidateQueries({ queryKey: getGetMetadataQueryKey(params) }, options);
+
+  return queryClient;
+};
+
+/**
+ * @summary Fetch metadata for a URL
+ */
+export const useSetGetMetadataQueryData = () => {
+  const queryClient = useQueryClient();
+  return (
+    params: GetMetadataParams,
+    updater:
+      | Awaited<ReturnType<typeof getMetadata>>
+      | undefined
+      | ((
+          old: Awaited<ReturnType<typeof getMetadata>> | undefined
+        ) => Awaited<ReturnType<typeof getMetadata>> | undefined)
+  ) => {
+    queryClient.setQueryData(getGetMetadataQueryKey(params), updater);
+  };
+};
+
+/**
+ * @summary Fetch metadata for a URL
+ */
+export const useGetGetMetadataQueryData = () => {
+  const queryClient = useQueryClient();
+  return (params: GetMetadataParams) =>
+    queryClient.getQueryData<Awaited<ReturnType<typeof getMetadata>>>(
+      getGetMetadataQueryKey(params)
+    );
+};
+
+export const getGetMetadataSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMetadata>>,
+  TError = GetMetadata400 | GetMetadata404 | GetMetadata500 | GetMetadata502,
+>(
+  params: GetMetadataParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getMetadata>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMetadataQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMetadata>>> = ({ signal }) =>
+    getMetadata(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof getMetadata>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetMetadataSuspenseQueryResult = NonNullable<Awaited<ReturnType<typeof getMetadata>>>;
+export type GetMetadataSuspenseQueryError =
+  | GetMetadata400
+  | GetMetadata404
+  | GetMetadata500
+  | GetMetadata502;
+
+export function useGetMetadataSuspense<
+  TData = Awaited<ReturnType<typeof getMetadata>>,
+  TError = GetMetadata400 | GetMetadata404 | GetMetadata500 | GetMetadata502,
+>(
+  params: GetMetadataParams,
+  options: {
+    query: Partial<UseSuspenseQueryOptions<Awaited<ReturnType<typeof getMetadata>>, TError, TData>>;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetMetadataSuspense<
+  TData = Awaited<ReturnType<typeof getMetadata>>,
+  TError = GetMetadata400 | GetMetadata404 | GetMetadata500 | GetMetadata502,
+>(
+  params: GetMetadataParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getMetadata>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetMetadataSuspense<
+  TData = Awaited<ReturnType<typeof getMetadata>>,
+  TError = GetMetadata400 | GetMetadata404 | GetMetadata500 | GetMetadata502,
+>(
+  params: GetMetadataParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getMetadata>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Fetch metadata for a URL
+ */
+
+export function useGetMetadataSuspense<
+  TData = Awaited<ReturnType<typeof getMetadata>>,
+  TError = GetMetadata400 | GetMetadata404 | GetMetadata500 | GetMetadata502,
+>(
+  params: GetMetadataParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof getMetadata>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetMetadataSuspenseQueryOptions(params, options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return { ...query, queryKey: queryOptions.queryKey };
 }

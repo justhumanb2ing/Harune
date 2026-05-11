@@ -10,17 +10,23 @@ import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  InvalidateOptions,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
   UseQueryOptions,
   UseQueryResult,
+  UseSuspenseQueryOptions,
+  UseSuspenseQueryResult,
 } from "@tanstack/react-query";
-import { useQuery } from "@tanstack/react-query";
-import { getAppApiBaseURL } from "../../../base-url";
+import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { orvalMutator } from "../../../orval-mutator";
-import type { ListBillingProducts200, ListBillingProducts500 } from "../schemas/billing-api";
+import { getAppApiBaseURL } from "../../../base-url";
+import type {
+  ListBillingProducts200,
+  ListBillingProducts500,
+} from "../schemas/billing-api";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -165,6 +171,158 @@ export function useListBillingProducts<
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;
   };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List billing plans
+ */
+export const prefetchListBillingProductsQuery = async <
+  TData = Awaited<ReturnType<typeof listBillingProducts>>,
+  TError = ListBillingProducts500,
+>(
+  queryClient: QueryClient,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listBillingProducts>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  }
+): Promise<QueryClient> => {
+  const queryOptions = getListBillingProductsQueryOptions(options);
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+};
+
+/**
+ * @summary List billing plans
+ */
+export const invalidateListBillingProducts = async (
+  queryClient: QueryClient,
+  options?: InvalidateOptions
+): Promise<QueryClient> => {
+  await queryClient.invalidateQueries({ queryKey: getListBillingProductsQueryKey() }, options);
+
+  return queryClient;
+};
+
+/**
+ * @summary List billing plans
+ */
+export const useSetListBillingProductsQueryData = () => {
+  const queryClient = useQueryClient();
+  return (
+    updater:
+      | Awaited<ReturnType<typeof listBillingProducts>>
+      | undefined
+      | ((
+          old: Awaited<ReturnType<typeof listBillingProducts>> | undefined
+        ) => Awaited<ReturnType<typeof listBillingProducts>> | undefined)
+  ) => {
+    queryClient.setQueryData(getListBillingProductsQueryKey(), updater);
+  };
+};
+
+/**
+ * @summary List billing plans
+ */
+export const useGetListBillingProductsQueryData = () => {
+  const queryClient = useQueryClient();
+  return () =>
+    queryClient.getQueryData<Awaited<ReturnType<typeof listBillingProducts>>>(
+      getListBillingProductsQueryKey()
+    );
+};
+
+export const getListBillingProductsSuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof listBillingProducts>>,
+  TError = ListBillingProducts500,
+>(options?: {
+  query?: Partial<
+    UseSuspenseQueryOptions<Awaited<ReturnType<typeof listBillingProducts>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof orvalMutator>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListBillingProductsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listBillingProducts>>> = ({ signal }) =>
+    listBillingProducts({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof listBillingProducts>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ListBillingProductsSuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listBillingProducts>>
+>;
+export type ListBillingProductsSuspenseQueryError = ListBillingProducts500;
+
+export function useListBillingProductsSuspense<
+  TData = Awaited<ReturnType<typeof listBillingProducts>>,
+  TError = ListBillingProducts500,
+>(
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof listBillingProducts>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useListBillingProductsSuspense<
+  TData = Awaited<ReturnType<typeof listBillingProducts>>,
+  TError = ListBillingProducts500,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof listBillingProducts>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useListBillingProductsSuspense<
+  TData = Awaited<ReturnType<typeof listBillingProducts>>,
+  TError = ListBillingProducts500,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof listBillingProducts>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary List billing plans
+ */
+
+export function useListBillingProductsSuspense<
+  TData = Awaited<ReturnType<typeof listBillingProducts>>,
+  TError = ListBillingProducts500,
+>(
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof listBillingProducts>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getListBillingProductsSuspenseQueryOptions(options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return { ...query, queryKey: queryOptions.queryKey };
 }

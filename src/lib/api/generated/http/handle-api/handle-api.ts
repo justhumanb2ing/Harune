@@ -10,6 +10,7 @@ import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  InvalidateOptions,
   MutationFunction,
   QueryClient,
   QueryFunction,
@@ -19,10 +20,12 @@ import type {
   UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
+  UseSuspenseQueryOptions,
+  UseSuspenseQueryResult,
 } from "@tanstack/react-query";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { getAppApiBaseURL } from "../../../base-url";
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { orvalMutator } from "../../../orval-mutator";
+import { getAppApiBaseURL } from "../../../base-url";
 import type {
   CheckHandleAvailability200,
   CheckHandleAvailability400,
@@ -99,7 +102,10 @@ export const checkHandleAvailability = async (
 };
 
 export const getCheckHandleAvailabilityQueryKey = (params?: CheckHandleAvailabilityParams) => {
-  return [`${getAppApiBaseURL()}/handle/check`, ...(params ? [params] : [])] as const;
+  return [
+    `${getAppApiBaseURL()}/handle/check`,
+    ...(params ? [params] : []),
+  ] as const;
 };
 
 export const getCheckHandleAvailabilityQueryOptions = <
@@ -213,6 +219,174 @@ export function useCheckHandleAvailability<
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;
   };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Check handle availability
+ */
+export const prefetchCheckHandleAvailabilityQuery = async <
+  TData = Awaited<ReturnType<typeof checkHandleAvailability>>,
+  TError = CheckHandleAvailability400 | CheckHandleAvailability401,
+>(
+  queryClient: QueryClient,
+  params: CheckHandleAvailabilityParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof checkHandleAvailability>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  }
+): Promise<QueryClient> => {
+  const queryOptions = getCheckHandleAvailabilityQueryOptions(params, options);
+
+  await queryClient.prefetchQuery(queryOptions);
+
+  return queryClient;
+};
+
+/**
+ * @summary Check handle availability
+ */
+export const invalidateCheckHandleAvailability = async (
+  queryClient: QueryClient,
+  params: CheckHandleAvailabilityParams,
+  options?: InvalidateOptions
+): Promise<QueryClient> => {
+  await queryClient.invalidateQueries(
+    { queryKey: getCheckHandleAvailabilityQueryKey(params) },
+    options
+  );
+
+  return queryClient;
+};
+
+/**
+ * @summary Check handle availability
+ */
+export const useSetCheckHandleAvailabilityQueryData = () => {
+  const queryClient = useQueryClient();
+  return (
+    params: CheckHandleAvailabilityParams,
+    updater:
+      | Awaited<ReturnType<typeof checkHandleAvailability>>
+      | undefined
+      | ((
+          old: Awaited<ReturnType<typeof checkHandleAvailability>> | undefined
+        ) => Awaited<ReturnType<typeof checkHandleAvailability>> | undefined)
+  ) => {
+    queryClient.setQueryData(getCheckHandleAvailabilityQueryKey(params), updater);
+  };
+};
+
+/**
+ * @summary Check handle availability
+ */
+export const useGetCheckHandleAvailabilityQueryData = () => {
+  const queryClient = useQueryClient();
+  return (params: CheckHandleAvailabilityParams) =>
+    queryClient.getQueryData<Awaited<ReturnType<typeof checkHandleAvailability>>>(
+      getCheckHandleAvailabilityQueryKey(params)
+    );
+};
+
+export const getCheckHandleAvailabilitySuspenseQueryOptions = <
+  TData = Awaited<ReturnType<typeof checkHandleAvailability>>,
+  TError = CheckHandleAvailability400 | CheckHandleAvailability401,
+>(
+  params: CheckHandleAvailabilityParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof checkHandleAvailability>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getCheckHandleAvailabilityQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof checkHandleAvailability>>> = ({
+    signal,
+  }) => checkHandleAvailability(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseSuspenseQueryOptions<
+    Awaited<ReturnType<typeof checkHandleAvailability>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type CheckHandleAvailabilitySuspenseQueryResult = NonNullable<
+  Awaited<ReturnType<typeof checkHandleAvailability>>
+>;
+export type CheckHandleAvailabilitySuspenseQueryError =
+  | CheckHandleAvailability400
+  | CheckHandleAvailability401;
+
+export function useCheckHandleAvailabilitySuspense<
+  TData = Awaited<ReturnType<typeof checkHandleAvailability>>,
+  TError = CheckHandleAvailability400 | CheckHandleAvailability401,
+>(
+  params: CheckHandleAvailabilityParams,
+  options: {
+    query: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof checkHandleAvailability>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useCheckHandleAvailabilitySuspense<
+  TData = Awaited<ReturnType<typeof checkHandleAvailability>>,
+  TError = CheckHandleAvailability400 | CheckHandleAvailability401,
+>(
+  params: CheckHandleAvailabilityParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof checkHandleAvailability>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useCheckHandleAvailabilitySuspense<
+  TData = Awaited<ReturnType<typeof checkHandleAvailability>>,
+  TError = CheckHandleAvailability400 | CheckHandleAvailability401,
+>(
+  params: CheckHandleAvailabilityParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof checkHandleAvailability>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Check handle availability
+ */
+
+export function useCheckHandleAvailabilitySuspense<
+  TData = Awaited<ReturnType<typeof checkHandleAvailability>>,
+  TError = CheckHandleAvailability400 | CheckHandleAvailability401,
+>(
+  params: CheckHandleAvailabilityParams,
+  options?: {
+    query?: Partial<
+      UseSuspenseQueryOptions<Awaited<ReturnType<typeof checkHandleAvailability>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof orvalMutator>;
+  },
+  queryClient?: QueryClient
+): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getCheckHandleAvailabilitySuspenseQueryOptions(params, options);
+
+  const query = useSuspenseQuery(queryOptions, queryClient) as UseSuspenseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return { ...query, queryKey: queryOptions.queryKey };
 }

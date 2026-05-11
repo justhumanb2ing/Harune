@@ -32,6 +32,15 @@ export default defineConfig({
           name: "orvalMutator",
           path: "./src/lib/api/orval-mutator.ts",
         },
+        query: {
+          useQuery: true,
+          useSuspenseQuery: true,
+          useMutation: true,
+          usePrefetch: true,
+          useInvalidate: true,
+          useSetQueryData: true,
+          useGetQueryData: true,
+        }
       },
     },
   },

@@ -701,9 +701,9 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     } catch (error) {
       toast.error(
         error instanceof ApiError
-          ? getMetadataErrorMessage(error).replace(/\./g, "")
+          ? getMetadataErrorMessage(error)
           : error instanceof Error
-            ? error.message.replace(/\./g, "")
+            ? error.message
             : "Could not fetch link details"
       );
       removeLoadingLinkId(placeholderItem.id);

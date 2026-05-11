@@ -72,7 +72,7 @@ export function ProfileBentoOwnerSettingPopover() {
         const message =
           result.error.message || "Your session is no longer fresh Please sign in again and retry";
 
-        toast.error(message.replace(/\./g, ""));
+        toast.error(message);
         setIsDeletingAccount(false);
         return;
       }

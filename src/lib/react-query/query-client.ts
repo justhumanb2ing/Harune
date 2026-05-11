@@ -80,14 +80,15 @@ const makeQueryClient = () =>
   new QueryClient({
     mutationCache: new MutationCache({
       onError: (error, variables, _context, mutation) => {
-        const message = getToastMessage(mutation.meta?.toast?.error, {
+        const fallbackMessage = getToastMessage(mutation.meta?.toast?.error, {
           data: undefined,
           error,
           variables,
         });
+        const message = getErrorMessage(error, fallbackMessage);
 
         if (message) {
-          toast.error(message.replace(/\./g, ""));
+          toast.error(message);
         }
       },
       onSuccess: (data, variables, _context, mutation) => {

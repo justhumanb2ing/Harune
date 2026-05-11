@@ -127,7 +127,7 @@ function S3Uploader({
           uploadedUrls: [],
           error: errorMessage,
         });
-        toast.error(`Upload failed: ${errorMessage}`.replace(/\./g, ""));
+        toast.error(`Upload failed: ${errorMessage}`);
       }
     },
     [uploadFileToS3, onUpload, onChange, multiple]
@@ -136,12 +136,8 @@ function S3Uploader({
   const handleFileReject = useCallback(
     (file: File, message: string) => {
       onFileReject?.(file, message);
-      toast.error(message.replace(/\./g, ""), {
-        description:
-          `"${file.name.length > 20 ? `${file.name.slice(0, 20)}...` : file.name}" was rejected`.replace(
-            /\./g,
-            ""
-          ),
+      toast.error(message, {
+        description: `"${file.name.length > 20 ? `${file.name.slice(0, 20)}...` : file.name}" was rejected`,
       });
     },
     [onFileReject]

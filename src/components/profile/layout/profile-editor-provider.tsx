@@ -83,7 +83,7 @@ export function ProfilePageEditorProvider({
       return;
     }
 
-    toast.error(syncError.replace(/\./g, ""), { id: "profile-sync-error" });
+    toast.error(syncError, { id: "profile-sync-error" });
     store.actions.setSyncError(null);
   }, [store, syncError]);
 

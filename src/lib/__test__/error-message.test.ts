@@ -26,6 +26,10 @@ describe("getErrorMessage", () => {
     ).toBe("Failed to get upload URL");
   });
 
+  test("reads Error.message values", () => {
+    expect(getErrorMessage(new Error("Request failed"))).toBe("Request failed");
+  });
+
   test("falls back for unsupported values", () => {
     expect(getErrorMessage(undefined, "Fallback message")).toBe("Fallback message");
   });

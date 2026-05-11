@@ -88,9 +88,7 @@ export function useProfilePageEditor() {
     try {
       store.actions.selectImage(file);
     } catch (error) {
-      toast.error(
-        (error instanceof Error ? error.message : "Failed to select image").replace(/\./g, "")
-      );
+      toast.error(error instanceof Error ? error.message : "Failed to select image");
     }
   };
 
@@ -105,9 +103,7 @@ export function useProfilePageEditor() {
     try {
       store.actions.selectBackgroundImage(file);
     } catch (error) {
-      toast.error(
-        (error instanceof Error ? error.message : "Failed to select image").replace(/\./g, "")
-      );
+      toast.error(error instanceof Error ? error.message : "Failed to select image");
     }
   };
 

@@ -35,7 +35,7 @@ export function Footer() {
               </li>
               <li>
                 <AppEntryCtaButton
-                  next="/app"
+                  next="/"
                   size="sm"
                   variant="ghost"
                   className="inline-block text-sm text-muted-foreground! hover:text-primary! hover:bg-inherit"

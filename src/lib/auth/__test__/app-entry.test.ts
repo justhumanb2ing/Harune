@@ -25,17 +25,15 @@ const me: GetMe200 = {
 
 describe("app entry resolver", () => {
   test("redirects anonymous users to sign-in with a safe callback", () => {
-    expect(createSignInCallbackHref("/app?next=/create")).toBe("/sign-in?callbackUrl=%2F");
+    expect(createSignInCallbackHref("/")).toBe("/sign-in?callbackUrl=%2F");
   });
 
   test("routes logged-in users without a profile page to create", () => {
-    expect(resolveAppEntryHref({ next: "/app", profilePage: null })).toBe("/create");
+    expect(resolveAppEntryHref({ next: "/", profilePage: null })).toBe("/create");
   });
 
   test("maps app destinations to the owned handle", () => {
-    expect(resolveAppEntryHref({ next: "/app?from=landing", profilePage: me.profilePage })).toBe(
-      "/demo"
-    );
+    expect(resolveAppEntryHref({ next: "/", profilePage: me.profilePage })).toBe("/demo");
   });
 
   test("keeps analytics destinations intact", () => {

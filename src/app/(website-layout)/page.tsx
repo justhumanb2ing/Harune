@@ -30,7 +30,7 @@ export default function WebsiteHomepage() {
         <section className="h-[20rem] flex flex-col justify-center items-center">
           <div className="flex flex-col justify-center items-center gap-2">
             <AppEntryCtaButton
-              next="/app"
+              next="/"
               size="lg"
               className="brand-button h-12 min-w-60 max-w-68 rounded-xl py-8 text-lg font-bold!"
             >

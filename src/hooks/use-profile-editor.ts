@@ -11,7 +11,6 @@ import {
 import { buildSyncPayload } from "@/hooks/profile-editor-store";
 import type { getMeResponse } from "@/lib/api/generated/http/me-api/me-api";
 import { getGetMeQueryKey } from "@/lib/api/generated/http/me-api/me-api";
-import type { getProfileByHandle } from "@/lib/api/generated/http/profile-api/profile-api";
 import {
   useGetProfileByHandleSuspense,
   useUpdateProfilePage,
@@ -150,10 +149,7 @@ export function useProfilePageEditor() {
         response.data.page
       );
 
-      queryClient.setQueryData(
-        profilePageQueryKey,
-        response as Awaited<ReturnType<typeof getProfileByHandle>>
-      );
+      queryClient.setQueryData(profilePageQueryKey, profilePageData);
       queryClient.setQueryData<getMeResponse>(getGetMeQueryKey(), (current) => {
         if (!current || current.status !== 200 || !current.data.profilePage) {
           return current;

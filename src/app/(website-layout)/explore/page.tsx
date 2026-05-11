@@ -16,12 +16,13 @@ async function getExploreProfilePages(): Promise<ListProfilePages200["pages"]> {
     const response = await fetch(`${getAppApiBaseURL()}/profile/pages`, {
       cache: "no-store",
     });
-
+    
     if (!response.ok) {
       return [];
     }
 
     const data = (await response.json()) as ListProfilePages200;
+    console.log(data)
     return data.pages;
   } catch {
     return [];

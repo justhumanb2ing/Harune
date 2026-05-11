@@ -108,9 +108,9 @@ export default function ExploreSection({ pages }: ExploreSectionProps) {
               })}
             </div>
           ) : (
-            <div className="flex min-h-[16rem] items-center justify-center rounded-[1.5rem] border border-dashed border-border/70 bg-muted/20 px-6 py-12 text-center">
+            <div className="flex min-h-[16rem] items-center justify-center rounded-[1.5rem] px-6 py-12 text-center">
               <div className="max-w-sm space-y-2">
-                <p className="text-base font-medium">No public profiles yet.</p>
+                <p className="text-base font-medium">No profiles yet.</p>
                 <p className="text-sm leading-6 text-muted-foreground">
                   Profiles will appear here once creators publish their pages.
                 </p>

@@ -120,7 +120,6 @@ export function AuthForm({
 
       await invalidateAuthenticatedAppQueries(queryClient);
       router.push(resolvedCallbackUrl);
-      router.refresh();
     } catch (error) {
       console.error("Authentication error:", error);
       setErrorMessage("Could not complete email authentication.");
@@ -146,7 +145,6 @@ export function AuthForm({
 
       await invalidateAuthenticatedAppQueries(queryClient);
       router.push(resolvedCallbackUrl);
-      router.refresh();
     } catch (error) {
       console.error("Demo authentication error:", error);
       setErrorMessage("Could not sign in with the demo account.");

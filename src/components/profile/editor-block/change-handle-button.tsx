@@ -1,9 +1,10 @@
 "use client";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { CheckIcon, Loader2Icon, XIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { useProfilePageEditorStore } from "@/components/profile/layout/profile-editor-provider";
 import {
   Popover,
   PopoverPanel,
@@ -19,13 +20,13 @@ import {
   InputGroupText,
 } from "@/components/ui/input-group";
 import { useProfilePageHandleAvailability } from "@/hooks/use-profile-handle-availability";
-import { updateHandle } from "@/lib/api/generated/http/handle-api/handle-api";
+import { useUpdateHandle } from "@/lib/api/generated/http/handle-api/handle-api";
 import { getGetMeQueryKey } from "@/lib/api/generated/http/me-api/me-api";
+import type { getProfileByHandle } from "@/lib/api/generated/http/profile-api/profile-api";
+import { getGetProfileByHandleQueryKey } from "@/lib/api/generated/http/profile-api/profile-api";
 import type { GetMe200 } from "@/lib/api/generated/http/schemas/me-api";
 import { normalizeHandle, validateHandle } from "@/lib/handles";
 import { getProfileRouteHandle, replaceProfileRouteHandle } from "@/lib/profile/app-paths";
-import { profilePageQueryOptions } from "@/lib/profile/query-options";
-import type { ProfilePageData } from "@/lib/profile/types";
 import { cn } from "@/lib/utils";
 
 type ChangeHandleButtonProps = {
@@ -47,8 +48,8 @@ export function ChangeHandleButton({
   const router = useRouter();
   const queryClient = useQueryClient();
   const routeHandle = getProfileRouteHandle(pathname);
-  const profilePageQuery = useQuery(profilePageQueryOptions(routeHandle));
-  const profilePageData = profilePageQuery.data;
+  const profilePageData = useProfilePageEditorStore((state) => state.draftData ?? state.baseData);
+  const { mutateAsync: updateHandle } = useUpdateHandle();
   const [isOpen, setIsOpen] = useState(false);
   const [handleDraft, setHandleDraft] = useState(profilePageData?.page.handle ?? "");
   const [isSavingHandle, setIsSavingHandle] = useState(false);
@@ -64,7 +65,6 @@ export function ChangeHandleButton({
     isCheckingAvailability ||
     !isHandleAvailable ||
     isSavingHandle ||
-    profilePageQuery.isLoading ||
     !profilePageData;
 
   const handleOpenChange = (open: boolean) => {
@@ -77,48 +77,68 @@ export function ChangeHandleButton({
       return;
     }
 
-    const profilePageQueryKey = profilePageQueryOptions(routeHandle).queryKey;
+    const profilePageQueryKey = getGetProfileByHandleQueryKey(routeHandle);
     const nextPath = replaceProfileRouteHandle(pathname, currentHandle);
 
     setIsSavingHandle(true);
 
-    const response = await updateHandle({ handle: currentHandle }).finally(() => {
-      setIsSavingHandle(false);
-    });
+    try {
+      const response = await updateHandle({
+        data: {
+          handle: currentHandle,
+        },
+      });
 
-    if (response.status !== 200) {
-      return;
-    }
-
-    const { data } = response;
-
-    const syncedData: ProfilePageData = {
-      page: {
-        ...profilePageData.page,
-        ...data.profilePage,
-      },
-    };
-
-    queryClient.setQueryData(profilePageQueryKey, syncedData);
-    queryClient.setQueryData(profilePageQueryOptions(data.profilePage.handle).queryKey, syncedData);
-    queryClient.setQueryData<GetMe200>(getGetMeQueryKey(), (current) => {
-      if (!current?.profilePage) {
-        return current;
+      if (response.status !== 200) {
+        return;
       }
 
-      return {
-        ...current,
-        profilePage: {
-          ...current.profilePage,
-          handle: data.profilePage.handle,
-          image: data.profilePage.image,
-          name: data.profilePage.name,
-        },
-      };
-    });
-    router.replace(nextPath);
-    router.refresh();
-    setIsOpen(false);
+      const { data } = response;
+      const currentProfileResponse =
+        queryClient.getQueryData<Awaited<ReturnType<typeof getProfileByHandle>>>(
+          profilePageQueryKey
+        );
+
+      if (currentProfileResponse?.status === 200) {
+        const syncedProfileResponse = {
+          ...currentProfileResponse,
+          data: {
+            ...currentProfileResponse.data,
+            page: {
+              ...currentProfileResponse.data.page,
+              handle: data.profilePage.handle,
+              image: data.profilePage.image,
+              name: data.profilePage.name,
+            },
+          },
+        } satisfies Awaited<ReturnType<typeof getProfileByHandle>>;
+
+        queryClient.setQueryData(profilePageQueryKey, syncedProfileResponse);
+        queryClient.setQueryData(
+          getGetProfileByHandleQueryKey(data.profilePage.handle),
+          syncedProfileResponse
+        );
+      }
+      queryClient.setQueryData<GetMe200>(getGetMeQueryKey(), (current) => {
+        if (!current?.profilePage) {
+          return current;
+        }
+
+        return {
+          ...current,
+          profilePage: {
+            ...current.profilePage,
+            handle: data.profilePage.handle,
+            image: data.profilePage.image,
+            name: data.profilePage.name,
+          },
+        };
+      });
+      router.replace(nextPath);
+      setIsOpen(false);
+    } finally {
+      setIsSavingHandle(false);
+    }
   };
 
   return (
@@ -132,7 +152,7 @@ export function ChangeHandleButton({
               "h-16! w-full gap-1 flex-col rounded-lg! items-start px-4 py-6 font-normal",
               triggerClassName
             )}
-            disabled={profilePageQuery.isLoading || !profilePageData}
+            disabled={!profilePageData}
           >
             <span>Change handle</span>
             <span className="text-xs text-neutral-600">/{handleDraft}</span>

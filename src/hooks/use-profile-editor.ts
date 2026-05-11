@@ -1,6 +1,6 @@
 "use client";
 
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { usePathname } from "next/navigation";
 import { type ChangeEvent, useMemo, useRef } from "react";
 import { toast } from "sonner";
@@ -9,13 +9,17 @@ import {
   useProfilePageEditorStoreApi,
 } from "@/components/profile/layout/profile-editor-provider";
 import { buildSyncPayload } from "@/hooks/profile-editor-store";
+import type { getMeResponse } from "@/lib/api/generated/http/me-api/me-api";
 import { getGetMeQueryKey } from "@/lib/api/generated/http/me-api/me-api";
-import { updateProfilePage } from "@/lib/api/generated/http/profile-api/profile-api";
-import type { GetMe200 } from "@/lib/api/generated/http/schemas/me-api";
+import type { getProfileByHandle } from "@/lib/api/generated/http/profile-api/profile-api";
+import {
+  useGetProfileByHandleSuspense,
+  useUpdateProfilePage,
+} from "@/lib/api/generated/http/profile-api/profile-api";
+import type { UpdateProfilePageBody } from "@/lib/api/generated/http/schemas/profile-api";
 import { getProfileRouteHandle } from "@/lib/profile/app-paths";
 import { uploadProfileImageIfChanged } from "@/lib/profile/client-image-upload";
 import { toProfilePageEditorDataFromPublicPage } from "@/lib/profile/public-profile-page";
-import { profilePageQueryOptions } from "@/lib/profile/query-options";
 import type { ProfileBentoItem, ProfilePageData, ProfilePageDraftData } from "@/lib/profile/types";
 import useUser from "@/lib/users/use-user";
 
@@ -25,7 +29,26 @@ export function useProfilePageEditor() {
   const store = useProfilePageEditorStoreApi();
   const pathname = usePathname();
   const currentHandle = getProfileRouteHandle(pathname);
-  useSuspenseQuery(profilePageQueryOptions(currentHandle));
+  const profilePageQuery = useGetProfileByHandleSuspense(currentHandle, {
+    query: {
+      select: (response) => {
+        if (response.status !== 200) {
+          throw new Error("Failed to load profile page.");
+        }
+
+        return toProfilePageEditorDataFromPublicPage(response.data.page);
+      },
+      staleTime: 0,
+    },
+  });
+  const { mutateAsync: updateProfilePageMutation } = useUpdateProfilePage({
+    request: {
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    },
+  });
   const draftData = useProfilePageEditorStore((state) => state.draftData);
   const previewImageUrl = useProfilePageEditorStore((state) => state.previewImageUrl);
   const previewBackgroundImageUrl = useProfilePageEditorStore(
@@ -97,7 +120,7 @@ export function useProfilePageEditor() {
     bento?: ProfileBentoItem[];
   } = {}) => {
     const currentState = store.getState();
-    const profilePageQueryKey = profilePageQueryOptions(currentHandle).queryKey;
+    const profilePageQueryKey = profilePageQuery.queryKey;
     const syncDraftData = draftDataOverride ?? currentState.draftData;
 
     if (!syncDraftData || currentState.syncStatus === "syncing") {
@@ -113,16 +136,11 @@ export function useProfilePageEditor() {
       const requestBody = bento
         ? {
             ...updateProfilePageBody,
-            bento: bento as Parameters<typeof updateProfilePage>[0]["bento"],
+            bento: bento as UpdateProfilePageBody["bento"],
           }
         : updateProfilePageBody;
 
-      const response = await updateProfilePage(requestBody, {
-        cache: "no-store",
-        headers: {
-          "Cache-Control": "no-store",
-        },
-      });
+      const response = await updateProfilePageMutation({ data: requestBody });
 
       if (response.status !== 200) {
         throw new Error("Failed to sync");
@@ -132,19 +150,25 @@ export function useProfilePageEditor() {
         response.data.page
       );
 
-      queryClient.setQueryData(profilePageQueryKey, profilePageData);
-      queryClient.setQueryData<GetMe200>(getGetMeQueryKey(), (current) => {
-        if (!current?.profilePage) {
+      queryClient.setQueryData(
+        profilePageQueryKey,
+        response as Awaited<ReturnType<typeof getProfileByHandle>>
+      );
+      queryClient.setQueryData<getMeResponse>(getGetMeQueryKey(), (current) => {
+        if (!current || current.status !== 200 || !current.data.profilePage) {
           return current;
         }
 
         return {
           ...current,
-          profilePage: {
-            ...current.profilePage,
-            handle: profilePageData.page.handle,
-            image: profilePageData.page.image,
-            name: profilePageData.page.name,
+          data: {
+            ...current.data,
+            profilePage: {
+              ...current.data.profilePage,
+              handle: profilePageData.page.handle,
+              image: profilePageData.page.image,
+              name: profilePageData.page.name,
+            },
           },
         };
       });

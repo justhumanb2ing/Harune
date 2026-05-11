@@ -1,6 +1,5 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import * as React from "react";
 import { toast } from "sonner";
 import {
@@ -8,7 +7,8 @@ import {
   type ProfilePageEditorState,
   type ProfilePageEditorStore,
 } from "@/hooks/profile-editor-store";
-import { profilePageQueryOptions } from "@/lib/profile/query-options";
+import { useGetProfileByHandle } from "@/lib/api/generated/http/profile-api/profile-api";
+import { toProfilePageEditorDataFromPublicPage } from "@/lib/profile/public-profile-page";
 import type { ProfilePageData } from "@/lib/profile/types";
 
 const ProfilePageEditorStoreContext = React.createContext<ProfilePageEditorStore | null>(null);
@@ -44,14 +44,23 @@ export function ProfilePageEditorProvider({
   initialData: ProfilePageData | null;
   handle: string;
 }) {
-  const profilePageQuery = useQuery({
-    ...profilePageQueryOptions(handle),
-    initialData: initialData ?? undefined,
+  const profilePageQuery = useGetProfileByHandle(handle, {
+    query: {
+      enabled: !!handle,
+      select: (response) => {
+        if (response.status !== 200) {
+          throw new Error("Failed to load profile page.");
+        }
+
+        return toProfilePageEditorDataFromPublicPage(response.data.page);
+      },
+      staleTime: 0,
+    },
   });
   const storeRef = React.useRef<ProfilePageEditorStore | null>(null);
 
   if (!storeRef.current) {
-    storeRef.current = createProfilePageEditorStore(profilePageQuery.data);
+    storeRef.current = createProfilePageEditorStore(initialData ?? profilePageQuery.data ?? null);
   }
 
   const store = storeRef.current;

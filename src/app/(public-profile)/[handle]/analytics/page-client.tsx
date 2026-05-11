@@ -1,6 +1,5 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ProfileAnalyticsSummary } from "@/components/profile/layout/profile-analytics-summary";
 import {
@@ -11,7 +10,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { AnalyticsRangeKey } from "@/lib/analytics/analytics-ranges";
-import { profileAnalyticsQueryOptions } from "@/lib/analytics/query-options";
+import type {
+  ProfileAnalyticsResponse,
+  ProfileAnalyticsSummary as ProfileAnalyticsSummaryData,
+} from "@/lib/analytics/types";
+import { useGetMeAnalytics } from "@/lib/api/generated/http/me-api/me-api";
+import type { GetMeAnalytics200 } from "@/lib/api/generated/http/schemas/me-api";
 
 const analyticsRanges: Array<{ label: string; value: AnalyticsRangeKey }> = [
   { label: "Today", value: "today" },
@@ -19,12 +23,64 @@ const analyticsRanges: Array<{ label: string; value: AnalyticsRangeKey }> = [
   { label: "30 days", value: "30d" },
 ];
 
+const toProfileAnalyticsResponse = (response: GetMeAnalytics200): ProfileAnalyticsResponse => {
+  const mapSummary = (summary: GetMeAnalytics200["summaries"][AnalyticsRangeKey]) =>
+    ({
+      ...summary,
+      itemClicks: summary.linkClicks,
+      socialClicks: 0,
+      changes: {
+        ctr: summary.changes.ctr,
+        itemClicks: summary.changes.linkClicks,
+        linkClicks: summary.changes.linkClicks,
+        pageViews: summary.changes.pageViews,
+        socialClicks: {
+          absolute: 0,
+          direction: "flat",
+          percent: null,
+          previous: 0,
+        },
+      },
+      previous: {
+        ...summary.previous,
+        itemClicks: summary.previous.linkClicks,
+        socialClicks: 0,
+      },
+      series: summary.series.map((point) => ({
+        ...point,
+        itemClicks: point.linkClicks,
+        socialClicks: 0,
+      })),
+    }) as ProfileAnalyticsSummaryData;
+
+  return {
+    ...response,
+    summaries: {
+      today: mapSummary(response.summaries.today),
+      "7d": mapSummary(response.summaries["7d"]),
+      "30d": mapSummary(response.summaries["30d"]),
+    },
+  };
+};
+
 type AnalyticsSummaryQueryProps = {
   range: AnalyticsRangeKey;
 };
 
 function AnalyticsSummaryQuery({ range }: AnalyticsSummaryQueryProps) {
-  const analyticsQuery = useQuery(profileAnalyticsQueryOptions());
+  const analyticsQuery = useGetMeAnalytics<ProfileAnalyticsResponse>({
+    query: {
+      refetchOnWindowFocus: false,
+      select: (response) => {
+        if (response.status !== 200) {
+          throw new Error("Analytics could not be loaded.");
+        }
+
+        return toProfileAnalyticsResponse(response.data);
+      },
+      staleTime: 60_000,
+    },
+  });
 
   if (analyticsQuery.isPending) {
     return <AnalyticsSummaryFallback />;

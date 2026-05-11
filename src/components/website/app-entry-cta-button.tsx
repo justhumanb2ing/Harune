@@ -6,9 +6,9 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/api/error";
-import type { GetMe200 } from "@/lib/api/generated/http/schemas/me-api";
+import type { getMeResponse } from "@/lib/api/generated/http/me-api/me-api";
+import { getGetMeQueryKey, prefetchGetMeQuery } from "@/lib/api/generated/http/me-api/me-api";
 import { createSignInCallbackHref, resolveAppEntryHref } from "@/lib/auth/app-entry";
-import { meQueryOptions } from "@/lib/users/queries";
 import { cn } from "@/lib/utils";
 
 type AppEntryCtaButtonProps = {
@@ -30,7 +30,7 @@ export function AppEntryCtaButton({
   const router = useRouter();
   const [isResolving, setIsResolving] = useState(false);
   const prefetchMe = () => {
-    void queryClient.prefetchQuery(meQueryOptions());
+    void prefetchGetMeQuery(queryClient);
   };
 
   const handleClick = async () => {
@@ -41,8 +41,15 @@ export function AppEntryCtaButton({
     setIsResolving(true);
 
     try {
-      const me = (await queryClient.fetchQuery(meQueryOptions())) as unknown as GetMe200;
-      router.push(resolveAppEntryHref({ next, profilePage: me.profilePage }));
+      await prefetchGetMeQuery(queryClient);
+
+      const me = queryClient.getQueryData<getMeResponse>(getGetMeQueryKey());
+
+      if (!me || me.status !== 200) {
+        throw new Error("Failed to load user.");
+      }
+
+      router.push(resolveAppEntryHref({ next, profilePage: me.data.profilePage }));
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
         router.push(createSignInCallbackHref(next));

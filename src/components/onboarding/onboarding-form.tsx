@@ -25,7 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useHandleAvailability } from "@/hooks/use-handle-availability";
 import { useProfileImageUpload } from "@/hooks/use-profile-image-upload";
 import { getCheckHandleAvailabilityQueryKey } from "@/lib/api/generated/http/handle-api/handle-api";
-import { updateProfilePage } from "@/lib/api/generated/http/profile-api/profile-api";
+import { useUpdateProfilePage } from "@/lib/api/generated/http/profile-api/profile-api";
 import { UpdateProfilePageBody as updateProfilePageBodySchema } from "@/lib/api/generated/zod/profile-api/profile-api.zod";
 import { authClient } from "@/lib/auth-client";
 import { normalizeHandle, validateHandle } from "@/lib/handles";
@@ -83,6 +83,14 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
   const queryClient = useQueryClient();
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const profileImageUpload = useProfileImageUpload();
+  const { mutateAsync: updateProfilePage } = useUpdateProfilePage({
+    request: {
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    },
+  });
   const [currentStep, setCurrentStep] = React.useState(0);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isSigningOut, setIsSigningOut] = React.useState(false);
@@ -233,15 +241,9 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
         bio: normalizeOptionalField(bio),
       });
 
-      const response = await updateProfilePage(
-        updateBody as Parameters<typeof updateProfilePage>[0],
-        {
-          cache: "no-store",
-          headers: {
-            "Cache-Control": "no-store",
-          },
-        }
-      );
+      const response = await updateProfilePage({
+        data: updateBody,
+      });
 
       if (response.status !== 200) {
         const message = getFailureMessage(response);
@@ -305,7 +307,6 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
 
       clearAuthenticatedAppQueries(queryClient);
       router.push("/sign-in");
-      router.refresh();
     } catch (signOutError) {
       console.error("Sign out failed:", signOutError);
       setError("Failed to log out. Please try again.");

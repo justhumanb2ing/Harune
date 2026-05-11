@@ -429,7 +429,6 @@ export type ListProfilePages200PagesItem = {
   image: string | null;
   /** @nullable */
   backgroundImage: string | null;
-  linkBlockPosition: number;
   createdAt: string;
   updatedAt: string;
 };

@@ -13,7 +13,6 @@ type ListProfilePages200 = {
     bio: string | null;
     image: string | null;
     backgroundImage: string | null;
-    linkBlockPosition: number;
     createdAt: string;
     updatedAt: string;
   }>;

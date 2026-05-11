@@ -421,7 +421,6 @@ export const ListProfilePagesResponse = zod.object({
       bio: zod.string().nullable(),
       image: zod.string().nullable(),
       backgroundImage: zod.string().nullable(),
-      linkBlockPosition: zod.number(),
       createdAt: zod.iso.datetime({ offset: true }),
       updatedAt: zod.iso.datetime({ offset: true }),
     })

@@ -11,7 +11,7 @@ describe("parseServerMeResponse", () => {
       status: 401,
     });
 
-    expect(await parseServerMeResponse(response)).toBeNull();
+    expect(await parseServerMeResponse(response)).toBe(null);
   });
 
   test("returns null for unexpected server errors", async () => {
@@ -22,7 +22,7 @@ describe("parseServerMeResponse", () => {
       status: 500,
     });
 
-    expect(await parseServerMeResponse(response)).toBeNull();
+    expect(await parseServerMeResponse(response)).toBe(null);
   });
 
   test("parses successful app context responses", async () => {

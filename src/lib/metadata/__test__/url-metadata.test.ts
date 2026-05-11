@@ -80,19 +80,18 @@ describe("fetchUrlMetadata", () => {
         error = caughtError;
       }
 
-      expect(error).toBeInstanceOf(MetadataFetchError);
-      expect(error).toEqual(
-        expect.objectContaining({
-          status: 400,
-          body: {
-            error: "invalid_url",
-            message: "Invalid URL.",
-            details: {
-              url: "notaurl",
-            },
-          },
-        })
-      );
+      expect(error instanceof MetadataFetchError).toBe(true);
+
+      const metadataError = error as MetadataFetchError;
+
+      expect(metadataError.status).toBe(400);
+      expect(metadataError.body).toEqual({
+        error: "invalid_url",
+        message: "Invalid URL.",
+        details: {
+          url: "notaurl",
+        },
+      });
     } finally {
       globalThis.fetch = originalFetch;
     }
@@ -129,19 +128,18 @@ describe("fetchUrlMetadata", () => {
         error = caughtError;
       }
 
-      expect(error).toBeInstanceOf(MetadataFetchError);
-      expect(error).toEqual(
-        expect.objectContaining({
-          status: 502,
-          body: {
-            error: "bad_gateway",
-            message: "target responded with an error status",
-            details: {
-              status: 429,
-            },
-          },
-        })
-      );
+      expect(error instanceof MetadataFetchError).toBe(true);
+
+      const metadataError = error as MetadataFetchError;
+
+      expect(metadataError.status).toBe(502);
+      expect(metadataError.body).toEqual({
+        error: "bad_gateway",
+        message: "target responded with an error status",
+        details: {
+          status: 429,
+        },
+      });
     } finally {
       globalThis.fetch = originalFetch;
     }

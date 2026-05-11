@@ -1,15 +1,17 @@
+import { CompassIcon } from "lucide-react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { PROFILE_BENTO_PROFILE_SHELL_CLASS } from "@/components/profile/v2/profile-bento-profile-shell";
+import { ProfileBentoPublicShareButton } from "@/components/profile/v2/profile-bento-public-share-button";
 import { ProfileBentoReadonlyGrid } from "@/components/profile/v2/profile-bento-readonly-grid";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import type {
   GetProfileByHandle200BentoItem,
   GetProfileByHandle200Page,
 } from "@/lib/api/generated/http/schemas/profile-api";
 import type { ProfileBentoItem, ProfilePageData } from "@/lib/profile/types";
 import { cn } from "@/lib/utils";
-import { CompassIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 
 type ProfileBentoPageProps = {
   page: GetProfileByHandle200Page & {
@@ -31,13 +33,18 @@ const isDeploymentEnvironment = process.env.VERCEL === "1" || Boolean(process.en
 export const PROFILE_BENTO_PAGE_SECTION_CLASS =
   "mx-auto flex min-h-lvh w-full flex-col items-center gap-8 px-6 pb-8 pt-[var(--v2-page-top-offset)] [--v2-page-top-offset:2rem] sm:px-8 xl:[--v2-page-top-offset:5rem] xl:flex-row xl:items-stretch xl:justify-center xl:gap-[clamp(3rem,calc((100vw-80rem)*0.25+3rem),6rem)] xl:px-10 2xl:gap-[clamp(7.5rem,calc((100vw-96rem)*0.6+7.5rem),18rem)]";
 
-export function ProfileBentoProfileAside({ page }: Pick<ProfileBentoPageProps, "page">) {
+export function ProfileBentoProfileAside({
+  actionSlot,
+  page,
+}: Pick<ProfileBentoPageProps, "page"> & {
+  actionSlot?: ReactNode;
+}) {
   const imageAlt = page.name ?? page.userName ?? page.handle;
 
   return (
     <aside className={cn(PROFILE_BENTO_PROFILE_SHELL_CLASS)}>
       <div className="flex flex-col gap-8 overflow-hidden">
-        <div className="flex ">
+        <div className="flex w-full items-center justify-between gap-4 px-4 xl:px-0">
           <div className="relative flex size-32 items-center justify-center overflow-hidden rounded-full bg-secondary xl:size-44">
             {page.image ? (
               // Public profile images must render without Next.js image optimization so the
@@ -51,10 +58,10 @@ export function ProfileBentoProfileAside({ page }: Pick<ProfileBentoPageProps, "
                 width={176}
               />
             ) : (
-              <span className="flex size-full flex-col items-center justify-center gap-2 rounded-full text-muted-foreground">
-              </span>
+              <span className="flex size-full flex-col items-center justify-center gap-2 rounded-full text-muted-foreground"></span>
             )}
           </div>
+          {actionSlot ? <div className="shrink-0">{actionSlot}</div> : null}
         </div>
 
         <div className="flex flex-col gap-3 pt-0">
@@ -99,41 +106,55 @@ function ProfileBentoFooterAction({
 
   return (
     <footer className={cn("flex items-center justify-center gap-2", className)}>
-      <Button nativeButton={false} variant={'ghost'} render={
-        <Link
-          href={href}
-          className="inline-flex items-center gap-2 rounded-md p-2 py-1.5 font-normal text-sm text-muted-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-        >
-          {viewerProfilePage ? (
-            <span className="relative size-5 shrink-0 overflow-hidden rounded-full bg-secondary">
-              {viewerProfilePage.image ? (
-                // biome-ignore lint/performance/noImgElement: This is a user-generated remote image.
-                <img
-                  alt={imageAlt}
-                  className="size-full object-cover"
-                  height={24}
-                  src={viewerProfilePage.image}
-                  width={24}
-                />
-              ) : (
-                <span aria-hidden className="block size-full" />
-              )}
+      <Button
+        nativeButton={false}
+        variant={"ghost"}
+        render={
+          <Link
+            href={href}
+            className="inline-flex items-center gap-2 rounded-md p-2 py-1.5 font-normal text-sm text-muted-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+          >
+            {viewerProfilePage ? (
+              <span className="relative size-5 shrink-0 overflow-hidden rounded-full bg-secondary">
+                {viewerProfilePage.image ? (
+                  // biome-ignore lint/performance/noImgElement: This is a user-generated remote image.
+                  <img
+                    alt={imageAlt}
+                    className="size-full object-cover"
+                    height={24}
+                    src={viewerProfilePage.image}
+                    width={24}
+                  />
+                ) : (
+                  <span aria-hidden className="block size-full" />
+                )}
+              </span>
+            ) : null}
+            <span>{label}</span>
+          </Link>
+        }
+      />
+      <Separator
+        orientation="vertical"
+        className={"rounded-lg data-vertical:w-[2.5px] data-vertical:my-2"}
+      />
+      <Button
+        nativeButton={false}
+        variant={"ghost"}
+        size={"icon-lg"}
+        className={"size-8"}
+        render={
+          <Link
+            href="/explore"
+            prefetch={false}
+            className="inline-flex items-center rounded-md font-normal"
+          >
+            <span className="text-sm text-muted-foreground!">
+              <CompassIcon />
             </span>
-          ) : null}
-          <span>{label}</span>
-        </Link>
-      } />
-      <Separator orientation="vertical" className={'rounded-lg data-vertical:w-[2.5px] data-vertical:my-2'}/>
-      <Button nativeButton={false} variant={'ghost'} size={'icon-lg'} className={'size-8'} render={
-        <Link
-          href="/explore"
-          prefetch={false}
-          className="inline-flex items-center rounded-md font-normal"
-        >
-          <span className="text-sm text-muted-foreground!"><CompassIcon /></span>
-        </Link>
-      } />
-
+          </Link>
+        }
+      />
     </footer>
   );
 }
@@ -164,10 +185,13 @@ export async function ProfileBentoPage({
 
   return (
     <section className={PROFILE_BENTO_PAGE_SECTION_CLASS}>
-      <ProfileBentoProfileAside page={page} />
+      <ProfileBentoProfileAside
+        actionSlot={<ProfileBentoPublicShareButton className="xl:hidden" handle={page.handle} />}
+        page={page}
+      />
       <ProfileBentoReadonlyGrid bento={bento as ProfileBentoItem[]} />
       <ProfileBentoFooterAction
-        className="w-full py-16 md:fixed md:bottom-12 md:left-12 md:z-30 md:w-auto md:justify-start md:p-0"
+        className="fixed bottom-6 left-6 z-30 w-auto justify-start p-0"
         viewerProfilePage={viewerProfilePage}
       />
     </section>

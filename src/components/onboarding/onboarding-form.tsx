@@ -8,7 +8,6 @@ import {
   Loader2Icon,
   TrashIcon,
 } from "lucide-react";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 import { startTransition, ViewTransition } from "react";
@@ -591,16 +590,6 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
           </div>
         </form>
       </div>
-      <section className="hidden h-full flex-1 lg:block">
-        <div className="relative h-full">
-          <Image
-            src="https://images.unsplash.com/photo-1713508298272-7d0db139dc54?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            alt="img"
-            fill
-            className="object-cover"
-          />
-        </div>
-      </section>
     </div>
   );
 }

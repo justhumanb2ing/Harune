@@ -395,7 +395,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
       ? "Copied"
       : canSave
         ? "Save"
-        : "Copy my page";
+        : "Share page";
   const isSectionDragActive =
     activeDragItemId !== null && itemTypeById.get(activeDragItemId) === "section";
   const isThinPlaceholderShapeActive = isThinPlaceholderActive || isSectionDragActive;

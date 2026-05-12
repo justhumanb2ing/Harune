@@ -1,0 +1,1 @@
+export const PROFILE_PAGE_STALE_TIME_MS = 30 * 1000;

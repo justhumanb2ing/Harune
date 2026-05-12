@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { PROFILE_BENTO_PROFILE_SHELL_CLASS } from "@/components/profile/v2/profile-bento-profile-shell";
 import { ProfileBentoPublicShareButton } from "@/components/profile/v2/profile-bento-public-share-button";
 import { ProfileBentoReadonlyGrid } from "@/components/profile/v2/profile-bento-readonly-grid";
+import { ProfilePageAnalyticsTracker } from "@/components/site-instrumentation/profile-analytics-tracker";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type {
@@ -167,33 +168,49 @@ export async function ProfileBentoPage({
   isOwner,
   viewerProfilePage,
 }: ProfileBentoPageProps) {
+  const displayName = page.name || page.userName || page.handle;
+
   if (isOwner && editorData) {
     const { ProfileBentoOwnerEditorSurface } = await import(
       "@/components/profile/v2/profile-bento-owner-editor-surface"
     );
 
     return (
-      <ProfileBentoOwnerEditorSurface
-        bento={bento as ProfileBentoItem[]}
-        analyticsViews={analyticsViews}
-        disableAnalytics={isDeploymentEnvironment}
-        editorData={editorData}
-        ownerHandle={page.handle}
-      />
+      <>
+        <ProfilePageAnalyticsTracker
+          displayName={displayName}
+          handle={page.handle}
+          profilePageId={page.id}
+        />
+        <ProfileBentoOwnerEditorSurface
+          bento={bento as ProfileBentoItem[]}
+          analyticsViews={analyticsViews}
+          disableAnalytics={isDeploymentEnvironment}
+          editorData={editorData}
+          ownerHandle={page.handle}
+        />
+      </>
     );
   }
 
   return (
-    <section className={PROFILE_BENTO_PAGE_SECTION_CLASS}>
-      <ProfileBentoProfileAside
-        actionSlot={<ProfileBentoPublicShareButton className="xl:hidden" handle={page.handle} />}
-        page={page}
+    <>
+      <ProfilePageAnalyticsTracker
+        displayName={displayName}
+        handle={page.handle}
+        profilePageId={page.id}
       />
-      <ProfileBentoReadonlyGrid bento={bento as ProfileBentoItem[]} />
-      <ProfileBentoFooterAction
-        className="w-full py-16 xl:fixed xl:bottom-12 xl:left-12 xl:z-30 xl:w-auto xl:justify-start xl:p-0"
-        viewerProfilePage={viewerProfilePage}
-      />
-    </section>
+      <section className={PROFILE_BENTO_PAGE_SECTION_CLASS}>
+        <ProfileBentoProfileAside
+          actionSlot={<ProfileBentoPublicShareButton className="xl:hidden" handle={page.handle} />}
+          page={page}
+        />
+        <ProfileBentoReadonlyGrid bento={bento as ProfileBentoItem[]} />
+        <ProfileBentoFooterAction
+          className="w-full py-16 xl:fixed xl:bottom-12 xl:left-12 xl:z-30 xl:w-auto xl:justify-start xl:p-0"
+          viewerProfilePage={viewerProfilePage}
+        />
+      </section>
+    </>
   );
 }

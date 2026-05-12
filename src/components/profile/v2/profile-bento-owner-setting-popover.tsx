@@ -172,10 +172,9 @@ export function ProfileBentoOwnerSettingPopover() {
             <DeleteAccountDialog
               open={isDeleteDialogOpen}
               onOpenChange={handleDeleteDialogOpenChange}
-              disabled
               isDeleting={isDeletingAccount}
               onConfirm={handleDeleteAccount}
-              triggerClassName="h-11 min-h-0 rounded-lg py-0 hover:bg-transparent hover:text-muted-foreground"
+              triggerClassName="h-16 min-h-0 rounded-lg py-0"
             />
           </aside>
         </PopoverPanel>

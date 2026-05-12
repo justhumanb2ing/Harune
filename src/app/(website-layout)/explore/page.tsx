@@ -22,7 +22,6 @@ async function getExploreProfilePages(): Promise<ListProfilePages200["pages"]> {
     }
 
     const data = (await response.json()) as ListProfilePages200;
-    console.log(data)
     return data.pages;
   } catch {
     return [];

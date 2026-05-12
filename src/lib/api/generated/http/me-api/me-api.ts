@@ -343,8 +343,8 @@ export const getGetMeAnalyticsUrl = () => {
 };
 
 /**
- * Returns the authenticated owner's analytics summary for the current profile page. The response is a stateful DTO with ready, no-profile, and disabled variants. The server normalizes timezone input, reads ownership from the authenticated session, and returns no-store headers on success.
- * @summary Get current user analytics summary
+ * Returns today's unique visitors for the authenticated owner's current profile page. The server normalizes timezone input, reads ownership from the authenticated session, and returns no-store headers on success. If the user has no profile page or analytics is disabled, the response still returns `0` visitors.
+ * @summary Get today's visitors for the current user
  */
 export const getMeAnalytics = async (options?: RequestInit): Promise<getMeAnalyticsResponse> => {
   return orvalMutator<getMeAnalyticsResponse>(getGetMeAnalyticsUrl(), {
@@ -428,7 +428,7 @@ export function useGetMeAnalytics<
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
- * @summary Get current user analytics summary
+ * @summary Get today's visitors for the current user
  */
 
 export function useGetMeAnalytics<
@@ -451,7 +451,7 @@ export function useGetMeAnalytics<
 }
 
 /**
- * @summary Get current user analytics summary
+ * @summary Get today's visitors for the current user
  */
 export const prefetchGetMeAnalyticsQuery = async <
   TData = Awaited<ReturnType<typeof getMeAnalytics>>,
@@ -471,7 +471,7 @@ export const prefetchGetMeAnalyticsQuery = async <
 };
 
 /**
- * @summary Get current user analytics summary
+ * @summary Get today's visitors for the current user
  */
 export const invalidateGetMeAnalytics = async (
   queryClient: QueryClient,
@@ -483,7 +483,7 @@ export const invalidateGetMeAnalytics = async (
 };
 
 /**
- * @summary Get current user analytics summary
+ * @summary Get today's visitors for the current user
  */
 export const useSetGetMeAnalyticsQueryData = () => {
   const queryClient = useQueryClient();
@@ -500,7 +500,7 @@ export const useSetGetMeAnalyticsQueryData = () => {
 };
 
 /**
- * @summary Get current user analytics summary
+ * @summary Get today's visitors for the current user
  */
 export const useGetGetMeAnalyticsQueryData = () => {
   const queryClient = useQueryClient();
@@ -575,7 +575,7 @@ export function useGetMeAnalyticsSuspense<
   queryClient?: QueryClient
 ): UseSuspenseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
- * @summary Get current user analytics summary
+ * @summary Get today's visitors for the current user
  */
 
 export function useGetMeAnalyticsSuspense<

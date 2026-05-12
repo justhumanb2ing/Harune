@@ -15,15 +15,17 @@ import {
   useGetProfileByHandleSuspense,
   useUpdateProfilePage,
 } from "@/lib/api/generated/http/profile-api/profile-api";
+import type { GetMe200 } from "@/lib/api/generated/http/schemas/me-api";
 import type { UpdateProfilePageBody } from "@/lib/api/generated/http/schemas/profile-api";
 import { getProfileRouteHandle } from "@/lib/profile/app-paths";
 import { uploadProfileImageIfChanged } from "@/lib/profile/client-image-upload";
 import { toProfilePageEditorDataFromPublicPage } from "@/lib/profile/public-profile-page";
+import { PROFILE_PAGE_STALE_TIME_MS } from "@/lib/profile/query-policy";
 import type { ProfileBentoItem, ProfilePageData, ProfilePageDraftData } from "@/lib/profile/types";
 import useUser from "@/lib/users/use-user";
 
-export function useProfilePageEditor() {
-  const { isLoading: isUserLoading, mutate, user } = useUser();
+export function useProfilePageEditor(initialUser?: GetMe200 | null) {
+  const { isLoading: isUserLoading, mutate, user } = useUser(initialUser);
   const queryClient = useQueryClient();
   const store = useProfilePageEditorStoreApi();
   const pathname = usePathname();
@@ -37,7 +39,7 @@ export function useProfilePageEditor() {
 
         return toProfilePageEditorDataFromPublicPage(response.data.page);
       },
-      staleTime: 0,
+      staleTime: PROFILE_PAGE_STALE_TIME_MS,
     },
   });
   const { mutateAsync: updateProfilePageMutation } = useUpdateProfilePage({

@@ -7,6 +7,8 @@ import { ProfileBentoReadonlyGrid } from "@/components/profile/v2/profile-bento-
 import { ProfilePageAnalyticsTracker } from "@/components/site-instrumentation/profile-analytics-tracker";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import type { getProfileByHandle } from "@/lib/api/generated/http/profile-api/profile-api";
+import type { GetMe200 } from "@/lib/api/generated/http/schemas/me-api";
 import type {
   GetProfileByHandle200BentoItem,
   GetProfileByHandle200Page,
@@ -22,6 +24,8 @@ type ProfileBentoPageProps = {
   analyticsViews: number;
   editorData: ProfilePageData | null;
   isOwner: boolean;
+  initialProfileResponse: Awaited<ReturnType<typeof getProfileByHandle>> | null;
+  initialUser: GetMe200 | null;
   viewerProfilePage: {
     handle: string;
     image: string | null;
@@ -166,6 +170,8 @@ export async function ProfileBentoPage({
   bento,
   editorData,
   isOwner,
+  initialProfileResponse,
+  initialUser,
   viewerProfilePage,
 }: ProfileBentoPageProps) {
   const displayName = page.name || page.userName || page.handle;
@@ -187,6 +193,8 @@ export async function ProfileBentoPage({
           analyticsViews={analyticsViews}
           disableAnalytics={isDeploymentEnvironment}
           editorData={editorData}
+          initialProfileResponse={initialProfileResponse}
+          initialUser={initialUser}
           ownerHandle={page.handle}
         />
       </>

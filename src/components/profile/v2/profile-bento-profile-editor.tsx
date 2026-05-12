@@ -8,8 +8,12 @@ import { useProfilePageEditor } from "@/hooks/use-profile-editor";
 import { PROFILE_IMAGE_ACCEPT } from "@/lib/profile/image-upload";
 import { PROFILE_BENTO_PROFILE_SHELL_CLASS } from "./profile-bento-profile-shell";
 
-export function ProfileBentoProfileEditor() {
-  const editor = useProfilePageEditor();
+export function ProfileBentoProfileEditor({
+  initialUser,
+}: {
+  initialUser?: Parameters<typeof useProfilePageEditor>[0];
+}) {
+  const editor = useProfilePageEditor(initialUser);
 
   if (!editor.data) {
     return null;

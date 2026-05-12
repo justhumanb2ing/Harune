@@ -10,6 +10,8 @@ import { ProfileBentoProfileEditor } from "@/components/profile/v2/profile-bento
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { getAppApiBaseURL } from "@/lib/api/base-url";
+import type { getProfileByHandle } from "@/lib/api/generated/http/profile-api/profile-api";
+import type { GetMe200 } from "@/lib/api/generated/http/schemas/me-api";
 import type { ProfileBentoItem, ProfilePageData } from "@/lib/profile/types";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +20,8 @@ type ProfileBentoOwnerEditorSurfaceProps = {
   analyticsViews: number;
   disableAnalytics: boolean;
   editorData: ProfilePageData;
+  initialProfileResponse: Awaited<ReturnType<typeof getProfileByHandle>> | null;
+  initialUser: GetMe200 | null;
   ownerHandle: string;
 };
 
@@ -65,18 +69,8 @@ function ProfileBentoOwnerFooterAction({
           return;
         }
 
-        const data = (await response.json()) as {
-          state?: string;
-          summaries?: {
-            today?: {
-              pageViews?: number;
-            };
-          };
-        };
-
-        if (data.state === "ready") {
-          setDisplayAnalyticsViews(data.summaries?.today?.pageViews ?? 0);
-        }
+        const data = (await response.json()) as { visitors?: number };
+        setDisplayAnalyticsViews(data.visitors ?? 0);
       } catch {
         // Keep the server-rendered fallback when the client refresh fails.
       }
@@ -159,12 +153,18 @@ export function ProfileBentoOwnerEditorSurface({
   analyticsViews,
   disableAnalytics,
   editorData,
+  initialProfileResponse,
+  initialUser,
   ownerHandle,
 }: ProfileBentoOwnerEditorSurfaceProps) {
   return (
-    <ProfilePageEditorProvider initialData={editorData} handle={ownerHandle}>
+    <ProfilePageEditorProvider
+      initialData={editorData}
+      initialProfileResponse={initialProfileResponse}
+      handle={ownerHandle}
+    >
       <section className={PROFILE_BENTO_PAGE_SECTION_CLASS}>
-        <ProfileBentoProfileEditor />
+        <ProfileBentoProfileEditor initialUser={initialUser} />
         <ProfileBentoInteractiveGrid initialBento={bento} />
         <ProfileBentoOwnerFooterAction
           className="w-full py-16 xl:fixed xl:bottom-12 xl:left-12 xl:z-30 xl:w-auto xl:justify-start xl:p-0"

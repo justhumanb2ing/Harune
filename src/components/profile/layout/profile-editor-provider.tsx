@@ -7,8 +7,10 @@ import {
   type ProfilePageEditorState,
   type ProfilePageEditorStore,
 } from "@/hooks/profile-editor-store";
+import type { getProfileByHandle } from "@/lib/api/generated/http/profile-api/profile-api";
 import { useGetProfileByHandle } from "@/lib/api/generated/http/profile-api/profile-api";
 import { toProfilePageEditorDataFromPublicPage } from "@/lib/profile/public-profile-page";
+import { PROFILE_PAGE_STALE_TIME_MS } from "@/lib/profile/query-policy";
 import type { ProfilePageData } from "@/lib/profile/types";
 
 const ProfilePageEditorStoreContext = React.createContext<ProfilePageEditorStore | null>(null);
@@ -38,14 +40,17 @@ function useStoreSelector<T>(
 export function ProfilePageEditorProvider({
   children,
   initialData,
+  initialProfileResponse,
   handle,
 }: {
   children: React.ReactNode;
   initialData: ProfilePageData | null;
+  initialProfileResponse: Awaited<ReturnType<typeof getProfileByHandle>> | null;
   handle: string;
 }) {
   const profilePageQuery = useGetProfileByHandle(handle, {
     query: {
+      initialData: initialProfileResponse ?? undefined,
       enabled: !!handle,
       select: (response) => {
         if (response.status !== 200) {
@@ -54,7 +59,7 @@ export function ProfilePageEditorProvider({
 
         return toProfilePageEditorDataFromPublicPage(response.data.page);
       },
-      staleTime: 0,
+      staleTime: PROFILE_PAGE_STALE_TIME_MS,
     },
   });
   const storeRef = React.useRef<ProfilePageEditorStore | null>(null);

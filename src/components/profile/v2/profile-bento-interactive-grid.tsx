@@ -150,9 +150,10 @@ function createLinkBentoFromCrawl(
   rawUrl: string,
   data: NormalizedMetadata
 ): Extract<ProfileBentoItem, { type: "link" }> {
-  const githubContributionsMetadata = isGithubContributionsProviderMetadata(data.providerMetadata);
+  const providerMetadata = data.providerMetadata;
+  const githubContributionsMetadata = isGithubContributionsProviderMetadata(providerMetadata);
   const resolvedUrl =
-    (githubContributionsMetadata ? data.providerMetadata.payload.profileUrl.trim() : "") ||
+    (githubContributionsMetadata ? providerMetadata.payload.profileUrl.trim() : "") ||
     data.canonicalUrl?.trim() ||
     data.url?.trim() ||
     rawUrl;
@@ -165,7 +166,7 @@ function createLinkBentoFromCrawl(
   }
 
   const githubFallbackTitle = githubContributionsMetadata
-    ? data.providerMetadata.payload.name?.trim() || data.providerMetadata.payload.login
+    ? providerMetadata.payload.name?.trim() || providerMetadata.payload.login
     : "";
 
   return {

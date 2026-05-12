@@ -429,13 +429,14 @@ function GithubContributionsPanel({
   className?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const providerMetadata = metadata.providerMetadata;
   const [gridMetrics, setGridMetrics] = useState<GithubContributionsGridMetrics>({
     cellSize: 12,
     columns: 7,
     rows: 1,
   });
-  const isGithubContributions = isGithubContributionsProviderMetadata(metadata.providerMetadata);
-  const dayCount = isGithubContributions ? metadata.providerMetadata.payload.days.length : 0;
+  const isGithubContributions = isGithubContributionsProviderMetadata(providerMetadata);
+  const dayCount = isGithubContributions ? providerMetadata.payload.days.length : 0;
 
   useLayoutEffect(() => {
     const updateGridMetrics = () => {
@@ -465,7 +466,7 @@ function GithubContributionsPanel({
     return null;
   }
 
-  const { payload } = metadata.providerMetadata;
+  const { payload } = providerMetadata;
 
   return (
     <div

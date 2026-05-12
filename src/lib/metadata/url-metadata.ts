@@ -157,7 +157,13 @@ function isGithubContributionsPayload(value: unknown): value is GithubContributi
 function normalizeProviderMetadata(
   value: unknown
 ): MetadataProviderMetadata | GithubContributionsProviderMetadata | null {
-  if (!isRecord(value) || typeof value.viewType !== "string" || !isRecord(value.payload)) {
+  if (
+    !isRecord(value) ||
+    typeof value.provider !== "string" ||
+    typeof value.viewType !== "string" ||
+    typeof value.fetchedAt !== "string" ||
+    !isRecord(value.payload)
+  ) {
     return null;
   }
 

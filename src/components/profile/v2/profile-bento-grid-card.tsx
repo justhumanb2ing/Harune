@@ -17,9 +17,15 @@ import {
   MarkerContent,
 } from "@/components/ui/map";
 import type { GridBreakpoint, ResizeOptionId } from "@/lib/grid/grid-types";
-import { resolveLinkProviderTheme } from "@/lib/metadata/link-provider-theme";
 import {
+  type LinkProviderTheme,
+  resolveLinkProviderTheme,
+} from "@/lib/metadata/link-provider-theme";
+import {
+  formatCompactCount,
+  getYoutubeThumbnailUrl,
   isGithubContributionsProviderMetadata,
+  isYoutubeProviderMetadata,
   type NormalizedMetadata,
 } from "@/lib/metadata/url-metadata";
 import type { ProfileBentoItem } from "@/lib/profile/types";
@@ -365,6 +371,40 @@ function LinkThumbnail({ thumbnail, className }: { thumbnail: string | null; cla
   );
 }
 
+function getLinkProviderMetadata(item: Extract<ProfileBentoItem, { type: "link" }>) {
+  return item.content.metadata?.providerMetadata ?? null;
+}
+
+function getLinkProviderActionLabel(
+  providerTheme: LinkProviderTheme | null,
+  providerMetadata: NormalizedMetadata["providerMetadata"]
+): string {
+  if (!providerTheme) {
+    return "";
+  }
+
+  if (providerTheme.provider === "youtube" && isYoutubeProviderMetadata(providerMetadata)) {
+    const subscriberCount = formatCompactCount(providerMetadata.payload.statistics.subscriberCount);
+
+    return subscriberCount
+      ? `${providerTheme.actionLabel} ${subscriberCount}`
+      : providerTheme.actionLabel;
+  }
+
+  return providerTheme.actionLabel;
+}
+
+function getLinkSupportingThumbnail(item: Extract<ProfileBentoItem, { type: "link" }>) {
+  const providerTheme = resolveLinkProviderTheme(item.content.url);
+  const providerMetadata = getLinkProviderMetadata(item);
+
+  if (providerTheme?.provider === "youtube" && isYoutubeProviderMetadata(providerMetadata)) {
+    return getYoutubeThumbnailUrl(providerMetadata.payload);
+  }
+
+  return item.content.thumbnail;
+}
+
 type GithubContributionsGridMetrics = {
   cellSize: number;
   columns: number;
@@ -514,10 +554,10 @@ function LinkSupportingPanel({
       return <GithubContributionsPanel metadata={metadata} className={className} />;
     }
 
-    return <LinkThumbnail thumbnail={item.content.thumbnail} className={className} />;
+    return <LinkThumbnail thumbnail={getLinkSupportingThumbnail(item)} className={className} />;
   }
 
-  return <LinkThumbnail thumbnail={item.content.thumbnail} className={className} />;
+  return <LinkThumbnail thumbnail={getLinkSupportingThumbnail(item)} className={className} />;
 }
 
 function ReadonlyLinkBento({
@@ -530,6 +570,10 @@ function ReadonlyLinkBento({
   preventNavigation: boolean;
 }) {
   const providerTheme = resolveLinkProviderTheme(item.content.url);
+  const providerActionLabel = getLinkProviderActionLabel(
+    providerTheme,
+    getLinkProviderMetadata(item)
+  );
 
   if (layoutSize === "2x1") {
     return (
@@ -546,7 +590,7 @@ function ReadonlyLinkBento({
             backgroundColor={providerTheme.actionBackgroundColor}
             foregroundColor={providerTheme.actionForegroundColor}
             href={item.content.url}
-            label={providerTheme.actionLabel}
+            label={providerActionLabel}
             preventNavigation={preventNavigation}
           />
         ) : null}
@@ -572,7 +616,7 @@ function ReadonlyLinkBento({
               backgroundColor={providerTheme.actionBackgroundColor}
               foregroundColor={providerTheme.actionForegroundColor}
               href={item.content.url}
-              label={providerTheme.actionLabel}
+              label={providerActionLabel}
               preventNavigation={preventNavigation}
             />
           ) : null}
@@ -600,7 +644,7 @@ function ReadonlyLinkBento({
               backgroundColor={providerTheme.actionBackgroundColor}
               foregroundColor={providerTheme.actionForegroundColor}
               href={item.content.url}
-              label={providerTheme.actionLabel}
+              label={providerActionLabel}
               preventNavigation={preventNavigation}
             />
           ) : null}
@@ -628,7 +672,7 @@ function ReadonlyLinkBento({
               backgroundColor={providerTheme.actionBackgroundColor}
               foregroundColor={providerTheme.actionForegroundColor}
               href={item.content.url}
-              label={providerTheme.actionLabel}
+              label={providerActionLabel}
               preventNavigation={preventNavigation}
             />
           ) : null}
@@ -654,7 +698,7 @@ function ReadonlyLinkBento({
           backgroundColor={providerTheme.actionBackgroundColor}
           foregroundColor={providerTheme.actionForegroundColor}
           href={item.content.url}
-          label={providerTheme.actionLabel}
+          label={providerActionLabel}
           preventNavigation={preventNavigation}
         />
       ) : null}
@@ -676,6 +720,10 @@ function EditableLinkBento({
   const activeLayout = item.layout[activeBreakpoint];
   const size = layoutSize ?? getProfileBentoLinkSize(activeLayout.w, activeLayout.h);
   const providerTheme = resolveLinkProviderTheme(item.content.url);
+  const providerActionLabel = getLinkProviderActionLabel(
+    providerTheme,
+    getLinkProviderMetadata(item)
+  );
 
   if (size === "2x1") {
     return (
@@ -691,7 +739,7 @@ function EditableLinkBento({
             backgroundColor={providerTheme.actionBackgroundColor}
             foregroundColor={providerTheme.actionForegroundColor}
             href={item.content.url}
-            label={providerTheme.actionLabel}
+            label={providerActionLabel}
           />
         ) : null}
       </article>
@@ -715,7 +763,7 @@ function EditableLinkBento({
               backgroundColor={providerTheme.actionBackgroundColor}
               foregroundColor={providerTheme.actionForegroundColor}
               href={item.content.url}
-              label={providerTheme.actionLabel}
+              label={providerActionLabel}
             />
           ) : null}
         </div>
@@ -742,7 +790,7 @@ function EditableLinkBento({
               backgroundColor={providerTheme.actionBackgroundColor}
               foregroundColor={providerTheme.actionForegroundColor}
               href={item.content.url}
-              label={providerTheme.actionLabel}
+              label={providerActionLabel}
             />
           ) : null}
         </div>
@@ -768,7 +816,7 @@ function EditableLinkBento({
               backgroundColor={providerTheme.actionBackgroundColor}
               foregroundColor={providerTheme.actionForegroundColor}
               href={item.content.url}
-              label={providerTheme.actionLabel}
+              label={providerActionLabel}
             />
           ) : null}
         </div>
@@ -792,7 +840,7 @@ function EditableLinkBento({
           backgroundColor={providerTheme.actionBackgroundColor}
           foregroundColor={providerTheme.actionForegroundColor}
           href={item.content.url}
-          label={providerTheme.actionLabel}
+          label={providerActionLabel}
         />
       ) : null}
     </article>

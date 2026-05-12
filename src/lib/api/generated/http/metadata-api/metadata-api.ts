@@ -95,7 +95,10 @@ export const getGetMetadataUrl = (params: GetMetadataParams) => {
 Rules:
 - GitHub profile URLs also include a provider metadata payload with the recent 60-day contribution calendar
 - GitHub enrichment requires `GITHUB_TOKEN`
-- Non-GitHub URLs keep the generic metadata response and leave provider fields null
+- YouTube channel URLs also include a provider metadata payload from `channels.list` and the server tries `id`, `forHandle`, and `forUsername` until one returns a channel
+- YouTube responses narrow `providerMetadata` to `provider: "youtube"`, `viewType: "youtube_channel"`, and a payload containing `snippet` and `statistics`
+- YouTube enrichment requires `YOUTUBE_API_KEY`
+- Non-provider URLs keep the generic metadata response and leave provider fields null
  * @summary Fetch metadata for a URL
  */
 export const getMetadata = async (

@@ -31,6 +31,31 @@ export type GithubContributionsProviderMetadata = {
   payload: GithubContributionsPayload;
 };
 
+export type YoutubeProviderMetadata = {
+  provider: "youtube";
+  viewType: string;
+  fetchedAt: string;
+  payload: {
+    snippet?: {
+      thumbnails?: {
+        high?: {
+          url: string;
+        };
+      };
+      title?: string;
+      description?: string;
+    };
+    thumbnails?: {
+      high: {
+        url: string;
+      };
+    };
+    statistics: {
+      subscriberCount: string | number;
+    };
+  };
+};
+
 export type NormalizedMetadata = {
   url: string;
   canonicalUrl: string | null;
@@ -40,7 +65,11 @@ export type NormalizedMetadata = {
   siteName: string | null;
   favicon: string | null;
   provider: string | null;
-  providerMetadata: MetadataProviderMetadata | GithubContributionsProviderMetadata | null;
+  providerMetadata:
+    | MetadataProviderMetadata
+    | GithubContributionsProviderMetadata
+    | YoutubeProviderMetadata
+    | null;
 };
 
 export type MetadataErrorDetails = Record<string, string | number | boolean | null>;
@@ -154,9 +183,37 @@ function isGithubContributionsPayload(value: unknown): value is GithubContributi
   );
 }
 
+function isYoutubeProviderMetadataPayload(
+  value: unknown
+): value is YoutubeProviderMetadata["payload"] {
+  const topLevelThumbnailUrl =
+    isRecord(value) &&
+    isRecord(value.thumbnails) &&
+    isRecord(value.thumbnails.high) &&
+    typeof value.thumbnails.high.url === "string"
+      ? value.thumbnails.high.url
+      : null;
+  const nestedThumbnailUrl =
+    isRecord(value) &&
+    isRecord(value.snippet) &&
+    isRecord(value.snippet.thumbnails) &&
+    isRecord(value.snippet.thumbnails.high) &&
+    typeof value.snippet.thumbnails.high.url === "string"
+      ? value.snippet.thumbnails.high.url
+      : null;
+
+  return (
+    isRecord(value) &&
+    isRecord(value.statistics) &&
+    (typeof value.statistics.subscriberCount === "string" ||
+      typeof value.statistics.subscriberCount === "number") &&
+    Boolean(topLevelThumbnailUrl || nestedThumbnailUrl)
+  );
+}
+
 function normalizeProviderMetadata(
   value: unknown
-): MetadataProviderMetadata | GithubContributionsProviderMetadata | null {
+): MetadataProviderMetadata | GithubContributionsProviderMetadata | YoutubeProviderMetadata | null {
   if (
     !isRecord(value) ||
     typeof value.provider !== "string" ||
@@ -195,6 +252,15 @@ function normalizeProviderMetadata(
     };
   }
 
+  if (value.provider === "youtube" && isYoutubeProviderMetadataPayload(value.payload)) {
+    return {
+      provider: value.provider,
+      viewType: value.viewType,
+      fetchedAt: value.fetchedAt,
+      payload: value.payload,
+    };
+  }
+
   return {
     provider: value.provider,
     viewType: value.viewType,
@@ -204,13 +270,67 @@ function normalizeProviderMetadata(
 }
 
 export function isGithubContributionsProviderMetadata(
-  value: MetadataProviderMetadata | GithubContributionsProviderMetadata | null | undefined
+  value:
+    | MetadataProviderMetadata
+    | GithubContributionsProviderMetadata
+    | YoutubeProviderMetadata
+    | null
+    | undefined
 ): value is GithubContributionsProviderMetadata {
   return Boolean(
     value &&
       /^github_contributions_\d+d$/.test(value.viewType) &&
       isGithubContributionsPayload(value.payload)
   );
+}
+
+export function isYoutubeProviderMetadata(value: unknown): value is YoutubeProviderMetadata {
+  return Boolean(
+    isRecord(value) &&
+      typeof value.provider === "string" &&
+      value.provider === "youtube" &&
+      isYoutubeProviderMetadataPayload(value.payload)
+  );
+}
+
+export function formatCompactCount(value: string | number | null | undefined) {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  const parsedValue = typeof value === "string" ? Number.parseInt(value, 10) : value;
+
+  if (!Number.isFinite(parsedValue)) {
+    return null;
+  }
+
+  if (parsedValue < 1000) {
+    return `${Math.trunc(parsedValue)}`;
+  }
+
+  return new Intl.NumberFormat("en", {
+    compactDisplay: "short",
+    maximumFractionDigits: 1,
+    notation: "compact",
+  }).format(parsedValue);
+}
+
+export function getYoutubeThumbnailUrl(
+  value: YoutubeProviderMetadata["payload"] | null | undefined
+) {
+  const topLevelUrl = value?.thumbnails?.high?.url;
+
+  if (typeof topLevelUrl === "string" && topLevelUrl.length > 0) {
+    return topLevelUrl;
+  }
+
+  const nestedUrl = value?.snippet?.thumbnails?.high?.url;
+
+  if (typeof nestedUrl === "string" && nestedUrl.length > 0) {
+    return nestedUrl;
+  }
+
+  return null;
 }
 
 function normalizeMetadataResponse(value: unknown): NormalizedMetadata {

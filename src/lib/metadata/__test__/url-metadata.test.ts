@@ -1,7 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import {
   fetchUrlMetadata,
+  formatCompactCount,
   isGithubContributionsProviderMetadata,
+  isYoutubeProviderMetadata,
   MetadataFetchError,
 } from "@/lib/metadata/url-metadata";
 
@@ -146,6 +148,90 @@ describe("fetchUrlMetadata", () => {
           ],
         },
       });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  test("preserves youtube provider metadata and compacts subscriber counts", async () => {
+    const originalFetch = globalThis.fetch;
+
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          canonicalUrl: "https://www.youtube.com/@harune",
+          description: "YouTube channel",
+          favicon: "https://www.youtube.com/favicon.ico",
+          fetchedAt: "2026-05-12T00:00:00.000Z",
+          image: "https://i.ytimg.com/vi/abc/hqdefault.jpg",
+          siteName: "YouTube",
+          title: "Harune",
+          url: "https://www.youtube.com/@harune",
+          provider: "youtube",
+          providerMetadata: {
+            provider: "youtube",
+            viewType: "youtube_channel",
+            fetchedAt: "2026-05-12T00:00:00.000Z",
+            payload: {
+              snippet: {
+                title: "Harune",
+                description: "YouTube channel",
+                thumbnails: {
+                  high: {
+                    url: "https://i.ytimg.com/vi/abc/hqdefault.jpg",
+                  },
+                },
+              },
+              thumbnails: {
+                high: {
+                  url: "https://i.ytimg.com/vi/abc/hqdefault.jpg",
+                },
+              },
+              statistics: {
+                subscriberCount: "1253400",
+              },
+            },
+          },
+        }),
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        }
+      )) as typeof fetch;
+
+    try {
+      const metadata = await fetchUrlMetadata("https://www.youtube.com/@harune");
+
+      expect(metadata.provider).toBe("youtube");
+      expect(isYoutubeProviderMetadata(metadata.providerMetadata)).toBe(true);
+      expect(metadata.providerMetadata).toEqual({
+        provider: "youtube",
+        viewType: "youtube_channel",
+        fetchedAt: "2026-05-12T00:00:00.000Z",
+        payload: {
+          snippet: {
+            title: "Harune",
+            description: "YouTube channel",
+            thumbnails: {
+              high: {
+                url: "https://i.ytimg.com/vi/abc/hqdefault.jpg",
+              },
+            },
+          },
+          thumbnails: {
+            high: {
+              url: "https://i.ytimg.com/vi/abc/hqdefault.jpg",
+            },
+          },
+          statistics: {
+            subscriberCount: "1253400",
+          },
+        },
+      });
+      expect(formatCompactCount("999")).toBe("999");
+      expect(formatCompactCount("1000")).toBe("1K");
+      expect(formatCompactCount("1253400")).toBe("1.3M");
     } finally {
       globalThis.fetch = originalFetch;
     }

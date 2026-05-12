@@ -77,12 +77,10 @@ export function ProfileBentoOwnerSettingPopover() {
         return;
       }
 
-      toast.success("Account deleted");
-      clearAuthenticatedAppQueries(queryClient);
+      toast.success("Check your email to confirm account deletion");
       setIsDeleteDialogOpen(false);
       setIsOpen(false);
-      router.replace("/sign-in");
-      router.refresh();
+      setIsDeletingAccount(false);
     } catch (error) {
       console.error("Account deletion failed:", error);
       toast.error("Account deletion failed Please try again");

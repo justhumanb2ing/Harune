@@ -40,7 +40,7 @@ export function DeleteAccountDialog({
             variant="ghost"
             disabled={disabled || isDeleting}
             className={cn(
-              "flex h-16 w-full items-center justify-start gap-2 px-4 py-0 font-normal text-muted-foreground",
+              "flex h-16 w-full items-center justify-start gap-2 px-4 py-0 font-normal",
               triggerClassName
             )}
           >

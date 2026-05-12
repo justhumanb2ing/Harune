@@ -1,3 +1,4 @@
+import type { NormalizedMetadata } from "@/lib/metadata/url-metadata";
 import type { PlaylistProvider } from "@/lib/profile/playlist";
 
 export const MAX_SOCIAL_LINKS = 8;
@@ -55,6 +56,7 @@ export type ProfileLinkBento = {
     favicon: string | null;
     thumbnail: string | null;
     url: string;
+    metadata?: NormalizedMetadata | null;
   };
 };
 

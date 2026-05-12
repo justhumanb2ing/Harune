@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { fetchUrlMetadata, MetadataFetchError } from "@/lib/metadata/url-metadata";
+import {
+  fetchUrlMetadata,
+  isGithubContributionsProviderMetadata,
+  MetadataFetchError,
+} from "@/lib/metadata/url-metadata";
 
 describe("fetchUrlMetadata", () => {
   test("fetches normalized metadata from the harune metadata API", async () => {
@@ -16,6 +20,7 @@ describe("fetchUrlMetadata", () => {
           canonicalUrl: "https://example.com/canonical",
           description: "Page description",
           favicon: "https://example.com/favicon.ico",
+          fetchedAt: "2026-05-12T00:00:00.000Z",
           image: "https://example.com/og.png",
           siteName: "Example Site",
           title: "OG Title",
@@ -45,6 +50,101 @@ describe("fetchUrlMetadata", () => {
         siteName: "Example Site",
         title: "OG Title",
         url: "https://example.com/post",
+        provider: null,
+        providerMetadata: null,
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  test("preserves github contribution metadata", async () => {
+    const originalFetch = globalThis.fetch;
+
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          canonicalUrl: "https://github.com/octocat",
+          description: "GitHub profile",
+          favicon: "https://github.com/favicon.ico",
+          fetchedAt: "2026-05-12T00:00:00.000Z",
+          image: null,
+          siteName: "GitHub",
+          title: "octocat",
+          url: "https://github.com/octocat",
+          provider: "github",
+          providerMetadata: {
+            provider: "github",
+            viewType: "github_contributions_60d",
+            fetchedAt: "2026-05-12T00:00:00.000Z",
+            payload: {
+              login: "octocat",
+              name: "The Octocat",
+              avatarUrl: "https://avatars.githubusercontent.com/u/583231?v=4",
+              profileUrl: "https://github.com/octocat",
+              rangeStart: "2026-04-12",
+              rangeEnd: "2026-05-12",
+              totalContributions: 128,
+              days: [
+                {
+                  date: "2026-04-12",
+                  contributionCount: 0,
+                  contributionLevel: "NONE",
+                  color: "#ebedf0",
+                  weekday: 0,
+                },
+                {
+                  date: "2026-04-13",
+                  contributionCount: 3,
+                  contributionLevel: "FIRST_QUARTILE",
+                  color: "#9be9a8",
+                  weekday: 1,
+                },
+              ],
+            },
+          },
+        }),
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        }
+      )) as typeof fetch;
+
+    try {
+      const metadata = await fetchUrlMetadata("https://github.com/octocat");
+
+      expect(metadata.provider).toBe("github");
+      expect(isGithubContributionsProviderMetadata(metadata.providerMetadata)).toBe(true);
+      expect(metadata.providerMetadata).toEqual({
+        provider: "github",
+        viewType: "github_contributions_60d",
+        fetchedAt: "2026-05-12T00:00:00.000Z",
+        payload: {
+          login: "octocat",
+          name: "The Octocat",
+          avatarUrl: "https://avatars.githubusercontent.com/u/583231?v=4",
+          profileUrl: "https://github.com/octocat",
+          rangeStart: "2026-04-12",
+          rangeEnd: "2026-05-12",
+          totalContributions: 128,
+          days: [
+            {
+              date: "2026-04-12",
+              contributionCount: 0,
+              contributionLevel: "NONE",
+              color: "#ebedf0",
+              weekday: 0,
+            },
+            {
+              date: "2026-04-13",
+              contributionCount: 3,
+              contributionLevel: "FIRST_QUARTILE",
+              color: "#9be9a8",
+              weekday: 1,
+            },
+          ],
+        },
       });
     } finally {
       globalThis.fetch = originalFetch;

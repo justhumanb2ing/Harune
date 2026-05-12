@@ -13,6 +13,16 @@ export type GetMetadataParams = {
   url: string;
 };
 
+/**
+ * @nullable
+ */
+export type GetMetadata200ProviderMetadata = {
+  provider: string;
+  viewType: string;
+  fetchedAt: string;
+  payload: { [key: string]: unknown };
+} | null;
+
 export type GetMetadata200 = {
   url: string;
   /** @nullable */
@@ -27,6 +37,10 @@ export type GetMetadata200 = {
   siteName: string | null;
   /** @nullable */
   favicon: string | null;
+  /** @nullable */
+  provider: string | null;
+  /** @nullable */
+  providerMetadata: GetMetadata200ProviderMetadata;
 };
 
 export type GetMetadata400ErrorCode =

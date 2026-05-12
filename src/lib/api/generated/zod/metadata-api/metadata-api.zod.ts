@@ -9,6 +9,11 @@ import * as zod from "zod";
 
 /**
  * Returns metadata extracted from the target URL.
+
+Rules:
+- GitHub profile URLs also include a provider metadata payload with the recent 31-day contribution calendar
+- GitHub enrichment requires `GITHUB_TOKEN`
+- Non-GitHub URLs keep the generic metadata response and leave provider fields null
  * @summary Fetch metadata for a URL
  */
 export const GetMetadataQueryParams = zod.object({
@@ -23,4 +28,13 @@ export const GetMetadataResponse = zod.object({
   image: zod.string().nullable(),
   siteName: zod.string().nullable(),
   favicon: zod.string().nullable(),
+  provider: zod.string().nullable(),
+  providerMetadata: zod
+    .object({
+      provider: zod.string(),
+      viewType: zod.string(),
+      fetchedAt: zod.string(),
+      payload: zod.record(zod.string(), zod.unknown()),
+    })
+    .nullable(),
 });

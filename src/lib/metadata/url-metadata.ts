@@ -1,3 +1,36 @@
+export type GithubContributionsDay = {
+  date: string;
+  contributionCount: number;
+  contributionLevel: string;
+  color: string;
+  weekday: number;
+};
+
+export type GithubContributionsPayload = {
+  login: string;
+  name: string | null;
+  avatarUrl: string | null;
+  profileUrl: string;
+  rangeStart: string;
+  rangeEnd: string;
+  totalContributions: number;
+  days: GithubContributionsDay[];
+};
+
+export type GithubContributionsViewType = `github_contributions_${number}d`;
+
+export type MetadataProviderMetadata = {
+  provider: string;
+  viewType: string;
+  fetchedAt: string;
+  payload: Record<string, unknown>;
+};
+
+export type GithubContributionsProviderMetadata = {
+  viewType: GithubContributionsViewType;
+  payload: GithubContributionsPayload;
+};
+
 export type NormalizedMetadata = {
   url: string;
   canonicalUrl: string | null;
@@ -6,6 +39,8 @@ export type NormalizedMetadata = {
   image: string | null;
   siteName: string | null;
   favicon: string | null;
+  provider: string | null;
+  providerMetadata: MetadataProviderMetadata | GithubContributionsProviderMetadata | null;
 };
 
 export type MetadataErrorDetails = Record<string, string | number | boolean | null>;
@@ -93,6 +128,85 @@ function isMetadataDetails(value: unknown): value is MetadataErrorDetails {
   );
 }
 
+function isGithubContributionsDay(value: unknown): value is GithubContributionsDay {
+  return (
+    isRecord(value) &&
+    typeof value.date === "string" &&
+    typeof value.contributionCount === "number" &&
+    typeof value.contributionLevel === "string" &&
+    typeof value.color === "string" &&
+    typeof value.weekday === "number"
+  );
+}
+
+function isGithubContributionsPayload(value: unknown): value is GithubContributionsPayload {
+  return (
+    isRecord(value) &&
+    typeof value.login === "string" &&
+    (typeof value.name === "string" || value.name === null) &&
+    (typeof value.avatarUrl === "string" || value.avatarUrl === null) &&
+    typeof value.profileUrl === "string" &&
+    typeof value.rangeStart === "string" &&
+    typeof value.rangeEnd === "string" &&
+    typeof value.totalContributions === "number" &&
+    Array.isArray(value.days) &&
+    value.days.every(isGithubContributionsDay)
+  );
+}
+
+function normalizeProviderMetadata(
+  value: unknown
+): MetadataProviderMetadata | GithubContributionsProviderMetadata | null {
+  if (!isRecord(value) || typeof value.viewType !== "string" || !isRecord(value.payload)) {
+    return null;
+  }
+
+  if (/^github_contributions_\d+d$/.test(value.viewType)) {
+    if (!isGithubContributionsPayload(value.payload)) {
+      return null;
+    }
+
+    return {
+      provider: value.provider,
+      viewType: value.viewType,
+      fetchedAt: value.fetchedAt,
+      payload: {
+        login: value.payload.login,
+        name: value.payload.name,
+        avatarUrl: value.payload.avatarUrl,
+        profileUrl: value.payload.profileUrl,
+        rangeStart: value.payload.rangeStart,
+        rangeEnd: value.payload.rangeEnd,
+        totalContributions: value.payload.totalContributions,
+        days: value.payload.days.map((day) => ({
+          date: day.date,
+          contributionCount: day.contributionCount,
+          contributionLevel: day.contributionLevel,
+          color: day.color,
+          weekday: day.weekday,
+        })),
+      },
+    };
+  }
+
+  return {
+    provider: value.provider,
+    viewType: value.viewType,
+    fetchedAt: value.fetchedAt,
+    payload: value.payload,
+  };
+}
+
+export function isGithubContributionsProviderMetadata(
+  value: MetadataProviderMetadata | GithubContributionsProviderMetadata | null | undefined
+): value is GithubContributionsProviderMetadata {
+  return Boolean(
+    value &&
+      /^github_contributions_\d+d$/.test(value.viewType) &&
+      isGithubContributionsPayload(value.payload)
+  );
+}
+
 function normalizeMetadataResponse(value: unknown): NormalizedMetadata {
   if (!isRecord(value)) {
     throw new Error("Invalid metadata response.");
@@ -112,6 +226,8 @@ function normalizeMetadataResponse(value: unknown): NormalizedMetadata {
     image: typeof value.image === "string" ? value.image : null,
     siteName: typeof value.siteName === "string" ? value.siteName : null,
     favicon: typeof value.favicon === "string" ? value.favicon : null,
+    provider: typeof value.provider === "string" ? value.provider : null,
+    providerMetadata: normalizeProviderMetadata(value.providerMetadata),
   };
 }
 

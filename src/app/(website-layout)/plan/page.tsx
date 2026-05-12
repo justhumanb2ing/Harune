@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import PlanSection from "@/components/website/plan-section";
 import { listBillingProducts } from "@/lib/api/generated/http/billing-api/billing-api";
 import type { ListBillingProducts200ItemsItem } from "@/lib/api/generated/http/schemas/billing-api";
@@ -8,9 +8,10 @@ import { appConfig } from "@/lib/config";
 import { createPageMetadata } from "@/lib/seo";
 import { getServerMe } from "@/lib/users/server-me";
 
+const isProduction = process.env.NODE_ENV === "production";
 const planDescription = `Compare ${appConfig.projectName} plans and pricing.`;
 
-export const metadata: Metadata = createPageMetadata({
+const planMetadata: Metadata = createPageMetadata({
   path: "/plan",
   title: "Plans",
   description: planDescription,
@@ -44,7 +45,19 @@ async function getPlanProducts(): Promise<{
   }
 }
 
+export async function generateMetadata(): Promise<Metadata> {
+  if (isProduction) {
+    return {};
+  }
+
+  return planMetadata;
+}
+
 export default async function PlanPage() {
+  if (isProduction) {
+    notFound();
+  }
+
   const currentUser = await getServerMe();
 
   if (!currentUser) {

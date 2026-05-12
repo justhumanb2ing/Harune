@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ProfileBentoPage } from "@/components/profile/v2/profile-bento-page";
 import { WebPageJsonLd } from "@/components/site-instrumentation/structured-data";
 import { ApiError } from "@/lib/api/error";
+import { getMeAnalytics } from "@/lib/api/generated/http/me-api/me-api";
 import { getProfileByHandle } from "@/lib/api/generated/http/profile-api/profile-api";
 import type {
   GetProfileByHandle200BentoItem,
@@ -46,15 +47,20 @@ const toPublicProfilePageData = (data: Awaited<ReturnType<typeof getProfileByHan
   } satisfies PublicProfilePageData;
 };
 
-const getPublicProfilePage = async (handle: string) => {
+const getRequestCookieHeader = async () => {
   const requestCookies = await cookies();
-  const cookieHeader = requestCookies.toString();
+
+  return requestCookies.toString();
+};
+
+const getPublicProfilePage = async (handle: string, cookieHeader?: string) => {
+  const resolvedCookieHeader = cookieHeader ?? (await getRequestCookieHeader());
 
   try {
     return toPublicProfilePageData(
       await getProfileByHandle(handle, {
         cache: "no-store",
-        headers: cookieHeader ? { cookie: cookieHeader } : undefined,
+        headers: resolvedCookieHeader ? { cookie: resolvedCookieHeader } : undefined,
       })
     );
   } catch (error) {
@@ -63,6 +69,29 @@ const getPublicProfilePage = async (handle: string) => {
     }
 
     throw error;
+  }
+};
+
+const getOwnerAnalyticsViews = async (cookieHeader: string) => {
+  if (!cookieHeader) {
+    return 0;
+  }
+
+  try {
+    const response = await getMeAnalytics({
+      cache: "no-store",
+      headers: {
+        cookie: cookieHeader,
+      },
+    });
+
+    if (response.status !== 200 || response.data.state !== "ready") {
+      return 0;
+    }
+
+    return response.data.summaries.today.pageViews ?? 0;
+  } catch {
+    return 0;
   }
 };
 
@@ -88,7 +117,8 @@ export async function generateMetadata({ params }: HandlePageProps): Promise<Met
 
 export default async function HandlePage({ params }: HandlePageProps) {
   const { handle } = await params;
-  const dataPromise = getPublicProfilePage(handle);
+  const cookieHeader = await getRequestCookieHeader();
+  const dataPromise = getPublicProfilePage(handle, cookieHeader);
   const mePromise = getServerMe();
   const data = await dataPromise;
 
@@ -99,6 +129,7 @@ export default async function HandlePage({ params }: HandlePageProps) {
   const isOwner = data.viewer.canEdit;
   const me = isOwner ? null : await mePromise;
   const editorData = isOwner ? toProfilePageEditorDataFromPublicPage(data.page) : null;
+  const analyticsViews = isOwner ? await getOwnerAnalyticsViews(cookieHeader) : 0;
   const title = `${data.page.name || data.page.userName || data.page.handle} on ${appConfig.projectName}`;
 
   return (
@@ -125,7 +156,7 @@ export default async function HandlePage({ params }: HandlePageProps) {
           bento={data.bento}
           editorData={editorData}
           isOwner={isOwner}
-          analyticsViews={0}
+          analyticsViews={analyticsViews}
           viewerProfilePage={me?.profilePage ?? null}
         />
       </main>

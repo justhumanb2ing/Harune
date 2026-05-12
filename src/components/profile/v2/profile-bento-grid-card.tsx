@@ -514,12 +514,7 @@ function LinkSupportingPanel({
       return <GithubContributionsPanel metadata={metadata} className={className} />;
     }
 
-    return (
-      <div
-        aria-hidden
-        className={cn("pointer-events-none relative h-full w-full select-none", className)}
-      />
-    );
+    return <LinkThumbnail thumbnail={item.content.thumbnail} className={className} />;
   }
 
   return <LinkThumbnail thumbnail={item.content.thumbnail} className={className} />;

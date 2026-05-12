@@ -1,18 +1,48 @@
 "use client";
 
 import { ArrowRightIcon, CheckIcon } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
 import { getProfileAppPath } from "@/lib/profile/app-paths";
 
+const Confetti = dynamic(() => import("react-confetti"), { ssr: false });
+
 type OnboardingSuccessProps = {
   handle: string;
 };
 
+function useViewportSize() {
+  const [size, setSize] = React.useState({
+    height: 0,
+    width: 0,
+  });
+
+  React.useEffect(() => {
+    const updateSize = () => {
+      setSize({
+        height: window.innerHeight,
+        width: window.innerWidth,
+      });
+    };
+
+    updateSize();
+    window.addEventListener("resize", updateSize);
+
+    return () => {
+      window.removeEventListener("resize", updateSize);
+    };
+  }, []);
+
+  return size;
+}
+
 export function OnboardingSuccess({ handle }: OnboardingSuccessProps) {
   const [isCopied, setIsCopied] = React.useState(false);
+  const [showConfetti, setShowConfetti] = React.useState(true);
+  const { height, width } = useViewportSize();
 
   React.useEffect(() => {
     if (!isCopied) {
@@ -34,9 +64,21 @@ export function OnboardingSuccess({ handle }: OnboardingSuccessProps) {
   };
 
   return (
-    <div className="flex h-full flex-col gap-4 py-6 items-center justify-center bg-background">
+    <div className="relative flex h-full flex-col gap-4 items-center justify-center bg-background py-6">
+      {showConfetti && width > 0 && height > 0 ? (
+        <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+          <Confetti
+            width={width}
+            height={height}
+            numberOfPieces={200}
+            recycle={true}
+            gravity={0.18}
+          />
+        </div>
+      ) : null}
+
       <div className="max-w-md mx-auto w-full flex-1 px-4 pb-8">
-        <div className="flex flex-col min-h-full gap-32 pt-20 lg:flex-row">
+        <div className="relative z-10 flex min-h-full flex-col gap-32 pt-20 lg:flex-row">
           {/* <div className="flex-4 w-full min-h-full h-full rounded-xl overflow-hidden">
             <Image
               src={"/images/onboarding_sample.jpeg"}

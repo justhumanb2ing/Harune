@@ -34,6 +34,8 @@ Landing page /
   -> /{handle}
 ```
 
+`/create/success`는 짧은 축하 진입점이다. 성공 직후 confetti 같은 celebratory motion을 보여주되, 복사 버튼과 page CTA 가독성은 유지해야 한다.
+
 기존 사용자는 더 짧게 이동한다.
 
 ```text

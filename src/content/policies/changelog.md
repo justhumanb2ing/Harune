@@ -6,6 +6,7 @@ description: See the latest Harune product updates and user-visible improvements
 
 ## May 12, 2026
 - Added contribution UI when adding GitHub links to profile bento cards.
+- Added YouTube link preview UI when adding YouTube links to profile bento cards.
 
 ## May 11, 2026
 - Added explicit progress indicators when entering the sign-in and sign-up pages.

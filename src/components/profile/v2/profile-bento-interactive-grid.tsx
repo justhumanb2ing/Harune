@@ -41,7 +41,11 @@ import { appConfig } from "@/lib/config";
 import { BREAKPOINTS, COLS, GRID_MARGIN, getGridRowHeight } from "@/lib/grid/grid-config";
 import { normalizeLayouts } from "@/lib/grid/grid-layout-utils";
 import type { GridBreakpoint, GridLayouts, ResizeOption } from "@/lib/grid/grid-types";
-import type { MetadataErrorResponse, NormalizedMetadata } from "@/lib/metadata/url-metadata";
+import {
+  isGithubContributionsProviderMetadata,
+  type MetadataErrorResponse,
+  type NormalizedMetadata,
+} from "@/lib/metadata/url-metadata";
 import { getProfileAppPath, getProfileRouteHandle } from "@/lib/profile/app-paths";
 import {
   getProfileBentoMediaFileError,
@@ -136,6 +140,7 @@ function createLinkBentoSkeleton(
       favicon: "",
       thumbnail: "",
       url: rawUrl,
+      metadata: null,
     },
   };
 }
@@ -145,7 +150,12 @@ function createLinkBentoFromCrawl(
   rawUrl: string,
   data: NormalizedMetadata
 ): Extract<ProfileBentoItem, { type: "link" }> {
-  const resolvedUrl = data.canonicalUrl?.trim() || data.url?.trim() || rawUrl;
+  const githubContributionsMetadata = isGithubContributionsProviderMetadata(data.providerMetadata);
+  const resolvedUrl =
+    (githubContributionsMetadata ? data.providerMetadata.payload.profileUrl.trim() : "") ||
+    data.canonicalUrl?.trim() ||
+    data.url?.trim() ||
+    rawUrl;
   let fallbackTitle = resolvedUrl;
 
   try {
@@ -154,14 +164,19 @@ function createLinkBentoFromCrawl(
     fallbackTitle = resolvedUrl;
   }
 
+  const githubFallbackTitle = githubContributionsMetadata
+    ? data.providerMetadata.payload.name?.trim() || data.providerMetadata.payload.login
+    : "";
+
   return {
     ...item,
     content: {
-      title: data.title?.trim() || fallbackTitle,
+      title: data.title?.trim() || githubFallbackTitle || fallbackTitle,
       description: data.description?.trim() || "",
       favicon: data.favicon?.trim() || "",
-      thumbnail: data.image?.trim() || "",
+      thumbnail: githubContributionsMetadata ? "" : data.image?.trim() || "",
       url: resolvedUrl,
+      metadata: data,
     },
   };
 }

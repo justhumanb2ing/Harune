@@ -127,6 +127,7 @@ export function createAutoBentoItem(type: CreatableBentoType, currentItems: Prof
         favicon: "https://www.google.com/s2/favicons?domain=example.com&sz=64",
         thumbnail: `https://picsum.photos/seed/${encodeURIComponent(id)}/640/360`,
         url: `https://example.com/link-${count}`,
+        metadata: null,
       },
     } satisfies ProfileBentoItem;
   }

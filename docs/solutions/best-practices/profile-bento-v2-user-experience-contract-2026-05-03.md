@@ -122,6 +122,7 @@ Link item의 thumbnail과 favicon 영역은 이미지 유무와 관계없이 같
 - thumbnail wrapper와 내부 image는 `pointer-events: none`을 유지한다.
 - thumbnail 영역이 pointer event를 받으면 grid item drag/resize 시작점과 충돌할 수 있다.
 - 2x2, 2x4, 1x4 link item에서 thumbnail/favicon이 있는 경우와 없는 경우 모두 editor/public visual parity와 resize control이 끊기지 않아야 한다. 1x2, 2x1처럼 thumbnail을 보여주지 않는 size에는 thumbnail slot을 만들지 않는다.
+- GitHub link item이 `provider === "github"`이고 `providerMetadata.viewType`가 `github_contributions_`로 시작하는 contributions view일 때는 thumbnail slot 대신 잔디 패널을 렌더링한다. 이 패널은 thumbnail-capable size에서만 보여야 하며, 일반 URL은 기존 thumbnail 기반 metadata UI를 유지한다.
 
 ### Text And Section Density
 

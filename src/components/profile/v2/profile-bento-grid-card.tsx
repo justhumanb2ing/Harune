@@ -1,7 +1,14 @@
 import { ArrowCircleUpRightIcon } from "@phosphor-icons/react";
 import Image from "next/image";
-import { type CSSProperties, memo, useCallback, useEffect, useRef, useState } from "react";
-import { PlaylistIframe } from "@/components/profile/playlist-iframe";
+import {
+  type CSSProperties,
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   Map as BentoMap,
   MapControls,
@@ -11,6 +18,10 @@ import {
 } from "@/components/ui/map";
 import type { GridBreakpoint, ResizeOptionId } from "@/lib/grid/grid-types";
 import { resolveLinkProviderTheme } from "@/lib/metadata/link-provider-theme";
+import {
+  isGithubContributionsProviderMetadata,
+  type NormalizedMetadata,
+} from "@/lib/metadata/url-metadata";
 import type { ProfileBentoItem } from "@/lib/profile/types";
 import { cn } from "@/lib/utils";
 
@@ -354,6 +365,165 @@ function LinkThumbnail({ thumbnail, className }: { thumbnail: string | null; cla
   );
 }
 
+type GithubContributionsGridMetrics = {
+  cellSize: number;
+  columns: number;
+  rows: number;
+};
+
+function calculateGithubContributionsGridMetrics(
+  width: number,
+  height: number,
+  count: number,
+  gap = 6
+): GithubContributionsGridMetrics {
+  if (count <= 0) {
+    return {
+      cellSize: 0,
+      columns: 0,
+      rows: 0,
+    };
+  }
+
+  if (width <= 0 || height <= 0) {
+    return {
+      cellSize: 8,
+      columns: count,
+      rows: 1,
+    };
+  }
+
+  let best: GithubContributionsGridMetrics = {
+    cellSize: 1,
+    columns: count,
+    rows: 1,
+  };
+
+  for (let columns = 1; columns <= count; columns += 1) {
+    const rows = Math.ceil(count / columns);
+    const widthLimitedSize = (width - gap * (columns - 1)) / columns;
+    const heightLimitedSize = (height - gap * (rows - 1)) / rows;
+    const cellSize = Math.floor(Math.min(widthLimitedSize, heightLimitedSize));
+
+    if (cellSize > best.cellSize) {
+      best = {
+        cellSize,
+        columns,
+        rows,
+      };
+    }
+  }
+
+  return {
+    cellSize: Math.max(1, best.cellSize),
+    columns: best.columns,
+    rows: best.rows,
+  };
+}
+
+function GithubContributionsPanel({
+  metadata,
+  className,
+}: {
+  metadata: NormalizedMetadata;
+  className?: string;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [gridMetrics, setGridMetrics] = useState<GithubContributionsGridMetrics>({
+    cellSize: 12,
+    columns: 7,
+    rows: 1,
+  });
+  const isGithubContributions = isGithubContributionsProviderMetadata(metadata.providerMetadata);
+  const dayCount = isGithubContributions ? metadata.providerMetadata.payload.days.length : 0;
+
+  useLayoutEffect(() => {
+    const updateGridMetrics = () => {
+      const rect = containerRef.current?.getBoundingClientRect();
+
+      if (!rect || rect.width <= 0 || rect.height <= 0) {
+        return;
+      }
+
+      setGridMetrics(calculateGithubContributionsGridMetrics(rect.width, rect.height, dayCount));
+    };
+
+    updateGridMetrics();
+
+    const observer = new ResizeObserver(updateGridMetrics);
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [dayCount]);
+
+  if (!isGithubContributions) {
+    return null;
+  }
+
+  const { payload } = metadata.providerMetadata;
+
+  return (
+    <div
+      aria-hidden
+      className={cn(
+        "relative h-full w-full min-h-0 min-w-0 overflow-hidden select-none",
+        className
+      )}
+      ref={containerRef}
+    >
+      <div className="flex h-full w-full items-center justify-center">
+        <div
+          className="grid gap-1.5"
+          style={{
+            gridTemplateColumns: `repeat(${gridMetrics.columns}, ${gridMetrics.cellSize}px)`,
+            gridTemplateRows: `repeat(${gridMetrics.rows}, ${gridMetrics.cellSize}px)`,
+          }}
+        >
+          {payload.days.map((day) => (
+            <div
+              key={day.date}
+              className="rounded-[3px] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)]"
+              style={{ backgroundColor: day.color }}
+              title={day.date}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LinkSupportingPanel({
+  item,
+  className,
+}: {
+  item: Extract<ProfileBentoItem, { type: "link" }>;
+  className?: string;
+}) {
+  const providerTheme = resolveLinkProviderTheme(item.content.url);
+  const metadata = item.content.metadata ?? null;
+
+  if (providerTheme?.provider === "github") {
+    if (metadata && isGithubContributionsProviderMetadata(metadata.providerMetadata)) {
+      return <GithubContributionsPanel metadata={metadata} className={className} />;
+    }
+
+    return (
+      <div
+        aria-hidden
+        className={cn("pointer-events-none relative h-full w-full select-none", className)}
+      />
+    );
+  }
+
+  return <LinkThumbnail thumbnail={item.content.thumbnail} className={className} />;
+}
+
 function ReadonlyLinkBento({
   item,
   layoutSize,
@@ -411,7 +581,7 @@ function ReadonlyLinkBento({
             />
           ) : null}
         </div>
-        <LinkThumbnail thumbnail={item.content.thumbnail} className="h-full w-[46%] shrink-0" />
+        <LinkSupportingPanel item={item} className="h-full w-[46%] min-h-0 min-w-0 shrink-0" />
       </article>
     );
   }
@@ -439,7 +609,7 @@ function ReadonlyLinkBento({
             />
           ) : null}
         </div>
-        <LinkThumbnail thumbnail={item.content.thumbnail} className="h-[58%] w-full shrink-0" />
+        <LinkSupportingPanel item={item} className="h-[58%] w-full min-h-0 min-w-0 shrink-0" />
       </article>
     );
   }
@@ -467,7 +637,7 @@ function ReadonlyLinkBento({
             />
           ) : null}
         </div>
-        <LinkThumbnail thumbnail={item.content.thumbnail} className="h-[42%] w-full shrink-0" />
+        <LinkSupportingPanel item={item} className="h-[42%] w-full min-h-0 min-w-0 shrink-0" />
       </article>
     );
   }
@@ -554,7 +724,7 @@ function EditableLinkBento({
           ) : null}
         </div>
 
-        <LinkThumbnail thumbnail={item.content.thumbnail} className="h-full w-[46%] shrink-0" />
+        <LinkSupportingPanel item={item} className="h-full w-[46%] shrink-0" />
       </article>
     );
   }
@@ -580,7 +750,7 @@ function EditableLinkBento({
             />
           ) : null}
         </div>
-        <LinkThumbnail thumbnail={item.content.thumbnail} className="h-[58%] w-full shrink-0" />
+        <LinkSupportingPanel item={item} className="h-[58%] w-full shrink-0" />
       </article>
     );
   }
@@ -606,7 +776,7 @@ function EditableLinkBento({
             />
           ) : null}
         </div>
-        <LinkThumbnail thumbnail={item.content.thumbnail} className="h-[42%] w-full shrink-0" />
+        <LinkSupportingPanel item={item} className="h-[42%] w-full shrink-0" />
       </article>
     );
   }
@@ -1065,14 +1235,6 @@ function ProfileBentoGridCardContent({
 
   if (item.type === "text") {
     return <ReadonlyTextBento content={item.content.content} />;
-  }
-
-  if (item.type === "playlist") {
-    return (
-      <article className="relative size-full overflow-hidden rounded-lg">
-        <PlaylistIframe content={item.content.content} title={item.content.title} />
-      </article>
-    );
   }
 
   if (item.type === "media") {

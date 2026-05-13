@@ -32,6 +32,7 @@ const GRID_CARD_MOTION_EASE = [0.22, 1, 0.36, 1] as const;
 type GridCardStyle = MotionStyle & {
   "--grid-card-muted-foreground"?: string;
   "--grid-card-control-background"?: string;
+  "--tw-inset-ring-color"?: string;
 };
 
 function getGridCardMotion(phase: GridCardMotionPhase | undefined, shouldReduceMotion: boolean) {
@@ -79,6 +80,7 @@ export function GridCard({
   children,
 }: GridCardProps) {
   const isThinPlaceholderItem = item.id === THIN_PLACEHOLDER_ITEM_ID;
+  const isLinkItem = item.itemType === "link";
   const isSectionItem = item.itemType === "section";
   const isVisuallyThinItem = isThinPlaceholderItem || item.itemType === "section";
   const resizeOptions = getResizeOptionsForItem(item);
@@ -87,8 +89,7 @@ export function GridCard({
   const [isSectionFocusActive, setIsSectionFocusActive] = useState(false);
   const shouldShowSectionShadow =
     isSectionItem && !readOnly && (isSectionPointerActive || isSectionFocusActive || isDragActive);
-  const shadowClassName =
-    !isSectionItem || shouldShowSectionShadow ? "shadow-float" : "shadow-none";
+  const shadowClassName = !isSectionItem || shouldShowSectionShadow ? "shadow-xs" : "shadow-none";
   const outlineClassName = isSectionItem ? "outline-transparent" : "outline-border/35";
   const isFullBleedItem = item.itemType === "media" || item.itemType === "map";
   const paddingClassName = isFullBleedItem ? "p-0" : isVisuallyThinItem ? "p-2" : "p-3.5";
@@ -104,14 +105,19 @@ export function GridCard({
     ? {
         "--grid-card-control-background": item.theme.controlBackgroundColor,
         "--grid-card-muted-foreground": item.theme.mutedForegroundColor,
+        "--tw-inset-ring-color": isLinkItem
+          ? `color-mix(in srgb, ${item.theme.backgroundColor} 90%, black)`
+          : "color-mix(in srgb, var(--border) 80%, transparent)",
         backgroundColor: item.theme.backgroundColor,
         color: item.theme.foregroundColor,
       }
-    : {};
+    : {
+        "--tw-inset-ring-color": "color-mix(in srgb, var(--border) 80%, transparent)",
+      };
 
   return (
     <motion.div
-      className={`group/item relative flex w-full flex-col justify-between outline ${outlineClassName} ${radiusClassName} bg-white ${paddingClassName} pointer-events-auto transition-shadow ${bevelClassName} ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} ${shadowClassName} ${dragInteractionClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isDragActive || motionPhase ? "will-change-transform" : ""} ${isDragActive ? "drop-shadow-xs" : ""} ${isExiting ? "pointer-events-none select-none shadow-none" : ""}`}
+      className={`group/item relative flex w-full flex-col justify-between inset-ring-1 ${outlineClassName} ${radiusClassName} bg-white ${paddingClassName} pointer-events-auto transition-shadow ${bevelClassName} ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} ${shadowClassName} ${dragInteractionClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isDragActive || motionPhase ? "will-change-transform" : ""} ${isDragActive ? "drop-shadow-xs" : ""} ${isExiting ? "pointer-events-none select-none shadow-none" : ""}`}
       data-link-provider-theme={item.theme ? "true" : undefined}
       onBlurCapture={(event) => {
         if (!isSectionItem || event.currentTarget.contains(event.relatedTarget)) {

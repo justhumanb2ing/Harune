@@ -51,13 +51,14 @@ const linkProviderThemeEntries = [
     provider: "threads",
     actionLabel: "Follow",
     color: "#000000",
-    pastelColor: "#f7f7f7",
+    pastelColor: "#ffffff",
     hosts: ["threads.com", "threads.net"],
   },
   {
     provider: "instagram",
+    actionForegroundColor: "#ffffff",
     actionLabel: "Follow",
-    color: "#1769ff",
+    color: "#3797f0",
     pastelColor: "#ffffff",
     hosts: ["instagram.com"],
   },
@@ -78,8 +79,8 @@ const linkProviderThemeEntries = [
   {
     provider: "chzzk",
     actionLabel: "Watch",
-    color: "#00ffa3",
-    pastelColor: "#effff9",
+    color: "#000000",
+    pastelColor: "#ffffff",
     hosts: ["chzzk.naver.com"],
   },
   {
@@ -108,7 +109,7 @@ const linkProviderThemeEntries = [
     provider: "medium",
     actionLabel: "Read",
     color: "#000000",
-    pastelColor: "#f7f7f7",
+    pastelColor: "#ffffff",
     hosts: ["medium.com"],
   },
   {
@@ -139,7 +140,7 @@ const linkProviderThemeEntries = [
     provider: "tiktok",
     actionLabel: "Watch",
     color: "#000000",
-    pastelColor: "#f7f7f7",
+    pastelColor: "#ffffff",
     hosts: ["tiktok.com"],
   },
   {

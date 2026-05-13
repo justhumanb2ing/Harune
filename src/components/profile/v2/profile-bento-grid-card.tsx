@@ -167,7 +167,7 @@ function LinkFavicon({
       {hasFavicon ? (
         // biome-ignore lint/performance/noImgElement: Link favicon thumbnails are rendered directly.
         <img
-          src={`${favicon}?v=2&s=80`}
+          src={`${favicon}?v=2&s=130`}
           alt="favicon"
           height={40}
           width={40}
@@ -244,7 +244,7 @@ function LinkTitleText({ title, className }: { title: string; className?: string
   return (
     <h2
       className={cn(
-        "min-h-9 min-w-0 truncate rounded-md px-0 py-1.5 font-medium text-base",
+        "grid-action -ml-1 h-7 min-w-0 truncate rounded-[4px] px-2 py-1.5 font-normal text-sm outline-none",
         className
       )}
     >
@@ -271,7 +271,7 @@ function ReadonlyLinkFavicon({
   return (
     <a
       aria-label={title ? `Open ${title}` : "Open link"}
-      className="grid-action inline-flex size-9 shrink-0 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50 md:size-10"
+      className="grid-action inline-flex size-9 shrink-0 overflow-hidden rounded-lg outline-none surface-bevel shadow-sm md:size-10"
       href={href}
       onClick={preventNavigation ? (event) => event.preventDefault() : undefined}
       rel="noreferrer"
@@ -299,7 +299,7 @@ function ReadonlyLinkAction({
     <a
       aria-label={label}
       className={cn(
-        "grid-action outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring/50 !bg-[var(--link-provider-action-background)] !text-[var(--link-provider-action-foreground)]",
+        "grid-action rounded-xs outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring/50 !bg-[var(--link-provider-action-background)] !text-[var(--link-provider-action-foreground)]",
         LINK_PROVIDER_ACTION_LABEL_CLASS_NAME
       )}
       href={href}

@@ -8,6 +8,7 @@ import {
   useProfilePageEditorStore,
   useProfilePageEditorStoreApi,
 } from "@/components/profile/layout/profile-editor-provider";
+import { normalizeProfileBentoItems } from "@/components/profile/v2/profile-bento-grid-model";
 import { buildSyncPayload } from "@/hooks/profile-editor-store";
 import type { getMeResponse } from "@/lib/api/generated/http/me-api/me-api";
 import { getGetMeQueryKey } from "@/lib/api/generated/http/me-api/me-api";
@@ -16,7 +17,10 @@ import {
   useUpdateProfilePage,
 } from "@/lib/api/generated/http/profile-api/profile-api";
 import type { GetMe200 } from "@/lib/api/generated/http/schemas/me-api";
-import type { UpdateProfilePageBody } from "@/lib/api/generated/http/schemas/profile-api";
+import type {
+  UpdateProfilePageBody,
+  UpdateProfilePageBodyBentoItem,
+} from "@/lib/api/generated/http/schemas/profile-api";
 import { getProfileRouteHandle } from "@/lib/profile/app-paths";
 import { uploadProfileImageIfChanged } from "@/lib/profile/client-image-upload";
 import { toProfilePageEditorDataFromPublicPage } from "@/lib/profile/public-profile-page";
@@ -114,7 +118,7 @@ export function useProfilePageEditor(initialUser?: GetMe200 | null) {
     bento,
   }: {
     draftDataOverride?: ProfilePageDraftData;
-    bento?: ProfileBentoItem[];
+    bento?: UpdateProfilePageBodyBentoItem[];
   } = {}) => {
     const currentState = store.getState();
     const profilePageQueryKey = profilePageQuery.queryKey;
@@ -146,6 +150,7 @@ export function useProfilePageEditor(initialUser?: GetMe200 | null) {
       const profilePageData: ProfilePageData = toProfilePageEditorDataFromPublicPage(
         response.data.page
       );
+      const normalizedBento = normalizeProfileBentoItems(response.data.bento as ProfileBentoItem[]);
 
       queryClient.setQueryData(profilePageQueryKey, profilePageData);
       queryClient.setQueryData<getMeResponse>(getGetMeQueryKey(), (current) => {
@@ -172,7 +177,13 @@ export function useProfilePageEditor(initialUser?: GetMe200 | null) {
         queryKey: profilePageQueryKey,
         refetchType: "active",
       });
-      return response;
+      return {
+        ...response,
+        data: {
+          ...response.data,
+          bento: normalizedBento,
+        },
+      };
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to sync";
       store.actions.setSyncError(message);

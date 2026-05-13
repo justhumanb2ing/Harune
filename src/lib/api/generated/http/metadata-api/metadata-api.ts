@@ -21,8 +21,8 @@ import type {
   UseSuspenseQueryResult,
 } from "@tanstack/react-query";
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { orvalMutator } from "../../../orval-mutator";
 import { getAppApiBaseURL } from "../../../base-url";
+import { orvalMutator } from "../../../orval-mutator";
 import type {
   GetMetadata200,
   GetMetadata400,
@@ -93,6 +93,7 @@ export const getGetMetadataUrl = (params: GetMetadataParams) => {
  * Returns metadata extracted from the target URL.
 
 Rules:
+- `domain` is the normalized hostname from the resolved URL with common prefixes like `www.` removed
 - GitHub profile URLs also include a provider metadata payload with the recent 60-day contribution calendar
 - GitHub enrichment requires `GITHUB_TOKEN`
 - YouTube channel URLs also include a provider metadata payload from `channels.list` and the server tries `id`, `forHandle`, and `forUsername` until one returns a channel

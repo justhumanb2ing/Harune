@@ -20,7 +20,7 @@ export const ROW_HEIGHT = {
 
 export const RESIZE_OPTIONS: readonly ResizeOption[] = [
   { id: "1x2", w: 1, h: 2 },
-  { id: "2x1", w: 2, h: 1, hiddenForItemTypes: ["map", "media", "playlist", "section"] },
+  { id: "2x1", w: 2, h: 1, hiddenForItemTypes: ["map", "media", "section"] },
   { id: "2x2", w: 2, h: 2 },
   { id: "1x4", w: 1, h: 4, hiddenForItemTypes: ["section"] },
   { id: "2x4", w: 2, h: 4, hiddenForItemTypes: ["section"] },
@@ -39,7 +39,6 @@ export function getGridRowHeight(width: number, breakpoint: GridBreakpoint) {
 export const BENTO_GRID_SIZE_CONSTRAINTS = {
   link: { minW: 1, maxW: 4, minH: 1, maxH: 4 },
   text: { minW: 1, maxW: 4, minH: 1, maxH: 4 },
-  playlist: { minW: 1, maxW: 4, minH: 1, maxH: 4 },
   section: { minW: 4, maxW: 4, minH: 2, maxH: 2 },
   media: { minW: 1, maxW: 4, minH: 1, maxH: 4 },
   map: { minW: 1, maxW: 4, minH: 2, maxH: 4 },
@@ -51,18 +50,6 @@ export const INITIAL_LAYOUTS = {
   desktop: [
     { i: "profile", x: 0, y: 0, w: 2, h: 4, minW: 1, maxW: 4, minH: 1, maxH: 4, isResizable: true },
     { i: "links", x: 2, y: 0, w: 2, h: 4, minW: 1, maxW: 4, minH: 1, maxH: 4, isResizable: true },
-    {
-      i: "playlist",
-      x: 0,
-      y: 4,
-      w: 2,
-      h: 4,
-      minW: 1,
-      maxW: 4,
-      minH: 1,
-      maxH: 4,
-      isResizable: true,
-    },
     { i: "stats", x: 2, y: 4, w: 1, h: 4, minW: 1, maxW: 4, minH: 1, maxH: 4, isResizable: true },
     { i: "notes", x: 3, y: 4, w: 1, h: 4, minW: 1, maxW: 4, minH: 1, maxH: 4, isResizable: true },
     {
@@ -81,24 +68,12 @@ export const INITIAL_LAYOUTS = {
   compact: [
     { i: "profile", x: 0, y: 0, w: 2, h: 4, minW: 1, maxW: 4, minH: 1, maxH: 4, isResizable: true },
     { i: "links", x: 0, y: 4, w: 2, h: 4, minW: 1, maxW: 4, minH: 1, maxH: 4, isResizable: true },
-    {
-      i: "playlist",
-      x: 0,
-      y: 8,
-      w: 2,
-      h: 4,
-      minW: 1,
-      maxW: 4,
-      minH: 1,
-      maxH: 4,
-      isResizable: true,
-    },
-    { i: "stats", x: 0, y: 12, w: 1, h: 4, minW: 1, maxW: 4, minH: 1, maxH: 4, isResizable: true },
-    { i: "notes", x: 1, y: 12, w: 1, h: 4, minW: 1, maxW: 4, minH: 1, maxH: 4, isResizable: true },
+    { i: "stats", x: 0, y: 8, w: 1, h: 4, minW: 1, maxW: 4, minH: 1, maxH: 4, isResizable: true },
+    { i: "notes", x: 1, y: 8, w: 1, h: 4, minW: 1, maxW: 4, minH: 1, maxH: 4, isResizable: true },
     {
       i: THIN_PLACEHOLDER_ITEM_ID,
       x: 0,
-      y: 16,
+      y: 12,
       w: 2,
       h: 2,
       minW: 2,
@@ -113,7 +88,6 @@ export const INITIAL_LAYOUTS = {
 export const INITIAL_GRID_ITEMS = [
   { id: "profile", label: "Profile", description: "Resizable hero card" },
   { id: "links", label: "Links", description: "Minimum 1 column, maximum full row" },
-  { id: "playlist", label: "Playlist", description: "Drag and resize inside the grid" },
   { id: "stats", label: "Stats", description: "Small constrained block" },
   { id: "notes", label: "Notes", description: "Tall note block" },
   {

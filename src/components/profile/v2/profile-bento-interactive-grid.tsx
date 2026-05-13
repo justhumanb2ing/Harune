@@ -37,6 +37,7 @@ import { useProfilePageEditor } from "@/hooks/use-profile-editor";
 import { ApiError } from "@/lib/api/error";
 import { getMetadata } from "@/lib/api/generated/http/metadata-api/metadata-api";
 import { uploadProfileBentoMedia } from "@/lib/api/generated/http/profile-api/profile-api";
+import type { UpdateProfilePageBodyBentoItem } from "@/lib/api/generated/http/schemas/profile-api";
 import { appConfig } from "@/lib/config";
 import { BREAKPOINTS, COLS, GRID_MARGIN, getGridRowHeight } from "@/lib/grid/grid-config";
 import { normalizeLayouts } from "@/lib/grid/grid-layout-utils";
@@ -63,6 +64,7 @@ import {
   createAutoBentoItem,
   createPreviewDraftBentoId,
   mergeLayoutsIntoBento,
+  normalizeProfileBentoItems,
   toBentoGridItem,
   toBentoGridLayouts,
   toBentoItemTypeById,
@@ -86,13 +88,15 @@ const createPayload = (items: ProfileBentoItem[], layouts: GridLayouts) => ({
       return item;
     }
 
+    const { domain: _domain, ...content } = item.content;
+
     return {
       ...item,
       content: {
-        ...item.content,
+        ...content,
         description: "",
-        favicon: item.content.favicon ?? "",
-        thumbnail: item.content.thumbnail ?? "",
+        favicon: content.favicon ?? "",
+        thumbnail: content.thumbnail ?? "",
       },
     };
   }),
@@ -138,6 +142,7 @@ function createLinkBentoSkeleton(
       title: "",
       description: "",
       favicon: "",
+      domain: "",
       thumbnail: "",
       url: rawUrl,
       metadata: null,
@@ -154,15 +159,14 @@ function createLinkBentoFromCrawl(
   const githubContributionsMetadata = isGithubContributionsProviderMetadata(providerMetadata);
   const resolvedUrl =
     (githubContributionsMetadata ? providerMetadata.payload.profileUrl.trim() : "") ||
-    data.canonicalUrl?.trim() ||
     data.url?.trim() ||
     rawUrl;
-  let fallbackTitle = resolvedUrl;
+  let fallbackTitle = data.domain?.trim() || resolvedUrl;
 
   try {
     fallbackTitle = new URL(resolvedUrl).hostname.replace(/^www\./, "");
   } catch {
-    fallbackTitle = resolvedUrl;
+    fallbackTitle = data.domain?.trim() || resolvedUrl;
   }
 
   const githubFallbackTitle = githubContributionsMetadata
@@ -175,6 +179,7 @@ function createLinkBentoFromCrawl(
       title: data.title?.trim() || githubFallbackTitle || fallbackTitle,
       description: data.description?.trim() || "",
       favicon: data.favicon?.trim() || "",
+      domain: data.domain?.trim() || fallbackTitle,
       thumbnail: githubContributionsMetadata ? "" : data.image?.trim() || "",
       url: resolvedUrl,
       metadata: data,
@@ -336,6 +341,9 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     initialWidth: 864,
     measureBeforeMount: true,
   });
+  const lastLayoutBreakpointRef = useRef<GridBreakpoint>(
+    width > BREAKPOINTS.desktop ? "desktop" : "compact"
+  );
   const [bento, setBento] = useState(initialBento);
   const [layouts, setLayouts] = useState<GridLayouts>(() => toBentoGridLayouts(initialBento));
   const [savedSnapshot, setSavedSnapshot] = useState(() =>
@@ -377,6 +385,10 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     updateDragPointer,
   } = useGridDragMotion();
   const activeBreakpoint: GridBreakpoint = width > BREAKPOINTS.desktop ? "desktop" : "compact";
+  // Ignore the automatic responsive layout sync that happens when the viewport crosses a breakpoint.
+  useEffect(() => {
+    lastLayoutBreakpointRef.current = activeBreakpoint;
+  }, [activeBreakpoint]);
   const bentoById = useMemo(() => new Map(bento.map((item) => [item.id, item] as const)), [bento]);
   const itemTypeById = useMemo(() => toBentoItemTypeById(bento), [bento]);
   const gridItems = useMemo(() => bento.map(toBentoGridItem), [bento]);
@@ -884,7 +896,8 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
             payloadBento
               ? {
                   draftDataOverride: nextDraftData,
-                  bento: createPayload(payloadBento, layouts).bento,
+                  bento: createPayload(payloadBento, layouts)
+                    .bento as UpdateProfilePageBodyBentoItem[],
                 }
               : { draftDataOverride: nextDraftData }
           );
@@ -894,7 +907,10 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
           }
 
           const responseData = response.data;
-          const nextLayouts = toBentoGridLayouts(responseData.bento);
+          const normalizedResponseBento = normalizeProfileBentoItems(
+            responseData.bento as ProfileBentoItem[]
+          );
+          const nextLayouts = toBentoGridLayouts(normalizedResponseBento);
 
           for (const id of pendingMediaUploadIds) {
             const objectUrl = mediaObjectUrlsByIdRef.current[id];
@@ -907,9 +923,9 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
             delete pendingMediaUploadByIdRef.current[id];
           }
 
-          setBento(responseData.bento);
+          setBento(normalizedResponseBento);
           setLayouts(nextLayouts);
-          setSavedSnapshot(createPayloadSnapshot(responseData.bento, nextLayouts));
+          setSavedSnapshot(createPayloadSnapshot(normalizedResponseBento, nextLayouts));
           router.refresh();
         }
       } catch (error) {
@@ -1079,6 +1095,11 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
             onDragStop={stopDrag}
             onItemMotionComplete={completeItemMotion}
             onLayoutChange={(nextLayouts) => {
+              // Viewport-only resizes can emit a layout rewrite; keep it out of dirty state.
+              if (lastLayoutBreakpointRef.current !== activeBreakpoint) {
+                return;
+              }
+
               setLayouts(normalizeLayouts(nextLayouts, itemTypeById));
             }}
             onRemoveItem={removeItem}

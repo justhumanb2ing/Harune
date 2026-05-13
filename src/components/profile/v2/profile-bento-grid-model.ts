@@ -4,7 +4,7 @@ import type { GridBreakpoint, GridItem, GridLayouts } from "@/lib/grid/grid-type
 import { resolveLinkProviderTheme } from "@/lib/metadata/link-provider-theme";
 import type { ProfileBentoItem, ProfileBentoLayout, ProfileBentoType } from "@/lib/profile/types";
 
-export type CreatableBentoType = Exclude<ProfileBentoType, "playlist">;
+export type CreatableBentoType = ProfileBentoType;
 
 export const creatableBentoTypes = [
   "link",
@@ -72,6 +72,29 @@ export const toBentoGridItem = (item: ProfileBentoItem): GridItem => ({
   description: item.type,
 });
 
+const getLinkDomain = (url: string) => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+};
+
+export const normalizeProfileBentoItems = (items: ProfileBentoItem[]): ProfileBentoItem[] =>
+  items.map((item) => {
+    if (item.type !== "link") {
+      return item;
+    }
+
+    return {
+      ...item,
+      content: {
+        ...item.content,
+        domain: item.content.domain || getLinkDomain(item.content.url),
+      },
+    };
+  });
+
 export const createPreviewDraftBentoId = (id: string) => `preview:${id}`;
 
 export const mergeLayoutsIntoBento = (items: ProfileBentoItem[], layouts: GridLayouts) => {
@@ -125,6 +148,7 @@ export function createAutoBentoItem(type: CreatableBentoType, currentItems: Prof
         title: `New link ${count}`,
         description: "",
         favicon: "https://www.google.com/s2/favicons?domain=example.com&sz=64",
+        domain: "example.com",
         thumbnail: `https://picsum.photos/seed/${encodeURIComponent(id)}/640/360`,
         url: `https://example.com/link-${count}`,
         metadata: null,

@@ -11,6 +11,7 @@ import * as zod from "zod";
  * Returns metadata extracted from the target URL.
 
 Rules:
+- `domain` is the normalized hostname from the resolved URL with common prefixes like `www.` removed
 - GitHub profile URLs also include a provider metadata payload with the recent 60-day contribution calendar
 - GitHub enrichment requires `GITHUB_TOKEN`
 - YouTube channel URLs also include a provider metadata payload from `channels.list` and the server tries `id`, `forHandle`, and `forUsername` until one returns a channel
@@ -25,7 +26,7 @@ export const GetMetadataQueryParams = zod.object({
 
 export const GetMetadataResponse = zod.object({
   url: zod.string(),
-  canonicalUrl: zod.string().nullable(),
+  domain: zod.string(),
   title: zod.string().nullable(),
   description: zod.string().nullable(),
   image: zod.string().nullable(),

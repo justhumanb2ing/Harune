@@ -25,8 +25,7 @@ export type GetMetadata200ProviderMetadata = {
 
 export type GetMetadata200 = {
   url: string;
-  /** @nullable */
-  canonicalUrl: string | null;
+  domain: string;
   /** @nullable */
   title: string | null;
   /** @nullable */

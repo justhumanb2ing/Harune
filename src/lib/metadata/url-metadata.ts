@@ -58,7 +58,7 @@ export type YoutubeProviderMetadata = {
 
 export type NormalizedMetadata = {
   url: string;
-  canonicalUrl: string | null;
+  domain: string;
   title: string | null;
   description: string | null;
   image: string | null;
@@ -339,14 +339,15 @@ function normalizeMetadataResponse(value: unknown): NormalizedMetadata {
   }
 
   const url = typeof value.url === "string" ? value.url : null;
+  const domain = typeof value.domain === "string" ? value.domain : null;
 
-  if (!url) {
+  if (!url || !domain) {
     throw new Error("Invalid metadata response.");
   }
 
   return {
     url,
-    canonicalUrl: typeof value.canonicalUrl === "string" ? value.canonicalUrl : null,
+    domain,
     title: typeof value.title === "string" ? value.title : null,
     description: typeof value.description === "string" ? value.description : null,
     image: typeof value.image === "string" ? value.image : null,

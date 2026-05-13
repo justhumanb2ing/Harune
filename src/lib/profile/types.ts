@@ -1,6 +1,4 @@
 import type { NormalizedMetadata } from "@/lib/metadata/url-metadata";
-import type { PlaylistProvider } from "@/lib/profile/playlist";
-
 export const MAX_SOCIAL_LINKS = 8;
 
 export type SocialPlatform =
@@ -32,7 +30,7 @@ export type ProfilePageData = {
   page: ProfilePage;
 };
 
-export type ProfileBentoType = "link" | "text" | "playlist" | "section" | "media" | "map";
+export type ProfileBentoType = "link" | "text" | "section" | "media" | "map";
 export type ProfileMediaType = "image" | "video";
 
 export type ProfileBentoBreakpoint = "desktop" | "compact";
@@ -54,6 +52,7 @@ export type ProfileLinkBento = {
     title: string;
     description: string | null;
     favicon: string | null;
+    domain: string;
     thumbnail: string | null;
     url: string;
     metadata?: NormalizedMetadata | null;
@@ -65,18 +64,6 @@ export type ProfileTextBento = {
   type: "text";
   layout: ProfileBentoLayouts;
   content: {
-    content: string;
-  };
-};
-
-export type ProfilePlaylistBento = {
-  id: string;
-  type: "playlist";
-  layout: ProfileBentoLayouts;
-  content: {
-    title: string;
-    provider: PlaylistProvider;
-    url: string;
     content: string;
   };
 };
@@ -123,7 +110,6 @@ export type ProfileMapBento = {
 export type ProfileBentoItem =
   | ProfileLinkBento
   | ProfileTextBento
-  | ProfilePlaylistBento
   | ProfileSectionBento
   | ProfileMediaBento
   | ProfileMapBento;

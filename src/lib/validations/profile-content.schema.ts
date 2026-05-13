@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { BENTO_GRID_SIZE_CONSTRAINTS, COLS } from "@/lib/grid/grid-config";
-import { playlistProviderOrder } from "@/lib/profile/playlist";
 import { handleSchema } from "@/lib/validations/auth.schema";
 
 const emptyStringToNull = (value: unknown) => {
@@ -67,8 +66,6 @@ export const profilePageUpdateSchema = z.object({
 
 const entityIdSchema = z.string().trim().min(1, "Entity id is required.");
 
-export const playlistProviderSchema = z.enum(playlistProviderOrder);
-
 const profileBentoLayoutSchema = z.object({
   x: z.number().int().nonnegative(),
   y: z.number().int().nonnegative(),
@@ -101,16 +98,6 @@ export const profileTextBentoSyncSchema = profileBentoBaseSchema.extend({
   type: z.literal("text"),
   content: z.object({
     content: z.string().trim().min(1, "Content is required.").max(2000),
-  }),
-});
-
-export const profilePlaylistBentoSyncSchema = profileBentoBaseSchema.extend({
-  type: z.literal("playlist"),
-  content: z.object({
-    title: requiredText("Title", 100),
-    provider: playlistProviderSchema,
-    url: z.string().trim().url("Enter a valid URL."),
-    content: z.string().trim().min(1, "Content is required."),
   }),
 });
 
@@ -154,7 +141,6 @@ export const profileMapBentoSyncSchema = profileBentoBaseSchema.extend({
 export const profileBentoSyncItemSchema = z.discriminatedUnion("type", [
   profileLinkBentoSyncSchema,
   profileTextBentoSyncSchema,
-  profilePlaylistBentoSyncSchema,
   profileSectionBentoSyncSchema,
   profileMediaBentoSyncSchema,
   profileMapBentoSyncSchema,

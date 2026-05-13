@@ -15,6 +15,7 @@ import type {
 } from "@/lib/api/generated/http/schemas/profile-api";
 import type { ProfileBentoItem, ProfilePageData } from "@/lib/profile/types";
 import { cn } from "@/lib/utils";
+import { normalizeProfileBentoItems } from "./profile-bento-grid-model";
 
 type ProfileBentoPageProps = {
   page: GetProfileByHandle200Page & {
@@ -175,6 +176,7 @@ export async function ProfileBentoPage({
   viewerProfilePage,
 }: ProfileBentoPageProps) {
   const displayName = page.name || page.userName || page.handle;
+  const normalizedBento = normalizeProfileBentoItems(bento as ProfileBentoItem[]);
 
   if (isOwner && editorData) {
     const { ProfileBentoOwnerEditorSurface } = await import(
@@ -189,7 +191,7 @@ export async function ProfileBentoPage({
           profilePageId={page.id}
         />
         <ProfileBentoOwnerEditorSurface
-          bento={bento as ProfileBentoItem[]}
+          bento={normalizedBento}
           analyticsViews={analyticsViews}
           disableAnalytics={isDeploymentEnvironment}
           editorData={editorData}
@@ -213,7 +215,7 @@ export async function ProfileBentoPage({
           actionSlot={<ProfileBentoPublicShareButton className="xl:hidden" handle={page.handle} />}
           page={page}
         />
-        <ProfileBentoReadonlyGrid bento={bento as ProfileBentoItem[]} />
+        <ProfileBentoReadonlyGrid bento={normalizedBento} />
         <ProfileBentoFooterAction
           className="w-full py-16 xl:fixed xl:bottom-12 xl:left-12 xl:z-30 xl:w-auto xl:justify-start xl:p-0"
           viewerProfilePage={viewerProfilePage}

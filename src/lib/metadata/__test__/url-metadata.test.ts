@@ -19,13 +19,13 @@ describe("fetchUrlMetadata", () => {
 
       return new Response(
         JSON.stringify({
-          canonicalUrl: "https://example.com/canonical",
           description: "Page description",
           favicon: "https://example.com/favicon.ico",
           fetchedAt: "2026-05-12T00:00:00.000Z",
           image: "https://example.com/og.png",
           siteName: "Example Site",
           title: "OG Title",
+          domain: "example.com",
           url: "https://example.com/post",
         }),
         {
@@ -45,10 +45,10 @@ describe("fetchUrlMetadata", () => {
       );
       expect(headers.get("accept")).toBe("application/json");
       expect(metadata).toEqual({
-        canonicalUrl: "https://example.com/canonical",
         description: "Page description",
         favicon: "https://example.com/favicon.ico",
         image: "https://example.com/og.png",
+        domain: "example.com",
         siteName: "Example Site",
         title: "OG Title",
         url: "https://example.com/post",
@@ -66,13 +66,13 @@ describe("fetchUrlMetadata", () => {
     globalThis.fetch = (async () =>
       new Response(
         JSON.stringify({
-          canonicalUrl: "https://github.com/octocat",
           description: "GitHub profile",
           favicon: "https://github.com/favicon.ico",
           fetchedAt: "2026-05-12T00:00:00.000Z",
           image: null,
           siteName: "GitHub",
           title: "octocat",
+          domain: "github.com",
           url: "https://github.com/octocat",
           provider: "github",
           providerMetadata: {
@@ -117,6 +117,7 @@ describe("fetchUrlMetadata", () => {
       const metadata = await fetchUrlMetadata("https://github.com/octocat");
 
       expect(metadata.provider).toBe("github");
+      expect(metadata.domain).toBe("github.com");
       expect(isGithubContributionsProviderMetadata(metadata.providerMetadata)).toBe(true);
       expect(metadata.providerMetadata).toEqual({
         provider: "github",
@@ -159,13 +160,13 @@ describe("fetchUrlMetadata", () => {
     globalThis.fetch = (async () =>
       new Response(
         JSON.stringify({
-          canonicalUrl: "https://www.youtube.com/@harune",
           description: "YouTube channel",
           favicon: "https://www.youtube.com/favicon.ico",
           fetchedAt: "2026-05-12T00:00:00.000Z",
           image: "https://i.ytimg.com/vi/abc/hqdefault.jpg",
           siteName: "YouTube",
           title: "Harune",
+          domain: "youtube.com",
           url: "https://www.youtube.com/@harune",
           provider: "youtube",
           providerMetadata: {
@@ -204,6 +205,7 @@ describe("fetchUrlMetadata", () => {
       const metadata = await fetchUrlMetadata("https://www.youtube.com/@harune");
 
       expect(metadata.provider).toBe("youtube");
+      expect(metadata.domain).toBe("youtube.com");
       expect(isYoutubeProviderMetadata(metadata.providerMetadata)).toBe(true);
       expect(metadata.providerMetadata).toEqual({
         provider: "youtube",

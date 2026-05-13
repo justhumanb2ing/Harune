@@ -74,6 +74,17 @@ Owner editor의 하단 primary button은 현재 상태를 바로 드러내야 �
 - 변경 사항이 있으면 `Save`를 보여주고, sync가 진행 중이면 `Saving`을 보여준다.
 - label만 바꾸지 말고 click behavior도 상태에 맞춰 함께 전환한다.
 
+### Viewport-Driven Layout Sync
+
+브라우저 폭만 바뀌었을 때는 저장 대상이 바뀐 것이 아니다. 반응형 grid가 breakpoint 전환 과정에서 layout을 다시 정렬하더라도, 그 자체를 편집 dirty state로 취급하지 않아야 한다.
+
+- mobile, tablet, desktop 폭 전환만으로 primary button이 `Save`로 바뀌면 안 된다.
+- `react-grid-layout`의 responsive `onLayoutChange`는 breakpoint crossing 시에도 호출될 수 있으므로, width-only reflow는 user edit과 분리한다.
+- dirty state는 명시적인 item 추가, 삭제, drag, resize, text edit, media/link 편집으로만 변해야 한다.
+- viewport-driven layout rewrite를 저장 payload나 snapshot 비교에 그대로 넣지 않는다.
+- breakpoint 전환 직후에는 canonical layout을 유지하고, 편집으로 인한 layout 변경만 dirty 판정에 반영한다.
+- 사용자가 실제로 위치를 옮기거나 크기를 바꾼 경우에만 `Save`가 보여야 한다.
+
 ### Owner Footer Navigation
 
 Owner footer의 navigation은 아이콘만 두는 대신 현재 page 상태를 글자로 읽을 수 있어야 한다.
@@ -168,6 +179,7 @@ UI/UX 개선을 적용했을 때 아래 중 하나라도 해당하면 이 문서
 UI/UX 변경 후 가능한 범위에서 아래를 확인한다.
 
 - Desktop과 mobile 폭에서 text가 겹치거나 버튼 안에서 잘리지 않는다.
+- 브라우저 폭만 줄인 상태에서 `Copy my page`/`Share page`가 `Save`로 바뀌지 않는다.
 - 추가, 삭제, drag, focus, save 같은 주요 flow가 layout shift 없이 이어진다.
 - hover-only controls는 keyboard focus로도 접근 가능하다.
 - scroll/focus 변경은 autofocus, fixed footer toolbar, nested scroll container와 충돌하지 않는다.

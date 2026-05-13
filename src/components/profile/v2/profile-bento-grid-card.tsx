@@ -159,19 +159,19 @@ function LinkFavicon({
   return (
     <span
       className={cn(
-        "flex size-full shrink-0 items-center justify-center overflow-hidden rounded-lg",
+        "flex size-full shrink-0 items-center justify-center overflow-hidden",
         hasFavicon ? "bg-transparent" : "bg-muted/60",
         className
       )}
     >
       {hasFavicon ? (
-        <Image
-          alt=""
-          className="pointer-events-none size-full object-cover select-none"
-          height={32}
-          src={favicon}
-          unoptimized
-          width={32}
+        // biome-ignore lint/performance/noImgElement: Link favicon thumbnails are rendered directly.
+        <img
+          src={`${favicon}?v=2&s=80`}
+          alt="favicon"
+          height={40}
+          width={40}
+          className="w-full h-full pointer-events-none object-cover select-none"
         />
       ) : (
         <span className="size-full bg-muted/40" aria-hidden />
@@ -193,7 +193,7 @@ function EditableLinkFavicon({
   return (
     <a
       aria-label={title ? `Open ${title}` : "Open link"}
-      className="grid-action inline-flex size-9 md:size-10 shrink-0 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+      className="grid-action inline-flex size-9 md:size-10 shrink-0 rounded-lg overflow-hidden outline-none surface-bevel shadow-sm"
       href={href}
       rel="noreferrer"
       target="_blank"
@@ -216,7 +216,7 @@ function LinkTitleInput({
     <input
       aria-label="Link title"
       className={cn(
-        "grid-action min-h-9 min-w-0 rounded-md bg-transparent px-0 py-1.5 font-medium text-base outline-none transition-colors placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary truncate",
+        "grid-action -ml-1 h-7 min-w-0 rounded-[4px] bg-transparent px-2 py-1.5 font-normal text-sm outline-none transition-colors placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary truncate",
         "group-data-[link-provider-theme=true]/item:placeholder:text-[var(--grid-card-muted-foreground)] group-data-[link-provider-theme=true]/item:hover:bg-[var(--grid-card-control-background)] group-data-[link-provider-theme=true]/item:focus-visible:bg-[var(--grid-card-control-background)]",
         className
       )}
@@ -229,6 +229,14 @@ function LinkTitleInput({
       placeholder="Link title"
       value={item.content.title}
     />
+  );
+}
+
+function LinkDomainText({ domain, className }: { domain: string; className?: string }) {
+  return (
+    <span className={cn("block truncate px-1 py-0 text-xs text-muted-foreground", className)}>
+      {domain}
+    </span>
   );
 }
 
@@ -311,7 +319,7 @@ function ReadonlyLinkAction({
 }
 
 const LINK_PROVIDER_ACTION_LABEL_CLASS_NAME =
-  "inline-flex h-6 max-w-fit shrink-0 items-center justify-center truncate rounded-full px-4 py-4 font-semibold text-sm leading-none sm:h-8 sm:px-4 sm:text-sm md:px-4 md:py-4.5";
+  "inline-flex h-8 max-w-fit shrink-0 items-center justify-center truncate rounded-md px-4 font-medium leading-none text-xs";
 
 function EditableLinkProviderAction({
   backgroundColor,
@@ -328,7 +336,7 @@ function EditableLinkProviderAction({
     <a
       aria-label={label}
       className={cn(
-        "grid-action outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring/50 !bg-[var(--link-provider-action-background)] !text-[var(--link-provider-action-foreground)]",
+        "grid-action rounded-xs outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring/50 !bg-[var(--link-provider-action-background)] !text-[var(--link-provider-action-foreground)]",
         LINK_PROVIDER_ACTION_LABEL_CLASS_NAME
       )}
       href={href}
@@ -602,14 +610,17 @@ function ReadonlyLinkBento({
     return (
       <article className="flex size-full min-h-0 gap-3 overflow-hidden rounded-lg p-2">
         <div className="flex min-w-0 flex-1 flex-col justify-between">
-          <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
             <ReadonlyLinkFavicon
               favicon={item.content.favicon}
               href={item.content.url}
               preventNavigation={preventNavigation}
               title={item.content.title}
             />
-            <ReadonlyLinkTitle title={item.content.title} className="w-full" />
+            <div className="-ml-1 flex min-w-0 flex-col gap-0">
+              <ReadonlyLinkTitle title={item.content.title} className="w-full" />
+              <LinkDomainText domain={item.content.domain} className="w-full" />
+            </div>
           </div>
           {providerTheme ? (
             <ReadonlyLinkAction
@@ -630,14 +641,17 @@ function ReadonlyLinkBento({
     return (
       <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-2">
         <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-between">
-          <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
             <ReadonlyLinkFavicon
               favicon={item.content.favicon}
               href={item.content.url}
               preventNavigation={preventNavigation}
               title={item.content.title}
             />
-            <ReadonlyLinkTitle title={item.content.title} className="w-full" />
+            <div className="-ml-1 flex min-w-0 flex-col gap-0">
+              <ReadonlyLinkTitle title={item.content.title} className="w-full" />
+              <LinkDomainText domain={item.content.domain} className="w-full" />
+            </div>
           </div>
           {providerTheme ? (
             <ReadonlyLinkAction
@@ -658,14 +672,17 @@ function ReadonlyLinkBento({
     return (
       <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-2">
         <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-between">
-          <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
             <ReadonlyLinkFavicon
               favicon={item.content.favicon}
               href={item.content.url}
               preventNavigation={preventNavigation}
               title={item.content.title}
             />
-            <ReadonlyLinkTitle title={item.content.title} className="w-full" />
+            <div className="-ml-1 flex min-w-0 flex-col gap-0">
+              <ReadonlyLinkTitle title={item.content.title} className="w-full" />
+              <LinkDomainText domain={item.content.domain} className="w-full" />
+            </div>
           </div>
           {providerTheme ? (
             <ReadonlyLinkAction
@@ -684,14 +701,17 @@ function ReadonlyLinkBento({
 
   return (
     <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-2">
-      <div className="flex min-w-0 flex-col gap-3">
+      <div className="flex min-w-0 flex-col gap-1">
         <ReadonlyLinkFavicon
           favicon={item.content.favicon}
           href={item.content.url}
           preventNavigation={preventNavigation}
           title={item.content.title}
         />
-        <ReadonlyLinkTitle title={item.content.title} className="w-full" />
+        <div className="-ml-1 flex min-w-0 flex-col gap-0">
+          <ReadonlyLinkTitle title={item.content.title} className="w-full" />
+          <LinkDomainText domain={item.content.domain} className="w-full" />
+        </div>
       </div>
       {providerTheme ? (
         <ReadonlyLinkAction
@@ -750,13 +770,16 @@ function EditableLinkBento({
     return (
       <article className="flex size-full min-h-0 gap-3 overflow-hidden rounded-lg p-2">
         <div className="flex min-w-0 flex-1 flex-col justify-between">
-          <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
             <EditableLinkFavicon
               favicon={item.content.favicon}
               href={item.content.url}
               title={item.content.title}
             />
-            <LinkTitleInput item={item} onChange={onChange} className="w-full" />
+            <div className="-ml-1 flex min-w-0 flex-col gap-0">
+              <LinkTitleInput item={item} onChange={onChange} className="w-full" />
+              <LinkDomainText domain={item.content.domain} className="w-full" />
+            </div>
           </div>
           {providerTheme ? (
             <EditableLinkProviderAction
@@ -777,13 +800,16 @@ function EditableLinkBento({
     return (
       <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-2">
         <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-between">
-          <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
             <EditableLinkFavicon
               favicon={item.content.favicon}
               href={item.content.url}
               title={item.content.title}
             />
-            <LinkTitleInput item={item} onChange={onChange} className="w-full" />
+            <div className="-ml-1 flex min-w-0 flex-col gap-0">
+              <LinkTitleInput item={item} onChange={onChange} className="w-full" />
+              <LinkDomainText domain={item.content.domain} className="w-full" />
+            </div>
           </div>
           {providerTheme ? (
             <EditableLinkProviderAction
@@ -803,13 +829,16 @@ function EditableLinkBento({
     return (
       <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-2">
         <div className="flex min-h-0 min-w-0 flex-1 flex-col justify-between">
-          <div className="flex min-w-0 flex-1 flex-col gap-3">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
             <EditableLinkFavicon
               favicon={item.content.favicon}
               href={item.content.url}
               title={item.content.title}
             />
-            <LinkTitleInput item={item} onChange={onChange} className="w-full" />
+            <div className="-ml-1 flex min-w-0 flex-col gap-0">
+              <LinkTitleInput item={item} onChange={onChange} className="w-full" />
+              <LinkDomainText domain={item.content.domain} className="w-full" />
+            </div>
           </div>
           {providerTheme ? (
             <EditableLinkProviderAction
@@ -827,13 +856,16 @@ function EditableLinkBento({
 
   return (
     <article className="flex size-full min-h-0 flex-col justify-between gap-3 overflow-hidden rounded-lg p-2">
-      <div className="flex min-w-0 flex-col gap-3">
+      <div className="flex min-w-0 flex-col gap-1">
         <EditableLinkFavicon
           favicon={item.content.favicon}
           href={item.content.url}
           title={item.content.title}
         />
-        <LinkTitleInput item={item} onChange={onChange} className="w-full" />
+        <div className="-ml-1 flex min-w-0 flex-col gap-0">
+          <LinkTitleInput item={item} onChange={onChange} className="w-full" />
+          <LinkDomainText domain={item.content.domain} className="w-full" />
+        </div>
       </div>
       {providerTheme ? (
         <EditableLinkProviderAction

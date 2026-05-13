@@ -279,6 +279,12 @@ const [layouts, setLayouts] = useState<ResponsiveLayouts<GridBreakpoint>>(INITIA
 
 `layouts` controls the `react-grid-layout` coordinates for both breakpoints.
 
+`Responsive` can emit a new layout when the container crosses a breakpoint even if the user did not drag or resize anything. That callback is a viewport-driven reflow, not necessarily an edit.
+
+- Do not persist or surface breakpoint-only reflow as dirty state.
+- If the consumer has a save button, keep the label stable during pure viewport resize.
+- Treat only explicit add, remove, drag, resize, and content edits as user-intent layout changes.
+
 When adding an item, the code adds layout entries to both `desktop` and `compact`.
 
 New dynamic items start as `w:1, h:2`. With the current breakpoint-specific row heights, that produces a square card in both desktop and compact layouts.

@@ -90,10 +90,14 @@ export function GridCard({
   const shouldShowSectionShadow =
     isSectionItem && !readOnly && (isSectionPointerActive || isSectionFocusActive || isDragActive);
   const shadowClassName = !isSectionItem || shouldShowSectionShadow ? "shadow-xs" : "shadow-none";
-  const outlineClassName = isSectionItem ? "outline-transparent" : "outline-border/35";
+  const frameClassName = isSectionItem
+    ? shouldShowSectionShadow
+      ? "outline-transparent inset-ring-1"
+      : "outline-none inset-ring-0"
+    : "outline-border/35 inset-ring-1";
   const isFullBleedItem = item.itemType === "media" || item.itemType === "map";
-  const paddingClassName = isFullBleedItem ? "p-0" : isVisuallyThinItem ? "p-2" : "p-3.5";
-  const radiusClassName = isVisuallyThinItem ? "rounded-lg" : "rounded-[1.5rem]";
+  const paddingClassName = isFullBleedItem ? "p-0" : isVisuallyThinItem ? "p-2" : "p-4";
+  const radiusClassName = isVisuallyThinItem ? "rounded-2xl" : "rounded-[1.5rem]";
   const bevelClassName = isFullBleedItem ? "surface-bevel" : "";
   const dragInteractionClassName = isDragActive
     ? "select-none [&_.grid-action]:pointer-events-none [&_.grid-action]:select-none [&_input]:pointer-events-none [&_input]:select-none [&_input]:!bg-transparent [&_textarea]:pointer-events-none [&_textarea]:select-none [&_textarea]:!bg-transparent"
@@ -117,7 +121,7 @@ export function GridCard({
 
   return (
     <motion.div
-      className={`group/item relative flex w-full flex-col justify-between inset-ring-1 ${outlineClassName} ${radiusClassName} bg-white ${paddingClassName} pointer-events-auto transition-shadow ${bevelClassName} ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} ${shadowClassName} ${dragInteractionClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isDragActive || motionPhase ? "will-change-transform" : ""} ${isDragActive ? "drop-shadow-xs" : ""} ${isExiting ? "pointer-events-none select-none shadow-none" : ""}`}
+      className={`group/item relative flex w-full flex-col justify-between ${frameClassName} ${radiusClassName} bg-white ${paddingClassName} pointer-events-auto transition-shadow ${bevelClassName} ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} ${shadowClassName} ${dragInteractionClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isDragActive || motionPhase ? "will-change-transform" : ""} ${isDragActive ? "drop-shadow-xs" : ""} ${isExiting ? "pointer-events-none select-none shadow-none" : ""}`}
       data-link-provider-theme={item.theme ? "true" : undefined}
       onBlurCapture={(event) => {
         if (!isSectionItem || event.currentTarget.contains(event.relatedTarget)) {

@@ -105,7 +105,7 @@ export function ResponsiveGridCanvas({
         const isVisuallyThinItem = item.id === THIN_PLACEHOLDER_ITEM_ID || isSectionItem;
         const isDragActive = activeDragItemId === item.id;
         const motionPhase = getItemMotionPhase?.(item.id);
-        const radiusClassName = isVisuallyThinItem ? "rounded-lg" : "rounded-[1.5rem]";
+        const radiusClassName = isVisuallyThinItem ? "rounded-2xl" : "rounded-[1.5rem]";
 
         return (
           <div

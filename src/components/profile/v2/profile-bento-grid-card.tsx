@@ -930,7 +930,7 @@ function EditableTextBento({
   return (
     <textarea
       aria-label="Text content"
-      className="grid-action size-full resize-none rounded-lg bg-transparent p-1 text-lg! font-medium leading-relaxed outline-none break-all placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary"
+      className="grid-action size-full resize-none rounded-lg bg-transparent p-1.5 px-2 text-lg! font-medium leading-[1.7] outline-none break-all placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary"
       onBlur={(event) => {
         const shouldReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -988,16 +988,16 @@ function EditableSectionBento({
   }, [autoFocus, onFocusReady]);
 
   return (
-    <span className="grid-action inline-grid h-full min-w-40 max-w-full overflow-hidden rounded-lg hover:bg-secondary focus-within:bg-secondary">
+    <span className="grid-action inline-grid h-full min-w-32 max-w-full overflow-hidden rounded-lg hover:bg-secondary focus-within:bg-secondary">
       <span
         aria-hidden
-        className="invisible col-start-1 row-start-1 min-w-40 max-w-full overflow-hidden whitespace-pre font-bold text-xl tracking-tight"
+        className="invisible col-start-1 row-start-1 min-w-32 max-w-full overflow-hidden whitespace-pre font-bold text-xl tracking-tight"
       >
         {item.content.title}
       </span>
       <input
         aria-label="Section title"
-        className="col-start-1 row-start-1 h-full w-full min-w-40 max-w-full truncate bg-transparent px-2 font-bold text-xl tracking-tight outline-none placeholder:text-muted-foreground"
+        className="col-start-1 row-start-1 h-full w-full min-w-32 max-w-full truncate bg-transparent px-2 font-bold text-xl tracking-tight outline-none placeholder:text-muted-foreground"
         onChange={(event) => {
           onChange({
             ...item,
@@ -1348,8 +1348,8 @@ function ProfileBentoGridCardContent({
   }
 
   return (
-    <section className="relative inline-grid h-full min-w-40 max-w-full overflow-hidden rounded-lg">
-      <h2 className="h-full w-full min-w-40 max-w-full truncate px-2 font-bold text-xl tracking-tight">
+    <section className="relative inline-grid h-full min-w-32 max-w-full overflow-hidden rounded-2xl">
+      <h2 className="h-full w-full min-w-32 max-w-full truncate px-2 font-bold text-xl tracking-tight">
         {item.content.title}
       </h2>
     </section>

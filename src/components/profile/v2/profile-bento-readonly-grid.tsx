@@ -34,13 +34,13 @@ export function ProfileBentoReadonlyGrid({
   const cardRotate = useMotionValue(0);
   const cardX = useMotionValue(0);
   const gridStyle = {
-    "--thin-item-visible-height": `${Math.round(rowHeight * 0.75)}px`,
+    "--thin-item-visible-height": `${Math.round(rowHeight * 0.9)}px`,
   } as CSSProperties;
 
   return (
-    <div className="min-w-0 flex-1 xl:w-[52rem] xl:flex-none 2xl:w-[56rem]">
+    <div className="min-w-0 flex-1 xl:w-[860px] xl:flex-none 2xl:w-[860px]">
       <div
-        className="w-[380px] max-w-full sm:w-[425px] xl:w-full [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none!"
+        className="w-[360px] max-w-full sm:w-[400px] xl:w-full [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none!"
         ref={containerRef}
         style={gridStyle}
       >

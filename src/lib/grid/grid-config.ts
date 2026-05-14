@@ -1,7 +1,7 @@
 import type { GridBreakpoint, GridItem, GridLayouts, ResizeOption } from "@/lib/grid/grid-types";
 
 export const BREAKPOINTS = {
-  desktop: 819,
+  desktop: 795,
   compact: 0,
 } satisfies Record<GridBreakpoint, number>;
 
@@ -10,7 +10,7 @@ export const COLS = {
   compact: 2,
 } satisfies Record<GridBreakpoint, number>;
 
-export const GRID_MARGIN = [32, 32] as const;
+export const GRID_MARGIN = [40, 40] as const;
 export const GRID_PADDING = [0, 0] as const;
 
 export const ROW_HEIGHT = {

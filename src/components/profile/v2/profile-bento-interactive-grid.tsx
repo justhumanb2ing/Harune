@@ -412,8 +412,8 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     activeDragItemId !== null && itemTypeById.get(activeDragItemId) === "section";
   const isThinPlaceholderShapeActive = isThinPlaceholderActive || isSectionDragActive;
   const rowHeight = getGridRowHeight(width, activeBreakpoint);
-  const thinItemVisibleHeight = Math.round(rowHeight * 0.75);
-  const gridClassName = `w-[380px] max-w-full sm:w-[425px] xl:w-full [&_.react-draggable-dragging]:z-20! [&_.react-grid-item:not(.react-grid-placeholder)]:z-10 [&_.react-grid-item:focus-within]:z-20! [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none! [&_.react-grid-placeholder]:z-0! [&_.react-grid-placeholder]:bg-secondary! [&_.react-grid-placeholder]:opacity-100! [&_.react-grid-placeholder]:shadow-[inset_0_1px_6px_rgb(0_0_0_/_0.08),inset_0_-1px_1px_rgb(255_255_255_/_0.8)]! ${isThinPlaceholderShapeActive ? "[&_.react-grid-placeholder]:h-[var(--thin-placeholder-height)]! [&_.react-grid-placeholder]:translate-y-[var(--thin-placeholder-offset)]! [&_.react-grid-placeholder]:rounded-lg!" : "[&_.react-grid-placeholder]:rounded-[1.5rem]!"}`;
+  const thinItemVisibleHeight = Math.round(rowHeight * 0.9);
+  const gridClassName = `w-[360px] max-w-full sm:w-[400px] xl:w-full [&_.react-draggable-dragging]:z-20! [&_.react-grid-item:not(.react-grid-placeholder)]:z-10 [&_.react-grid-item:focus-within]:z-20! [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none! [&_.react-grid-placeholder]:z-0! [&_.react-grid-placeholder]:bg-secondary! [&_.react-grid-placeholder]:opacity-100! [&_.react-grid-placeholder]:shadow-[inset_0_1px_6px_rgb(0_0_0_/_0.08),inset_0_-1px_1px_rgb(255_255_255_/_0.8)]! ${isThinPlaceholderShapeActive ? "[&_.react-grid-placeholder]:h-[var(--thin-placeholder-height)]! [&_.react-grid-placeholder]:translate-y-[var(--thin-placeholder-offset)]! [&_.react-grid-placeholder]:rounded-2xl!" : "[&_.react-grid-placeholder]:rounded-[1.5rem]!"}`;
   const gridStyle = {
     "--thin-placeholder-height": `${thinItemVisibleHeight}px`,
     "--thin-placeholder-offset": `${rowHeight * 2 + GRID_MARGIN[1] - thinItemVisibleHeight}px`,
@@ -973,7 +973,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   };
 
   return (
-    <div className="relative flex min-w-0 flex-1 flex-col items-center gap-4 pb-28 xl:w-[52rem] xl:flex-none xl:items-stretch 2xl:w-[56rem]">
+    <div className="relative flex min-w-0 flex-1 flex-col items-center gap-4 pb-28 xl:w-[860px] xl:flex-none xl:items-stretch 2xl:w-[860px]">
       <motion.header
         className="fixed bottom-6 left-1/2 z-30 flex w-auto -translate-x-1/2 flex-col items-center justify-center rounded-2xl bg-background/80 p-2.5 shadow-float backdrop-blur"
         layout

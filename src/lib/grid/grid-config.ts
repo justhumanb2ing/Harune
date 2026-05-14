@@ -10,7 +10,10 @@ export const COLS = {
   compact: 2,
 } satisfies Record<GridBreakpoint, number>;
 
-export const GRID_MARGIN = [40, 40] as const;
+export const GRID_MARGIN = {
+  desktop: [40, 40],
+  compact: [20, 20],
+} as const satisfies Record<GridBreakpoint, readonly [number, number]>;
 export const GRID_PADDING = [0, 0] as const;
 
 export const ROW_HEIGHT = {
@@ -28,8 +31,7 @@ export const RESIZE_OPTIONS: readonly ResizeOption[] = [
 
 export function getGridRowHeight(width: number, breakpoint: GridBreakpoint) {
   const cols = COLS[breakpoint];
-  const horizontalMargin = GRID_MARGIN[0];
-  const verticalMargin = GRID_MARGIN[1];
+  const [horizontalMargin, verticalMargin] = GRID_MARGIN[breakpoint];
   const horizontalPadding = GRID_PADDING[0] * 2;
   const columnWidth = (width - horizontalPadding - horizontalMargin * (cols - 1)) / cols;
 

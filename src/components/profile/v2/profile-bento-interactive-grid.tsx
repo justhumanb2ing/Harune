@@ -413,10 +413,11 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   const isThinPlaceholderShapeActive = isThinPlaceholderActive || isSectionDragActive;
   const rowHeight = getGridRowHeight(width, activeBreakpoint);
   const thinItemVisibleHeight = Math.round(rowHeight * 0.9);
+  const [, verticalMargin] = GRID_MARGIN[activeBreakpoint];
   const gridClassName = `w-[360px] max-w-full sm:w-[400px] xl:w-full [&_.react-draggable-dragging]:z-20! [&_.react-grid-item:not(.react-grid-placeholder)]:z-10 [&_.react-grid-item:focus-within]:z-20! [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none! [&_.react-grid-placeholder]:z-0! [&_.react-grid-placeholder]:bg-secondary! [&_.react-grid-placeholder]:opacity-100! [&_.react-grid-placeholder]:shadow-[inset_0_1px_6px_rgb(0_0_0_/_0.08),inset_0_-1px_1px_rgb(255_255_255_/_0.8)]! ${isThinPlaceholderShapeActive ? "[&_.react-grid-placeholder]:h-[var(--thin-placeholder-height)]! [&_.react-grid-placeholder]:translate-y-[var(--thin-placeholder-offset)]! [&_.react-grid-placeholder]:rounded-2xl!" : "[&_.react-grid-placeholder]:rounded-[1.5rem]!"}`;
   const gridStyle = {
     "--thin-placeholder-height": `${thinItemVisibleHeight}px`,
-    "--thin-placeholder-offset": `${rowHeight * 2 + GRID_MARGIN[1] - thinItemVisibleHeight}px`,
+    "--thin-placeholder-offset": `${rowHeight * 2 + verticalMargin - thinItemVisibleHeight}px`,
     "--thin-item-visible-height": `${thinItemVisibleHeight}px`,
   } as CSSProperties;
 

@@ -61,6 +61,7 @@ Public readonly surface와 owner editor surface는 의도적으로 같은 profil
 
 - read-only라고 해서 card radius, padding, shadow, media crop, link provider theme를 다르게 만들지 않는다.
 - link item의 favicon wrapper, title density, provider action chip은 editor와 readonly에서 같은 모서리, 높이, 폰트 밀도를 유지한다.
+- `medium`, `threads`, `tiktok`, `chzzk` link item은 provider theme 배경을 white로 유지한다.
 - 일반 item의 card outline은 콘텐츠보다 앞서 보이지 않도록 옅게 유지하고, section item은 outline 없이 얇은 구분선 텍스트처럼 보여야 한다.
 - owner-only controls, input affordance, upload/loading state만 editor 전용으로 둔다.
 - media/map 외부 링크 action의 size, position, icon weight, contrast는 editor와 readonly에서 같아야 한다.

@@ -74,15 +74,13 @@ export default function ExploreSection({ pages }: ExploreSectionProps) {
               {pages.map((page) => {
                 const imageUrl = resolveImageUrl(page.image);
                 const displayName = page.name ?? page.handle;
-                const handle = `@${page.handle}`;
-
                 return (
                   <Link
                     key={page.id}
                     href={`/${page.handle}`}
-                    className="group flex flex-row items-center gap-4 overflow-hidden bg-background transition-transform duration-200 hover:-translate-y-1"
+                    className="group aspect-square flex flex-col justify-center items-center gap-4 overflow-hidden bg-secondary/60 p-4 rounded-xl transition-transform duration-200 hover:-translate-y-1 relative"
                   >
-                    <div className="relative aspect-square size-12 overflow-hidden bg-muted/40 rounded-full">
+                    <div className="relative aspect-square size-28 overflow-hidden bg-muted/40 rounded-full surface-bevel">
                       {imageUrl ? (
                         <Image
                           alt={`${displayName} profile image`}
@@ -97,12 +95,13 @@ export default function ExploreSection({ pages }: ExploreSectionProps) {
                       )}
                     </div>
 
-                    <div className="flex flex-1 flex-col gap-0 py-2">
-                      <p className="line-clamp-1 text-base font-semibold tracking-tight truncate">
+                    <div className="w-full min-w-0">
+                      <p className="w-full min-w-0 truncate text-center text-lg font-semibold tracking-tight">
                         {displayName}
                       </p>
-                      <p className="line-clamp-1 text-sm text-muted-foreground">{handle}</p>
                     </div>
+
+                    {/*<p className="absolute bottom-3 right-3 line-clamp-1 text-sm text-foreground rounded-md p-1 truncate">{handle}</p>*/}
                   </Link>
                 );
               })}
@@ -110,7 +109,7 @@ export default function ExploreSection({ pages }: ExploreSectionProps) {
           ) : (
             <div className="flex min-h-[16rem] items-center justify-center rounded-[1.5rem] px-6 py-12 text-center">
               <div className="max-w-sm space-y-2">
-                <p className="text-base font-medium">No profiles yet.</p>
+                <p className="text-base font-medium">Nothing has been made</p>
                 <p className="text-sm leading-6 text-muted-foreground">
                   Profiles will appear here once creators publish their pages.
                 </p>

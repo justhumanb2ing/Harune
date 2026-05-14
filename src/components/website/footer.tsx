@@ -7,7 +7,7 @@ export function Footer() {
     <footer className="min-h-[20rem] py-20">
       <div className="mx-auto flex items-center justify-center px-4 py-8  sm:px-6 lg:px-8">
         <div className="flex flex-col items-center gap-18">
-          <div className="flex flex-col items-center">
+          {/*<div className="flex flex-col items-center">
             <div className="size-12 aspect-square rounded-xl">
               <Image
                 src={"/assets/logo.png"}
@@ -17,17 +17,16 @@ export function Footer() {
                 className="mb-4 rounded-lg object-cover size-full"
               />
             </div>
-            {/*<p className="font-bold text-muted-foreground">Harune.</p>*/}
-          </div>
+          </div>*/}
           {/* Hooking Title */}
-          <div className="text-sm text-muted-foreground font-medium flex flex-row gap-2 text-center">
+          <div className="text-base font-medium flex flex-row gap-2 text-center">
             <p>Crafted somewhere on earth.</p>
             <p>Built for Makers.</p>
           </div>
 
           {/* Legal Links */}
           <div className="flex-1">
-            <ul className="flex flex-col items-center md:flex-row gap-10 text-sm font-medium text-muted-foreground">
+            <ul className="flex flex-col items-center md:flex-row gap-10 text-sm font-medium ">
               <li>
                 <Link href="/" className="inline-block hover:text-primary">
                   Home
@@ -38,7 +37,7 @@ export function Footer() {
                   next="/"
                   size="sm"
                   variant="ghost"
-                  className="inline-block text-sm text-muted-foreground! hover:text-primary! hover:bg-inherit"
+                  className="inline-block text-sm hover:bg-inherit"
                 >
                   Log In
                 </AppEntryCtaButton>
@@ -75,7 +74,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="hover:text-primary"
                 >
-                  Keep us going
+                  Support us
                 </a>
               </li>
             </ul>

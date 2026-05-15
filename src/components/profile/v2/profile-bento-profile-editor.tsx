@@ -43,7 +43,7 @@ export function ProfileBentoProfileEditor({
           <div className="group/profile-image relative overflow-visible">
             <button
               type="button"
-              className="relative flex size-32 xl:size-44 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-secondary transition-opacity transition-colors hover:bg-input disabled:cursor-not-allowed disabled:opacity-70"
+              className="relative flex size-32 xl:size-44 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-secondary transition-all hover:bg-input disabled:cursor-not-allowed disabled:opacity-70"
               onClick={() => editor.imageInputRef.current?.click()}
               disabled={editor.isSyncing || isCropSurfaceOpen}
               aria-label="Upload profile image"

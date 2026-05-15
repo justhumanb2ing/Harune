@@ -190,9 +190,9 @@ export function ProfileImageCropSurface({
     }
 
     setIsSubmitting(true);
-    onClose();
 
     try {
+      onClose();
       await onApplied({
         imageCrop: {
           croppedAreaPixels,

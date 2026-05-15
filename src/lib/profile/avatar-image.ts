@@ -5,33 +5,43 @@ export type ImageSize = {
   width: number;
 };
 
-const DEFAULT_OBJECT_POSITION = "50% 50%";
+export type ProfileImageCropFrameStyle = {
+  height: string;
+  left: string;
+  top: string;
+  width: string;
+};
 
-function clampPercentage(value: number) {
-  return Math.min(100, Math.max(0, value));
-}
-
-function getCropAxisPosition(cropOffset: number, cropSize: number, naturalSize: number) {
-  const overflow = naturalSize - cropSize;
-
-  if (overflow <= 0) {
-    return 50;
+export function getLoadedImageSize(
+  image: Pick<HTMLImageElement, "complete" | "naturalHeight" | "naturalWidth"> | null | undefined
+) {
+  if (!image?.complete || !image.naturalWidth || !image.naturalHeight) {
+    return null;
   }
 
-  return clampPercentage((cropOffset / overflow) * 100);
+  return {
+    height: image.naturalHeight,
+    width: image.naturalWidth,
+  };
 }
 
-export function getProfileImageObjectPosition(
+export function getProfileImageCropFrameStyle(
   imageCrop: ProfileImageCrop | null | undefined,
   naturalSize: ImageSize | null | undefined
 ) {
   if (!imageCrop || !naturalSize?.width || !naturalSize?.height) {
-    return DEFAULT_OBJECT_POSITION;
+    return null;
   }
 
   const { croppedAreaPixels } = imageCrop;
-  const x = getCropAxisPosition(croppedAreaPixels.x, croppedAreaPixels.width, naturalSize.width);
-  const y = getCropAxisPosition(croppedAreaPixels.y, croppedAreaPixels.height, naturalSize.height);
+  if (!croppedAreaPixels.width || !croppedAreaPixels.height) {
+    return null;
+  }
 
-  return `${x}% ${y}%`;
+  return {
+    height: `${(naturalSize.height / croppedAreaPixels.width) * 100}%`,
+    left: `-${(croppedAreaPixels.x / croppedAreaPixels.width) * 100}%`,
+    top: `-${(croppedAreaPixels.y / croppedAreaPixels.width) * 100}%`,
+    width: `${(naturalSize.width / croppedAreaPixels.width) * 100}%`,
+  };
 }

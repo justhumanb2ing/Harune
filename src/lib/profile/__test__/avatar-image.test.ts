@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test";
 
-import { getProfileImageObjectPosition } from "@/lib/profile/avatar-image";
+import { getLoadedImageSize, getProfileImageCropFrameStyle } from "@/lib/profile/avatar-image";
 
-describe("profile avatar image position", () => {
-  test("centers the crop area within the rendered avatar", () => {
+describe("profile avatar image crop frame", () => {
+  test("maps the crop rectangle to a full-frame crop style", () => {
     expect(
-      getProfileImageObjectPosition(
+      getProfileImageCropFrameStyle(
         {
           croppedAreaPixels: {
             x: 100,
@@ -19,10 +19,38 @@ describe("profile avatar image position", () => {
           height: 400,
         }
       )
-    ).toBe("25% 25%");
+    ).toEqual({
+      height: "200%",
+      left: "-50%",
+      top: "-25%",
+      width: "300%",
+    });
   });
 
-  test("falls back to centered positioning when crop metadata is unavailable", () => {
-    expect(getProfileImageObjectPosition(null, { width: 600, height: 400 })).toBe("50% 50%");
+  test("falls back to null when crop metadata is unavailable", () => {
+    expect(getProfileImageCropFrameStyle(null, { width: 600, height: 400 })).toBeNull();
+  });
+
+  test("reads the natural image size from an already-loaded image element", () => {
+    expect(
+      getLoadedImageSize({
+        complete: true,
+        naturalHeight: 400,
+        naturalWidth: 600,
+      } as HTMLImageElement)
+    ).toEqual({
+      height: 400,
+      width: 600,
+    });
+  });
+
+  test("returns null when the image has not finished loading", () => {
+    expect(
+      getLoadedImageSize({
+        complete: false,
+        naturalHeight: 400,
+        naturalWidth: 600,
+      } as HTMLImageElement)
+    ).toBeNull();
   });
 });

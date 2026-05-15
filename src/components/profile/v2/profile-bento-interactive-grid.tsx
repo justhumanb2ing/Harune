@@ -14,7 +14,7 @@ import {
   useState,
   useTransition,
 } from "react";
-import { useContainerWidth } from "react-grid-layout";
+import { type LayoutItem, useContainerWidth } from "react-grid-layout";
 import { toast } from "sonner";
 import type { GridCardMotionPhase } from "@/components/grid/grid-card";
 import { ResponsiveGridCanvas } from "@/components/grid/responsive-grid-canvas";
@@ -59,7 +59,12 @@ import {
 import type { ProfileBentoItem } from "@/lib/profile/types";
 import { uploadToPresignedUrl } from "@/lib/s3/upload-to-presigned-url";
 import { cn } from "@/lib/utils";
-import { ProfileBentoEmptyGridState } from "./profile-bento-empty-grid-state";
+import {
+  getProfileBentoSuggestionGridItems,
+  getProfileBentoSuggestionLayouts,
+  ProfileBentoSuggestionCard,
+  profileBentoSuggestionItemId,
+} from "./profile-bento-empty-grid-state";
 import {
   type CreatableBentoType,
   createAutoBentoItem,
@@ -366,6 +371,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   const [actionRowWidth, setActionRowWidth] = useState<number | null>(null);
   const actionRowRef = useRef<HTMLDivElement>(null);
   const linkInputRef = useRef<HTMLInputElement>(null);
+  const linkSuggestionInputRef = useRef<HTMLInputElement>(null);
   const mediaInputRef = useRef<HTMLInputElement>(null);
   const toolbarRef = useRef<HTMLElement>(null);
   const mediaObjectUrlsByIdRef = useRef<Record<string, string>>({});
@@ -374,6 +380,16 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   const [pendingScrollItemId, setPendingScrollItemId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isCopied, setIsCopied] = useState(false);
+  const [isSuggestionsHydrated, setIsSuggestionsHydrated] = useState(false);
+  const [isSuggestionsDismissed, setIsSuggestionsDismissed] = useState(false);
+  const [isLinkSuggestionPopoverOpen, setIsLinkSuggestionPopoverOpen] = useState(false);
+  const [linkSuggestionPopoverRect, setLinkSuggestionPopoverRect] = useState<{
+    left: number;
+    top: number;
+    width: number;
+  } | null>(null);
+  const linkSuggestionPopoverRef = useRef<HTMLDivElement>(null);
+  const layoutInteractionDepthRef = useRef(0);
   const {
     activeDragItemId,
     activeDragIntentItemId,
@@ -394,8 +410,55 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     lastLayoutBreakpointRef.current = activeBreakpoint;
   }, [activeBreakpoint]);
   const bentoById = useMemo(() => new Map(bento.map((item) => [item.id, item] as const)), [bento]);
+  const bentoTypes = useMemo(
+    () => new Set(bento.map((item) => item.type as CreatableBentoType)),
+    [bento]
+  );
+  const hasLinkBento = bentoTypes.has("link");
   const itemTypeById = useMemo(() => toBentoItemTypeById(bento), [bento]);
-  const gridItems = useMemo(() => bento.map(toBentoGridItem), [bento]);
+  const suggestionGridItems = useMemo(
+    () => (isSuggestionsDismissed ? [] : getProfileBentoSuggestionGridItems(bentoTypes)),
+    [bentoTypes, isSuggestionsDismissed]
+  );
+  const gridItems = useMemo(
+    () => [...bento.map(toBentoGridItem), ...suggestionGridItems],
+    [bento, suggestionGridItems]
+  );
+  const suggestionLayouts = useMemo(
+    () =>
+      isSuggestionsDismissed
+        ? { desktop: [], compact: [] }
+        : getProfileBentoSuggestionLayouts(layouts, bentoTypes),
+    [bentoTypes, isSuggestionsDismissed, layouts]
+  );
+  const cloneLayoutItems = useCallback(
+    (items: readonly LayoutItem[] | undefined) => (items ?? []).map((item) => ({ ...item })),
+    []
+  );
+  const combinedLayouts = useMemo(
+    () => ({
+      desktop: [
+        ...cloneLayoutItems(layouts.desktop),
+        ...cloneLayoutItems(suggestionLayouts.desktop),
+      ],
+      compact: [
+        ...cloneLayoutItems(layouts.compact),
+        ...cloneLayoutItems(suggestionLayouts.compact),
+      ],
+    }),
+    [cloneLayoutItems, layouts, suggestionLayouts]
+  );
+  const linkSuggestionPlacementSignature = useMemo(() => {
+    const serialize = (items: readonly LayoutItem[] | undefined) =>
+      (items ?? []).map((item) => `${item.i}:${item.x}:${item.y}:${item.w}:${item.h}`).join("|");
+
+    return `${serialize(combinedLayouts.desktop)}::${serialize(combinedLayouts.compact)}`;
+  }, [combinedLayouts]);
+  const linkSuggestionContainer = containerRef.current;
+  const suggestionItemIds = useMemo(
+    () => new Set(suggestionGridItems.map((item) => item.id)),
+    [suggestionGridItems]
+  );
   const currentPayload = useMemo(() => createPayload(bento, layouts), [bento, layouts]);
   const currentSnapshot = useMemo(() => JSON.stringify(currentPayload), [currentPayload]);
   const isDirty = currentSnapshot !== savedSnapshot;
@@ -454,6 +517,122 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
       window.clearTimeout(timeout);
     };
   }, [isCopied]);
+
+  useEffect(() => {
+    try {
+      const storageKey = "profile-bento:suggestions-dismissed";
+      const storedValue = window.localStorage.getItem(storageKey);
+
+      setIsSuggestionsDismissed(storedValue === "true");
+    } catch {
+      // Fall back to showing the suggestions when storage is unavailable.
+      setIsSuggestionsDismissed(false);
+    } finally {
+      setIsSuggestionsHydrated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (hasLinkBento) {
+      setIsLinkSuggestionPopoverOpen(false);
+    }
+  }, [hasLinkBento]);
+
+  useLayoutEffect(() => {
+    void linkSuggestionPlacementSignature;
+
+    if (!isLinkSuggestionPopoverOpen) {
+      setLinkSuggestionPopoverRect(null);
+      return;
+    }
+
+    const updatePopoverPosition = () => {
+      const container = linkSuggestionContainer;
+      const item = container?.querySelector<HTMLElement>(
+        `[data-profile-bento-grid-item-id="${CSS.escape(profileBentoSuggestionItemId("link"))}"]`
+      );
+
+      if (!container || !item) {
+        setLinkSuggestionPopoverRect(null);
+        return;
+      }
+
+      const containerRect = container.getBoundingClientRect();
+      const itemRect = item.getBoundingClientRect();
+
+      setLinkSuggestionPopoverRect({
+        left: itemRect.left - containerRect.left,
+        top: itemRect.bottom - containerRect.top + 12,
+        width: Math.max(itemRect.width, 280),
+      });
+    };
+
+    updatePopoverPosition();
+
+    const container = linkSuggestionContainer;
+    const item = container?.querySelector<HTMLElement>(
+      `[data-profile-bento-grid-item-id="${CSS.escape(profileBentoSuggestionItemId("link"))}"]`
+    );
+    const resizeObserver = new ResizeObserver(updatePopoverPosition);
+
+    if (container) {
+      resizeObserver.observe(container);
+    }
+
+    if (item) {
+      resizeObserver.observe(item);
+    }
+
+    window.addEventListener("resize", updatePopoverPosition);
+    window.addEventListener("scroll", updatePopoverPosition, true);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updatePopoverPosition);
+      window.removeEventListener("scroll", updatePopoverPosition, true);
+    };
+  }, [isLinkSuggestionPopoverOpen, linkSuggestionPlacementSignature, linkSuggestionContainer]);
+
+  useEffect(() => {
+    if (!isLinkSuggestionPopoverOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const popover = linkSuggestionPopoverRef.current;
+      const container = linkSuggestionContainer;
+      const target = event.target;
+
+      if (!popover || !(target instanceof Node)) {
+        return;
+      }
+
+      if (popover.contains(target)) {
+        return;
+      }
+
+      const linkSuggestionItem = container?.querySelector<HTMLElement>(
+        `[data-profile-bento-grid-item-id="${CSS.escape(profileBentoSuggestionItemId("link"))}"]`
+      );
+
+      if (linkSuggestionItem?.contains(target)) {
+        return;
+      }
+
+      setIsLinkSuggestionPopoverOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+
+    const frame = requestAnimationFrame(() => {
+      linkSuggestionInputRef.current?.focus();
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [isLinkSuggestionPopoverOpen, linkSuggestionContainer]);
 
   useEffect(() => {
     const removeTimerById = removeTimerByIdRef.current;
@@ -587,6 +766,30 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     setBento(nextBento);
     setLayouts(toBentoGridLayouts(nextBento));
   };
+
+  const handleGridDragStart = useCallback(
+    (newItem: LayoutItem | null | undefined, event: Event) => {
+      layoutInteractionDepthRef.current += 1;
+      startDrag(newItem, event);
+    },
+    [startDrag]
+  );
+
+  const handleGridDragStop = useCallback(() => {
+    layoutInteractionDepthRef.current = Math.max(0, layoutInteractionDepthRef.current - 1);
+    stopDrag();
+  }, [stopDrag]);
+
+  const handleGridResizeStart = useCallback(
+    (newItem: LayoutItem | null | undefined) => {
+      startResize(newItem);
+    },
+    [startResize]
+  );
+
+  const handleGridResizeStop = useCallback(() => {
+    stopResize();
+  }, [stopResize]);
 
   const removeItemFromGrid = useCallback((id: string) => {
     const objectUrl = mediaObjectUrlsByIdRef.current[id];
@@ -980,7 +1183,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   return (
     <div className="relative flex min-w-0 flex-1 flex-col items-center gap-4 pb-28 xl:w-[860px] xl:flex-none xl:items-stretch 2xl:w-[860px]">
       <motion.header
-        className="fixed bottom-6 left-1/2 z-30 flex w-auto -translate-x-1/2 flex-col items-center justify-center rounded-2xl bg-background/80 p-2.5 shadow-float backdrop-blur"
+        className="fixed bottom-10 left-1/2 z-30 flex w-auto -translate-x-1/2 flex-col items-center justify-center rounded-2xl bg-background/80 p-2.5 shadow-float backdrop-blur"
         layout
         ref={toolbarRef}
         transition={TOOLBAR_EXPAND_TRANSITION}
@@ -1097,10 +1300,12 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
         </div>
       </motion.header>
 
-      <div className={`${gridClassName} flex min-h-0 flex-1`} ref={containerRef} style={gridStyle}>
-        {bento.length === 0 ? (
-          <ProfileBentoEmptyGridState />
-        ) : mounted ? (
+      <div
+        className={`${gridClassName} relative flex min-h-0 flex-1`}
+        ref={containerRef}
+        style={gridStyle}
+      >
+        {mounted ? (
           <ResponsiveGridCanvas
             activeBreakpoint={activeBreakpoint}
             activeDragItemId={activeDragItemId}
@@ -1108,11 +1313,12 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
             cardRotate={cardRotate}
             cardX={cardX}
             items={gridItems}
-            layouts={layouts}
+            layouts={combinedLayouts}
+            plainItemIds={suggestionItemIds}
             mounted={mounted}
             onDrag={updateDragPointer}
-            onDragStart={startDrag}
-            onDragStop={stopDrag}
+            onDragStart={handleGridDragStart}
+            onDragStop={handleGridDragStop}
             onDragIntentStart={startDragIntent}
             onDragIntentStop={stopDragIntent}
             onItemMotionComplete={completeItemMotion}
@@ -1122,14 +1328,44 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
                 return;
               }
 
-              setLayouts(normalizeLayouts(nextLayouts, itemTypeById));
+              if (activeDragItemId === null && layoutInteractionDepthRef.current === 0) {
+                return;
+              }
+
+              const nextActualLayouts = {
+                desktop: (nextLayouts.desktop ?? []).filter(
+                  (layoutItem) => !suggestionItemIds.has(layoutItem.i)
+                ),
+                compact: (nextLayouts.compact ?? []).filter(
+                  (layoutItem) => !suggestionItemIds.has(layoutItem.i)
+                ),
+              };
+
+              setLayouts(normalizeLayouts(nextActualLayouts, itemTypeById));
             }}
             onRemoveItem={removeItem}
             onResizeItem={resizeItem}
-            onResizeStart={startResize}
-            onResizeStop={stopResize}
+            onResizeStart={handleGridResizeStart}
+            onResizeStop={handleGridResizeStop}
             getItemMotionPhase={getItemMotionPhase}
             renderItem={(gridItem) => {
+              if (suggestionItemIds.has(gridItem.id)) {
+                return (
+                  <ProfileBentoSuggestionCard
+                    activeBreakpoint={activeBreakpoint}
+                    isActive={gridItem.itemType === "link" && isLinkSuggestionPopoverOpen}
+                    onAddItem={addItem}
+                    onRequestLinkInput={() => {
+                      setIsLinkInputOpen(false);
+                      setLinkUrl("");
+                      setIsLinkSuggestionPopoverOpen(true);
+                    }}
+                    onRequestMediaInput={() => mediaInputRef.current?.click()}
+                    type={gridItem.itemType as CreatableBentoType}
+                  />
+                );
+              }
+
               const item = bentoById.get(gridItem.id);
               const activeLayout =
                 layouts[activeBreakpoint]?.find((layoutItem) => layoutItem.i === gridItem.id) ??
@@ -1183,6 +1419,95 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
             rowHeight={rowHeight}
             width={width}
           />
+        ) : null}
+        {isLinkSuggestionPopoverOpen && linkSuggestionPopoverRect ? (
+          <motion.div
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute z-40"
+            initial={{ opacity: 0, y: -6 }}
+            ref={linkSuggestionPopoverRef}
+            style={{
+              left: linkSuggestionPopoverRect.left,
+              top: linkSuggestionPopoverRect.top,
+              width: linkSuggestionPopoverRect.width,
+            }}
+            transition={TOOLBAR_EXPAND_TRANSITION}
+          >
+            <div className="rounded-2xl bg-background/90 p-1.5 px-2 shadow-float backdrop-blur">
+              <form
+                className="w-full"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void handleLinkCrawl();
+                }}
+              >
+                <Field className="relative rounded-lg !bg-inherit py-1 outline-none">
+                  <InputGroup className="border-0 !bg-inherit ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
+                    <InputGroupInput
+                      aria-label="Link URL"
+                      className="text-sm! h-10 px-1"
+                      disabled={isCrawlingLink}
+                      onPaste={(event) => {
+                        if (isCrawlingLink) {
+                          return;
+                        }
+
+                        const pastedText = event.clipboardData.getData("text/plain").trim();
+
+                        if (!pastedText) {
+                          return;
+                        }
+
+                        event.preventDefault();
+                        void handleLinkCrawl(pastedText);
+                      }}
+                      onChange={(event) => setLinkUrl(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key !== "Enter") {
+                          return;
+                        }
+
+                        event.preventDefault();
+                        void handleLinkCrawl();
+                      }}
+                      placeholder="https://example.com"
+                      ref={linkSuggestionInputRef}
+                      value={linkUrl}
+                    />
+                    <InputGroupAddon align="inline-end" className="pr-2">
+                      <InputGroupButton
+                        aria-label="Fetch link details"
+                        className="h-8 border-0 bg-background px-3 font-semibold text-base text-black shadow-sm"
+                        disabled={isCrawlingLink || !linkUrl.trim()}
+                        type="submit"
+                        variant="outline"
+                      >
+                        {isCrawlingLink ? <span>Getting...</span> : <span>Get</span>}
+                      </InputGroupButton>
+                    </InputGroupAddon>
+                  </InputGroup>
+                </Field>
+              </form>
+            </div>
+          </motion.div>
+        ) : null}
+        {isSuggestionsHydrated && !isSuggestionsDismissed ? (
+          <Button
+            className="fixed right-10 bottom-12 z-30 rounded-xl bg-background px-6 py-5 text-sm font-bold shadow-float hover:bg-secondary/30"
+            onClick={() => {
+              try {
+                window.localStorage.setItem("profile-bento:suggestions-dismissed", "true");
+              } catch {
+                // Ignore storage failures and keep the in-memory dismissal state.
+              }
+
+              setIsSuggestionsDismissed(true);
+            }}
+            type="button"
+            variant="ghost"
+          >
+            Remove Suggestions
+          </Button>
         ) : null}
       </div>
     </div>

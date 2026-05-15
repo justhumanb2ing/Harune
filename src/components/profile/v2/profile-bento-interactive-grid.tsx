@@ -23,6 +23,7 @@ import {
   getProfileBentoLinkSize,
   ProfileBentoEditableContentCard,
 } from "@/components/profile/v2/profile-bento-grid-card";
+import { normalizeLinkInputUrl } from "@/components/profile/v2/profile-link-input-utils";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -690,8 +691,8 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     );
   }, []);
 
-  const handleLinkCrawl = async () => {
-    const rawUrl = linkUrl.trim();
+  const handleLinkCrawl = async (inputUrl = linkUrl) => {
+    const rawUrl = normalizeLinkInputUrl(inputUrl);
 
     if (!rawUrl) {
       toast.error("Please enter a URL");
@@ -1013,6 +1014,20 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
                       className="text-sm! h-10 px-1"
                       disabled={!isLinkInputOpen || isCrawlingLink}
                       id="profile-bento-link-url"
+                      onPaste={(event) => {
+                        if (!isLinkInputOpen || isCrawlingLink) {
+                          return;
+                        }
+
+                        const pastedText = event.clipboardData.getData("text/plain").trim();
+
+                        if (!pastedText) {
+                          return;
+                        }
+
+                        event.preventDefault();
+                        void handleLinkCrawl(pastedText);
+                      }}
                       onChange={(event) => setLinkUrl(event.target.value)}
                       onKeyDown={(event) => {
                         if (event.key !== "Enter" || !isLinkInputOpen) {

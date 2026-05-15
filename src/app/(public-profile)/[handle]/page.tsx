@@ -125,7 +125,6 @@ export default async function HandlePage({ params }: HandlePageProps) {
     mePromise,
     getCachedPublicProfileResponse(handle),
   ]);
-  console.log("[public-profile] /me data", me);
 
   if (!data?.page.handle) {
     notFound();

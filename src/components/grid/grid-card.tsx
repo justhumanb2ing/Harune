@@ -39,7 +39,10 @@ type GridCardStyle = MotionStyle & {
   "--tw-inset-ring-color"?: string;
 };
 
-function getGridCardMotion(phase: GridCardMotionPhase | undefined, shouldReduceMotion: boolean) {
+export function getGridCardMotion(
+  phase: GridCardMotionPhase | undefined,
+  shouldReduceMotion: boolean
+) {
   if (!phase) {
     return {};
   }
@@ -57,13 +60,13 @@ function getGridCardMotion(phase: GridCardMotionPhase | undefined, shouldReduceM
   if (phase === "entering") {
     return {
       animate: { opacity: 1, y: 0 },
-      initial: { opacity: 0, scale: 0.96, y: 8 },
+      initial: { opacity: 0, y: 8 },
       transition: { duration: 0.26, ease: GRID_CARD_MOTION_EASE },
     };
   }
 
   return {
-    animate: { opacity: 0, scale: 0.96, y: -6 },
+    animate: { opacity: 0, y: -6 },
     initial: false,
     transition: { duration: 0.16, ease: GRID_CARD_MOTION_EASE },
   };
@@ -109,7 +112,9 @@ export function GridCard({
     ? shouldShowSectionShadow
       ? "outline-transparent inset-ring-1"
       : "outline-none inset-ring-0"
-    : "outline-border/35 inset-ring-1";
+    : isFullBleedItem
+      ? "outline-none"
+      : "outline-border/35 inset-ring-1";
   const shellShadowClassName = shadowClassName;
   const shadowLayerClassName = isDragActive ? "shadow-float" : "";
   const dragInteractionClassName = isLiftActive
@@ -118,6 +123,7 @@ export function GridCard({
   const isExiting = motionPhase === "exiting";
   const shouldShowActions = !readOnly && !isLiftActive && !isExiting;
   const motionProps = getGridCardMotion(motionPhase, shouldReduceMotion);
+  const tapScale = item.itemType === "text" || item.itemType === "section" ? 1.025 : 1;
   const shellStyle = item.theme
     ? {
         "--grid-card-control-background": item.theme.controlBackgroundColor,
@@ -191,6 +197,13 @@ export function GridCard({
           onMotionComplete?.(item.id, motionPhase);
         }
       }}
+      whileTap={
+        shouldReduceMotion || tapScale === 1
+          ? undefined
+          : {
+              scale: tapScale,
+            }
+      }
       style={{ rotate: isDragActive ? cardRotate : 0, x: isDragActive ? cardX : 0 }}
       {...motionProps}
     >

@@ -65,6 +65,7 @@ Public readonly surface와 owner editor surface는 의도적으로 같은 profil
 - 일반 item의 card outline은 콘텐츠보다 앞서 보이지 않도록 옅게 유지하고, section item은 outline 없이 얇은 구분선 텍스트처럼 보여야 한다.
 - owner-only controls, input affordance, upload/loading state만 editor 전용으로 둔다.
 - media/map 외부 링크 action의 size, position, icon weight, contrast는 editor와 readonly에서 같아야 한다.
+- media/map full-bleed editor cards는 shell shadow를 유지한 채 visible frame에 `ring-1 ring-border`를 적용해, 카드 가장자리가 평평하게 보이지 않게 한다.
 - public surface에서 삭제된 fallback text는 editor에도 무심코 되살리지 않는다.
 
 ### Toolbar Primary Action

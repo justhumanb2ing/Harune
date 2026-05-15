@@ -18,6 +18,16 @@ export const UpdateProfilePageBody = zod.object({
   role: zod.string().nullish(),
   bio: zod.string().nullish(),
   image: zod.string().nullish(),
+  imageCrop: zod
+    .object({
+      croppedAreaPixels: zod.object({
+        x: zod.number(),
+        y: zod.number(),
+        width: zod.number(),
+        height: zod.number(),
+      }),
+    })
+    .nullish(),
   backgroundImage: zod.string().nullish(),
   bento: zod
     .array(
@@ -157,6 +167,16 @@ export const UpdateProfilePageResponse = zod.object({
     role: zod.string().nullable(),
     bio: zod.string().nullable(),
     image: zod.string().nullable(),
+    imageCrop: zod
+      .object({
+        croppedAreaPixels: zod.object({
+          x: zod.number(),
+          y: zod.number(),
+          width: zod.number(),
+          height: zod.number(),
+        }),
+      })
+      .nullable(),
     backgroundImage: zod.string().nullable(),
     location: zod.string().nullable(),
     updatedAt: zod.iso.datetime({ offset: true }),
@@ -331,6 +351,7 @@ Rules:
 - Accepts JSON with `imageKind` and `imageUrl`
 - `imageKind` must be `profile` or `background`
 - `imageUrl` must point to the authenticated user's stable object key
+- `imageCrop` is optional crop metadata and is stored when provided
 - The object must already exist in storage
 - Only the matching DB column is updated
 - The response returns the committed persisted row and is `Cache-Control: no-store`
@@ -339,12 +360,32 @@ Rules:
 export const FinalizeProfileImageBody = zod.object({
   imageKind: zod.enum(["profile", "background"]),
   imageUrl: zod.string(),
+  imageCrop: zod
+    .object({
+      croppedAreaPixels: zod.object({
+        x: zod.number(),
+        y: zod.number(),
+        width: zod.number(),
+        height: zod.number(),
+      }),
+    })
+    .nullish(),
 });
 
 export const FinalizeProfileImageResponse = zod.object({
   imageKind: zod.enum(["profile", "background"]),
   imageUrl: zod.string(),
   image: zod.string().nullable(),
+  imageCrop: zod
+    .object({
+      croppedAreaPixels: zod.object({
+        x: zod.number(),
+        y: zod.number(),
+        width: zod.number(),
+        height: zod.number(),
+      }),
+    })
+    .nullable(),
   backgroundImage: zod.string().nullable(),
   updatedAt: zod.iso.datetime({ offset: true }),
 });
@@ -420,6 +461,16 @@ export const ListProfilePagesResponse = zod.object({
       role: zod.string().nullable(),
       bio: zod.string().nullable(),
       image: zod.string().nullable(),
+      imageCrop: zod
+        .object({
+          croppedAreaPixels: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            width: zod.number(),
+            height: zod.number(),
+          }),
+        })
+        .nullable(),
       backgroundImage: zod.string().nullable(),
       createdAt: zod.iso.datetime({ offset: true }),
       updatedAt: zod.iso.datetime({ offset: true }),
@@ -448,6 +499,16 @@ export const GetProfileByHandleResponse = zod.object({
     role: zod.string().nullable(),
     bio: zod.string().nullable(),
     image: zod.string().nullable(),
+    imageCrop: zod
+      .object({
+        croppedAreaPixels: zod.object({
+          x: zod.number(),
+          y: zod.number(),
+          width: zod.number(),
+          height: zod.number(),
+        }),
+      })
+      .nullable(),
     backgroundImage: zod.string().nullable(),
     location: zod.string().nullable(),
     updatedAt: zod.iso.datetime({ offset: true }),

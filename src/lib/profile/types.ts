@@ -23,6 +23,7 @@ export type ProfilePage = {
   role: string | null;
   bio: string | null;
   image: string | null;
+  imageCrop: ProfileImageCrop | null;
   backgroundImage: string | null;
 };
 
@@ -143,6 +144,7 @@ export type DraftProfilePage = {
   role: string;
   bio: string;
   image: string | null;
+  imageCrop: ProfileImageCrop | null;
   backgroundImage: string | null;
 };
 
@@ -158,6 +160,16 @@ export type ProfilePageSyncPayload = {
     role: string;
     bio: string;
     image: string | null;
+    imageCrop: ProfileImageCrop | null;
     backgroundImage: string | null;
+  };
+};
+
+export type ProfileImageCrop = {
+  croppedAreaPixels: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
   };
 };

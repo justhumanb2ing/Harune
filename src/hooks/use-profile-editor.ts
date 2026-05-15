@@ -25,7 +25,12 @@ import { getProfileRouteHandle } from "@/lib/profile/app-paths";
 import { uploadProfileImageIfChanged } from "@/lib/profile/client-image-upload";
 import { toProfilePageEditorDataFromPublicPage } from "@/lib/profile/public-profile-page";
 import { PROFILE_PAGE_STALE_TIME_MS } from "@/lib/profile/query-policy";
-import type { ProfileBentoItem, ProfilePageData, ProfilePageDraftData } from "@/lib/profile/types";
+import type {
+  ProfileBentoItem,
+  ProfileImageCrop,
+  ProfilePageData,
+  ProfilePageDraftData,
+} from "@/lib/profile/types";
 import useUser from "@/lib/users/use-user";
 
 export function useProfilePageEditor(initialUser?: GetMe200 | null) {
@@ -67,6 +72,7 @@ export function useProfilePageEditor(initialUser?: GetMe200 | null) {
 
   const fallbackName = draftData?.page.name || user?.name || "Profile";
   const previewImageSrc = previewImageUrl ?? draftData?.page.image ?? undefined;
+  const cropImageSrc = previewImageUrl ?? draftData?.page.image ?? undefined;
   const previewBackgroundImageSrc =
     previewBackgroundImageUrl ?? draftData?.page.backgroundImage ?? undefined;
 
@@ -78,6 +84,7 @@ export function useProfilePageEditor(initialUser?: GetMe200 | null) {
       role: draftData?.page.role ?? "",
       bio: draftData?.page.bio ?? "",
       image: draftData?.page.image ?? null,
+      imageCrop: draftData?.page.imageCrop ?? null,
       backgroundImage: draftData?.page.backgroundImage ?? null,
     }),
     [draftData]
@@ -96,6 +103,10 @@ export function useProfilePageEditor(initialUser?: GetMe200 | null) {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to select image");
     }
+  };
+
+  const applyProfileImageCrop = (imageCrop: ProfileImageCrop) => {
+    store.actions.applyProfileImageCrop(imageCrop);
   };
 
   const handleBackgroundImageChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -166,6 +177,7 @@ export function useProfilePageEditor(initialUser?: GetMe200 | null) {
               ...current.data.profilePage,
               handle: profilePageData.page.handle,
               image: profilePageData.page.image,
+              imageCrop: profilePageData.page.imageCrop,
               name: profilePageData.page.name,
             },
           },
@@ -199,6 +211,7 @@ export function useProfilePageEditor(initialUser?: GetMe200 | null) {
           currentUrl: syncDraftData.page.image,
           file: currentState.pendingImageFile,
           kind: "profile",
+          imageCrop: syncDraftData.page.imageCrop,
           persist: false,
         })
       : Promise.resolve(syncDraftData.page.image);
@@ -246,6 +259,7 @@ export function useProfilePageEditor(initialUser?: GetMe200 | null) {
     fallbackName,
     handleBackgroundImageChange,
     handleProfileImageChange,
+    applyProfileImageCrop,
     handleSync,
     hasUnsyncedChanges,
     backgroundImageInputRef,
@@ -255,6 +269,7 @@ export function useProfilePageEditor(initialUser?: GetMe200 | null) {
     isUserLoading,
     previewBackgroundImageSrc,
     previewImageSrc,
+    cropImageSrc,
     profileForm,
     uploadPendingImages,
     removeBackgroundImage: () => store.actions.removeBackgroundImage(),

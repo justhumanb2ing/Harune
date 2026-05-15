@@ -12,6 +12,7 @@ export const toProfilePageEditorDataFromPublicPage = (
     role: page.role,
     bio: page.bio,
     image: page.image,
+    imageCrop: page.imageCrop,
     backgroundImage: page.backgroundImage,
   },
 });

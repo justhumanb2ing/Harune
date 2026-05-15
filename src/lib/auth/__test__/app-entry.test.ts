@@ -9,6 +9,7 @@ const me: GetMe200 = {
     handle: "demo",
     id: "page-1",
     image: null,
+    imageCrop: null,
     name: "Demo",
   },
   user: {

@@ -2,6 +2,7 @@
 
 import { getProfileImageFileError } from "@/lib/profile/image-upload";
 import type {
+  ProfileImageCrop,
   ProfilePageData,
   ProfilePageDraftData,
   ProfilePageSyncPayload,
@@ -10,6 +11,7 @@ import type {
 type DirtyState = {
   backgroundImage: boolean;
   image: boolean;
+  imageCrop: boolean;
   profile: boolean;
 };
 
@@ -34,6 +36,7 @@ const initialDirtyState = (): DirtyState => ({
   profile: false,
   backgroundImage: false,
   image: false,
+  imageCrop: false,
 });
 
 const initialState = (): ProfilePageEditorState => ({
@@ -60,6 +63,7 @@ export const createDraftData = (data: ProfilePageData): ProfilePageDraftData => 
     role: normalizeNullableText(data.page.role),
     bio: normalizeNullableText(data.page.bio),
     image: data.page.image,
+    imageCrop: data.page.imageCrop ?? null,
     backgroundImage: data.page.backgroundImage,
   },
 });
@@ -71,6 +75,7 @@ const toComparableProfile = (draftData: ProfilePageDraftData) => ({
   role: draftData.page.role,
   bio: draftData.page.bio,
   image: draftData.page.image,
+  imageCrop: draftData.page.imageCrop,
   backgroundImage: draftData.page.backgroundImage,
 });
 
@@ -92,6 +97,8 @@ const recalculateDirtyState = (state: ProfilePageEditorState): ProfilePageEditor
       state.pendingBackgroundImageFile !== null ||
       baseDraft.page.backgroundImage !== state.draftData.page.backgroundImage,
     image: state.pendingImageFile !== null || baseDraft.page.image !== state.draftData.page.image,
+    imageCrop:
+      JSON.stringify(baseDraft.page.imageCrop) !== JSON.stringify(state.draftData.page.imageCrop),
   };
 
   return {
@@ -109,6 +116,7 @@ export const buildSyncPayload = (draftData: ProfilePageDraftData): ProfilePageSy
     role: draftData.page.role,
     bio: draftData.page.bio,
     image: draftData.page.image,
+    imageCrop: draftData.page.imageCrop,
     backgroundImage: draftData.page.backgroundImage,
   },
 });
@@ -198,6 +206,25 @@ export function createProfilePageEditorStore(initialData?: ProfilePageData | nul
           },
         }));
       },
+      applyProfileImageCrop(imageCrop: ProfileImageCrop) {
+        setDraft((draftData) => ({
+          ...draftData,
+          page: {
+            ...draftData.page,
+            imageCrop,
+          },
+        }));
+      },
+      setPreviewImageUrl(previewImageUrl: string | null) {
+        setState((current) => {
+          revokePreviewUrl(current.previewImageUrl);
+
+          return {
+            ...current,
+            previewImageUrl,
+          };
+        });
+      },
       selectImage(file: File) {
         const error = getProfileImageFileError(file);
 
@@ -205,13 +232,15 @@ export function createProfilePageEditorStore(initialData?: ProfilePageData | nul
           throw new Error(error);
         }
 
+        const sourceUrl = URL.createObjectURL(file);
+
         setState((current) => {
           revokePreviewUrl(current.previewImageUrl);
 
           return recalculateDirtyState({
             ...current,
             pendingImageFile: file,
-            previewImageUrl: URL.createObjectURL(file),
+            previewImageUrl: sourceUrl,
           });
         });
       },
@@ -234,6 +263,7 @@ export function createProfilePageEditorStore(initialData?: ProfilePageData | nul
               page: {
                 ...current.draftData.page,
                 image: null,
+                imageCrop: null,
               },
             },
             pendingImageFile: null,

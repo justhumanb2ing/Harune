@@ -47,5 +47,15 @@ export const UpdateHandleResponse = zod.object({
     handle: zod.string(),
     name: zod.string().nullable(),
     image: zod.string().nullable(),
+    imageCrop: zod
+      .object({
+        croppedAreaPixels: zod.object({
+          x: zod.number(),
+          y: zod.number(),
+          width: zod.number(),
+          height: zod.number(),
+        }),
+      })
+      .nullable(),
   }),
 });

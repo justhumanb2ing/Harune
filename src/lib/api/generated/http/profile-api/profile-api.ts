@@ -402,6 +402,7 @@ Rules:
 - Accepts JSON with `imageKind` and `imageUrl`
 - `imageKind` must be `profile` or `background`
 - `imageUrl` must point to the authenticated user's stable object key
+- `imageCrop` is optional crop metadata and is stored when provided
 - The object must already exist in storage
 - Only the matching DB column is updated
 - The response returns the committed persisted row and is `Cache-Control: no-store`

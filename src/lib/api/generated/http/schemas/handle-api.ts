@@ -60,6 +60,18 @@ export type UpdateHandleBody = {
   handle: string;
 };
 
+/**
+ * @nullable
+ */
+export type UpdateHandle200ProfilePageImageCrop = {
+  croppedAreaPixels: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+} | null;
+
 export type UpdateHandle200ProfilePage = {
   id: string;
   handle: string;
@@ -67,6 +79,8 @@ export type UpdateHandle200ProfilePage = {
   name: string | null;
   /** @nullable */
   image: string | null;
+  /** @nullable */
+  imageCrop: UpdateHandle200ProfilePageImageCrop;
 };
 
 export type UpdateHandle200 = {

@@ -67,6 +67,15 @@ export type GetMe200ProfilePage = {
   name: string | null;
   /** @nullable */
   image: string | null;
+  /** @nullable */
+  imageCrop: {
+    croppedAreaPixels: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
+  } | null;
 } | null;
 
 export type GetMe200UserCredits = { [key: string]: number };

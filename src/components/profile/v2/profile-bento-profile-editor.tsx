@@ -1,12 +1,16 @@
 "use client";
 
-import { CircleFadingArrowUpIcon, Loader2, TrashIcon } from "lucide-react";
+import { CircleFadingArrowUpIcon, CropIcon, Loader2, TrashIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useProfilePageEditor } from "@/hooks/use-profile-editor";
+import { preloadCropImageSource } from "@/lib/profile/image-crop";
 import { PROFILE_IMAGE_ACCEPT } from "@/lib/profile/image-upload";
+import { ProfileAvatarImage } from "./profile-avatar-image";
 import { PROFILE_BENTO_PROFILE_SHELL_CLASS } from "./profile-bento-profile-shell";
+import { ProfileImageCropSurface } from "./profile-image-crop-surface";
 
 export function ProfileBentoProfileEditor({
   initialUser,
@@ -14,6 +18,19 @@ export function ProfileBentoProfileEditor({
   initialUser?: Parameters<typeof useProfilePageEditor>[0];
 }) {
   const editor = useProfilePageEditor(initialUser);
+  const [isCropSurfaceOpen, setIsCropSurfaceOpen] = useState(false);
+
+  const profileImageSrc = editor.previewImageSrc ?? editor.profileForm.image;
+  const cropImageSrc = editor.cropImageSrc;
+  const hasProfileImage = Boolean(profileImageSrc);
+
+  useEffect(() => {
+    if (!cropImageSrc) {
+      return;
+    }
+
+    preloadCropImageSource(cropImageSrc);
+  }, [cropImageSrc]);
 
   if (!editor.data) {
     return null;
@@ -21,23 +38,22 @@ export function ProfileBentoProfileEditor({
 
   return (
     <aside className={PROFILE_BENTO_PROFILE_SHELL_CLASS}>
-      <div className="flex flex-col gap-8 overflow-hidden">
+      <div className="flex flex-col gap-8 overflow-visible">
         <div className="flex px-4">
-          <div className="group/profile-image relative">
+          <div className="group/profile-image relative overflow-visible">
             <button
               type="button"
-              className="relative flex size-32 xl:size-44 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-secondary transition-colors hover:bg-input disabled:cursor-not-allowed disabled:opacity-70"
+              className="relative flex size-32 xl:size-44 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-secondary transition-opacity transition-colors hover:bg-input disabled:cursor-not-allowed disabled:opacity-70"
               onClick={() => editor.imageInputRef.current?.click()}
-              disabled={editor.isSyncing}
+              disabled={editor.isSyncing || isCropSurfaceOpen}
               aria-label="Upload profile image"
             >
-              {editor.previewImageSrc ? (
-                // Object URLs and immediate local previews should render without Next image optimization.
-                // biome-ignore lint/performance/noImgElement: This preview can be a blob URL.
-                <img
-                  src={editor.previewImageSrc}
+              {profileImageSrc ? (
+                <ProfileAvatarImage
                   alt={editor.fallbackName}
-                  className="size-full object-cover"
+                  className={isCropSurfaceOpen ? "size-full opacity-0" : "size-full"}
+                  imageCrop={editor.profileForm.imageCrop}
+                  src={profileImageSrc}
                 />
               ) : (
                 <span className="flex size-full flex-col items-center justify-center gap-2 rounded-full  text-muted-foreground">
@@ -50,12 +66,28 @@ export function ProfileBentoProfileEditor({
                 </span>
               )}
             </button>
-            {editor.previewImageSrc ? (
+            {hasProfileImage ? (
+              <Button
+                type="button"
+                size="icon-lg"
+                className="size-10 pointer-events-none absolute top-1 left-1 z-10 rounded-full border-[0.5px] border-border bg-background text-black opacity-0 shadow-sm transition-opacity hover:bg-secondary group-hover/profile-image:pointer-events-auto group-hover/profile-image:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100"
+                disabled={editor.isSyncing || isCropSurfaceOpen}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setIsCropSurfaceOpen(true);
+                }}
+                aria-label="Crop profile image"
+              >
+                <CropIcon className="size-5 stroke-3" />
+              </Button>
+            ) : null}
+            {hasProfileImage ? (
               <Button
                 type="button"
                 size="icon-lg"
                 className="size-10 pointer-events-none absolute top-1 right-1 z-10 rounded-full border-[0.5px] border-border bg-background text-black opacity-0 shadow-sm transition-opacity hover:bg-secondary group-hover/profile-image:pointer-events-auto group-hover/profile-image:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100"
-                disabled={editor.isSyncing}
+                disabled={editor.isSyncing || isCropSurfaceOpen}
                 onClick={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
@@ -65,6 +97,16 @@ export function ProfileBentoProfileEditor({
               >
                 <TrashIcon className="size-5 stroke-3" />
               </Button>
+            ) : null}
+            {isCropSurfaceOpen ? (
+              <ProfileImageCropSurface
+                imageSrc={cropImageSrc ?? null}
+                initialCroppedAreaPixels={editor.profileForm.imageCrop?.croppedAreaPixels}
+                onClose={() => setIsCropSurfaceOpen(false)}
+                onApplied={({ imageCrop }) => {
+                  editor.applyProfileImageCrop(imageCrop);
+                }}
+              />
             ) : null}
           </div>
           <input

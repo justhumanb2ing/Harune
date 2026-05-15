@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { deleteProfileImage } from "@/lib/api/generated/http/profile-api/profile-api";
 import { uploadProfileImageIfChanged } from "@/lib/profile/client-image-upload";
 import { getProfileImageFileError, type ProfileImageKind } from "@/lib/profile/image-upload";
+import type { ProfileImageCrop } from "@/lib/profile/types";
 
 type ProfileImageUploadState = {
   error: string | null;
@@ -75,7 +76,7 @@ export function useProfileImageUpload() {
     async (
       kind: ProfileImageKind,
       currentUrl: string | null = null,
-      options: { persist?: boolean } = {}
+      options: { imageCrop?: ProfileImageCrop | null; persist?: boolean } = {}
     ) => {
       if (!state.selectedFile) {
         return null;
@@ -92,6 +93,7 @@ export function useProfileImageUpload() {
           currentUrl,
           file: state.selectedFile,
           kind,
+          imageCrop: options.imageCrop ?? null,
           persist: options.persist ?? false,
         });
 

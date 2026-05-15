@@ -5,6 +5,7 @@ import {
   uploadProfileImage,
 } from "@/lib/api/generated/http/profile-api/profile-api";
 import { getProfileImageCacheVersion, type ProfileImageKind } from "@/lib/profile/image-upload";
+import type { ProfileImageCrop } from "@/lib/profile/types";
 import { uploadToPresignedUrl } from "@/lib/s3/upload-to-presigned-url";
 
 export async function getFileSha256Hex(file: File) {
@@ -16,11 +17,13 @@ export async function uploadProfileImageIfChanged({
   currentUrl,
   file,
   kind,
+  imageCrop = null,
   persist = true,
 }: {
   currentUrl: string | null;
   file: File;
   kind: ProfileImageKind;
+  imageCrop?: ProfileImageCrop | null;
   persist?: boolean;
 }) {
   const imageHash = await getFileSha256Hex(file);
@@ -53,6 +56,7 @@ export async function uploadProfileImageIfChanged({
   const finalized = await finalizeProfileImage({
     imageKind: kind,
     imageUrl: uploaded.data.imageUrl,
+    imageCrop,
   });
 
   if (finalized.status !== 200) {

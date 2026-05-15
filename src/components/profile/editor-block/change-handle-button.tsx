@@ -108,6 +108,7 @@ export function ChangeHandleButton({
               ...currentProfileResponse.data.page,
               handle: data.profilePage.handle,
               image: data.profilePage.image,
+              imageCrop: data.profilePage.imageCrop,
               name: data.profilePage.name,
             },
           },
@@ -130,6 +131,7 @@ export function ChangeHandleButton({
             ...current.profilePage,
             handle: data.profilePage.handle,
             image: data.profilePage.image,
+            imageCrop: data.profilePage.imageCrop,
             name: data.profilePage.name,
           },
         };

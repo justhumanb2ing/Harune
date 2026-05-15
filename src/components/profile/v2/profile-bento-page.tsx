@@ -1,6 +1,7 @@
 import { CompassIcon } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { ProfileAvatarImage } from "@/components/profile/v2/profile-avatar-image";
 import { PROFILE_BENTO_PROFILE_SHELL_CLASS } from "@/components/profile/v2/profile-bento-profile-shell";
 import { ProfileBentoPublicShareButton } from "@/components/profile/v2/profile-bento-public-share-button";
 import { ProfileBentoReadonlyGrid } from "@/components/profile/v2/profile-bento-readonly-grid";
@@ -8,7 +9,7 @@ import { ProfilePageAnalyticsTracker } from "@/components/site-instrumentation/p
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type { getProfileByHandle } from "@/lib/api/generated/http/profile-api/profile-api";
-import type { GetMe200 } from "@/lib/api/generated/http/schemas/me-api";
+import type { GetMe200, GetMe200ProfilePage } from "@/lib/api/generated/http/schemas/me-api";
 import type {
   GetProfileByHandle200BentoItem,
   GetProfileByHandle200Page,
@@ -30,6 +31,7 @@ type ProfileBentoPageProps = {
   viewerProfilePage: {
     handle: string;
     image: string | null;
+    imageCrop: NonNullable<GetMe200ProfilePage>["imageCrop"];
     name: string | null;
   } | null;
 };
@@ -53,15 +55,11 @@ export function ProfileBentoProfileAside({
         <div className="flex w-full items-center justify-between gap-4 px-4 xl:px-0">
           <div className="relative flex size-32 items-center justify-center overflow-hidden rounded-full bg-secondary xl:size-44">
             {page.image ? (
-              // Public profile images must render without Next.js image optimization so the
-              // same persisted URL works for anonymous viewers and logged-in owners alike.
-              // biome-ignore lint/performance/noImgElement: This is a user-generated remote image.
-              <img
+              <ProfileAvatarImage
                 alt={imageAlt}
-                className="size-full object-cover"
-                height={176}
+                className="size-full"
+                imageCrop={page.imageCrop}
                 src={page.image}
-                width={176}
               />
             ) : (
               <span className="flex size-full flex-col items-center justify-center gap-2 rounded-full text-muted-foreground"></span>
@@ -84,7 +82,7 @@ export function ProfileBentoProfileAside({
           ) : null}
 
           {page.role || page.location ? (
-            <div className="flex flex-col gap-2 text-neutral-500 text-sm">
+            <div className="flex flex-col gap-2 text-neutral-500 text-base">
               {page.role ? <p className="h-fit p-0">{page.role}</p> : null}
               {page.location ? <p className="h-fit p-0">{page.location}</p> : null}
             </div>
@@ -103,6 +101,7 @@ function ProfileBentoFooterAction({
   viewerProfilePage: {
     handle: string;
     image: string | null;
+    imageCrop: NonNullable<GetMe200ProfilePage>["imageCrop"];
     name: string | null;
   } | null;
 }) {
@@ -123,13 +122,11 @@ function ProfileBentoFooterAction({
             {viewerProfilePage ? (
               <span className="relative size-5 shrink-0 overflow-hidden rounded-full bg-secondary">
                 {viewerProfilePage.image ? (
-                  // biome-ignore lint/performance/noImgElement: This is a user-generated remote image.
-                  <img
+                  <ProfileAvatarImage
                     alt={imageAlt}
-                    className="size-full object-cover"
-                    height={24}
+                    className="size-full"
+                    imageCrop={viewerProfilePage.imageCrop}
                     src={viewerProfilePage.image}
-                    width={24}
                   />
                 ) : (
                   <span aria-hidden className="block size-full" />

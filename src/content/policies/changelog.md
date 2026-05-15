@@ -1,8 +1,11 @@
 ---
 title: Changelog
-lastUpdated: "2026-05-12"
+lastUpdated: "2026-05-15"
 description: See the latest Harune product updates and user-visible improvements.
 ---
+
+## May 15, 2026
+- Added profile image cropping.
 
 ## May 12, 2026
 - Added contribution UI when adding GitHub links to profile bento cards.

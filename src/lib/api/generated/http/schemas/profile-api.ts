@@ -111,6 +111,18 @@ export type DeleteProfileImage500 = {
   error: DeleteProfileImage500Error;
 };
 
+/**
+ * @nullable
+ */
+export type FinalizeProfileImageBodyImageCrop = {
+  croppedAreaPixels: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+} | null;
+
 export type FinalizeProfileImageBodyImageKind =
   (typeof FinalizeProfileImageBodyImageKind)[keyof typeof FinalizeProfileImageBodyImageKind];
 
@@ -122,7 +134,21 @@ export const FinalizeProfileImageBodyImageKind = {
 export type FinalizeProfileImageBody = {
   imageKind: FinalizeProfileImageBodyImageKind;
   imageUrl: string;
+  /** @nullable */
+  imageCrop?: FinalizeProfileImageBodyImageCrop;
 };
+
+/**
+ * @nullable
+ */
+export type FinalizeProfileImage200ImageCrop = {
+  croppedAreaPixels: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+} | null;
 
 export type FinalizeProfileImage200ImageKind =
   (typeof FinalizeProfileImage200ImageKind)[keyof typeof FinalizeProfileImage200ImageKind];
@@ -137,6 +163,8 @@ export type FinalizeProfileImage200 = {
   imageUrl: string;
   /** @nullable */
   image: string | null;
+  /** @nullable */
+  imageCrop: FinalizeProfileImage200ImageCrop;
   /** @nullable */
   backgroundImage: string | null;
   updatedAt: string;
@@ -363,6 +391,18 @@ export type GetProfileByHandle200BentoItem =
       };
     };
 
+/**
+ * @nullable
+ */
+export type GetProfileByHandle200PageImageCrop = {
+  croppedAreaPixels: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+} | null;
+
 export type GetProfileByHandle200Page = {
   id: string;
   userId: string;
@@ -375,6 +415,8 @@ export type GetProfileByHandle200Page = {
   bio: string | null;
   /** @nullable */
   image: string | null;
+  /** @nullable */
+  imageCrop: GetProfileByHandle200PageImageCrop;
   /** @nullable */
   backgroundImage: string | null;
   /** @nullable */
@@ -413,6 +455,18 @@ export type GetProfileByHandle500 = {
   error: GetProfileByHandle500Error;
 };
 
+/**
+ * @nullable
+ */
+export type ListProfilePages200PagesItemImageCrop = {
+  croppedAreaPixels: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+} | null;
+
 export type ListProfilePages200PagesItem = {
   id: string;
   userId: string;
@@ -427,6 +481,8 @@ export type ListProfilePages200PagesItem = {
   bio: string | null;
   /** @nullable */
   image: string | null;
+  /** @nullable */
+  imageCrop: ListProfilePages200PagesItemImageCrop;
   /** @nullable */
   backgroundImage: string | null;
   createdAt: string;
@@ -586,6 +642,18 @@ export type UpdateProfilePageBodyBentoItem =
       };
     };
 
+/**
+ * @nullable
+ */
+export type UpdateProfilePageBodyImageCrop = {
+  croppedAreaPixels: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+} | null;
+
 export type UpdateProfilePageBody = {
   handle?: string;
   /** @nullable */
@@ -598,6 +666,8 @@ export type UpdateProfilePageBody = {
   bio?: string | null;
   /** @nullable */
   image?: string | null;
+  /** @nullable */
+  imageCrop?: UpdateProfilePageBodyImageCrop;
   /** @nullable */
   backgroundImage?: string | null;
   bento?: UpdateProfilePageBodyBentoItem[];
@@ -727,6 +797,18 @@ export type UpdateProfilePage200BentoItem =
       };
     };
 
+/**
+ * @nullable
+ */
+export type UpdateProfilePage200PageImageCrop = {
+  croppedAreaPixels: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+} | null;
+
 export type UpdateProfilePage200Page = {
   id: string;
   userId: string;
@@ -739,6 +821,8 @@ export type UpdateProfilePage200Page = {
   bio: string | null;
   /** @nullable */
   image: string | null;
+  /** @nullable */
+  imageCrop: UpdateProfilePage200PageImageCrop;
   /** @nullable */
   backgroundImage: string | null;
   /** @nullable */

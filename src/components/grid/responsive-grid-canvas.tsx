@@ -19,6 +19,7 @@ type ResponsiveGridCanvasProps = {
   activeDragIntentItemId: string | null;
   cardRotate: MotionValue<number>;
   cardX: MotionValue<number>;
+  plainItemIds?: ReadonlySet<string>;
   items: GridItem[];
   layouts: GridLayouts;
   mounted: boolean;
@@ -47,6 +48,7 @@ export function ResponsiveGridCanvas({
   activeDragIntentItemId,
   cardRotate,
   cardX,
+  plainItemIds,
   items,
   layouts,
   mounted,
@@ -107,12 +109,25 @@ export function ResponsiveGridCanvas({
       width={width}
     >
       {items.map((item) => {
+        const isPlainItem = plainItemIds?.has(item.id) ?? false;
         const isSectionItem = item.itemType === "section";
         const isVisuallyThinItem = item.id === THIN_PLACEHOLDER_ITEM_ID || isSectionItem;
         const isDragActive = activeDragItemId === item.id;
         const isDragIntentActive = activeDragIntentItemId === item.id;
         const motionPhase = getItemMotionPhase?.(item.id);
         const radiusClassName = isVisuallyThinItem ? "rounded-2xl" : "rounded-[1.5rem]";
+
+        if (isPlainItem) {
+          return (
+            <div
+              className={`overflow-visible ${radiusClassName} ${isVisuallyThinItem ? "flex items-end" : ""}`}
+              data-profile-bento-grid-item-id={item.id}
+              key={item.id}
+            >
+              {renderItem?.(item)}
+            </div>
+          );
+        }
 
         return (
           <div

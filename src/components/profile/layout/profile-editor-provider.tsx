@@ -72,16 +72,18 @@ export function ProfilePageEditorProvider({
   const syncError = useStoreSelector(store, (state) => state.syncError);
 
   React.useEffect(() => {
-    if (profilePageQuery.data === undefined) {
+    const nextData = initialData ?? profilePageQuery.data ?? null;
+
+    if (nextData === undefined) {
       return;
     }
 
     const currentState = store.getState();
 
     if (currentState.baseData === null || !currentState.hasUnsyncedChanges) {
-      store.actions.rebaseFromServer(profilePageQuery.data);
+      store.actions.rebaseFromServer(nextData);
     }
-  }, [profilePageQuery.data, store]);
+  }, [initialData, profilePageQuery.data, store]);
 
   React.useEffect(() => {
     if (!syncError) {

@@ -78,7 +78,7 @@ export default function ExploreSection({ pages }: ExploreSectionProps) {
                   <Link
                     key={page.id}
                     href={`/${page.handle}`}
-                    className="group aspect-square flex flex-col justify-center items-center gap-4 overflow-hidden bg-secondary/60 p-4 rounded-xl transition-transform duration-200 hover:-translate-y-1 relative"
+                    className="group aspect-4/3 flex flex-col justify-center items-center gap-4 overflow-hidden bg-secondary/60 p-4 rounded-xl transition-transform duration-200 hover:-translate-y-1 relative"
                   >
                     <div className="relative aspect-square size-28 overflow-hidden bg-muted/40 rounded-full surface-bevel">
                       {imageUrl ? (

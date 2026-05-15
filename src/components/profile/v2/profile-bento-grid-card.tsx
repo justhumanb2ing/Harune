@@ -1045,10 +1045,9 @@ function EditableMediaBento({
   return (
     <article className="relative size-full overflow-hidden rounded-[1.5rem] bg-muted">
       <MediaPreview item={item} />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent" />
       <input
         aria-label="Media caption"
-        className="grid-action absolute bottom-3 left-3 max-w-[calc(100%-4.5rem)] rounded-md bg-black/35 px-2 py-2 font-medium text-sm text-white outline-none backdrop-blur-sm placeholder:text-white/70"
+        className="grid-action absolute bottom-3 left-3 max-w-[calc(100%-4.5rem)] rounded-md bg-white px-2 py-2 font-medium text-sm text-black outline-none placeholder:text-black/45"
         onChange={(event) => {
           onChange({
             ...item,
@@ -1196,7 +1195,7 @@ function EditableMapBento({
       <CenterMapMarker />
       <input
         aria-label="Map caption"
-        className="grid-action absolute bottom-3 left-3 max-w-[calc(100%-4.5rem)] rounded-md bg-black/35 px-2 py-2 font-medium text-sm text-white outline-none backdrop-blur-sm placeholder:text-white/70"
+        className="grid-action absolute bottom-3 left-3 max-w-[calc(100%-4.5rem)] rounded-md bg-white px-2 py-2 font-medium text-sm text-black outline-none placeholder:text-black/45"
         onChange={(event) => {
           onChange({
             ...item,
@@ -1250,7 +1249,7 @@ function ReadonlyMapBento({
         </MapMarker>
       </BentoMap>
       {item.content.caption ? (
-        <p className="pointer-events-none absolute bottom-3 left-3 line-clamp-2 max-w-[calc(100%-4.5rem)] rounded-md bg-black/25 px-2 py-1 font-medium text-sm text-white backdrop-blur-sm">
+        <p className="pointer-events-none absolute bottom-3 left-3 line-clamp-2 max-w-[calc(100%-4.5rem)] rounded-md bg-white px-2 py-1 font-medium text-sm text-black">
           {item.content.caption}
         </p>
       ) : null}
@@ -1314,16 +1313,11 @@ function ProfileBentoGridCardContent({
   }
 
   if (item.type === "media") {
-    const hasBottomOverlay = Boolean(item.content.caption || item.content.href);
-
     return (
       <article className="relative size-full overflow-hidden rounded-[1.5rem] bg-muted">
         <MediaPreview item={item} />
-        {hasBottomOverlay ? (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent" />
-        ) : null}
         {item.content.caption ? (
-          <p className="min-w-0 truncate pointer-events-none absolute bottom-3 left-3 line-clamp-2 max-w-[calc(100%-4.5rem)] rounded-md bg-black/25 px-2 py-1 font-medium text-sm text-white backdrop-blur-sm">
+          <p className="min-w-0 truncate pointer-events-none absolute bottom-3 left-3 line-clamp-2 max-w-[calc(100%-4.5rem)] rounded-md bg-white px-2 py-1 font-medium text-sm text-black">
             {item.content.caption}
           </p>
         ) : null}

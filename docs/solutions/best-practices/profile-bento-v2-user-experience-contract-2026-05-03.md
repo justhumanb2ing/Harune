@@ -76,6 +76,25 @@ Owner editor의 하단 primary button은 현재 상태를 바로 드러내야 �
 - 변경 사항이 있으면 `Save`를 보여주고, sync가 진행 중이면 `Saving`을 보여준다.
 - label만 바꾸지 말고 click behavior도 상태에 맞춰 함께 전환한다.
 
+### Profile Image Crop Surface
+
+Owner editor의 profile image crop은 dialog가 아니라 avatar 슬롯 위에 뜨는 inline surface여야 한다.
+
+- crop icon을 누르면 현재 profile image를 기준으로 crop surface가 avatar 주변에 나타나야 한다.
+- crop surface는 저장된 `croppedAreaPixels`를 다시 읽어서 초기 위치와 zoom을 복원해야 한다.
+- crop surface를 다시 열었을 때는 이미 렌더된 profile image source를 재사용해야 하며, 불필요한 재조회 때문에 표시가 늦어지면 안 된다.
+- landscape 이미지면 crop area는 원형을 유지한 채 가로로 확장된 panel 안에 들어가고, portrait 이미지면 세로로 확장된 panel 안에 들어가야 한다.
+- 확장되는 panel은 layout flow를 건드리면 안 되며 `absolute` 레이어로 다른 컴포넌트와 분리되어야 한다.
+- `Apply` 버튼은 cropper panel의 우상단에 걸쳐 있어야 하고, crop metadata를 확정하는 단일 진입점이어야 한다.
+- crop icon 버튼과 `Apply`/`Cancel` 버튼은 container edge가 아니라 crop area 기준으로 고정되어야 하며, 이미지 aspect가 바뀌어도 위치가 흔들리면 안 된다.
+- `Apply` 후에는 `imageCrop` dirty state가 생겨서 primary `Save` 버튼이 활성화되어야 한다.
+- 실제 save payload에는 원본 `image` URL을 유지하고, `imageCrop`만 JSON 형태로 함께 저장해야 한다.
+- public readonly avatar와 owner editor avatar는 저장된 `imageCrop`를 반영해 같은 잘림 결과를 보여야 한다.
+- crop preview blob은 preload와 같은 resolved image source에서 생성해야 하며, 외부 origin 이미지도 proxy-aware source로 처리해야 한다.
+- Apply 직후 avatar는 이전 원본으로 잠깐 되돌아가면 안 되고, cropped preview가 유지된 상태로 교체되어야 한다.
+- crop surface를 닫는 동작은 apply와 분리되어야 하며, 닫기만 했을 때는 저장 대상이 바뀌지 않아야 한다.
+- crop surface는 `overflow-hidden` ancestor에 잘리지 않도록 absolute 위치 기준을 명확히 잡아야 한다.
+
 ### Viewport-Driven Layout Sync
 
 브라우저 폭만 바뀌었을 때는 저장 대상이 바뀐 것이 아니다. 반응형 grid가 breakpoint 전환 과정에서 layout을 다시 정렬하더라도, 그 자체를 편집 dirty state로 취급하지 않아야 한다.
@@ -183,6 +202,7 @@ UI/UX 변경 후 가능한 범위에서 아래를 확인한다.
 - Desktop과 mobile 폭에서 text가 겹치거나 버튼 안에서 잘리지 않는다.
 - 브라우저 폭만 줄인 상태에서 `Copy my page`/`Share page`가 `Save`로 바뀌지 않는다.
 - 추가, 삭제, drag, focus, save 같은 주요 flow가 layout shift 없이 이어진다.
+- profile image crop surface가 dialog 없이 inline으로 열리고, apply 후 save dirty state가 활성화되는지 확인한다.
 - hover-only controls는 keyboard focus로도 접근 가능하다.
 - scroll/focus 변경은 autofocus, fixed footer toolbar, nested scroll container와 충돌하지 않는다.
 - public readonly page와 owner editor가 의도한 차이만 갖는다.

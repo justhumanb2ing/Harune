@@ -375,9 +375,12 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   const [isCopied, setIsCopied] = useState(false);
   const {
     activeDragItemId,
+    activeDragIntentItemId,
     cardRotate,
     cardX,
     isThinPlaceholderActive,
+    startDragIntent,
+    stopDragIntent,
     startDrag,
     stopDrag,
     startResize,
@@ -1086,6 +1089,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
           <ResponsiveGridCanvas
             activeBreakpoint={activeBreakpoint}
             activeDragItemId={activeDragItemId}
+            activeDragIntentItemId={activeDragIntentItemId}
             cardRotate={cardRotate}
             cardX={cardX}
             items={gridItems}
@@ -1094,6 +1098,8 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
             onDrag={updateDragPointer}
             onDragStart={startDrag}
             onDragStop={stopDrag}
+            onDragIntentStart={startDragIntent}
+            onDragIntentStop={stopDragIntent}
             onItemMotionComplete={completeItemMotion}
             onLayoutChange={(nextLayouts) => {
               // Viewport-only resizes can emit a layout rewrite; keep it out of dirty state.

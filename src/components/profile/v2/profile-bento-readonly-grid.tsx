@@ -48,6 +48,7 @@ export function ProfileBentoReadonlyGrid({
           <ResponsiveGridCanvas
             activeBreakpoint={activeBreakpoint}
             activeDragItemId={null}
+            activeDragIntentItemId={null}
             cardRotate={cardRotate}
             cardX={cardX}
             items={gridItems}
@@ -56,6 +57,8 @@ export function ProfileBentoReadonlyGrid({
             onDrag={() => {}}
             onDragStart={() => {}}
             onDragStop={() => {}}
+            onDragIntentStart={() => {}}
+            onDragIntentStop={() => {}}
             onLayoutChange={() => {}}
             onRemoveItem={() => {}}
             onResizeItem={() => {}}

@@ -14,6 +14,7 @@ function getPointerClientX(event: Event) {
 export function useGridDragMotion() {
   const [isThinPlaceholderActive, setIsThinPlaceholderActive] = useState(false);
   const [activeDragItemId, setActiveDragItemId] = useState<string | null>(null);
+  const [activeDragIntentItemId, setActiveDragIntentItemId] = useState<string | null>(null);
   const pointerDeltaX = useMotionValue(0);
   const pointerClientX = useMotionValue(0);
   const reducedRotate = useMotionValue(0);
@@ -61,8 +62,17 @@ export function useGridDragMotion() {
 
   function stopDrag() {
     setActiveDragItemId(null);
+    setActiveDragIntentItemId(null);
     setIsThinPlaceholderActive(false);
     pointerDeltaX.set(0);
+  }
+
+  function startDragIntent(itemId: string) {
+    setActiveDragIntentItemId(itemId);
+  }
+
+  function stopDragIntent() {
+    setActiveDragIntentItemId(null);
   }
 
   function startResize(newItem: LayoutItem | null | undefined) {
@@ -75,11 +85,14 @@ export function useGridDragMotion() {
 
   return {
     activeDragItemId,
+    activeDragIntentItemId,
     cardRotate: shouldReduceMotion ? reducedRotate : dragRotate,
     cardX: shouldReduceMotion ? reducedX : dragX,
     isThinPlaceholderActive,
     startDrag,
+    startDragIntent,
     stopDrag,
+    stopDragIntent,
     startResize,
     stopResize,
     updateDragPointer,

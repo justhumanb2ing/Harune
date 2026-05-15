@@ -16,6 +16,7 @@ import type { GridBreakpoint, GridItem, GridLayouts, ResizeOption } from "@/lib/
 type ResponsiveGridCanvasProps = {
   activeBreakpoint: GridBreakpoint;
   activeDragItemId: string | null;
+  activeDragIntentItemId: string | null;
   cardRotate: MotionValue<number>;
   cardX: MotionValue<number>;
   items: GridItem[];
@@ -24,6 +25,8 @@ type ResponsiveGridCanvasProps = {
   onDrag: (event: Event) => void;
   onDragStart: (newItem: LayoutItem | null | undefined, event: Event) => void;
   onDragStop: () => void;
+  onDragIntentStart: (itemId: string) => void;
+  onDragIntentStop: (itemId: string) => void;
   onItemMotionComplete?: (id: string, phase: GridCardMotionPhase) => void;
   onLayoutChange: (layouts: GridLayouts) => void;
   onRemoveItem: (id: string) => void;
@@ -41,6 +44,7 @@ type ResponsiveGridCanvasProps = {
 export function ResponsiveGridCanvas({
   activeBreakpoint,
   activeDragItemId,
+  activeDragIntentItemId,
   cardRotate,
   cardX,
   items,
@@ -49,6 +53,8 @@ export function ResponsiveGridCanvas({
   onDrag,
   onDragStart,
   onDragStop,
+  onDragIntentStart,
+  onDragIntentStop,
   onItemMotionComplete,
   onLayoutChange,
   onRemoveItem,
@@ -104,6 +110,7 @@ export function ResponsiveGridCanvas({
         const isSectionItem = item.itemType === "section";
         const isVisuallyThinItem = item.id === THIN_PLACEHOLDER_ITEM_ID || isSectionItem;
         const isDragActive = activeDragItemId === item.id;
+        const isDragIntentActive = activeDragIntentItemId === item.id;
         const motionPhase = getItemMotionPhase?.(item.id);
         const radiusClassName = isVisuallyThinItem ? "rounded-2xl" : "rounded-[1.5rem]";
 
@@ -117,10 +124,13 @@ export function ResponsiveGridCanvas({
               activeBreakpoint={activeBreakpoint}
               cardRotate={cardRotate}
               cardX={cardX}
+              isDragIntentActive={isDragIntentActive}
               isDragActive={isDragActive}
               item={item}
               layouts={layouts}
               motionPhase={motionPhase}
+              onDragIntentStart={onDragIntentStart}
+              onDragIntentStop={onDragIntentStop}
               onMotionComplete={onItemMotionComplete}
               onRemove={onRemoveItem}
               onResize={onResizeItem}

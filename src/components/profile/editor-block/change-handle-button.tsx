@@ -1,7 +1,7 @@
 "use client";
 
+import { CheckCircleIcon, SpinnerGapIcon, XCircleIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { CheckIcon, Loader2Icon, XIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useProfilePageEditorStore } from "@/components/profile/layout/profile-editor-provider";
@@ -167,15 +167,15 @@ export function ChangeHandleButton({
         side={panelSide}
         sideOffset={panelSideOffset}
         data-setting-box-popover=""
-        className="w-[var(--anchor-width)] min-w-80 gap-0 overflow-hidden rounded-2xl p-1 border-border/40 shadow-brand-small!"
+        className="w-[var(--anchor-width)] min-w-80 gap-0 overflow-hidden rounded-[1.5rem] border-border/40 p-1 shadow-brand-small!"
       >
         <header>
-          <h3 className="p-3 text-lg font-semibold">Pick a new handle ✨</h3>
+          <h3 className="p-3 text-lg font-semibold">Pick a new handle</h3>
         </header>
 
         <div className="space-y-2 p-3 pt-0">
           <Field className="relative rounded-lg bg-background outline-none">
-            <InputGroup className="h-12 border-0 bg-secondary px-2 font-medium ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
+            <InputGroup className="h-12 rounded-md border-0 bg-secondary px-2 font-medium ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
               <InputGroupInput
                 id="profile-handle-popover"
                 placeholder="Handle"
@@ -188,14 +188,14 @@ export function ChangeHandleButton({
               <InputGroupAddon align="inline-start">
                 <InputGroupText className="text-primary">harune.me/</InputGroupText>
               </InputGroupAddon>
-              <InputGroupAddon align="inline-end">
+              <InputGroupAddon align="inline-end" className="pr-1">
                 {isCheckingAvailability ? (
-                  <Loader2Icon className="size-5 animate-spin" />
+                  <SpinnerGapIcon className="size-5 animate-spin" />
                 ) : hasChangedHandle && shouldShowState ? (
                   isHandleAvailable ? (
-                    <CheckIcon className="size-5 stroke-3 text-green-400" />
+                    <CheckCircleIcon weight="fill" className="size-6 stroke-3 text-green-500" />
                   ) : isHandleTaken ? (
-                    <XIcon className="size-5 text-destructive" />
+                    <XCircleIcon weight="fill" className="size-6 text-red-500" />
                   ) : null
                 ) : null}
               </InputGroupAddon>
@@ -205,7 +205,7 @@ export function ChangeHandleButton({
             type="button"
             disabled={isHandleSaveDisabled}
             onClick={() => void handleSave()}
-            className="w-full h-11 font-bold text-base  brand-button"
+            className="brand-success-button h-11 w-full text-base font-bold"
           >
             Change
           </Button>

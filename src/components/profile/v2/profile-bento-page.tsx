@@ -76,7 +76,7 @@ export function ProfileBentoProfileAside({
           ) : null}
 
           {page.bio ? (
-            <p className="min-h-8 whitespace-pre-line break-all p-0 text-lg! text-neutral-600 xl:text-xl!">
+            <p className="min-h-8 whitespace-pre-line break-all p-0 text-lg! text-neutral-800 xl:text-xl!">
               {page.bio}
             </p>
           ) : null}

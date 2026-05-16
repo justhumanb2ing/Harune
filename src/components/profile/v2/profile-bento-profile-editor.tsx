@@ -124,7 +124,7 @@ export function ProfileBentoProfileEditor({
             id="v2-profile-name"
             value={editor.profileForm.name}
             onChange={(event) => editor.setProfileField("name", event.target.value)}
-            placeholder="Name"
+            placeholder="Your name"
             aria-label="Name"
             autoComplete="off"
             maxLength={100}
@@ -135,9 +135,9 @@ export function ProfileBentoProfileEditor({
             id="v2-profile-bio"
             value={editor.profileForm.bio}
             onChange={(event) => editor.setProfileField("bio", event.target.value)}
-            placeholder="Bio"
+            placeholder="Your bio"
             aria-label="Bio"
-            className="min-h-8 resize-none overflow-hidden border-0 p-0! text-lg! text-neutral-600 xl:text-xl! break-all rounded-none focus-visible:ring-0"
+            className="min-h-8 resize-none overflow-hidden border-0 p-0! text-lg! text-neutral-800 xl:text-xl! break-all rounded-none focus-visible:ring-0"
           />
 
           <div className="flex flex-col gap-2 text-neutral-500">

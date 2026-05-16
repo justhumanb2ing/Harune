@@ -28,11 +28,6 @@ interface AuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
 type AuthMode = "sign-in" | "sign-up";
 type PendingAction = "google" | "demo" | AuthMode;
 
-const DEMO_ACCOUNT = {
-  email: "demo@demo.com",
-  password: "demo1234",
-} as const;
-
 export function AuthForm({
   className,
   callbackUrl,
@@ -128,31 +123,6 @@ export function AuthForm({
     }
   };
 
-  const handleDemoSignIn = async () => {
-    setErrorMessage(null);
-    setPendingAction("demo");
-
-    try {
-      const result = await authClient.signIn.email({
-        email: DEMO_ACCOUNT.email,
-        password: DEMO_ACCOUNT.password,
-      });
-
-      if (result.error) {
-        setErrorMessage(result.error.message || "Could not sign in with the demo account.");
-        return;
-      }
-
-      await invalidateAuthenticatedAppQueries(queryClient);
-      router.push(resolvedCallbackUrl);
-    } catch (error) {
-      console.error("Demo authentication error:", error);
-      setErrorMessage("Could not sign in with the demo account.");
-    } finally {
-      setPendingAction(null);
-    }
-  };
-
   const shouldShowGoogleButton = enableGoogle && !hasEmailInputValue;
   const shouldShowEmailButton = hasEmailInputValue || !enableGoogle;
 
@@ -181,7 +151,7 @@ export function AuthForm({
             type="submit"
             form={formId}
             disabled={isLoading}
-            className="h-12 py-6 w-full font-semibold shadow-lg border-foreground"
+            className="h-12 py-6 w-full text-base font-semibold shadow-lg border-foreground"
           >
             {pendingAction === mode ? <FaSpinner className="mr-2 h-4 w-4 animate-spin" /> : null}
             {mode === "sign-up" ? "Create account" : "Log in"}
@@ -192,7 +162,7 @@ export function AuthForm({
             type="button"
             disabled={isLoading}
             onClick={handleGoogleSignIn}
-            className="h-12 w-full py-6 font-semibold shadow-lg border-indigo-400 bg-indigo-400 hover:bg-indigo-500 text-white!"
+            className="h-12 w-full py-6 font-semibold text-base border-indigo-400 bg-indigo-400 hover:bg-indigo-500 text-white!"
           >
             {pendingAction === "google" ? (
               <FaSpinner className="mr-2 h-4 w-4 animate-spin" />
@@ -200,19 +170,6 @@ export function AuthForm({
               <FaGoogle className="mr-2 h-4 w-4" />
             )}
             Continue with Google
-          </Button>
-        ) : null}
-
-        {mode === "sign-in" ? (
-          <Button
-            variant="secondary"
-            type="button"
-            disabled={isLoading}
-            onClick={handleDemoSignIn}
-            className="h-12 w-full py-6 font-semibold"
-          >
-            {pendingAction === "demo" ? <FaSpinner className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Try demo account
           </Button>
         ) : null}
       </div>

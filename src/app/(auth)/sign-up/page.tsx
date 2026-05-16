@@ -49,10 +49,8 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
         <div className="flex min-h-0 flex-1 items-center justify-center">
           <article className="w-full max-w-lg flex flex-col gap-8">
             <div className="mb-12 flex flex-col gap-2">
-              <h1 className="text-4xl font-bold tracking-tight mb-2">
-                Join {appConfig.projectName}
-              </h1>
-              <h2 className="text-base text-neutral-600">Create your account for free</h2>
+              <h1 className="text-4xl font-semibold mb-2">Join {appConfig.projectName}</h1>
+              <h2 className="text-lg text-neutral-600">Create your account for free</h2>
             </div>
 
             <AuthForm

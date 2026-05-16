@@ -57,10 +57,8 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
         <div className="flex min-h-0 flex-1 items-center justify-center">
           <article className="w-full max-w-lg flex flex-col gap-8">
             <div className="mb-16 flex flex-col gap-2">
-              <h1 className="text-4xl font-bold tracking-tight mb-2">
-                Log in to {appConfig.projectName}
-              </h1>
-              <h2 className="text-base text-neutral-600">We've been waiting for you!</h2>
+              <h1 className="text-4xl font-semibold mb-2">Log in to {appConfig.projectName}</h1>
+              <h2 className="text-lg text-neutral-600">We've been waiting for you!</h2>
             </div>
 
             <AuthForm

@@ -390,14 +390,6 @@ export const showcaseItems = [
   },
   {
     content: {
-      content: "Tiny note, big main-character energy.",
-    },
-    id: "showcase-text-secondary",
-    layout: { compact: { h: 2, w: 1, x: 0, y: 0 }, desktop: { h: 2, w: 1, x: 0, y: 0 } },
-    type: "text",
-  },
-  {
-    content: {
       description: null,
       favicon: null,
       domain: "open.spotify.com",

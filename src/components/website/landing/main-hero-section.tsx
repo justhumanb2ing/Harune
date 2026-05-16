@@ -39,12 +39,6 @@ const heroShowcasePlacements = {
     rotate: 6,
     zIndex: 2,
   },
-  "showcase-text-secondary": {
-    className:
-      "max-[818px]:right-[8%] max-[818px]:bottom-[12%] max-[818px]:translate-x-0 right-[8%] bottom-[12%] sm:right-[-10%] sm:bottom-[10%] lg:right-[16%] lg:bottom-[18%]",
-    rotate: -4,
-    zIndex: 2,
-  },
   "showcase-spotify": {
     className:
       "max-[818px]:left-[-20%] max-[818px]:top-[38%] left-[8%] top-[34%] sm:left-[-14%] sm:top-[32%] lg:left-[0%] lg:top-[30%]",
@@ -59,8 +53,8 @@ const heroShowcasePlacements = {
   },
   "showcase-twitter": {
     className:
-      "max-[818px]:left-[-16%] max-[818px]:bottom-[-16%] max-[818px]:-translate-x-1/2 left-[14%] bottom-[7%] -translate-x-1/2 sm:left-[-8%] sm:bottom-[-10%] lg:left-[24%] lg:bottom-[2%]",
-    rotate: -5,
+      "max-[818px]:left-[-16%] max-[818px]:bottom-[-16%] max-[818px]:-translate-x-1/2 left-[14%] bottom-[7%] -translate-x-1/2 sm:left-[-8%] sm:bottom-[-10%] lg:left-[5%] lg:bottom-[32%]",
+    rotate: 5,
     zIndex: 3,
   },
 } as const;

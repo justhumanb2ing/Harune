@@ -105,14 +105,17 @@ export async function generateMetadata({ params }: HandlePageProps): Promise<Met
 
   const title = `${data.page.name || data.page.userName || data.page.handle}`;
 
-  return createPageMetadata({
-    path: `/${data.page.handle}`,
-    title,
-    description: data.page.bio || `Visit @${data.page.handle}'s page.`,
-    imageAlt: title,
-    imagePath: `/${data.page.handle}/opengraph-image`,
-    twitterImagePath: `/${data.page.handle}/twitter-image`,
-  });
+  return {
+    ...createPageMetadata({
+      path: `/${data.page.handle}`,
+      title,
+      description: data.page.bio || `Visit @${data.page.handle}'s page.`,
+      imageAlt: title,
+      imagePath: `/${data.page.handle}/opengraph-image`,
+      twitterImagePath: `/${data.page.handle}/twitter-image`,
+    }),
+    title: { absolute: title },
+  };
 }
 
 export default async function HandlePage({ params }: HandlePageProps) {

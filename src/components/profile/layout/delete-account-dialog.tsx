@@ -48,15 +48,21 @@ export function DeleteAccountDialog({
           </Button>
         }
       />
-      <AlertDialogContent size="default" className="gap-4">
+      <AlertDialogContent
+        size="default"
+        className="flex h-96 flex-col gap-4 rounded-[2.5rem] p-7 shadow-float"
+      >
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-xl font-semibold">Leaving already?</AlertDialogTitle>
-          <AlertDialogDescription>
-            It will remove your page permanently. This can't be undone.
+          <AlertDialogTitle className="text-2xl font-bold tracking-tight">
+            Leaving already?
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-neutral-700 text-base">
+            <p>It will remove your page permanently.</p>
+            <p>This can't be undone.</p>
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <AlertDialogFooter className="sm:flex-col-reverse">
+        <AlertDialogFooter className="mt-auto justify-end! sm:flex-col-reverse">
           <AlertDialogCancel
             size="lg"
             variant="ghost"

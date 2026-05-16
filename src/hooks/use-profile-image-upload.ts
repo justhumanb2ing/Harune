@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { deleteProfileImage } from "@/lib/api/generated/http/profile-api/profile-api";
 import { uploadProfileImageIfChanged } from "@/lib/profile/client-image-upload";
 import { getProfileImageFileError, type ProfileImageKind } from "@/lib/profile/image-upload";
@@ -28,49 +28,55 @@ export async function deleteUploadedProfileImage(imageUrl: string) {
   });
 }
 
-export function useProfileImageUpload() {
-  const previewUrlRef = useRef<string | null>(null);
-  const [state, setState] = useState<ProfileImageUploadState>(initialState);
+const readFileAsDataUrl = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
 
-  const revokePreviewUrl = useCallback(() => {
-    if (previewUrlRef.current) {
-      URL.revokeObjectURL(previewUrlRef.current);
-      previewUrlRef.current = null;
-    }
-  }, []);
-
-  const clear = useCallback(() => {
-    revokePreviewUrl();
-    setState(initialState);
-  }, [revokePreviewUrl]);
-
-  const selectFile = useCallback(
-    (file: File) => {
-      const validationError = getProfileImageFileError(file);
-
-      if (validationError) {
-        setState((prev) => ({
-          ...prev,
-          error: validationError,
-          isUploading: false,
-        }));
-        throw new Error(validationError);
+    reader.onload = () => {
+      if (typeof reader.result !== "string") {
+        reject(new Error("Failed to read image preview."));
+        return;
       }
 
-      const previewUrl = URL.createObjectURL(file);
-      revokePreviewUrl();
-      previewUrlRef.current = previewUrl;
+      resolve(reader.result);
+    };
 
-      setState({
-        error: null,
+    reader.onerror = () => {
+      reject(reader.error ?? new Error("Failed to read image preview."));
+    };
+
+    reader.readAsDataURL(file);
+  });
+
+export function useProfileImageUpload() {
+  const [state, setState] = useState<ProfileImageUploadState>(initialState);
+
+  const clear = useCallback(() => {
+    setState(initialState);
+  }, []);
+
+  const selectFile = useCallback(async (file: File) => {
+    const validationError = getProfileImageFileError(file);
+
+    if (validationError) {
+      setState((prev) => ({
+        ...prev,
+        error: validationError,
         isUploading: false,
-        previewUrl,
-        selectedFile: file,
-        selectedFileName: file.name,
-      });
-    },
-    [revokePreviewUrl]
-  );
+      }));
+      throw new Error(validationError);
+    }
+
+    const previewUrl = await readFileAsDataUrl(file);
+
+    setState({
+      error: null,
+      isUploading: false,
+      previewUrl,
+      selectedFile: file,
+      selectedFileName: file.name,
+    });
+  }, []);
 
   const uploadSelectedFile = useCallback(
     async (
@@ -118,8 +124,6 @@ export function useProfileImageUpload() {
     },
     [state.selectedFile]
   );
-
-  useEffect(() => revokePreviewUrl, [revokePreviewUrl]);
 
   return {
     ...state,

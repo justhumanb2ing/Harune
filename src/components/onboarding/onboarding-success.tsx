@@ -41,7 +41,6 @@ function useViewportSize() {
 
 export function OnboardingSuccess({ handle }: OnboardingSuccessProps) {
   const [isCopied, setIsCopied] = React.useState(false);
-  const [showConfetti, setShowConfetti] = React.useState(true);
   const { height, width } = useViewportSize();
 
   React.useEffect(() => {
@@ -65,7 +64,7 @@ export function OnboardingSuccess({ handle }: OnboardingSuccessProps) {
 
   return (
     <div className="relative flex h-full flex-col gap-4 items-center justify-center bg-background py-6">
-      {showConfetti && width > 0 && height > 0 ? (
+      {width > 0 && height > 0 ? (
         <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
           <Confetti
             width={width}
@@ -79,30 +78,22 @@ export function OnboardingSuccess({ handle }: OnboardingSuccessProps) {
 
       <div className="max-w-md mx-auto w-full flex-1 px-4 pb-8">
         <div className="relative z-10 flex min-h-full flex-col gap-32 pt-20 lg:flex-row">
-          {/* <div className="flex-4 w-full min-h-full h-full rounded-xl overflow-hidden">
-            <Image
-              src={"/images/onboarding_sample.jpeg"}
-              alt="onboarding_success"
-              width={400}
-              height={400}
-              className="w-full h-[44rem] lg:h-full rounded-xl object-cover"
-            />
-          </div> */}
-
           <div className="flex flex-col justify-center gap-12 max-w-full flex-3">
             <header className="flex flex-col gap-2">
-              <h1 className="text-3xl font-semibold tracking-tight">Congratulation 🎉</h1>
+              <h1 className="text-3xl font-bold tracking-tight">Congratulation 🎉</h1>
               <h2>You’re all set — your page is live.</h2>
             </header>
 
             <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between rounded-lg bg-secondary px-5 py-2 pr-2">
+              <div className="flex items-center justify-between rounded-md bg-secondary px-5 py-2 pr-2">
                 <span className="text-lg font-medium">{`${appConfig.url}/${handle}`.slice(8)}</span>
                 <Button
                   type="button"
                   variant="ghost"
                   onClick={() => void handleCopyPageUrl()}
-                  className={"bg-background hover:bg-background shadow-xs min-w-14 font-semibold"}
+                  className={
+                    "bg-background hover:bg-background shadow-xs min-w-14 py-4.5 font-semibold"
+                  }
                   aria-label={isCopied ? "Copied page URL" : "Copy page URL"}
                 >
                   {isCopied ? <CheckIcon className="size-5" /> : <span>Copy</span>}
@@ -112,11 +103,11 @@ export function OnboardingSuccess({ handle }: OnboardingSuccessProps) {
               <Button
                 nativeButton={false}
                 size="lg"
-                className="h-12 rounded-lg font-bold text-base! bg-indigo-400 hover:bg-indigo-500! border-indigo-400 shadow-lg group"
+                className="h-14 rounded-lg font-bold text-base! group"
                 render={
                   <Link href={getProfileAppPath(handle)} className="flex items-center">
                     <span>Go to your page</span>
-                    <ArrowRightIcon className="mt-0.5 size-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 stroke-3 transition-all" />
+                    <ArrowRightIcon className="mt-0.5 size-4 group-hover:translate-x-1 stroke-3 transition-all" />
                   </Link>
                 }
               />

@@ -294,64 +294,26 @@
   }
 }
 
-@keyframes onboarding-slide-out-left {
+@keyframes onboarding-fade-out {
   from {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-  60% {
-    opacity: 0.35;
   }
   to {
     opacity: 0;
-    transform: translate3d(-100%, 0, 0);
   }
 }
 
-@keyframes onboarding-slide-in-left {
+@keyframes onboarding-fade-in {
   from {
     opacity: 0;
-    transform: translate3d(100%, 0, 0);
-  }
-  40% {
-    opacity: 0.65;
   }
   to {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes onboarding-slide-out-right {
-  from {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-  60% {
-    opacity: 0.35;
-  }
-  to {
-    opacity: 0;
-    transform: translate3d(100%, 0, 0);
-  }
-}
-
-@keyframes onboarding-slide-in-right {
-  from {
-    opacity: 0;
-    transform: translate3d(-100%, 0, 0);
-  }
-  40% {
-    opacity: 0.65;
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
   }
 }
 
 ::view-transition-group(onboarding-step) {
-  animation-duration: 800ms;
+  animation-duration: 260ms;
   animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
   clip-path: inset(0);
   overflow: clip;
@@ -364,26 +326,20 @@
 
 ::view-transition-old(onboarding-step),
 ::view-transition-new(onboarding-step) {
-  animation-duration: 800ms;
+  animation-duration: 260ms;
   animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
   animation-fill-mode: both;
   backface-visibility: hidden;
 }
 
-html[data-onboarding-step-transition="forward"]::view-transition-old(onboarding-step) {
-  animation-name: onboarding-slide-out-left;
-}
-
-html[data-onboarding-step-transition="forward"]::view-transition-new(onboarding-step) {
-  animation-name: onboarding-slide-in-left;
-}
-
+html[data-onboarding-step-transition="forward"]::view-transition-old(onboarding-step),
 html[data-onboarding-step-transition="back"]::view-transition-old(onboarding-step) {
-  animation-name: onboarding-slide-out-right;
+  animation-name: onboarding-fade-out;
 }
 
+html[data-onboarding-step-transition="forward"]::view-transition-new(onboarding-step),
 html[data-onboarding-step-transition="back"]::view-transition-new(onboarding-step) {
-  animation-name: onboarding-slide-in-right;
+  animation-name: onboarding-fade-in;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,82 +1,186 @@
+import * as motion from "motion/react-client";
+import Image from "next/image";
 import type { ReactNode } from "react";
-import { SquigglyText } from "@/components/ui/squiggly-text";
+import { cn } from "@/lib/utils";
 
 interface AuthLayoutProps {
   children: ReactNode;
 }
 
-const squigglyTexts = [
+type ImageBox = {
+  alt: string;
+  className: string;
+  height: number;
+  offsetX: number;
+  offsetY: number;
+  rotate: number;
+  src: string;
+  width: number;
+};
+
+type CollageSlot = Pick<ImageBox, "height" | "rotate" | "width"> & {
+  className: string;
+  offsetX: number;
+  offsetY: number;
+};
+
+const onboardingAsideImages = [
   {
-    text: "Hello",
-    className: "left-[8%] top-[14%] text-6xl rotate-[-12deg]",
+    src: "https://cdn.harune.me/public/assets/aside-asset/onboarding-image-1.png",
+    alt: "Onboarding Image 1",
   },
   {
-    text: "こんにちは",
-    className: "right-[12%] top-[10%] text-5xl rotate-[10deg] text-red-400",
+    src: "https://cdn.harune.me/public/assets/aside-asset/onboarding-image-2.png",
+    alt: "Onboarding Image 2",
   },
   {
-    text: "안녕하세요",
-    className: "left-[18%] top-[36%] text-7xl rotate-[4deg] text-indigo-400",
+    src: "https://cdn.harune.me/public/assets/aside-asset/onboarding-image-3.png",
+    alt: "Onboarding Image 3",
   },
   {
-    text: "Olá",
-    className: "right-[20%] top-[28%] text-4xl rotate-[-16deg] text-blue-400",
+    src: "https://cdn.harune.me/public/assets/aside-asset/onboarding-image-4.png",
+    alt: "Onboarding Image 4",
   },
   {
-    text: "Bonjour",
-    className: "left-[12%] bottom-[22%] text-5xl rotate-[-14deg] text-green-400",
+    src: "https://cdn.harune.me/public/assets/aside-asset/onboarding-image-5.png",
+    alt: "Onboarding Image 5",
   },
   {
-    text: "Привет",
-    className: "right-[8%] bottom-[28%] text-6xl rotate-[-8deg] text-amber-400",
+    src: "https://cdn.harune.me/public/assets/aside-asset/onboarding-image-6.png",
+    alt: "Onboarding Image 6",
   },
   {
-    text: "Ciao",
-    className: "left-[36%] bottom-[14%] text-4xl rotate-[18deg] text-pink-400",
+    src: "https://cdn.harune.me/public/assets/aside-asset/onboarding-image-7.png",
+    alt: "Onboarding Image 7",
+  },
+] satisfies Array<{ alt: string; src: string }>;
+
+const onboardingAsideSlots: CollageSlot[] = [
+  {
+    className: "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+    height: 180,
+    offsetX: -152,
+    offsetY: -98,
+    rotate: 18,
+    width: 240,
   },
   {
-    text: "Hallo",
-    className: "right-[32%] bottom-[12%] text-5xl rotate-[-6deg] text-purple-400",
+    className: "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+    height: 252,
+    offsetX: 0,
+    offsetY: -80,
+    rotate: -20,
+    width: 168,
   },
   {
-    text: "Xin chào",
-    className: "left-[42%] top-[52%] text-4xl rotate-[-22deg] text-orange-400",
+    className: "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+    height: 208,
+    offsetX: 110,
+    offsetY: -80,
+    rotate: 6,
+    width: 156,
   },
-] as const;
+  {
+    className: "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+    height: 192,
+    offsetX: -88,
+    offsetY: 60,
+    rotate: -10,
+    width: 144,
+  },
+  {
+    className: "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+    height: 268,
+    offsetX: 250,
+    offsetY: 24,
+    rotate: 10,
+    width: 150,
+  },
+  {
+    className: "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+    height: 234,
+    offsetX: -200,
+    offsetY: 88,
+    rotate: -18,
+    width: 156,
+  },
+  {
+    className: "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+    height: 206,
+    offsetX: 80,
+    offsetY: 158,
+    rotate: -2,
+    width: 260,
+  },
+];
+
+const onboardingAsideImageBoxes: ImageBox[] = onboardingAsideImages.map((box, index) => ({
+  ...box,
+  ...onboardingAsideSlots[index],
+}));
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <main className="relative h-lvh flex flex-row bg-background">
-      <div className="relative h-full flex-2 overflow-hidden">
-        {/* Replace with Logo */}
-        {/*<aside className="absolute top-5 left-5 z-10">
-          <Link href={'/'}>
-            <div className="size-10 aspect-square rounded-xl">
-              <Image
-                src={"/assets/logo.png"}
-                alt="Harune Logo"
-                width={256}
-                height={256}
-                className="mb-4 size-full rounded-lg object-cover"
-              />
-            </div>
-          </Link>
-        </aside>*/}
-
-        {children}
+    <main className="relative flex h-lvh justify-center overflow-x-clip bg-background">
+      <div className="flex h-full w-full max-w-[96rem] min-w-0 items-center gap-8 overflow-x-clip overflow-y-visible xl:gap-16">
+        <div className="relative h-full min-w-0 flex-1 overflow-hidden">{children}</div>
+        <aside className="hidden h-full min-h-full shrink-0 overflow-hidden xl:block xl:w-[clamp(24rem,28vw,34rem)]">
+          <section className="relative h-full min-h-[860px]">
+            <motion.div
+              className="relative h-full w-full"
+              viewport={{ once: true, margin: "-120px" }}
+            >
+              {onboardingAsideImageBoxes.map((image, index) => (
+                <motion.div
+                  key={image.src}
+                  className={cn(
+                    "absolute overflow-hidden rounded-[1.75rem] bg-background p-1.5 shadow-[0_20px_50px_rgba(0,0,0,0.16)]",
+                    image.className
+                  )}
+                  initial={{
+                    opacity: 0,
+                    rotate: image.rotate - 6,
+                    scale: 0.92,
+                    x: image.offsetX,
+                    y: image.offsetY + 18,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    rotate: image.rotate,
+                    scale: 1,
+                    x: image.offsetX,
+                    y: image.offsetY,
+                  }}
+                  whileHover={{
+                    rotate: image.rotate + (image.rotate > 0 ? 4 : -4),
+                    scale: 1.03,
+                  }}
+                  transition={{
+                    damping: 20,
+                    mass: 0.6,
+                    stiffness: 300,
+                    type: "spring",
+                  }}
+                  style={{
+                    height: image.height,
+                    width: image.width,
+                    zIndex: index + 1,
+                  }}
+                >
+                  <Image
+                    alt={image.alt}
+                    className="h-full w-full rounded-[1.5rem] object-cover"
+                    height={image.height}
+                    src={image.src}
+                    unoptimized
+                    width={image.width}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+          </section>
+        </aside>
       </div>
-      <section className="relative h-full flex-3 hidden overflow-hidden xl:block">
-        {/*<div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(245,158,11,0.12),_transparent_55%)]" />*/}
-        <div className="relative h-full w-full text-5xl leading-tight font-bold">
-          {squigglyTexts.map(({ text, className }) => (
-            <div key={text} className={`absolute whitespace-nowrap ${className}`}>
-              <SquigglyText steps={8} stepDuration={100} scale={[8, 9]}>
-                {text}
-              </SquigglyText>
-            </div>
-          ))}
-        </div>
-      </section>
     </main>
   );
 }

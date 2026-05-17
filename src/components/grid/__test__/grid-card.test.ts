@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { getGridCardMotion } from "@/components/grid/grid-card";
+import { getGridCardMotion, getGridCardTapScale } from "@/components/grid/grid-card";
 
 describe("grid-card motion", () => {
   test("uses full motion when reduce motion is off", () => {
@@ -29,5 +29,13 @@ describe("grid-card motion", () => {
       initial: false,
       transition: { duration: 0.12, ease: [0.22, 1, 0.36, 1] },
     });
+  });
+
+  test("disables tap scale for readonly text cards", () => {
+    expect(getGridCardTapScale("text", true, false)).toBe(1);
+    expect(getGridCardTapScale("text", false, false)).toBe(1.025);
+    expect(getGridCardTapScale("section", true, false)).toBe(1.025);
+    expect(getGridCardTapScale("link", true, false)).toBe(1);
+    expect(getGridCardTapScale("text", true, true)).toBe(1);
   });
 });

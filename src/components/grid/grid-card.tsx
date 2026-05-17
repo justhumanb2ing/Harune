@@ -85,6 +85,26 @@ export function getGridCardMotion(
   };
 }
 
+export function getGridCardTapScale(
+  itemType: GridItem["itemType"],
+  readOnly: boolean,
+  shouldReduceMotion: boolean
+) {
+  if (shouldReduceMotion) {
+    return 1;
+  }
+
+  if (itemType === "text" && readOnly) {
+    return 1;
+  }
+
+  if (itemType === "text" || itemType === "section") {
+    return 1.025;
+  }
+
+  return 1;
+}
+
 export function GridCard({
   activeBreakpoint,
   cardRotate,
@@ -154,7 +174,7 @@ export function GridCard({
   const isExiting = motionPhase === "exiting";
   const shouldShowActions = !readOnly && !isLiftActive && !isExiting;
   const motionProps = getGridCardMotion(motionPhase, shouldReduceMotion);
-  const tapScale = item.itemType === "text" || item.itemType === "section" ? 1.025 : 1;
+  const tapScale = getGridCardTapScale(item.itemType, readOnly, shouldReduceMotion);
   const shellStyle = item.theme
     ? {
         "--grid-card-control-background": item.theme.controlBackgroundColor,

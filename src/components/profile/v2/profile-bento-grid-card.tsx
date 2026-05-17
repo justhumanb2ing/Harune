@@ -930,11 +930,16 @@ function EditableTextBento({
   }, [autoFocus, onFocusReady]);
 
   return (
-    <div className={cn("flex size-full min-h-0 rounded-lg", textSurface?.verticalAlignClassName)}>
+    <div
+      className={cn(
+        "flex size-full min-h-0 flex-col rounded-lg",
+        textSurface?.verticalAlignClassName
+      )}
+    >
       <textarea
         aria-label="Text content"
         className={cn(
-          "grid-action min-h-full w-full resize-none rounded-lg bg-transparent p-1.5 px-2 text-lg! font-medium leading-[1.7] outline-none break-all placeholder:text-muted-foreground hover:bg-white/30 focus-visible:bg-secondary",
+          "grid-action w-full resize-none rounded-lg bg-transparent p-1.5 px-2 text-lg! font-medium leading-[1.7] outline-none break-all placeholder:text-muted-foreground hover:bg-white/30 focus-visible:bg-secondary",
           textSurface?.foregroundClassName ?? "text-foreground",
           textSurface?.textAlignClassName ?? "text-left"
         )}
@@ -1367,7 +1372,7 @@ function ReadonlyTextBento({ content }: { content: string }) {
   return (
     <article
       className={cn(
-        "relative flex size-full min-h-0 overflow-y-auto overscroll-contain rounded-lg p-1",
+        "relative flex size-full min-h-0 flex-col overflow-y-auto overscroll-contain rounded-lg p-1",
         textSurface?.verticalAlignClassName
       )}
     >

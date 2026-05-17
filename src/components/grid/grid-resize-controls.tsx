@@ -43,10 +43,10 @@ type GridResizeControlsProps = {
 
 const resizeOptionIcons = {
   "1x2": SquareIcon,
-  "1x4": RectangleVerticalIcon,
   "2x1": RectangleHorizontalIcon,
-  "2x2": SquareIcon,
-  "2x4": RectangleVerticalIcon,
+  "2x2": RectangleHorizontalIcon,
+  "1x4": RectangleVerticalIcon,
+  "2x4": SquareIcon,
 } satisfies Record<ResizeOptionId, LucideIcon>;
 
 export function GridResizeControls({
@@ -131,8 +131,9 @@ export function GridResizeControls({
                 <ToggleGroup
                   aria-label={`Text alignment options for ${item.label}`}
                   className="flex-nowrap"
+                  multiple={false}
                   onValueChange={(nextValue) => {
-                    const nextAlign = nextValue[0];
+                    const nextAlign = nextValue[nextValue.length - 1];
 
                     if (nextAlign === "start" || nextAlign === "center" || nextAlign === "end") {
                       onTextSurfaceChange?.({
@@ -175,8 +176,9 @@ export function GridResizeControls({
                 <ToggleGroup
                   aria-label={`Vertical alignment options for ${item.label}`}
                   className="flex-nowrap"
+                  multiple={false}
                   onValueChange={(nextValue) => {
-                    const nextAlign = nextValue[0];
+                    const nextAlign = nextValue[nextValue.length - 1];
 
                     if (nextAlign === "start" || nextAlign === "center" || nextAlign === "end") {
                       onTextSurfaceChange?.({

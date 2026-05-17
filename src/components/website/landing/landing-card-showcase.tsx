@@ -310,7 +310,7 @@ export function LandingTextCard({ item }: { item: ProfileTextBento }) {
     >
       <div
         className={cn(
-          "relative flex size-full min-h-0 overflow-y-auto overscroll-contain rounded-lg p-1",
+          "relative flex size-full min-h-0 flex-col overflow-y-auto overscroll-contain rounded-lg p-1",
           getVerticalAlignClassName(textSurfaceStyle.verticalAlign)
         )}
       >

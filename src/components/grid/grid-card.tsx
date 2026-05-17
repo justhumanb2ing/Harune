@@ -98,6 +98,10 @@ export function getGridCardTapScale(
     return 1;
   }
 
+  if (itemType === "section" && readOnly) {
+    return 1;
+  }
+  
   if (itemType === "text" || itemType === "section") {
     return 1.025;
   }

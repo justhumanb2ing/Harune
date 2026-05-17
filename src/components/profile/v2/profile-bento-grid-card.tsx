@@ -1406,7 +1406,7 @@ function ReadonlyTextBento({ content }: { content: string }) {
       <div className={cn("flex h-full w-full", textSurface?.verticalAlignClassName)}>
         <p
           className={cn(
-            "w-full whitespace-pre-line break-all text-lg! font-medium leading-relaxed",
+            "w-full whitespace-pre-line break-all text-[20px]! font-medium leading-relaxed",
             textSurface?.foregroundClassName ?? "text-foreground",
             textSurface?.textAlignClassName ?? "text-left"
           )}

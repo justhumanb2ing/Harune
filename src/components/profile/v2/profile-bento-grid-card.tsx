@@ -930,18 +930,15 @@ function EditableTextBento({
   }, [autoFocus, onFocusReady]);
 
   return (
-    <div
-      className={cn(
-        "flex size-full min-h-0 flex-col rounded-lg",
-        textSurface?.verticalAlignClassName
-      )}
-    >
+    <div className="size-full min-h-0 rounded-lg">
       <textarea
         aria-label="Text content"
         className={cn(
-          "grid-action w-full resize-none rounded-lg bg-transparent p-1.5 px-2 text-lg! font-medium leading-[1.7] outline-none break-all placeholder:text-muted-foreground hover:bg-white/30 focus-visible:bg-secondary",
+          "grid-action flex h-full min-h-0 w-full flex-col resize-none rounded-lg bg-transparent p-1.5 px-2 text-lg! font-medium leading-[1.7] outline-none break-all placeholder:text-muted-foreground hover:bg-white/30 focus-visible:bg-secondary",
           textSurface?.foregroundClassName ?? "text-foreground",
-          textSurface?.textAlignClassName ?? "text-left"
+          textSurface?.textAlignClassName ?? "text-left",
+          textSurface?.verticalAlignClassName,
+          textSurface?.backgroundColorClassName === "bg-white" && "hover:bg-secondary"
         )}
         onBlur={(event) => {
           const shouldReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

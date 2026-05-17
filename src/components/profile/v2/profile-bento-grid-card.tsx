@@ -893,6 +893,42 @@ function ProfileBentoLinkSkeleton() {
   );
 }
 
+function setContentEditableCaretToEnd(element: HTMLElement) {
+  element.focus({ preventScroll: true });
+
+  const selection = window.getSelection();
+
+  if (!selection) {
+    return;
+  }
+
+  const range = document.createRange();
+  range.selectNodeContents(element);
+  range.collapse(false);
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
+function insertPlainTextAtSelection(text: string) {
+  const selection = window.getSelection();
+
+  if (!selection || selection.rangeCount === 0) {
+    return false;
+  }
+
+  const range = selection.getRangeAt(0);
+  range.deleteContents();
+
+  const textNode = document.createTextNode(text);
+  range.insertNode(textNode);
+  range.setStartAfter(textNode);
+  range.setEndAfter(textNode);
+  selection.removeAllRanges();
+  selection.addRange(range);
+
+  return true;
+}
+
 function EditableTextBento({
   autoFocus,
   item,
@@ -904,8 +940,23 @@ function EditableTextBento({
   onChange: (item: ProfileBentoItem) => void;
   onFocusReady?: () => void;
 }) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const editorRef = useRef<HTMLParagraphElement>(null);
   const textSurface = useGridTextSurface();
+  const [scrollTop, setScrollTop] = useState(0);
+
+  useLayoutEffect(() => {
+    const editor = editorRef.current;
+
+    if (!editor) {
+      return;
+    }
+
+    const nextValue = item.content.content;
+
+    if (editor.textContent !== nextValue) {
+      editor.textContent = nextValue;
+    }
+  }, [item.content.content]);
 
   useEffect(() => {
     if (!autoFocus) {
@@ -913,14 +964,13 @@ function EditableTextBento({
     }
 
     const frame = requestAnimationFrame(() => {
-      const textarea = textareaRef.current;
+      const editor = editorRef.current;
 
-      if (!textarea) {
+      if (!editor) {
         return;
       }
 
-      textarea.focus({ preventScroll: true });
-      textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+      setContentEditableCaretToEnd(editor);
       onFocusReady?.();
     });
 
@@ -928,39 +978,96 @@ function EditableTextBento({
       cancelAnimationFrame(frame);
     };
   }, [autoFocus, onFocusReady]);
+  const placeholderClassName =
+    textSurface?.foregroundClassName === "text-white" ? "text-white/45" : "text-black/45";
+  const hasContent = item.content.content.length > 0;
 
   return (
-    <div className="size-full min-h-0 rounded-lg">
-      <textarea
-        aria-label="Text content"
+    <div className="relative size-full min-h-0 overflow-hidden rounded-lg">
+      <div
+        aria-hidden
         className={cn(
-          "grid-action flex h-full min-h-0 w-full flex-col resize-none rounded-lg bg-transparent p-1.5 px-2 text-lg! font-medium leading-[1.7] outline-none break-all placeholder:text-muted-foreground hover:bg-white/30 focus-visible:bg-secondary",
+          "pointer-events-none absolute inset-0 flex min-h-0 overflow-hidden rounded-lg p-1.5 px-2 text-lg! font-medium leading-[1.7] break-all whitespace-pre-line",
           textSurface?.foregroundClassName ?? "text-foreground",
           textSurface?.textAlignClassName ?? "text-left",
-          textSurface?.verticalAlignClassName,
-          textSurface?.backgroundColorClassName === "bg-white" && "hover:bg-secondary"
+          textSurface?.verticalAlignClassName
         )}
-        onBlur={(event) => {
-          const shouldReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      >
+        <p
+          className={cn("w-full", !hasContent && placeholderClassName)}
+          style={
+            {
+              transform: `translateY(${-scrollTop}px)`,
+            } satisfies CSSProperties
+          }
+        >
+          {hasContent ? item.content.content : "Add text..."}
+        </p>
+      </div>
+      <div
+        className={cn(
+          "relative z-10 flex h-full w-full min-h-0",
+          textSurface?.verticalAlignClassName
+        )}
+      >
+        <p
+          contentEditable
+          data-placeholder="Add text..."
+          ref={editorRef}
+          suppressContentEditableWarning
+          className={cn(
+            "grid-action flex h-full min-h-0 w-full cursor-text flex-col overflow-y-auto rounded-lg bg-transparent p-1.5 px-2 text-lg! font-medium leading-[1.7] outline-none break-all whitespace-pre-line text-transparent caret-foreground selection:bg-primary/20 selection:text-foreground scrollbar-hidden-stable",
+            textSurface?.verticalAlignClassName === "items-center"
+              ? "justify-center"
+              : textSurface?.verticalAlignClassName === "items-end"
+                ? "justify-end"
+                : "justify-start",
+            textSurface?.hoverBackgroundClassName,
+            textSurface?.focusVisibleBackgroundClassName,
+            textSurface?.textAlignClassName ?? "text-left"
+          )}
+          onBlur={(event) => {
+            const shouldReduceMotion = window.matchMedia(
+              "(prefers-reduced-motion: reduce)"
+            ).matches;
 
-          event.currentTarget.scrollTo({
-            behavior: shouldReduceMotion ? "auto" : "smooth",
-            top: 0,
-          });
-        }}
-        onChange={(event) => {
-          onChange({
-            ...item,
-            content: {
-              ...item.content,
-              content: event.target.value,
-            },
-          });
-        }}
-        placeholder="Write something..."
-        ref={textareaRef}
-        value={item.content.content}
-      />
+            setScrollTop(0);
+
+            event.currentTarget.scrollTo({
+              behavior: shouldReduceMotion ? "auto" : "smooth",
+              top: 0,
+            });
+          }}
+          onInput={(event) => {
+            const nextValue = event.currentTarget.innerText.replace(/\r/g, "\n");
+
+            if (nextValue === item.content.content) {
+              return;
+            }
+
+            onChange({
+              ...item,
+              content: {
+                ...item.content,
+                content: nextValue,
+              },
+            });
+          }}
+          onPaste={(event) => {
+            event.preventDefault();
+
+            const text = event.clipboardData.getData("text/plain");
+
+            if (!document.execCommand("insertText", false, text)) {
+              insertPlainTextAtSelection(text);
+            }
+          }}
+          onScroll={(event) => {
+            setScrollTop(event.currentTarget.scrollTop);
+          }}
+          spellCheck
+        />
+      </div>
     </div>
   );
 }
@@ -1367,21 +1474,18 @@ function ReadonlyTextBento({ content }: { content: string }) {
   const textSurface = useGridTextSurface();
 
   return (
-    <article
-      className={cn(
-        "relative flex size-full min-h-0 flex-col overflow-y-auto overscroll-contain rounded-lg p-1",
-        textSurface?.verticalAlignClassName
-      )}
-    >
-      <p
-        className={cn(
-          "w-full whitespace-pre-line break-all text-lg! font-medium leading-relaxed",
-          textSurface?.foregroundClassName ?? "text-foreground",
-          textSurface?.textAlignClassName ?? "text-left"
-        )}
-      >
-        {content}
-      </p>
+    <article className="relative flex size-full min-h-0 flex-col overflow-y-auto overscroll-contain rounded-lg p-1">
+      <div className={cn("flex h-full w-full", textSurface?.verticalAlignClassName)}>
+        <p
+          className={cn(
+            "w-full whitespace-pre-line break-all text-lg! font-medium leading-relaxed",
+            textSurface?.foregroundClassName ?? "text-foreground",
+            textSurface?.textAlignClassName ?? "text-left"
+          )}
+        >
+          {content}
+        </p>
+      </div>
     </article>
   );
 }

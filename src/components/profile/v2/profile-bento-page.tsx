@@ -58,7 +58,9 @@ export function ProfileBentoProfileAside({
               <ProfileAvatarImage
                 alt={imageAlt}
                 className="size-full"
+                fetchPriority="high"
                 imageCrop={page.imageCrop}
+                loading="eager"
                 src={page.image}
               />
             ) : (
@@ -125,7 +127,9 @@ function ProfileBentoFooterAction({
                   <ProfileAvatarImage
                     alt={imageAlt}
                     className="size-full"
+                    fetchPriority="high"
                     imageCrop={viewerProfilePage.imageCrop}
+                    loading="eager"
                     src={viewerProfilePage.image}
                   />
                 ) : (

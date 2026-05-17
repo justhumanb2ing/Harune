@@ -13,10 +13,19 @@ type ProfileAvatarImageProps = {
   alt: string;
   className?: string;
   imageCrop?: ProfileImageCrop | null;
+  fetchPriority?: "auto" | "high" | "low";
+  loading?: "eager" | "lazy";
   src: string;
 };
 
-export function ProfileAvatarImage({ alt, className, imageCrop, src }: ProfileAvatarImageProps) {
+export function ProfileAvatarImage({
+  alt,
+  className,
+  imageCrop,
+  fetchPriority = "high",
+  loading = "eager",
+  src,
+}: ProfileAvatarImageProps) {
   const [naturalSize, setNaturalSize] = useState<ImageSize | null>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
 
@@ -45,8 +54,8 @@ export function ProfileAvatarImage({ alt, className, imageCrop, src }: ProfileAv
         alt={alt}
         className="absolute left-0 top-0 block max-w-none"
         decoding="async"
-        fetchPriority="high"
-        loading="eager"
+        fetchPriority={fetchPriority}
+        loading={loading}
         ref={imageRef}
         onLoad={(event) => {
           const loadedImageSize = getLoadedImageSize(event.currentTarget);

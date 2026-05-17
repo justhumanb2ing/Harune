@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useGridTextSurface } from "@/components/grid/grid-text-surface-context";
 import {
   Map as BentoMap,
   MapControls,
@@ -904,6 +905,7 @@ function EditableTextBento({
   onFocusReady?: () => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const textSurface = useGridTextSurface();
 
   useEffect(() => {
     if (!autoFocus) {
@@ -930,7 +932,10 @@ function EditableTextBento({
   return (
     <textarea
       aria-label="Text content"
-      className="grid-action size-full resize-none rounded-lg bg-transparent p-1.5 px-2 text-lg! font-medium leading-[1.7] outline-none break-all placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary"
+      className={cn(
+        "grid-action size-full resize-none rounded-lg bg-transparent p-1.5 px-2 text-lg! font-medium leading-[1.7] outline-none break-all placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary",
+        textSurface?.foregroundClassName ?? "text-foreground"
+      )}
       onBlur={(event) => {
         const shouldReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -1351,9 +1356,16 @@ function ProfileBentoGridCardContent({
 }
 
 function ReadonlyTextBento({ content }: { content: string }) {
+  const textSurface = useGridTextSurface();
+
   return (
     <article className="relative size-full min-h-0 overflow-y-auto overscroll-contain rounded-lg p-1">
-      <p className="whitespace-pre-line break-all text-lg! font-medium leading-relaxed">
+      <p
+        className={cn(
+          "whitespace-pre-line break-all text-lg! font-medium leading-relaxed",
+          textSurface?.foregroundClassName ?? "text-foreground"
+        )}
+      >
         {content}
       </p>
     </article>

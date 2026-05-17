@@ -31,6 +31,7 @@ import {
 } from "@/lib/metadata/url-metadata";
 import type { ProfileBentoItem } from "@/lib/profile/types";
 import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
 
 type ProfileBentoLinkSize = ResizeOptionId;
 type ProfileBentoEditableContentCardProps = {
@@ -893,42 +894,6 @@ function ProfileBentoLinkSkeleton() {
   );
 }
 
-function setContentEditableCaretToEnd(element: HTMLElement) {
-  element.focus({ preventScroll: true });
-
-  const selection = window.getSelection();
-
-  if (!selection) {
-    return;
-  }
-
-  const range = document.createRange();
-  range.selectNodeContents(element);
-  range.collapse(false);
-  selection.removeAllRanges();
-  selection.addRange(range);
-}
-
-function insertPlainTextAtSelection(text: string) {
-  const selection = window.getSelection();
-
-  if (!selection || selection.rangeCount === 0) {
-    return false;
-  }
-
-  const range = selection.getRangeAt(0);
-  range.deleteContents();
-
-  const textNode = document.createTextNode(text);
-  range.insertNode(textNode);
-  range.setStartAfter(textNode);
-  range.setEndAfter(textNode);
-  selection.removeAllRanges();
-  selection.addRange(range);
-
-  return true;
-}
-
 function EditableTextBento({
   autoFocus,
   item,
@@ -940,23 +905,9 @@ function EditableTextBento({
   onChange: (item: ProfileBentoItem) => void;
   onFocusReady?: () => void;
 }) {
-  const editorRef = useRef<HTMLParagraphElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const textSurface = useGridTextSurface();
   const [scrollTop, setScrollTop] = useState(0);
-
-  useLayoutEffect(() => {
-    const editor = editorRef.current;
-
-    if (!editor) {
-      return;
-    }
-
-    const nextValue = item.content.content;
-
-    if (editor.textContent !== nextValue) {
-      editor.textContent = nextValue;
-    }
-  }, [item.content.content]);
 
   useEffect(() => {
     if (!autoFocus) {
@@ -964,13 +915,14 @@ function EditableTextBento({
     }
 
     const frame = requestAnimationFrame(() => {
-      const editor = editorRef.current;
+      const textarea = textareaRef.current;
 
-      if (!editor) {
+      if (!textarea) {
         return;
       }
 
-      setContentEditableCaretToEnd(editor);
+      textarea.focus({ preventScroll: true });
+      textarea.setSelectionRange(textarea.value.length, textarea.value.length);
       onFocusReady?.();
     });
 
@@ -979,51 +931,34 @@ function EditableTextBento({
     };
   }, [autoFocus, onFocusReady]);
   const placeholderClassName =
-    textSurface?.foregroundClassName === "text-white" ? "text-white/45" : "text-black/45";
-  const hasContent = item.content.content.length > 0;
+    textSurface?.foregroundClassName === "text-white" ? "placeholder:text-white/45" : "placeholder:text-black/45";
 
   return (
-    <div className="relative size-full min-h-0 overflow-hidden rounded-lg">
+    <div className="relative size-full min-h-0 overflow-hidden rounded-lg cursor-text">
       <div
         aria-hidden
         className={cn(
           "pointer-events-none absolute inset-0 flex min-h-0 overflow-hidden rounded-lg p-1.5 px-2 text-lg! font-medium leading-[1.7] break-all whitespace-pre-line",
           textSurface?.foregroundClassName ?? "text-foreground",
           textSurface?.textAlignClassName ?? "text-left",
-          textSurface?.verticalAlignClassName
+          textSurface?.verticalAlignClassName === "items-center" && "my-auto"
         )}
       >
-        <p
-          className={cn("w-full", !hasContent && placeholderClassName)}
-          style={
-            {
-              transform: `translateY(${-scrollTop}px)`,
-            } satisfies CSSProperties
-          }
-        >
-          {hasContent ? item.content.content : "Add text..."}
-        </p>
       </div>
       <div
         className={cn(
           "relative z-10 flex h-full w-full min-h-0",
-          textSurface?.verticalAlignClassName
+          textSurface?.verticalAlignClassName,
+          textSurface?.hoverBackgroundClassName,
+          textSurface?.focusVisibleBackgroundClassName,
         )}
       >
-        <p
-          contentEditable
+        <Textarea
           data-placeholder="Add text..."
-          ref={editorRef}
-          suppressContentEditableWarning
+          ref={textareaRef}
           className={cn(
-            "grid-action flex h-full min-h-0 w-full cursor-text flex-col overflow-y-auto rounded-lg bg-transparent p-1.5 px-2 text-lg! font-medium leading-[1.7] outline-none break-all whitespace-pre-line text-transparent caret-foreground selection:bg-primary/20 selection:text-foreground scrollbar-hidden-stable",
-            textSurface?.verticalAlignClassName === "items-center"
-              ? "justify-center"
-              : textSurface?.verticalAlignClassName === "items-end"
-                ? "justify-end"
-                : "justify-start",
-            textSurface?.hoverBackgroundClassName,
-            textSurface?.focusVisibleBackgroundClassName,
+            "grid-action flex min-h-0 w-full cursor-text! flex-col overflow-y-auto rounded-lg bg-transparent p-1.5 px-2 text-[20px]! font-medium outline-none break-all whitespace-pre-line caret-foreground scrollbar-hidden-stable resize-none focus-visible:ring-0 border-0",
+            placeholderClassName,
             textSurface?.textAlignClassName ?? "text-left"
           )}
           onBlur={(event) => {
@@ -1038,8 +973,8 @@ function EditableTextBento({
               top: 0,
             });
           }}
-          onInput={(event) => {
-            const nextValue = event.currentTarget.innerText.replace(/\r/g, "\n");
+          onChange={(event) => {
+            const nextValue = event.target.value.replace(/\r\n?/g, "\n");
 
             if (nextValue === item.content.content) {
               return;
@@ -1053,19 +988,12 @@ function EditableTextBento({
               },
             });
           }}
-          onPaste={(event) => {
-            event.preventDefault();
-
-            const text = event.clipboardData.getData("text/plain");
-
-            if (!document.execCommand("insertText", false, text)) {
-              insertPlainTextAtSelection(text);
-            }
-          }}
           onScroll={(event) => {
             setScrollTop(event.currentTarget.scrollTop);
           }}
+          placeholder="Add text..."
           spellCheck
+          value={item.content.content}
         />
       </div>
     </div>

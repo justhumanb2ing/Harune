@@ -180,17 +180,17 @@ export default function MainHeroSection() {
           </h3>
         </header>
 
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-col items-center gap-2">
           <AppEntryCtaButton
             next="/"
             size="lg"
-            className="brand-button h-12 min-w-48 rounded-xl px-24 py-8 text-base font-bold!"
+            className="brand-button h-12 w-60 lg:w-80 rounded-xl px-24 py-8 text-base lg:text-lg font-bold!"
           >
             <span className="uppercase sm:hidden">Sign up</span>
             <span className="hidden uppercase sm:inline">Sign Up For Free</span>
           </AppEntryCtaButton>
           {signInEnabled && (
-            <AppEntryCtaButton next="/" size="sm" variant="link" className="text-xs font-medium">
+            <AppEntryCtaButton next="/" size="sm" variant="ghost" className="text-sm font-medium text-muted-foreground">
               Log In
             </AppEntryCtaButton>
           )}

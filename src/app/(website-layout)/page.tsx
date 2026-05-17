@@ -34,11 +34,11 @@ export default function WebsiteHomepage() {
             <AppEntryCtaButton
               next="/"
               size="lg"
-              className="brand-button h-12 min-w-60 max-w-68 rounded-xl py-8 text-lg font-bold!"
+              className="brand-button h-12 w-60 lg:w-80 rounded-xl px-24 py-8 text-base lg:text-lg font-bold!"
             >
               Get Started
             </AppEntryCtaButton>
-            <p className="text-sm text-muted-foreground">Unique handles are still available</p>
+            {/*<p className="text-sm text-muted-foreground">It's all free.</p>*/}
           </div>
         </section>
       </main>

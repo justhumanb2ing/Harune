@@ -122,10 +122,10 @@ const onboardingAsideImageBoxes: ImageBox[] = onboardingAsideImages.map((box, in
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <main className="relative h-lvh overflow-x-clip bg-background">
-      <div className="mx-auto grid h-full w-full max-w-[96rem] min-w-0 grid-cols-1 items-center gap-8 px-6 overflow-y-visible xl:grid-cols-[minmax(0,1fr)_clamp(24rem,28vw,34rem)] xl:gap-16 xl:px-8">
+      <div className="mx-auto grid h-full w-full max-w-[96rem] min-w-0 grid-cols-1 items-center gap-8 overflow-y-visible px-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:gap-16 xl:px-8">
         <div className="relative h-full min-w-0 flex-1 overflow-hidden">{children}</div>
-        <aside className="hidden h-full min-h-full xl:block">
-          <section className="relative h-full min-h-[860px]">
+        <aside className="hidden h-full min-h-full min-w-0 xl:block">
+          <section className="relative h-full min-h-[860px] w-full min-w-0">
             <motion.div
               className="relative h-full w-full"
               viewport={{ once: true, margin: "-120px" }}

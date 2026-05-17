@@ -74,7 +74,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             ) : null}
           </article>
         </div>
-        <PolicyBox />
+        {/*<PolicyBox />*/}
       </section>
     </div>
   );

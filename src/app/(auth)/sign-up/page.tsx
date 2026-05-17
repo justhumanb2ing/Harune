@@ -60,7 +60,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
             />
           </article>
         </div>
-        <PolicyBox />
+        {/*<PolicyBox />*/}
       </section>
     </div>
   );

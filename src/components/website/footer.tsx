@@ -1,27 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AppEntryCtaButton } from "@/components/website/app-entry-cta-button";
+import { Badge } from "../ui/badge";
 
 export function Footer() {
   return (
     <footer className="min-h-[20rem] py-20">
       <div className="mx-auto flex items-center justify-center px-4 py-8  sm:px-6 lg:px-8">
-        <div className="flex flex-col items-center gap-18">
-          {/*<div className="flex flex-col items-center">
-            <div className="size-12 aspect-square rounded-xl">
-              <Image
-                src={"/assets/logo.png"}
-                alt="Harune Logo"
-                width={256}
-                height={256}
-                className="mb-4 rounded-lg object-cover size-full"
-              />
-            </div>
-          </div>*/}
+        <div className="flex flex-col items-center gap-18 text-neutral-500">
           {/* Hooking Title */}
-          <div className="text-base font-medium flex flex-row gap-2 text-center">
-            <p>Crafted somewhere on earth.</p>
-            <p>Built for Makers.</p>
+          <div className="text-sm font-medium flex flex-col gap-4 text-center">
+            <div className="flex flex-row gap-2">
+              <p>Crafted somewhere on earth.</p>
+              <p>Built for Makers.</p>
+            </div>
+            
+            <p>
+              Quietly built by{" "}
+              <a href="https://x.com/kinmongsang" target="_blank" rel="noopener noreferrer" className="underline">
+                one person
+              </a>
+            </p>
           </div>
 
           {/* Legal Links */}
@@ -52,21 +51,6 @@ export function Footer() {
                   Changelog
                 </Link>
               </li>
-              {/*<li>
-                <Link href="/roadmap" className="inline-block hover:text-primary">
-                  Roadmap
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="inline-block hover:text-primary">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="hover:text-primary">
-                  Terms of Service
-                </Link>
-              </li>*/}
               <li>
                 <a
                   href="https://buymeacoffee.com/justhumanb2ing"

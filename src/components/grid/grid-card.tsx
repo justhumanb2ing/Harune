@@ -101,7 +101,7 @@ export function getGridCardTapScale(
   if (itemType === "section" && readOnly) {
     return 1;
   }
-  
+
   if (itemType === "text" || itemType === "section") {
     return 1.025;
   }
@@ -167,9 +167,11 @@ export function GridCard({
       ? textSurfaceBackgroundColorOption?.id === "white"
         ? "outline-border/35 inset-ring-1"
         : "outline-none"
-      : isFullBleedItem
-        ? "outline-none"
-        : "outline-border/35 inset-ring-1";
+      : item.itemType === "map"
+        ? "outline-border/35 inset-ring-1"
+        : isFullBleedItem
+          ? "outline-none"
+          : "outline-border/35 inset-ring-1";
   const shellShadowClassName = shadowClassName;
   const shadowLayerClassName = isDragActive ? "shadow-float" : "";
   const dragInteractionClassName = isLiftActive

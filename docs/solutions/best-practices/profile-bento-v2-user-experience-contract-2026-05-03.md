@@ -68,6 +68,16 @@ Public readonly surface와 owner editor surface는 의도적으로 같은 profil
 - media/map full-bleed editor cards는 shell shadow를 유지한 채 visible frame에 `ring-1 ring-border`를 적용해, 카드 가장자리가 평평하게 보이지 않게 한다.
 - public surface에서 삭제된 fallback text는 editor에도 무심코 되살리지 않는다.
 
+### Text Surface Style
+
+Text item은 content만이 아니라 surface style도 함께 저장하고, editor와 public/landing preview가 같은 style contract를 따라야 한다.
+
+- text item의 `content.style`는 `backgroundColor`, `textAlign`, `verticalAlign`을 포함해야 한다.
+- editor의 resize control은 단순한 preview가 아니라 실제 text item state를 갱신해야 한다.
+- `backgroundColor`는 text card shell 배경에 적용하고, `textAlign`은 텍스트 블록 정렬에 적용하고, `verticalAlign`은 텍스트 surface wrapper 정렬에 적용한다.
+- style 값이 비어 있거나 옛 데이터로 누락되면 `#ffffff`, `start`, `start`를 기본값으로 복원한다.
+- readonly/public/landing surface는 editor와 같은 style 해석을 써야 하며, 다른 surface에서만 보이는 별도 폴백 규칙을 만들지 않는다.
+
 ### Toolbar Primary Action
 
 Owner editor의 하단 primary button은 현재 상태를 바로 드러내야 한다.

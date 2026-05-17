@@ -7,6 +7,8 @@ type GridTextSurfaceContextValue = {
   foregroundClassName: string;
   textAlignClassName: string;
   verticalAlignClassName: string;
+  hoverBackgroundClassName: string;
+  focusVisibleBackgroundClassName: string;
 };
 
 const GridTextSurfaceContext = createContext<GridTextSurfaceContextValue | null>(null);
@@ -16,12 +18,16 @@ export function GridTextSurfaceProvider({
   foregroundClassName,
   textAlignClassName,
   verticalAlignClassName,
+  hoverBackgroundClassName,
+  focusVisibleBackgroundClassName,
   children,
 }: {
   backgroundColorClassName: string;
   foregroundClassName: string;
   textAlignClassName: string;
   verticalAlignClassName: string;
+  hoverBackgroundClassName: string;
+  focusVisibleBackgroundClassName: string;
   children: ReactNode;
 }) {
   return (
@@ -31,6 +37,8 @@ export function GridTextSurfaceProvider({
         foregroundClassName,
         textAlignClassName,
         verticalAlignClassName,
+        hoverBackgroundClassName,
+        focusVisibleBackgroundClassName,
       }}
     >
       {children}

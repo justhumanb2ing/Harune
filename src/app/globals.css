@@ -393,12 +393,12 @@ html[data-onboarding-step-transition="back"]::view-transition-new(onboarding-ste
 
   .surface-bevel::before {
     inset: 0;
-    border-color: color-mix(in oklch, var(--foreground) 12%, transparent);
+    border-color: color-mix(in oklch, var(--foreground) 18%, transparent);
   }
 
   .surface-bevel::after {
     inset: 1px;
-    border-color: rgb(255 255 255 / 28%);
+    border-color: rgb(255 255 255 / 40%);
     mask-image: linear-gradient(to bottom, black, transparent);
   }
 

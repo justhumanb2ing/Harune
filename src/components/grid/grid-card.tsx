@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { GridResizeControls } from "@/components/grid/grid-resize-controls";
 import {
+  getBackgroundColorOption,
   getGridTextSurfaceClassNames,
   normalizeGridTextSurfaceStyle,
 } from "@/components/grid/grid-text-surface";
@@ -114,6 +115,9 @@ export function GridCard({
   const [isSectionFocusActive, setIsSectionFocusActive] = useState(false);
   const textSurfaceStyle =
     item.itemType === "text" ? normalizeGridTextSurfaceStyle(item.textSurfaceStyle) : null;
+  const textSurfaceBackgroundColorOption = textSurfaceStyle
+    ? getBackgroundColorOption(textSurfaceStyle.backgroundColor)
+    : null;
   const textSurfaceClassNames = textSurfaceStyle
     ? getGridTextSurfaceClassNames(textSurfaceStyle)
     : null;
@@ -123,16 +127,25 @@ export function GridCard({
     isSectionItem && !readOnly && (isSectionPointerActive || isSectionFocusActive || isLiftActive);
   const shadowClassName = !isSectionItem || shouldShowSectionShadow ? "shadow-xs" : "shadow-none";
   const isFullBleedItem = item.itemType === "media" || item.itemType === "map";
-  const paddingClassName = isFullBleedItem ? "p-0" : isVisuallyThinItem ? "p-2" : "p-4";
+  const shouldRemovePadding = isFullBleedItem || item.itemType === "text";
+  const paddingClassName = shouldRemovePadding ? "p-0" : isVisuallyThinItem ? "p-2" : "p-4";
   const radiusClassName = isVisuallyThinItem ? "rounded-2xl" : "rounded-[1.5rem]";
-  const bevelClassName = isFullBleedItem ? "surface-bevel" : "";
+  const bevelClassName =
+    isFullBleedItem ||
+    (item.itemType === "text" && textSurfaceBackgroundColorOption?.id !== "white")
+      ? "surface-bevel"
+      : "";
   const frameClassName = isSectionItem
     ? shouldShowSectionShadow
       ? "outline-transparent inset-ring-1"
       : "outline-none inset-ring-0"
-    : isFullBleedItem
-      ? "outline-none"
-      : "outline-border/35 inset-ring-1";
+    : item.itemType === "text"
+      ? textSurfaceBackgroundColorOption?.id === "white"
+        ? "outline-border/35 inset-ring-1"
+        : "outline-none"
+      : isFullBleedItem
+        ? "outline-none"
+        : "outline-border/35 inset-ring-1";
   const shellShadowClassName = shadowClassName;
   const shadowLayerClassName = isDragActive ? "shadow-float" : "";
   const dragInteractionClassName = isLiftActive
@@ -267,14 +280,26 @@ export function GridCard({
         {children ? (
           <div className="min-h-0 flex-1">
             {item.itemType === "text" && textSurfaceClassNames ? (
-              <GridTextSurfaceProvider
-                backgroundColorClassName={textSurfaceClassNames.backgroundColorClassName}
-                foregroundClassName={textSurfaceClassNames.foregroundClassName}
-                textAlignClassName={textSurfaceClassNames.textAlignClassName}
-                verticalAlignClassName={textSurfaceClassNames.verticalAlignClassName}
+              <div
+                className={`relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-[1.5rem] ${
+                  textSurfaceBackgroundColorOption?.id === "white" ? "" : "surface-bevel"
+                }`}
               >
-                {children}
-              </GridTextSurfaceProvider>
+                <div className="min-h-0 flex-1 p-4">
+                  <GridTextSurfaceProvider
+                    backgroundColorClassName={textSurfaceClassNames.backgroundColorClassName}
+                    focusVisibleBackgroundClassName={
+                      textSurfaceClassNames.focusVisibleBackgroundClassName
+                    }
+                    foregroundClassName={textSurfaceClassNames.foregroundClassName}
+                    hoverBackgroundClassName={textSurfaceClassNames.hoverBackgroundClassName}
+                    textAlignClassName={textSurfaceClassNames.textAlignClassName}
+                    verticalAlignClassName={textSurfaceClassNames.verticalAlignClassName}
+                  >
+                    {children}
+                  </GridTextSurfaceProvider>
+                </div>
+              </div>
             ) : (
               children
             )}

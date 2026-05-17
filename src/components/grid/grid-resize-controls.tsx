@@ -49,6 +49,8 @@ const resizeOptionIcons = {
   "2x4": SquareIcon,
 } satisfies Record<ResizeOptionId, LucideIcon>;
 
+const smallResizeOptionIds = new Set<ResizeOptionId>(["1x2", "2x1"]);
+
 export function GridResizeControls({
   item,
   options,
@@ -86,7 +88,13 @@ export function GridResizeControls({
               }}
               value={option.id}
             >
-              <Icon aria-hidden className="size-5 stroke-3" />
+              <Icon
+                aria-hidden
+                className={cn(
+                  "stroke-3",
+                  smallResizeOptionIds.has(option.id) ? "size-3.5" : "size-5"
+                )}
+              />
             </ToggleGroupItem>
           );
         })}

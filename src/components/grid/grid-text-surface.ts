@@ -121,19 +121,24 @@ export function getTextAlignClassName(textAlign: ProfileTextAlign) {
 
 export function getVerticalAlignClassName(verticalAlign: ProfileVerticalAlign) {
   return verticalAlign === "center"
-    ? "justify-center"
+    ? "items-center"
     : verticalAlign === "end"
-      ? "justify-end"
-      : "justify-start";
+      ? "items-end"
+      : "items-start";
 }
 
 export function getGridTextSurfaceClassNames(style: GridTextSurfaceStyle) {
   const backgroundColorOption = getBackgroundColorOption(style.backgroundColor);
+  const isLightSurface = backgroundColorOption.foregroundClassName === "text-black";
 
   return {
     backgroundColorClassName: backgroundColorOption.className,
     foregroundClassName: backgroundColorOption.foregroundClassName,
     textAlignClassName: getTextAlignClassName(style.textAlign),
     verticalAlignClassName: getVerticalAlignClassName(style.verticalAlign),
+    hoverBackgroundClassName: isLightSurface ? "hover:bg-black/4" : "hover:bg-white/18",
+    focusVisibleBackgroundClassName: isLightSurface
+      ? "focus-visible:bg-black/6"
+      : "focus-visible:bg-white/24",
   };
 }

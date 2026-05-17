@@ -17,6 +17,7 @@ import {
   type MapViewport,
   MarkerContent,
 } from "@/components/ui/map";
+import { Textarea } from "@/components/ui/textarea";
 import type { GridBreakpoint, ResizeOptionId } from "@/lib/grid/grid-types";
 import {
   type LinkProviderTheme,
@@ -31,7 +32,6 @@ import {
 } from "@/lib/metadata/url-metadata";
 import type { ProfileBentoItem } from "@/lib/profile/types";
 import { cn } from "@/lib/utils";
-import { Textarea } from "@/components/ui/textarea";
 
 type ProfileBentoLinkSize = ResizeOptionId;
 type ProfileBentoEditableContentCardProps = {
@@ -907,7 +907,7 @@ function EditableTextBento({
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const textSurface = useGridTextSurface();
-  const [scrollTop, setScrollTop] = useState(0);
+  const [_scrollTop, setScrollTop] = useState(0);
 
   useEffect(() => {
     if (!autoFocus) {
@@ -931,10 +931,12 @@ function EditableTextBento({
     };
   }, [autoFocus, onFocusReady]);
   const placeholderClassName =
-    textSurface?.foregroundClassName === "text-white" ? "placeholder:text-white/45" : "placeholder:text-black/45";
+    textSurface?.foregroundClassName === "text-white"
+      ? "placeholder:text-white/45"
+      : "placeholder:text-black/45";
 
   return (
-    <div className="relative size-full min-h-0 overflow-hidden rounded-lg cursor-text">
+    <div className="grid-action relative size-full min-h-0 overflow-hidden rounded-lg cursor-text">
       <div
         aria-hidden
         className={cn(
@@ -943,21 +945,21 @@ function EditableTextBento({
           textSurface?.textAlignClassName ?? "text-left",
           textSurface?.verticalAlignClassName === "items-center" && "my-auto"
         )}
-      >
-      </div>
+      ></div>
       <div
         className={cn(
-          "relative z-10 flex h-full w-full min-h-0",
+          "relative z-10 flex h-full w-full min-h-0 overscroll-contain",
           textSurface?.verticalAlignClassName,
           textSurface?.hoverBackgroundClassName,
-          textSurface?.focusVisibleBackgroundClassName,
+          textSurface?.focusVisibleBackgroundClassName
         )}
       >
         <Textarea
           data-placeholder="Add text..."
           ref={textareaRef}
           className={cn(
-            "grid-action flex min-h-0 w-full cursor-text! flex-col overflow-y-auto rounded-lg bg-transparent p-1.5 px-2 text-[20px]! font-medium outline-none break-all whitespace-pre-line caret-foreground scrollbar-hidden-stable resize-none focus-visible:ring-0 border-0",
+            "grid-action flex max-h-full min-h-0 w-full cursor-text! flex-col overflow-y-auto overscroll-contain rounded-lg bg-transparent p-1.5 px-2 text-[20px]! font-medium outline-none break-all whitespace-pre-line caret-foreground scrollbar-hidden-stable resize-none field-sizing-content focus-visible:ring-0 border-0",
+            textSurface?.foregroundClassName ?? "text-foreground",
             placeholderClassName,
             textSurface?.textAlignClassName ?? "text-left"
           )}
@@ -1211,7 +1213,7 @@ function EditableMapBento({
   return (
     <article
       className={cn(
-        "relative size-full overflow-hidden rounded-[1.5rem] ring-0 border-transparent bg-muted transition-all duration-200 ease-out",
+        "relative size-full overflow-hidden rounded-[1.5rem] ring-1 ring-border border-transparent bg-muted transition-all duration-200 ease-out",
         isInteractionEnabled ? "grid-action ring-4 ring-black" : ""
       )}
     >
@@ -1277,7 +1279,7 @@ function ReadonlyMapBento({
   preventNavigation: boolean;
 }) {
   return (
-    <article className="relative size-full overflow-hidden rounded-[1.5rem] bg-muted transition-colors duration-200 ease-out">
+    <article className="relative size-full overflow-hidden rounded-[1.5rem] ring-1 ring-border bg-muted transition-colors duration-200 ease-out">
       <BentoMap
         className="size-full"
         styles={LEEVE_MAP_STYLES}

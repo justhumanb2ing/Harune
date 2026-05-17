@@ -56,7 +56,7 @@ import {
   PROFILE_BENTO_MEDIA_ACCEPT,
   PROFILE_BENTO_MEDIA_MAX_SIZE_BYTES,
 } from "@/lib/profile/media-upload";
-import type { ProfileBentoItem } from "@/lib/profile/types";
+import type { ProfileBentoItem, ProfileTextSurfaceStyle } from "@/lib/profile/types";
 import { uploadToPresignedUrl } from "@/lib/s3/upload-to-presigned-url";
 import { cn } from "@/lib/utils";
 import {
@@ -893,6 +893,21 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
       currentItems.map((item) => (item.id === nextItem.id ? nextItem : item))
     );
   }, []);
+  const updateTextSurface = useCallback((id: string, nextStyle: ProfileTextSurfaceStyle) => {
+    setBento((currentItems) =>
+      currentItems.map((item) =>
+        item.id === id && item.type === "text"
+          ? {
+              ...item,
+              content: {
+                ...item.content,
+                style: nextStyle,
+              },
+            }
+          : item
+      )
+    );
+  }, []);
 
   const handleLinkCrawl = async (inputUrl = linkUrl) => {
     const rawUrl = normalizeLinkInputUrl(inputUrl);
@@ -1345,6 +1360,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
             }}
             onRemoveItem={removeItem}
             onResizeItem={resizeItem}
+            onTextSurfaceChange={updateTextSurface}
             onResizeStart={handleGridResizeStart}
             onResizeStop={handleGridResizeStop}
             getItemMotionPhase={getItemMotionPhase}

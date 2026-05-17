@@ -3,6 +3,12 @@
 import type { Variants } from "motion/react";
 import Image from "next/image";
 import { type CSSProperties, useEffect, useState } from "react";
+import {
+  getBackgroundColorOption,
+  getTextAlignClassName,
+  getVerticalAlignClassName,
+  normalizeGridTextSurfaceStyle,
+} from "@/components/grid/grid-text-surface";
 import { Map as BentoMap, MapMarker, type MapViewport, MarkerContent } from "@/components/ui/map";
 import { resolveLinkProviderTheme } from "@/lib/metadata/link-provider-theme";
 import type {
@@ -292,10 +298,29 @@ export function LandingMediaCard({ item }: { item: ProfileMediaBento }) {
 }
 
 export function LandingTextCard({ item }: { item: ProfileTextBento }) {
+  const textSurfaceStyle = normalizeGridTextSurfaceStyle(item.content.style);
+  const backgroundColorOption = getBackgroundColorOption(textSurfaceStyle.backgroundColor);
+
   return (
-    <article className="pointer-events-none relative flex size-full min-h-0 flex-col justify-between rounded-[1.5rem] bg-white p-3.5 shadow-float outline outline-border/35">
-      <div className="relative size-full min-h-0 overflow-y-auto overscroll-contain rounded-lg p-1">
-        <p className="break-all whitespace-pre-line text-lg! font-medium leading-relaxed">
+    <article
+      className={cn(
+        "pointer-events-none relative flex size-full min-h-0 flex-col rounded-[1.5rem] p-3.5 shadow-float outline outline-border/35",
+        backgroundColorOption.className
+      )}
+    >
+      <div
+        className={cn(
+          "relative flex size-full min-h-0 overflow-y-auto overscroll-contain rounded-lg p-1",
+          getVerticalAlignClassName(textSurfaceStyle.verticalAlign)
+        )}
+      >
+        <p
+          className={cn(
+            "w-full break-all whitespace-pre-line text-lg! font-medium leading-relaxed",
+            getTextAlignClassName(textSurfaceStyle.textAlign),
+            backgroundColorOption.foregroundClassName
+          )}
+        >
           {item.content.content}
         </p>
       </div>
@@ -382,6 +407,11 @@ export const showcaseItems = [
   },
   {
     content: {
+      style: normalizeGridTextSurfaceStyle({
+        backgroundColor: "#ffffff",
+        textAlign: "start",
+        verticalAlign: "start",
+      }),
       content: "New York always feels busy, but somehow the calmest moment still shows up here.",
     },
     id: "showcase-text",

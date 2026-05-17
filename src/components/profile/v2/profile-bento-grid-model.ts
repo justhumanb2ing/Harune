@@ -1,4 +1,5 @@
 import type { LayoutItem } from "react-grid-layout";
+import { normalizeGridTextSurfaceStyle } from "@/components/grid/grid-text-surface";
 import { createLayoutItem, normalizeLayouts } from "@/lib/grid/grid-layout-utils";
 import type { GridBreakpoint, GridItem, GridLayouts } from "@/lib/grid/grid-types";
 import { resolveLinkProviderTheme } from "@/lib/metadata/link-provider-theme";
@@ -59,6 +60,8 @@ export const toBentoGridItem = (item: ProfileBentoItem): GridItem => ({
   itemType: item.type,
   theme:
     item.type === "link" ? (resolveLinkProviderTheme(item.content.url) ?? undefined) : undefined,
+  textSurfaceStyle:
+    item.type === "text" ? normalizeGridTextSurfaceStyle(item.content.style) : undefined,
   label:
     item.type === "text"
       ? "Text"
@@ -83,7 +86,17 @@ const getLinkDomain = (url: string) => {
 export const normalizeProfileBentoItems = (items: ProfileBentoItem[]): ProfileBentoItem[] =>
   items.map((item) => {
     if (item.type !== "link") {
-      return item;
+      if (item.type !== "text") {
+        return item;
+      }
+
+      return {
+        ...item,
+        content: {
+          ...item.content,
+          style: normalizeGridTextSurfaceStyle(item.content.style),
+        },
+      };
     }
 
     return {
@@ -207,6 +220,7 @@ export function createAutoBentoItem(type: CreatableBentoType, currentItems: Prof
     layout: baseLayout,
     content: {
       content: `New text ${count}`,
+      style: normalizeGridTextSurfaceStyle(null),
     },
   } satisfies ProfileBentoItem;
 }

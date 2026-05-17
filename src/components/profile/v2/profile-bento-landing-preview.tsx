@@ -3,6 +3,7 @@
 import { type MotionValue, motion, useTransform } from "motion/react";
 import Image from "next/image";
 import { type CSSProperties, type ReactNode, useEffect, useState } from "react";
+import { normalizeGridTextSurfaceStyle } from "@/components/grid/grid-text-surface";
 import { PROFILE_BENTO_PROFILE_SHELL_CLASS } from "@/components/profile/v2/profile-bento-profile-shell";
 import { ProfileBentoReadonlyGrid } from "@/components/profile/v2/profile-bento-readonly-grid";
 import type { ProfileBentoItem } from "@/lib/profile/types";
@@ -105,6 +106,11 @@ const landingBento: ProfileBentoItem[] = [
       compact: { x: 0, y: 8, w: 1, h: 2 },
     },
     content: {
+      style: normalizeGridTextSurfaceStyle({
+        backgroundColor: "#ffffff",
+        textAlign: "start",
+        verticalAlign: "start",
+      }),
       content: "New works, references, and notes from the studio.",
     },
   },

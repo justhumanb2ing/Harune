@@ -1,4 +1,5 @@
 import type { ResponsiveLayouts } from "react-grid-layout";
+import type { ProfileTextSurfaceStyle } from "@/lib/profile/types";
 
 export type GridItemTheme = {
   backgroundColor: string;
@@ -15,7 +16,10 @@ export type GridItem = {
   description: string;
   itemType?: string;
   theme?: GridItemTheme;
+  textSurfaceStyle?: ProfileTextSurfaceStyle;
 };
+
+export type GridTextSurfaceStyle = ProfileTextSurfaceStyle;
 
 export type ResizeOptionId = "1x2" | "1x4" | "2x2" | "2x4" | "2x1";
 

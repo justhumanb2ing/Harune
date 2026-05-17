@@ -4,14 +4,19 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { GridResizeControls } from "@/components/grid/grid-resize-controls";
 import {
-  type BackgroundColorId,
-  backgroundColorOptions,
-  getBackgroundColorOption,
+  getGridTextSurfaceClassNames,
+  normalizeGridTextSurfaceStyle,
 } from "@/components/grid/grid-text-surface";
 import { GridTextSurfaceProvider } from "@/components/grid/grid-text-surface-context";
 import { THIN_PLACEHOLDER_ITEM_ID } from "@/lib/grid/grid-config";
 import { getResizeOptionId, getResizeOptionsForItem } from "@/lib/grid/grid-layout-utils";
-import type { GridBreakpoint, GridItem, GridLayouts, ResizeOption } from "@/lib/grid/grid-types";
+import type {
+  GridBreakpoint,
+  GridItem,
+  GridLayouts,
+  GridTextSurfaceStyle,
+  ResizeOption,
+} from "@/lib/grid/grid-types";
 import { Button } from "../ui/button";
 
 export type GridCardMotionPhase = "entering" | "exiting";
@@ -30,6 +35,7 @@ type GridCardProps = {
   onMotionComplete?: (id: string, phase: GridCardMotionPhase) => void;
   onRemove: (id: string) => void;
   onResize: (id: string, breakpoint: GridBreakpoint, option: ResizeOption) => void;
+  onTextSurfaceChange?: (id: string, nextStyle: GridTextSurfaceStyle) => void;
   readOnly?: boolean;
   trailingResizeControl?: ReactNode;
   shouldReduceMotion: boolean;
@@ -92,6 +98,7 @@ export function GridCard({
   onMotionComplete,
   onRemove,
   onResize,
+  onTextSurfaceChange,
   readOnly = false,
   trailingResizeControl,
   shouldReduceMotion,
@@ -105,9 +112,11 @@ export function GridCard({
   const selectedResizeOption = getResizeOptionId(layouts, activeBreakpoint, item.id);
   const [isSectionPointerActive, setIsSectionPointerActive] = useState(false);
   const [isSectionFocusActive, setIsSectionFocusActive] = useState(false);
-  const [textBackgroundColorId, setTextBackgroundColorId] = useState<BackgroundColorId>(
-    backgroundColorOptions[0].id
-  );
+  const textSurfaceStyle =
+    item.itemType === "text" ? normalizeGridTextSurfaceStyle(item.textSurfaceStyle) : null;
+  const textSurfaceClassNames = textSurfaceStyle
+    ? getGridTextSurfaceClassNames(textSurfaceStyle)
+    : null;
   const isLiftActive = isDragActive || isDragIntentActive;
   const dragScale = shouldReduceMotion || !isLiftActive ? 1 : 1.025;
   const shouldShowSectionShadow =
@@ -146,8 +155,10 @@ export function GridCard({
     : {
         "--tw-inset-ring-color": "color-mix(in srgb, var(--border) 80%, transparent)",
       };
-  const textSurfaceForegroundClassName =
-    getBackgroundColorOption(textBackgroundColorId).foregroundClassName;
+  const shellBackgroundClassName =
+    item.itemType === "text" && textSurfaceClassNames
+      ? textSurfaceClassNames.backgroundColorClassName
+      : "bg-white";
 
   return (
     <motion.div
@@ -227,7 +238,7 @@ export function GridCard({
                 y: isLiftActive ? -6 : 0,
               }
         }
-        className={`relative flex h-full min-h-0 w-full flex-col justify-between ${frameClassName} ${radiusClassName} bg-white ${paddingClassName} transition-shadow ${bevelClassName} ${shellShadowClassName} ${isExiting ? "pointer-events-none select-none shadow-none" : ""} ${isDragActive || motionPhase ? "will-change-transform" : ""}`}
+        className={`relative flex h-full min-h-0 w-full flex-col justify-between ${frameClassName} ${radiusClassName} ${shellBackgroundClassName} ${paddingClassName} transition-shadow ${bevelClassName} ${shellShadowClassName} ${isExiting ? "pointer-events-none select-none shadow-none" : ""} ${isDragActive || motionPhase ? "will-change-transform" : ""}`}
         style={
           {
             ...shellStyle,
@@ -255,8 +266,13 @@ export function GridCard({
         />
         {children ? (
           <div className="min-h-0 flex-1">
-            {item.itemType === "text" ? (
-              <GridTextSurfaceProvider foregroundClassName={textSurfaceForegroundClassName}>
+            {item.itemType === "text" && textSurfaceClassNames ? (
+              <GridTextSurfaceProvider
+                backgroundColorClassName={textSurfaceClassNames.backgroundColorClassName}
+                foregroundClassName={textSurfaceClassNames.foregroundClassName}
+                textAlignClassName={textSurfaceClassNames.textAlignClassName}
+                verticalAlignClassName={textSurfaceClassNames.verticalAlignClassName}
+              >
                 {children}
               </GridTextSurfaceProvider>
             ) : (
@@ -304,11 +320,13 @@ export function GridCard({
             onResize={(id, option) => {
               onResize(id, activeBreakpoint, option);
             }}
-            onBackgroundColorChange={
-              item.itemType === "text" ? setTextBackgroundColorId : undefined
+            onTextSurfaceChange={
+              item.itemType === "text" && onTextSurfaceChange
+                ? (nextStyle) => onTextSurfaceChange(item.id, nextStyle)
+                : undefined
             }
             options={resizeOptions}
-            selectedBackgroundColorId={item.itemType === "text" ? textBackgroundColorId : undefined}
+            selectedTextSurfaceStyle={textSurfaceStyle ?? undefined}
             selectedOptionId={selectedResizeOption}
             trailingControl={trailingResizeControl}
           />

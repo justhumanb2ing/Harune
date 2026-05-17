@@ -11,7 +11,13 @@ import {
   GRID_PADDING,
   THIN_PLACEHOLDER_ITEM_ID,
 } from "@/lib/grid/grid-config";
-import type { GridBreakpoint, GridItem, GridLayouts, ResizeOption } from "@/lib/grid/grid-types";
+import type {
+  GridBreakpoint,
+  GridItem,
+  GridLayouts,
+  GridTextSurfaceStyle,
+  ResizeOption,
+} from "@/lib/grid/grid-types";
 
 type ResponsiveGridCanvasProps = {
   activeBreakpoint: GridBreakpoint;
@@ -32,6 +38,7 @@ type ResponsiveGridCanvasProps = {
   onLayoutChange: (layouts: GridLayouts) => void;
   onRemoveItem: (id: string) => void;
   onResizeItem: (id: string, breakpoint: GridBreakpoint, option: ResizeOption) => void;
+  onTextSurfaceChange?: (id: string, nextStyle: GridTextSurfaceStyle) => void;
   onResizeStart: (newItem: LayoutItem | null | undefined) => void;
   onResizeStop: () => void;
   readOnly?: boolean;
@@ -61,6 +68,7 @@ export function ResponsiveGridCanvas({
   onLayoutChange,
   onRemoveItem,
   onResizeItem,
+  onTextSurfaceChange,
   onResizeStart,
   onResizeStop,
   readOnly = false,
@@ -149,6 +157,7 @@ export function ResponsiveGridCanvas({
               onMotionComplete={onItemMotionComplete}
               onRemove={onRemoveItem}
               onResize={onResizeItem}
+              onTextSurfaceChange={onTextSurfaceChange}
               readOnly={readOnly}
               shouldReduceMotion={shouldReduceMotion}
               trailingResizeControl={renderTrailingResizeControl?.(item)}

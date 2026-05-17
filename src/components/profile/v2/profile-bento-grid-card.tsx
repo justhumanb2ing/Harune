@@ -930,30 +930,36 @@ function EditableTextBento({
   }, [autoFocus, onFocusReady]);
 
   return (
-    <textarea
-      aria-label="Text content"
-      className={cn(
-        "grid-action size-full resize-none rounded-lg bg-transparent p-1.5 px-2 text-lg! font-medium leading-[1.7] outline-none break-all placeholder:text-muted-foreground hover:bg-secondary focus-visible:bg-secondary",
-        textSurface?.foregroundClassName ?? "text-foreground"
-      )}
-      onBlur={(event) => {
-        const shouldReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    <div className={cn("flex size-full min-h-0 rounded-lg", textSurface?.verticalAlignClassName)}>
+      <textarea
+        aria-label="Text content"
+        className={cn(
+          "grid-action min-h-full w-full resize-none rounded-lg bg-transparent p-1.5 px-2 text-lg! font-medium leading-[1.7] outline-none break-all placeholder:text-muted-foreground hover:bg-white/30 focus-visible:bg-secondary",
+          textSurface?.foregroundClassName ?? "text-foreground",
+          textSurface?.textAlignClassName ?? "text-left"
+        )}
+        onBlur={(event) => {
+          const shouldReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-        event.currentTarget.scrollTo({
-          behavior: shouldReduceMotion ? "auto" : "smooth",
-          top: 0,
-        });
-      }}
-      onChange={(event) => {
-        onChange({
-          ...item,
-          content: { content: event.target.value },
-        });
-      }}
-      placeholder="Write something..."
-      ref={textareaRef}
-      value={item.content.content}
-    />
+          event.currentTarget.scrollTo({
+            behavior: shouldReduceMotion ? "auto" : "smooth",
+            top: 0,
+          });
+        }}
+        onChange={(event) => {
+          onChange({
+            ...item,
+            content: {
+              ...item.content,
+              content: event.target.value,
+            },
+          });
+        }}
+        placeholder="Write something..."
+        ref={textareaRef}
+        value={item.content.content}
+      />
+    </div>
   );
 }
 
@@ -1359,11 +1365,17 @@ function ReadonlyTextBento({ content }: { content: string }) {
   const textSurface = useGridTextSurface();
 
   return (
-    <article className="relative size-full min-h-0 overflow-y-auto overscroll-contain rounded-lg p-1">
+    <article
+      className={cn(
+        "relative flex size-full min-h-0 overflow-y-auto overscroll-contain rounded-lg p-1",
+        textSurface?.verticalAlignClassName
+      )}
+    >
       <p
         className={cn(
-          "whitespace-pre-line break-all text-lg! font-medium leading-relaxed",
-          textSurface?.foregroundClassName ?? "text-foreground"
+          "w-full whitespace-pre-line break-all text-lg! font-medium leading-relaxed",
+          textSurface?.foregroundClassName ?? "text-foreground",
+          textSurface?.textAlignClassName ?? "text-left"
         )}
       >
         {content}

@@ -45,6 +45,13 @@ const googleMapsUrlSchema = z
     );
   }, "Enter a valid Google Maps URL.");
 
+const textAlignSchema = z.enum(["start", "center", "end"]);
+const profileTextSurfaceStyleSchema = z.object({
+  backgroundColor: z.string().trim().min(1).max(64),
+  textAlign: textAlignSchema,
+  verticalAlign: textAlignSchema,
+});
+
 export const profileUpdateSchema = z.object({
   name: z
     .string()
@@ -98,6 +105,7 @@ export const profileTextBentoSyncSchema = profileBentoBaseSchema.extend({
   type: z.literal("text"),
   content: z.object({
     content: z.string().trim().min(1, "Content is required.").max(2000),
+    style: profileTextSurfaceStyleSchema.optional(),
   }),
 });
 

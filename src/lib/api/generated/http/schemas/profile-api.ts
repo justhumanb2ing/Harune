@@ -315,6 +315,14 @@ export type GetProfileByHandle200BentoItem =
       };
       content: {
         content: string;
+        style: {
+          /** Background color applied to the text surface. */
+          backgroundColor: string;
+          /** Text alignment within the text surface. `start` maps to left alignment and `end` maps to right alignment. */
+          textAlign: "start" | "center" | "end";
+          /** Vertical alignment within the text surface. `start` maps to top alignment and `end` maps to bottom alignment. */
+          verticalAlign: "start" | "center" | "end";
+        };
       };
     }
   | {
@@ -560,6 +568,14 @@ export type UpdateProfilePageBodyBentoItem =
       };
       content: {
         content: string;
+        style?: {
+          /** Background color applied to the text surface. */
+          backgroundColor?: string;
+          /** Text alignment within the text surface. `start` maps to left alignment and `end` maps to right alignment. */
+          textAlign?: "start" | "center" | "end";
+          /** Vertical alignment within the text surface. `start` maps to top alignment and `end` maps to bottom alignment. */
+          verticalAlign?: "start" | "center" | "end";
+        };
       };
     }
   | {
@@ -721,6 +737,14 @@ export type UpdateProfilePage200BentoItem =
       };
       content: {
         content: string;
+        style: {
+          /** Background color applied to the text surface. */
+          backgroundColor: string;
+          /** Text alignment within the text surface. `start` maps to left alignment and `end` maps to right alignment. */
+          textAlign: "start" | "center" | "end";
+          /** Vertical alignment within the text surface. `start` maps to top alignment and `end` maps to bottom alignment. */
+          verticalAlign: "start" | "center" | "end";
+        };
       };
     }
   | {

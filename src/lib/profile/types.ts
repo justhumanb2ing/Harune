@@ -33,6 +33,14 @@ export type ProfilePageData = {
 
 export type ProfileBentoType = "link" | "text" | "section" | "media" | "map";
 export type ProfileMediaType = "image" | "video";
+export type ProfileTextAlign = "start" | "center" | "end";
+export type ProfileVerticalAlign = "start" | "center" | "end";
+
+export type ProfileTextSurfaceStyle = {
+  backgroundColor: string;
+  textAlign: ProfileTextAlign;
+  verticalAlign: ProfileVerticalAlign;
+};
 
 export type ProfileBentoBreakpoint = "desktop" | "compact";
 
@@ -66,6 +74,7 @@ export type ProfileTextBento = {
   layout: ProfileBentoLayouts;
   content: {
     content: string;
+    style: ProfileTextSurfaceStyle;
   };
 };
 

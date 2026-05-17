@@ -1418,7 +1418,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
                       : "Enable map interaction"
                   }
                   aria-pressed={activeMapInteractionItemId === item.id}
-                  className="size-8.5 min-h-8 min-w-8 rounded-md text-primary-foreground hover:bg-primary-foreground hover:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary"
+                  className="size-8.5 min-h-8 min-w-8 rounded-md text-primary-foreground hover:bg-primary-foreground hover:text-primary aria-pressed:bg-green-400 aria-pressed:text-primary-foreground"
                   onClick={() => {
                     setActiveMapInteractionItemId((current) =>
                       current === item.id ? null : item.id

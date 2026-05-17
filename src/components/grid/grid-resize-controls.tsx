@@ -81,7 +81,7 @@ export function GridResizeControls({
           return (
             <ToggleGroupItem
               aria-label={`Resize ${item.label} to ${option.id}`}
-              className="size-8 text-primary-foreground hover:bg-primary-foreground data-[state=on]:bg-primary-foreground data-[state=on]:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary"
+              className="size-8 rounded-md text-primary-foreground hover:bg-primary-foreground data-[state=on]:bg-primary-foreground data-[state=on]:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary"
               key={option.id}
               onClick={() => {
                 onResize(item.id, option);
@@ -157,21 +157,21 @@ export function GridResizeControls({
                 >
                   <ToggleGroupItem
                     aria-label={`Align ${item.label} text to the start`}
-                    className="size-8 text-primary-foreground hover:bg-primary-foreground data-[state=on]:bg-primary-foreground data-[state=on]:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary"
+                    className="size-8 rounded-md text-primary-foreground hover:bg-primary-foreground data-[state=on]:bg-primary-foreground data-[state=on]:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary"
                     value="start"
                   >
                     <TextAlignStartIcon aria-hidden className="size-5 stroke-3" />
                   </ToggleGroupItem>
                   <ToggleGroupItem
                     aria-label={`Align ${item.label} text to the center`}
-                    className="size-8 text-primary-foreground hover:bg-primary-foreground data-[state=on]:bg-primary-foreground data-[state=on]:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary"
+                    className="size-8 rounded-md text-primary-foreground hover:bg-primary-foreground data-[state=on]:bg-primary-foreground data-[state=on]:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary"
                     value="center"
                   >
                     <TextAlignCenterIcon aria-hidden className="size-5 stroke-3" />
                   </ToggleGroupItem>
                   <ToggleGroupItem
                     aria-label={`Align ${item.label} text to the end`}
-                    className="size-8 text-primary-foreground hover:bg-primary-foreground data-[state=on]:bg-primary-foreground data-[state=on]:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary"
+                    className="size-8 rounded-md text-primary-foreground hover:bg-primary-foreground data-[state=on]:bg-primary-foreground data-[state=on]:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary"
                     value="end"
                   >
                     <TextAlignEndIcon aria-hidden className="size-5 stroke-3" />
@@ -202,21 +202,21 @@ export function GridResizeControls({
                 >
                   <ToggleGroupItem
                     aria-label={`Align ${item.label} vertically to the start`}
-                    className="size-8 text-primary-foreground hover:bg-primary-foreground data-[state=on]:bg-primary-foreground data-[state=on]:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary"
+                    className="size-8 rounded-md text-primary-foreground hover:bg-primary-foreground data-[state=on]:bg-primary-foreground data-[state=on]:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary"
                     value="start"
                   >
                     <AlignVerticalJustifyStartIcon aria-hidden className="size-5 stroke-3" />
                   </ToggleGroupItem>
                   <ToggleGroupItem
                     aria-label={`Align ${item.label} vertically to the center`}
-                    className="size-8 text-primary-foreground hover:bg-primary-foreground data-[state=on]:bg-primary-foreground data-[state=on]:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary"
+                    className="size-8 rounded-md text-primary-foreground hover:bg-primary-foreground data-[state=on]:bg-primary-foreground data-[state=on]:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary"
                     value="center"
                   >
                     <AlignVerticalJustifyCenterIcon aria-hidden className="size-5 stroke-3" />
                   </ToggleGroupItem>
                   <ToggleGroupItem
                     aria-label={`Align ${item.label} vertically to the end`}
-                    className="size-8 text-primary-foreground hover:bg-primary-foreground data-[state=on]:bg-primary-foreground data-[state=on]:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary"
+                    className="size-8 rounded-md text-primary-foreground hover:bg-primary-foreground data-[state=on]:bg-primary-foreground data-[state=on]:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary"
                     value="end"
                   >
                     <AlignVerticalJustifyEndIcon aria-hidden className="size-5 stroke-3" />

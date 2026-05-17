@@ -1,8 +1,11 @@
 ---
 title: Changelog
-lastUpdated: "2026-05-15"
+lastUpdated: "2026-05-17"
 description: See the latest Harune product updates and user-visible improvements.
 ---
+
+## May 17, 2026
+- Added text item styling controls.
 
 ## May 15, 2026
 - Added profile image cropping.

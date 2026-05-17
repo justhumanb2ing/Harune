@@ -3,6 +3,12 @@ import { type MotionStyle, type MotionValue, motion } from "motion/react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { GridResizeControls } from "@/components/grid/grid-resize-controls";
+import {
+  type BackgroundColorId,
+  backgroundColorOptions,
+  getBackgroundColorOption,
+} from "@/components/grid/grid-text-surface";
+import { GridTextSurfaceProvider } from "@/components/grid/grid-text-surface-context";
 import { THIN_PLACEHOLDER_ITEM_ID } from "@/lib/grid/grid-config";
 import { getResizeOptionId, getResizeOptionsForItem } from "@/lib/grid/grid-layout-utils";
 import type { GridBreakpoint, GridItem, GridLayouts, ResizeOption } from "@/lib/grid/grid-types";
@@ -99,6 +105,9 @@ export function GridCard({
   const selectedResizeOption = getResizeOptionId(layouts, activeBreakpoint, item.id);
   const [isSectionPointerActive, setIsSectionPointerActive] = useState(false);
   const [isSectionFocusActive, setIsSectionFocusActive] = useState(false);
+  const [textBackgroundColorId, setTextBackgroundColorId] = useState<BackgroundColorId>(
+    backgroundColorOptions[0].id
+  );
   const isLiftActive = isDragActive || isDragIntentActive;
   const dragScale = shouldReduceMotion || !isLiftActive ? 1 : 1.025;
   const shouldShowSectionShadow =
@@ -137,6 +146,8 @@ export function GridCard({
     : {
         "--tw-inset-ring-color": "color-mix(in srgb, var(--border) 80%, transparent)",
       };
+  const textSurfaceForegroundClassName =
+    getBackgroundColorOption(textBackgroundColorId).foregroundClassName;
 
   return (
     <motion.div
@@ -152,7 +163,7 @@ export function GridCard({
         if (
           !(target instanceof Element) ||
           target.closest(
-            "button, input, textarea, select, a, [contenteditable='true'], .grid-action"
+            "button, input, textarea, select, a, [contenteditable='true'], [role='radio'], [data-slot='radio-group-item'], .grid-action"
           )
         ) {
           return;
@@ -243,7 +254,15 @@ export function GridCard({
           className={`pointer-events-none absolute inset-0 rounded-[inherit] ${shadowLayerClassName}`}
         />
         {children ? (
-          <div className="min-h-0 flex-1">{children}</div>
+          <div className="min-h-0 flex-1">
+            {item.itemType === "text" ? (
+              <GridTextSurfaceProvider foregroundClassName={textSurfaceForegroundClassName}>
+                {children}
+              </GridTextSurfaceProvider>
+            ) : (
+              children
+            )}
+          </div>
         ) : (
           <div>
             <div className="flex items-start justify-between gap-3">
@@ -285,7 +304,11 @@ export function GridCard({
             onResize={(id, option) => {
               onResize(id, activeBreakpoint, option);
             }}
+            onBackgroundColorChange={
+              item.itemType === "text" ? setTextBackgroundColorId : undefined
+            }
             options={resizeOptions}
+            selectedBackgroundColorId={item.itemType === "text" ? textBackgroundColorId : undefined}
             selectedOptionId={selectedResizeOption}
             trailingControl={trailingResizeControl}
           />

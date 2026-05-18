@@ -196,7 +196,7 @@ export function ProfileBentoOwnerEditorSurface({
   );
   const previewFrameClassName = cn(
     "pointer-events-none absolute inset-0 z-0",
-    shouldFrameCompactSurface && "bg-background shadow-float-lg"
+    shouldFrameCompactSurface && "bg-background"
   );
   const footerActionClassName = isBelowLg
     ? "w-full justify-center pb-12 pt-4"
@@ -231,7 +231,7 @@ export function ProfileBentoOwnerEditorSurface({
           }}
           className={cn(
             previewSurfaceClassName,
-            shouldFrameCompactSurface && "border border-border bg-background shadow-float-lg"
+            shouldFrameCompactSurface && "bg-background shadow-float"
           )}
           initial={false}
           transition={PREVIEW_SURFACE_TRANSITION}

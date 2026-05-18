@@ -43,33 +43,19 @@ const resolveImageUrl = (image: string | null) => {
 export default function ExploreSection({ pages }: ExploreSectionProps) {
   return (
     <section className="h-full flex flex-col">
-      <header className="h-[12rem] flex flex-col justify-center items-center mt-8">
-        <motion.div
-          animate="visible"
-          className="origin-left self-center rounded-2xl bg-background p-2 shadow-xl cursor-default"
-          initial="hidden"
-          variants={variants}
-          whileHover={{
-            rotate: -8,
-            scale: 1.06,
-            transition: {
-              bounce: 0.35,
-              damping: 10,
-              stiffness: 360,
-              type: "spring",
-            },
-            y: -5,
-          }}
-        >
-          <h2 className="text-center text-3xl font-bold tracking-tight sm:text-5xl text-primary-foreground bg-green-400 rounded-xl p-3 px-6 py-3">
-            Explore
+      <header className="flex-1 flex flex-col justify-center items-center mt-8 px-6 pt-16 pb-8">
+        <div className="container max-w-7xl flex flex-col gap-4">
+          <h2 className="text-3xl font-extrabold tracking-tight lg:text-4xl text-primary text-pretty">
+            Explore beautiful pages crafted by others
           </h2>
-        </motion.div>
+          {/*<h3 className="text-xl">See others beautifl pages</h3>*/}
+        </div>
+        
       </header>
       <main className="flex-1 px-6 py-8 sm:px-6 lg:px-8">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 ">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 ">
           {pages.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {pages.map((page) => {
                 const imageUrl = resolveImageUrl(page.image);
                 const displayName = page.name ?? page.handle;
@@ -77,7 +63,7 @@ export default function ExploreSection({ pages }: ExploreSectionProps) {
                   <Link
                     key={page.id}
                     href={`/${page.handle}`}
-                    className="group aspect-4/3 flex flex-col justify-center items-center gap-4 overflow-hidden bg-secondary/60 p-4 rounded-xl transition-transform duration-200 hover:-translate-y-1 relative"
+                    className="group aspect-11/10 flex flex-col justify-center items-center gap-4 overflow-hidden bg-secondary/60 p-4 rounded-xl transition-transform duration-200 hover:-translate-y-1 relative"
                   >
                     <div className="relative aspect-square size-28 overflow-hidden bg-muted/40 rounded-full surface-bevel">
                       {imageUrl ? (

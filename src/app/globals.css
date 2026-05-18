@@ -495,6 +495,38 @@ html[data-onboarding-step-transition="back"]::view-transition-new(onboarding-ste
   }
 }
 
+@keyframes smoothMorph {
+  0% {
+    transform: scale(1) rotate(0deg);
+    border-radius: 50%;
+  }
+
+  20% {
+    transform: scale(0.9) rotate(72deg);
+    border-radius: 35%;
+  }
+
+  40% {
+    transform: scale(1.1) rotate(144deg);
+    border-radius: 15%;
+  }
+
+  60% {
+    transform: scale(0.85) rotate(216deg);
+    border-radius: 8%;
+  }
+
+  80% {
+    transform: scale(1.05) rotate(288deg);
+    border-radius: 25%;
+  }
+
+  100% {
+    transform: scale(1) rotate(360deg);
+    border-radius: 50%;
+  }
+}
+
 @layer components {
   .brand-button {
     @apply bg-indigo-400! border-indigo-400! hover:bg-indigo-500! shadow-lg text-white hover:text-white!;

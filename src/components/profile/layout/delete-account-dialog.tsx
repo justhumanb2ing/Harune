@@ -53,12 +53,13 @@ export function DeleteAccountDialog({
         className="flex h-96 flex-col gap-4 rounded-[2.5rem] p-7 shadow-float"
       >
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-2xl font-bold tracking-tight">
+          <AlertDialogTitle className="text-2xl w-full text-left font-bold tracking-tight">
             Leaving already?
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-neutral-700 text-base">
-            <p>It will remove your page permanently.</p>
-            <p>This can't be undone.</p>
+          <AlertDialogDescription className="text-left text-neutral-700 text-base space-x-1 text-pretty break-all">
+            <span>It will remove your page permanently.</span>
+            <br className="hidden lg:inline-block" />
+            <span>This can't be undone.</span>
           </AlertDialogDescription>
         </AlertDialogHeader>
 

@@ -55,7 +55,7 @@ export function ProfileBentoProfileAside({
     <aside className={cn(PROFILE_BENTO_PUBLIC_PROFILE_SHELL_CLASS)}>
       <ProfileBentoSurfaceMotion delay={0} duration={0.68} initialScale={1} initialY={28}>
         <div className="flex flex-col gap-8 overflow-hidden">
-          <div className="flex w-full items-center justify-between gap-4 px-4 2xl:px-0">
+          <div className="flex w-full items-center justify-between gap-4 px-0 2xl:px-0">
             <div className="relative flex size-32 items-center justify-center overflow-hidden rounded-full bg-secondary 2xl:size-44">
               {page.image ? (
                 <ProfileAvatarImage
@@ -73,7 +73,7 @@ export function ProfileBentoProfileAside({
             {actionSlot ? <div className="shrink-0">{actionSlot}</div> : null}
           </div>
 
-          <div className="flex flex-col gap-3 px-4 pt-0 2xl:px-0">
+          <div className="flex flex-col gap-2 px-4 pt-0 2xl:px-0">
             {page.name ? (
               <h1 className="min-h-8 whitespace-pre-line break-all p-0 font-bold text-3xl! tracking-tighter 2xl:text-5xl!">
                 {page.name}
@@ -81,13 +81,13 @@ export function ProfileBentoProfileAside({
             ) : null}
 
             {page.bio ? (
-              <p className="min-h-8 whitespace-pre-line break-all p-0 text-lg! text-neutral-800 2xl:text-xl!">
+              <p className="min-h-16 whitespace-pre-line break-all p-0 text-lg! text-neutral-800 2xl:text-xl!">
                 {page.bio}
               </p>
             ) : null}
 
             {page.role || page.location ? (
-              <div className="flex flex-col gap-2 px-4 text-base text-neutral-500">
+              <div className="flex flex-col gap-1 text-base text-neutral-500">
                 {page.role ? <p className="h-fit p-0">{page.role}</p> : null}
                 {page.location ? <p className="h-fit p-0">{page.location}</p> : null}
               </div>

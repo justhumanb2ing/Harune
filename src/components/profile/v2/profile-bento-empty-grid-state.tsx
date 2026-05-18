@@ -13,7 +13,7 @@ const toolbarAssetBaseUrl = "https://cdn.harune.me/public/assets";
 const toolbarIconSrcByType: Record<CreatableBentoType, string> = {
   link: `${toolbarAssetBaseUrl}/toolbar-link.png`,
   text: `${toolbarAssetBaseUrl}/toolbar-text.png`,
-  map: `${toolbarAssetBaseUrl}/toolbar-map.png`,
+  map: `${toolbarAssetBaseUrl}/toolbar-map2.png`,
   section: `${toolbarAssetBaseUrl}/toolbar-section.png`,
   media: `${toolbarAssetBaseUrl}/toolbar-media.png`,
 };

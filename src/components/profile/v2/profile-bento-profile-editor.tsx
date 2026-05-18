@@ -39,14 +39,20 @@ export function ProfileBentoProfileEditor({
   }
 
   const profileImageButtonClassName = compactMode
-    ? "relative flex size-32 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-secondary transition-all hover:bg-input disabled:cursor-not-allowed disabled:opacity-70"
-    : "relative flex size-32 xl:size-44 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-secondary transition-all hover:bg-input disabled:cursor-not-allowed disabled:opacity-70";
+    ? "relative flex size-32 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-secondary transition-all hover:bg-input disabled:cursor-pointer disabled:opacity-100 disabled:hover:bg-secondary"
+    : "relative flex size-32 xl:size-44 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-secondary transition-all hover:bg-input disabled:cursor-pointer disabled:opacity-100 disabled:hover:bg-secondary";
+  const profileImageActionClassName = editor.isSyncing
+    ? "hidden pointer-events-none absolute top-1 left-1 z-10 size-10 rounded-full border-[0.5px] border-border bg-background text-black shadow-sm transition-opacity hover:bg-secondary disabled:opacity-100 disabled:hover:bg-background"
+    : "pointer-events-none absolute top-1 left-1 z-10 size-10 rounded-full border-[0.5px] border-border bg-background text-black opacity-0 shadow-sm transition-opacity hover:bg-secondary group-hover/profile-image:pointer-events-auto group-hover/profile-image:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 disabled:opacity-100 disabled:hover:bg-background";
+  const profileImageRemoveClassName = editor.isSyncing
+    ? "hidden pointer-events-none absolute top-1 right-1 z-10 size-10 rounded-full border-[0.5px] border-border bg-background text-black shadow-sm transition-opacity hover:bg-secondary disabled:opacity-100 disabled:hover:bg-background"
+    : "pointer-events-none absolute top-1 right-1 z-10 size-10 rounded-full border-[0.5px] border-border bg-background text-black opacity-0 shadow-sm transition-opacity hover:bg-secondary group-hover/profile-image:pointer-events-auto group-hover/profile-image:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 disabled:opacity-100 disabled:hover:bg-background";
   const profileNameClassName = compactMode
-    ? "min-h-8 resize-none overflow-hidden border-0 text-3xl! p-0! py-2! tracking-tighter font-bold focus-visible:ring-0 rounded-none break-all"
+    ? "min-h-8 resize-none overflow-hidden border-0 text-3xl! p-0!  tracking-tighter font-bold focus-visible:ring-0 rounded-none break-all"
     : "min-h-8 resize-none overflow-hidden border-0 text-3xl! xl:text-5xl! p-0! py-2! tracking-tighter font-bold focus-visible:ring-0 rounded-none break-all";
   const profileBioClassName = compactMode
-    ? "min-h-8 resize-none overflow-hidden border-0 p-0! text-lg! text-neutral-800 break-all rounded-none focus-visible:ring-0"
-    : "min-h-8 resize-none overflow-hidden border-0 p-0! text-lg! text-neutral-800 xl:text-xl! break-all rounded-none focus-visible:ring-0";
+    ? "min-h-20 resize-none overflow-hidden border-0 p-0! text-lg! text-neutral-800 break-all rounded-none focus-visible:ring-0"
+    : "min-h-24 resize-none overflow-hidden border-0 p-0! text-lg! text-neutral-800 xl:text-xl! break-all rounded-none focus-visible:ring-0";
 
   return (
     <aside className={getProfileBentoProfileShellClassName(compactMode)}>
@@ -82,7 +88,7 @@ export function ProfileBentoProfileEditor({
               <Button
                 type="button"
                 size="icon-lg"
-                className="size-10 pointer-events-none absolute top-1 left-1 z-10 rounded-full border-[0.5px] border-border bg-background text-black opacity-0 shadow-sm transition-opacity hover:bg-secondary group-hover/profile-image:pointer-events-auto group-hover/profile-image:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100"
+                className={profileImageActionClassName}
                 disabled={editor.isSyncing || isCropSurfaceOpen}
                 onClick={(event) => {
                   event.preventDefault();
@@ -98,7 +104,7 @@ export function ProfileBentoProfileEditor({
               <Button
                 type="button"
                 size="icon-lg"
-                className="size-10 pointer-events-none absolute top-1 right-1 z-10 rounded-full border-[0.5px] border-border bg-background text-black opacity-0 shadow-sm transition-opacity hover:bg-secondary group-hover/profile-image:pointer-events-auto group-hover/profile-image:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100"
+                className={profileImageRemoveClassName}
                 disabled={editor.isSyncing || isCropSurfaceOpen}
                 onClick={(event) => {
                   event.preventDefault();
@@ -131,7 +137,7 @@ export function ProfileBentoProfileEditor({
           />
         </div>
 
-        <div className="flex flex-col gap-3 p-4 pt-0">
+        <div className="flex flex-col gap-1 p-4 pt-0">
           <Textarea
             id="v2-profile-name"
             value={editor.profileForm.name}
@@ -152,7 +158,7 @@ export function ProfileBentoProfileEditor({
             className={profileBioClassName}
           />
 
-          <div className="flex flex-col gap-2 text-neutral-500">
+          <div className="flex flex-col gap-1 text-neutral-500">
             <Input
               id="v2-profile-role"
               value={editor.profileForm.role}
@@ -160,7 +166,7 @@ export function ProfileBentoProfileEditor({
               placeholder="What do you do?"
               aria-label="Role"
               autoComplete="off"
-              className="h-fit border-0 text-base! p-0! focus-visible:ring-0 rounded-none"
+              className="h-fit border-0 text-base! py-0 px-0! focus-visible:ring-0 rounded-none"
             />
             <Input
               id="v2-profile-location"
@@ -169,7 +175,7 @@ export function ProfileBentoProfileEditor({
               placeholder="Where are you based?"
               aria-label="Location"
               autoComplete="off"
-              className="h-fit border-0 text-base! p-0! focus-visible:ring-0 rounded-none"
+              className="h-fit border-0 text-base! py-0 px-0! focus-visible:ring-0 rounded-none"
             />
           </div>
         </div>

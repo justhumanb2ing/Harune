@@ -8,6 +8,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { CreatableBentoType } from "./profile-bento-grid-model";
 import { bentoTypeLabels, creatableBentoTypes } from "./profile-bento-grid-model";
+import { ProfileBentoGridToolbarWidget } from "./profile-bento-grid-toolbar-widget";
 
 export type ProfileBentoGridPreviewMode = "desktop" | "mobile";
 
@@ -15,9 +16,9 @@ const toolbarAssetBaseUrl = "https://cdn.harune.me/public/assets";
 const toolbarIconSrcByType: Record<CreatableBentoType, string> = {
   link: `${toolbarAssetBaseUrl}/toolbar-link.png`,
   text: `${toolbarAssetBaseUrl}/toolbar-text.png`,
-  map: `${toolbarAssetBaseUrl}/toolbar-map.png`,
-  section: `${toolbarAssetBaseUrl}/toolbar-section.png`,
-  media: `${toolbarAssetBaseUrl}/toolbar-media.png`,
+  map: `${toolbarAssetBaseUrl}/toolbar-map.png?v=3`,
+  section: `${toolbarAssetBaseUrl}/toolbar-section.png?v=1`,
+  media: `${toolbarAssetBaseUrl}/toolbar-media.png?v=2`,
 };
 
 export function ProfileBentoGridActions({
@@ -78,6 +79,7 @@ export function ProfileBentoGridActions({
           </TooltipContent>
         </Tooltip>
       ))}
+      <ProfileBentoGridToolbarWidget />
       <div className="hidden items-center gap-2 2xl:flex">
         <Separator
           orientation="vertical"

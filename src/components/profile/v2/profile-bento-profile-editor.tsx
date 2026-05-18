@@ -48,8 +48,8 @@ export function ProfileBentoProfileEditor({
     ? "hidden pointer-events-none absolute top-1 right-1 z-10 size-10 rounded-full border-[0.5px] border-border bg-background text-black shadow-sm transition-opacity hover:bg-secondary disabled:opacity-100 disabled:hover:bg-background"
     : "pointer-events-none absolute top-1 right-1 z-10 size-10 rounded-full border-[0.5px] border-border bg-background text-black opacity-0 shadow-sm transition-opacity hover:bg-secondary group-hover/profile-image:pointer-events-auto group-hover/profile-image:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 disabled:opacity-100 disabled:hover:bg-background";
   const profileNameClassName = compactMode
-    ? "min-h-8 resize-none overflow-hidden border-0 text-3xl! p-0!  tracking-tighter font-bold focus-visible:ring-0 rounded-none break-all"
-    : "min-h-8 resize-none overflow-hidden border-0 text-3xl! xl:text-5xl! p-0! py-2! tracking-tighter font-bold focus-visible:ring-0 rounded-none break-all";
+    ? "min-h-8 resize-none overflow-hidden border-0 text-3xl! p-0! tracking-tighter font-bold focus-visible:ring-0 rounded-none break-all"
+    : "min-h-8 resize-none overflow-hidden border-0 text-3xl! xl:text-5xl! p-0! tracking-tighter font-bold focus-visible:ring-0 rounded-none break-all";
   const profileBioClassName = compactMode
     ? "min-h-20 resize-none overflow-hidden border-0 p-0! text-lg! text-neutral-800 break-all rounded-none focus-visible:ring-0"
     : "min-h-24 resize-none overflow-hidden border-0 p-0! text-lg! text-neutral-800 xl:text-xl! break-all rounded-none focus-visible:ring-0";
@@ -137,7 +137,7 @@ export function ProfileBentoProfileEditor({
           />
         </div>
 
-        <div className="flex flex-col gap-1 p-4 pt-0">
+        <div className="flex flex-col gap-3 p-4 pt-0">
           <Textarea
             id="v2-profile-name"
             value={editor.profileForm.name}

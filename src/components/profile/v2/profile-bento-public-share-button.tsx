@@ -1,11 +1,13 @@
 "use client";
 
 import { CheckIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { appConfig } from "@/lib/config";
 import { getProfileAppPath } from "@/lib/profile/app-paths";
 import { cn } from "@/lib/utils";
+
+const SHARE_PAGE_RESET_DELAY_MS = 2000;
 
 type ProfileBentoPublicShareButtonProps = {
   className?: string;
@@ -17,14 +19,39 @@ export function ProfileBentoPublicShareButton({
   handle,
 }: ProfileBentoPublicShareButtonProps) {
   const [isCopied, setIsCopied] = useState(false);
+  const copyResetTimeoutRef = useRef<number | null>(null);
   const href = `${appConfig.url}${getProfileAppPath(handle)}`;
+
+  useEffect(() => {
+    return () => {
+      if (copyResetTimeoutRef.current !== null) {
+        window.clearTimeout(copyResetTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const scheduleCopyReset = () => {
+    if (copyResetTimeoutRef.current !== null) {
+      window.clearTimeout(copyResetTimeoutRef.current);
+    }
+
+    copyResetTimeoutRef.current = window.setTimeout(() => {
+      setIsCopied(false);
+      copyResetTimeoutRef.current = null;
+    }, SHARE_PAGE_RESET_DELAY_MS);
+  };
 
   const handleCopyPageUrl = async () => {
     try {
       await navigator.clipboard.writeText(href);
       setIsCopied(true);
+      scheduleCopyReset();
     } catch {
       setIsCopied(false);
+      if (copyResetTimeoutRef.current !== null) {
+        window.clearTimeout(copyResetTimeoutRef.current);
+        copyResetTimeoutRef.current = null;
+      }
     }
   };
 

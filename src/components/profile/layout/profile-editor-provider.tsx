@@ -72,7 +72,7 @@ export function ProfilePageEditorProvider({
   const syncError = useStoreSelector(store, (state) => state.syncError);
 
   React.useEffect(() => {
-    const nextData = initialData ?? profilePageQuery.data ?? null;
+    const nextData = profilePageQuery.data ?? initialData ?? null;
 
     if (nextData === undefined) {
       return;

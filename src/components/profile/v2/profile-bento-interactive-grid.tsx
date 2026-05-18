@@ -3,7 +3,7 @@
 import { LinkBreakIcon, LinkSimpleIcon, SpinnerGapIcon } from "@phosphor-icons/react";
 import { CheckIcon, ExpandIcon } from "lucide-react";
 import { motion } from "motion/react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import type { CSSProperties } from "react";
 import {
   useCallback,
@@ -341,7 +341,6 @@ async function prepareMediaFile(file: File) {
 export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoInteractiveGridProps) {
   const profileEditor = useProfilePageEditor();
   const pathname = usePathname();
-  const router = useRouter();
   const currentHandle = getProfileRouteHandle(pathname);
   const { width, containerRef, mounted } = useContainerWidth({
     initialWidth: 864,
@@ -1149,7 +1148,6 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
           setBento(normalizedResponseBento);
           setLayouts(nextLayouts);
           setSavedSnapshot(createPayloadSnapshot(normalizedResponseBento, nextLayouts));
-          router.refresh();
         }
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Failed to sync bento");

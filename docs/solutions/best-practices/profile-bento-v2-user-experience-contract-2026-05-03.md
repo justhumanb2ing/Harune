@@ -68,7 +68,11 @@ Public readonly surface와 owner editor surface는 의도적으로 같은 profil
 - media/map full-bleed editor cards는 shell shadow를 유지한 채 visible frame에 `ring-1 ring-border`를 적용해, 카드 가장자리가 평평하게 보이지 않게 한다.
 - public surface에서 삭제된 fallback text는 editor에도 무심코 되살리지 않는다.
 - mobile/tablet compact column에서는 profile shell과 bento shell이 같은 compact width contract를 공유해야 한다.
+- public readonly `/[handle]`에서는 viewport를 줄였다가 다시 넓혔을 때 profile shell과 bento shell이 서로 다른 breakpoint로 먼저 갈라지지 않아야 한다.
+- desktop 복귀 시 readonly bento grid는 owner editor의 `2xl` desktop-flow 전환과 같은 타이밍에 4열 layout으로 돌아와야 한다.
 - compact editor preview는 profile shell과 grid shell을 가운데로 다시 밀지 말고, 같은 left edge 기준으로 쌓이게 유지한다.
+- public readonly surface의 compact 구간은 editor처럼 중앙 폭이 잡혀야 하고, profile shell과 bento shell은 같은 양쪽 여백 안에서 측정되어야 한다.
+- public readonly page shell에서 grid resize transition을 `overflow-x-clip`/`overflow-hidden`으로 자르지 않는다. compact 전환 시 grid canvas width를 editor처럼 먼저 compact target으로 제한해 horizontal overflow 자체를 줄인다.
 
 ### Text Surface Style
 
@@ -217,6 +221,9 @@ Text item과 section item은 owner가 editor에서 맞춘 밀도와 줄바꿈이
 - public readonly grid는 `react-grid-layout`이 계산하는 compact/desktop 좌표, rowHeight, section height, card wrapper를 기준으로 editor와 같은 visual contract를 유지한다. CSS grid로 대체하면 저장된 layout semantics와 short viewport parity가 깨질 수 있다.
 - public/editor grid는 `useContainerWidth({ measureBeforeMount: true })`의 `mounted`가 true가 되기 전까지 `react-grid-layout` canvas를 렌더하지 않는다. `initialWidth` 기반 첫 layout이 화면에 잡힌 뒤 실제 container width layout으로 재계산되면 entry reveal 중에 grid item transform transition이 겹쳐 끊겨 보인다.
 - grid entry motion은 container width 측정이 끝난 뒤 실제 breakpoint와 rowHeight 기준 layout을 대상으로 시작해야 한다. 측정 전 shell은 ref만 유지하고 opacity/y hidden state에 머물러야 한다.
+- public readonly grid breakpoint는 editor compact/desktop 전환과 같은 `2xl` 기준을 써야 하며, 모바일/태블릿에서 desktop layout이 먼저 풀리면 안 된다.
+- public readonly `/[handle]` shell은 viewport를 줄이는 동안 가로 스크롤이 생기지 않도록 grid canvas width를 compact target으로 제한해야 한다. page shell clipping으로 숨기면 editor와 다른 잘림이 생긴다.
+- public readonly grid는 public page에서만 viewport 폭으로 desktop 복귀를 판단하고, 내부 container가 잠깐 좁게 남아 있어도 desktop 4열 상태를 다시 풀 수 있어야 한다. contained preview surface는 실제 container width 기준을 유지한다.
 - owner가 자신의 공개 페이지에 접근할 때 readonly surface가 먼저 보인 뒤 editor로 깜빡이며 바뀌면 안 된다. owner 여부는 서버 렌더 전에 결정하고, owner면 첫 HTML부터 editor surface만 렌더한다.
 - owner surface의 analytics label은 첫 HTML의 blocking dependency가 아니어야 한다. public page 판별과 editor surface 렌더가 끝나면 먼저 진입시키고, analytics 수치는 hydration 뒤에 비동기 갱신한다.
 - anonymous public route는 `auth()`를 호출하지 않는다. session cookie signal이 있을 때만 owner 확인용 auth/editor read를 수행한다.

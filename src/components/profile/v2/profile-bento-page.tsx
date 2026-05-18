@@ -74,7 +74,7 @@ export function ProfileBentoProfileAside({
             {actionSlot ? <div className="shrink-0">{actionSlot}</div> : null}
           </div>
 
-          <div className="flex flex-col gap-3 pt-0 px-4">
+          <div className="flex flex-col gap-3 px-4 pt-0 2xl:px-0">
             {page.name ? (
               <h1 className="min-h-8 whitespace-pre-line break-all p-0 font-bold text-3xl! tracking-tighter 2xl:text-5xl!">
                 {page.name}
@@ -88,7 +88,7 @@ export function ProfileBentoProfileAside({
             ) : null}
 
             {page.role || page.location ? (
-              <div className="flex flex-col gap-2 text-neutral-500 text-base">
+              <div className="flex flex-col gap-2 px-4 text-base text-neutral-500">
                 {page.role ? <p className="h-fit p-0">{page.role}</p> : null}
                 {page.location ? <p className="h-fit p-0">{page.location}</p> : null}
               </div>

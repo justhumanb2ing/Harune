@@ -111,6 +111,7 @@ export function ProfileBentoReadonlyGrid({
   const rowHeight = getGridRowHeight(canvasWidth, activeBreakpoint);
   const gridMinHeight = getGridLayoutPixelHeight(layouts, activeBreakpoint, rowHeight, 40);
   const isCompactCanvas = activeBreakpoint === "compact";
+  const gridWrapperStyle = surface === "public-page" ? undefined : { minHeight: gridMinHeight };
   const cardRotate = useMotionValue(0);
   const cardX = useMotionValue(0);
   const gridStyle = {
@@ -133,7 +134,7 @@ export function ProfileBentoReadonlyGrid({
             ? "mx-auto w-[360px] max-w-full flex-none sm:w-[400px]"
             : "min-w-0 flex-1 xl:w-[860px] xl:flex-none 2xl:w-[860px]"
         }
-        style={{ minHeight: gridMinHeight }}
+        style={gridWrapperStyle}
       >
         <div
           className="w-[360px] max-w-full sm:w-[400px] xl:w-full [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none!"

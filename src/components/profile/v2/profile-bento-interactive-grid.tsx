@@ -17,6 +17,10 @@ import {
 import { type LayoutItem, useContainerWidth } from "react-grid-layout";
 import { toast } from "sonner";
 import type { GridCardMotionPhase } from "@/components/grid/grid-card";
+import {
+  backgroundColorOptions,
+  getBackgroundColorOption,
+} from "@/components/grid/grid-text-surface";
 import { ResponsiveGridCanvas } from "@/components/grid/responsive-grid-canvas";
 import type { ProfileBentoGridPreviewMode } from "@/components/profile/v2/profile-bento-grid-actions";
 import { ProfileBentoGridActions } from "@/components/profile/v2/profile-bento-grid-actions";
@@ -25,6 +29,11 @@ import {
   ProfileBentoEditableContentCard,
 } from "@/components/profile/v2/profile-bento-grid-card";
 import { normalizeLinkInputUrl } from "@/components/profile/v2/profile-link-input-utils";
+import {
+  Popover,
+  PopoverPanel,
+  PopoverTrigger,
+} from "@/components/ui/animate-ui/components/base/popover";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -34,6 +43,16 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { useGridDragMotion } from "@/hooks/use-grid-drag-motion";
 import { useProfilePageEditor } from "@/hooks/use-profile-editor";
 import { ApiError } from "@/lib/api/error";
@@ -50,6 +69,7 @@ import {
   type NormalizedMetadata,
 } from "@/lib/metadata/url-metadata";
 import { getProfileAppPath, getProfileRouteHandle } from "@/lib/profile/app-paths";
+import { normalizeClockWidgetConfig } from "@/lib/profile/clock";
 import {
   getProfileBentoMediaFileError,
   getProfileBentoMediaHash,
@@ -84,7 +104,6 @@ import {
 import { ProfileBentoSurfaceMotion } from "./profile-bento-readonly-profile-motion";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import { Separator } from "@/components/ui/separator";
 
 type ProfileBentoInteractiveGridProps = {
   initialBento: ProfileBentoItem[];
@@ -94,6 +113,20 @@ type ProfileBentoInteractiveGridProps = {
 
 const createPayload = (items: ProfileBentoItem[], layouts: GridLayouts) => ({
   bento: mergeLayoutsIntoBento(items, layouts).map((item) => {
+    if (item.type === "clock") {
+      const content = { ...normalizeClockWidgetConfig(item.content), showSeconds: true };
+
+      return {
+        ...item,
+        content: {
+          showDate: content.showDate,
+          showSeconds: content.showSeconds,
+          style: content.style,
+          timezone: content.timezone,
+        },
+      };
+    }
+
     if (item.type !== "link") {
       return item;
     }
@@ -125,6 +158,161 @@ const PREVIEW_CANVAS_WIDTH = {
   desktop: 860,
   compact: 400,
 } as const satisfies Record<GridBreakpoint, number>;
+const CLOCK_TIMEZONE_OPTIONS = [
+  { label: "Seoul", value: "Asia/Seoul" },
+  { label: "Tokyo", value: "Asia/Tokyo" },
+  { label: "Singapore", value: "Asia/Singapore" },
+  { label: "Shanghai", value: "Asia/Shanghai" },
+  { label: "Sydney", value: "Australia/Sydney" },
+  { label: "London", value: "Europe/London" },
+  { label: "Paris", value: "Europe/Paris" },
+  { label: "New York", value: "America/New_York" },
+  { label: "Los Angeles", value: "America/Los_Angeles" },
+  { label: "UTC", value: "UTC" },
+] as const;
+
+const getClockTimezoneOptions = (timezone: string) => {
+  if (CLOCK_TIMEZONE_OPTIONS.some((option) => option.value === timezone)) {
+    return CLOCK_TIMEZONE_OPTIONS;
+  }
+
+  return [{ label: timezone, value: timezone }, ...CLOCK_TIMEZONE_OPTIONS];
+};
+
+function ClockTimezoneControl({
+  item,
+  onTimezoneChange,
+}: {
+  item: Extract<ProfileBentoItem, { type: "clock" }>;
+  onTimezoneChange: (id: string, timezone: string) => void;
+}) {
+  const content = { ...normalizeClockWidgetConfig(item.content), showSeconds: true };
+  const timezone = content.timezone ?? "Asia/Seoul";
+  const [selectedTimezone, setSelectedTimezone] = useState(timezone);
+  const timezoneOptions = getClockTimezoneOptions(timezone);
+
+  useEffect(() => {
+    setSelectedTimezone(timezone);
+  }, [timezone]);
+
+  return (
+    <Select
+      items={timezoneOptions}
+      onValueChange={(nextTimezone) => {
+        if (typeof nextTimezone !== "string" || nextTimezone.length === 0) {
+          return;
+        }
+
+        setSelectedTimezone(nextTimezone);
+        onTimezoneChange(item.id, nextTimezone);
+      }}
+      value={selectedTimezone}
+    >
+      <SelectTrigger
+        aria-label="Clock timezone"
+        className="h-8 min-h-8 w-[9.25rem] rounded-md border-white/10 bg-transparent px-2 text-primary-foreground text-xs hover:bg-background/30 focus-visible:ring-white/30 [&_svg]:text-primary-foreground"
+        size="sm"
+      >
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent align="center" className="grid-action w-56" side="top" sideOffset={8}>
+        <SelectGroup>
+          {timezoneOptions.map((option) => {
+            return (
+              <SelectItem key={option.value} value={option.value}>
+                <span className="font-medium">{option.label}</span>
+                {/*<span className="text-muted-foreground text-xs">{option.value}</span>*/}
+              </SelectItem>
+            );
+          })}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+  );
+}
+
+function ClockBackgroundControl({
+  item,
+  onChange,
+}: {
+  item: Extract<ProfileBentoItem, { type: "clock" }>;
+  onChange: (item: ProfileBentoItem) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const content = { ...normalizeClockWidgetConfig(item.content), showSeconds: true };
+  const selectedBackgroundColorOption = getBackgroundColorOption(content.style.backgroundColor);
+
+  return (
+    <Popover
+      open={isOpen}
+      onOpenChange={(nextOpen) => {
+        setIsOpen(nextOpen);
+      }}
+    >
+      <PopoverTrigger
+        render={
+          <Button
+            aria-label="Clock background color"
+            aria-expanded={isOpen}
+            className="size-8 rounded-sm border-0 bg-transparent p-1 text-primary-foreground shadow-none hover:bg-background/30 focus-visible:outline-none focus-visible:ring-0"
+            size="icon"
+            type="button"
+            variant="ghost"
+          >
+            <span
+              aria-hidden
+              className="size-full rounded-full border border-white/20"
+              style={{ backgroundColor: selectedBackgroundColorOption.value }}
+            />
+          </Button>
+        }
+      />
+      <PopoverPanel
+        align="center"
+        className="flex w-auto flex-col gap-2 overflow-hidden rounded-lg border-0 bg-foreground p-1 shadow-float"
+        side="top"
+        sideOffset={8}
+      >
+        <RadioGroup
+          aria-label="Clock background color options"
+          className="grid grid-cols-8 gap-1 p-1 pt-1.5"
+          onValueChange={(nextValue) => {
+            const nextBackgroundColorOption = backgroundColorOptions.find(
+              (option) => option.id === nextValue
+            );
+
+            if (!nextBackgroundColorOption) {
+              return;
+            }
+
+            onChange({
+              ...item,
+              content: {
+                ...content,
+                style: {
+                  ...content.style,
+                  backgroundColor: nextBackgroundColorOption.value,
+                },
+              },
+            });
+          }}
+          value={selectedBackgroundColorOption.id}
+        >
+          {backgroundColorOptions.map((option) => {
+            return (
+              <RadioGroupItem
+                aria-label={option.label}
+                className={`size-7 shrink-0 cursor-pointer rounded-full border border-white/20 shadow-none transition-[transform,opacity] focus-visible:ring-2 focus-visible:ring-ring/50 [&_[data-slot=radio-group-indicator]]:hidden data-checked:ring-2 data-checked:ring-white/90 ${option.className} ${option.checkedClassName}`}
+                key={option.id}
+                value={option.id}
+              />
+            );
+          })}
+        </RadioGroup>
+      </PopoverPanel>
+    </Popover>
+  );
+}
 
 const getMetadataErrorMessage = (error: ApiError) => {
   if (typeof error.body !== "string") {
@@ -924,6 +1112,24 @@ export function ProfileBentoInteractiveGrid({
       currentItems.map((item) => (item.id === nextItem.id ? nextItem : item))
     );
   }, []);
+  const updateClockTimezone = useCallback((id: string, timezone: string) => {
+    setBento((currentItems) =>
+      currentItems.map((item) => {
+        if (item.id !== id || item.type !== "clock") {
+          return item;
+        }
+
+        return {
+          ...item,
+          content: {
+            ...normalizeClockWidgetConfig(item.content),
+            showSeconds: true,
+            timezone,
+          },
+        };
+      })
+    );
+  }, []);
   const updateTextSurface = useCallback((id: string, nextStyle: ProfileTextSurfaceStyle) => {
     setBento((currentItems) =>
       currentItems.map((item) =>
@@ -1454,7 +1660,12 @@ export function ProfileBentoInteractiveGrid({
               renderTrailingResizeControl={(gridItem) => {
                 const item = bentoById.get(gridItem.id);
 
-                return item?.type === "media" ? (
+                return item?.type === "clock" ? (
+                  <>
+                    <ClockTimezoneControl item={item} onTimezoneChange={updateClockTimezone} />
+                    <ClockBackgroundControl item={item} onChange={updateItem} />
+                  </>
+                ) : item?.type === "media" ? (
                   <MediaLinkControl item={item} onChange={updateItem} />
                 ) : item?.type === "map" ? (
                   <Button

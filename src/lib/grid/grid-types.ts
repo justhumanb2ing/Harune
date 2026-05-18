@@ -16,6 +16,7 @@ export type GridItem = {
   description: string;
   itemType?: string;
   theme?: GridItemTheme;
+  clockBackgroundColor?: string;
   textSurfaceStyle?: ProfileTextSurfaceStyle;
 };
 

@@ -84,6 +84,22 @@ Text item은 content만이 아니라 surface style도 함께 저장하고, edito
 - style 값이 비어 있거나 옛 데이터로 누락되면 `#ffffff`, `start`, `start`를 기본값으로 복원한다.
 - readonly/public/landing surface는 editor와 같은 style 해석을 써야 하며, 다른 surface에서만 보이는 별도 폴백 규칙을 만들지 않는다.
 
+### Clock Widget
+
+Clock widget은 사용자가 추가 직후 바로 “시간 카드”로 인식할 수 있어야 하고, background color 변경과 size 조절이 다른 카드와 충돌하지 않아야 한다.
+
+- widget dialog의 `Clock` 항목을 누르면 clock bento가 grid에 즉시 추가되어야 한다.
+- clock bento는 초까지 보이도록 `showSeconds`를 기본 활성화하고, 날짜는 좌측 하단, timezone 문자열은 우측 하단에 `justify-between`으로 배치한다.
+- clock bento의 날짜는 `May 18, 2026`처럼 영문 long month, day, year 순서로 표시한다.
+- clock bento는 저장된 `showSeconds`가 누락되었거나 false인 옛 데이터도 초 표시를 기본값으로 복원해 실제 전자시계처럼 매초 갱신되어야 한다.
+- clock bento의 시간 텍스트는 초까지 보이는 `HH:mm:ss` 길이를 compact width에서도 잘리지 않게 유지해야 한다.
+- clock bento의 resize option은 3번째 preset인 `2x2`와 5번째 preset인 `2x4`만 보여야 하며, 추가 직후 기본 크기는 `2x2`여야 한다.
+- clock bento의 background color는 editor surface에서 palette로 바꿀 수 있어야 하고, `content.style.backgroundColor` 저장 payload에도 그대로 반영되어야 한다. `bg-white`일 때는 text item과 동일하게 `surface-bevel`을 적용하지 않는다.
+- clock bento의 timezone은 owner editor resize control에 주입된 `Select`로 바꿀 수 있어야 하고, 선택값은 저장 payload의 `content.timezone`에 반영되어야 한다. timezone 선택 후에는 select popup이 닫혀야 한다.
+- clock bento의 timezone select popup에서 item을 눌러도 grid card의 drag intent나 press scale 상태가 켜지면 안 되며, hover 시 resize/background controls가 그대로 다시 보여야 한다.
+- clock bento의 기본 timezone은 추가 당시의 로컬 timezone을 따라야 하며, 저장 후에는 persisted timezone을 우선한다.
+- clock bento의 public/edit surface는 같은 layout와 typography contract를 공유해야 한다.
+
 ### Toolbar Primary Action
 
 Owner editor의 하단 primary button은 현재 상태를 바로 드러내야 한다.

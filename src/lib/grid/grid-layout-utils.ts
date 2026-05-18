@@ -2,6 +2,8 @@ import type { LayoutItem } from "react-grid-layout";
 import { COLS, RESIZE_OPTIONS, THIN_PLACEHOLDER_ITEM_ID } from "@/lib/grid/grid-config";
 import type { GridBreakpoint, GridItem, GridLayouts, ResizeOptionId } from "@/lib/grid/grid-types";
 
+const CLOCK_RESIZE_OPTION_IDS = new Set<ResizeOptionId>(["2x2", "2x4"]);
+
 export function snapCardHeight(height: number) {
   if (height <= 1) {
     return 1;
@@ -12,7 +14,12 @@ export function snapCardHeight(height: number) {
 
 type CreateLayoutItemOptions = {
   h?: number;
+  isResizable?: boolean;
   itemType?: string;
+  maxH?: number;
+  maxW?: number;
+  minH?: number;
+  minW?: number;
   w?: number;
 };
 
@@ -101,6 +108,17 @@ export function normalizeLayoutItem(
     };
   }
 
+  if (itemType === "clock") {
+    return {
+      ...item,
+      minH: 1,
+      maxH: 4,
+      minW: 1,
+      maxW: COLS[breakpoint],
+      isResizable: true,
+    };
+  }
+
   return {
     ...item,
     h: snapCardHeight(item.h),
@@ -151,6 +169,10 @@ export function getResizeOptionsForItem(item: GridItem) {
     return [];
   }
 
+  if (item.itemType === "clock") {
+    return RESIZE_OPTIONS.filter((option) => CLOCK_RESIZE_OPTION_IDS.has(option.id));
+  }
+
   return RESIZE_OPTIONS.filter(
     (option) => !item.itemType || !option.hiddenForItemTypes?.includes(item.itemType)
   );
@@ -195,11 +217,11 @@ export function createLayoutItem(
       y: nextPosition.y,
       w,
       h,
-      minW: w,
-      maxW: cols,
-      minH: 1,
-      maxH: 4,
-      isResizable: true,
+      minW: options.minW ?? w,
+      maxW: options.maxW ?? cols,
+      minH: options.minH ?? 1,
+      maxH: options.maxH ?? 4,
+      isResizable: options.isResizable ?? true,
     },
     breakpoint,
     itemType

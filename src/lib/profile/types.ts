@@ -1,4 +1,5 @@
 import type { NormalizedMetadata } from "@/lib/metadata/url-metadata";
+import type { ClockWidgetConfig } from "@/lib/profile/clock";
 export const MAX_SOCIAL_LINKS = 8;
 
 export type SocialPlatform =
@@ -31,7 +32,7 @@ export type ProfilePageData = {
   page: ProfilePage;
 };
 
-export type ProfileBentoType = "link" | "text" | "section" | "media" | "map";
+export type ProfileBentoType = "link" | "text" | "section" | "media" | "map" | "clock";
 export type ProfileMediaType = "image" | "video";
 export type ProfileTextAlign = "start" | "center" | "end";
 export type ProfileVerticalAlign = "start" | "center" | "end";
@@ -117,12 +118,20 @@ export type ProfileMapBento = {
   };
 };
 
+export type ProfileClockBento = {
+  id: string;
+  type: "clock";
+  layout: ProfileBentoLayouts;
+  content: ClockWidgetConfig;
+};
+
 export type ProfileBentoItem =
   | ProfileLinkBento
   | ProfileTextBento
   | ProfileSectionBento
   | ProfileMediaBento
-  | ProfileMapBento;
+  | ProfileMapBento
+  | ProfileClockBento;
 
 export type ProfileBentoApiItem = Omit<ProfileBentoItem, "layout"> & {
   position: ProfileBentoLayouts;

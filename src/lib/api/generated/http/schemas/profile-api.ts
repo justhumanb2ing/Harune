@@ -375,6 +375,33 @@ export type GetProfileByHandle200BentoItem =
     }
   | {
       id: string;
+      type: "clock";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        timezone: string;
+        showDate: boolean;
+        showSeconds: boolean;
+        style: {
+          /** Background color applied to the bento surface. */
+          backgroundColor: string;
+        };
+      };
+    }
+  | {
+      id: string;
       type: "map";
       layout: {
         desktop: {
@@ -634,6 +661,33 @@ export type UpdateProfilePageBodyBentoItem =
     }
   | {
       id: string;
+      type: "clock";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        timezone?: string;
+        showDate?: boolean;
+        showSeconds?: boolean;
+        style?: {
+          /** Background color applied to the bento surface. */
+          backgroundColor?: string;
+        };
+      };
+    }
+  | {
+      id: string;
       type: "map";
       layout: {
         desktop: {
@@ -793,6 +847,33 @@ export type UpdateProfilePage200BentoItem =
         href: string | null;
         alt: string;
         caption: string;
+      };
+    }
+  | {
+      id: string;
+      type: "clock";
+      layout: {
+        desktop: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+        compact: {
+          x: number;
+          y: number;
+          w: number;
+          h: number;
+        };
+      };
+      content: {
+        timezone: string;
+        showDate: boolean;
+        showSeconds: boolean;
+        style: {
+          /** Background color applied to the bento surface. */
+          backgroundColor: string;
+        };
       };
     }
   | {

@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { getBackgroundColorOption } from "@/components/grid/grid-text-surface";
 import { useGridTextSurface } from "@/components/grid/grid-text-surface-context";
 import {
   Map as BentoMap,
@@ -30,6 +31,7 @@ import {
   isYoutubeProviderMetadata,
   type NormalizedMetadata,
 } from "@/lib/metadata/url-metadata";
+import { formatClockDate, formatClockTime, normalizeClockWidgetConfig } from "@/lib/profile/clock";
 import type { ProfileBentoItem } from "@/lib/profile/types";
 import { cn } from "@/lib/utils";
 
@@ -110,6 +112,10 @@ export const ProfileBentoEditableContentCard = memo(function ProfileBentoEditabl
     );
   }
 
+  if (item.type === "clock") {
+    return <ClockBento activeBreakpoint={activeBreakpoint} item={item} />;
+  }
+
   return <ProfileBentoEditableGridCard item={item} />;
 }, areProfileBentoEditableContentCardPropsEqual);
 
@@ -145,6 +151,89 @@ export function getProfileBentoLinkSize(w: number, h: number): ProfileBentoLinkS
   }
 
   return "1x2";
+}
+
+function useClockNow() {
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setNow(new Date());
+    }, 1000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  return now;
+}
+
+function getClockTypographyClassName(w: number, h: number) {
+  if (w >= 4 || h >= 4) {
+    return "text-[clamp(2rem,4vw,3.6rem)]";
+  }
+
+  if (w >= 3 || h >= 3) {
+    return "text-[clamp(1.75rem,3.4vw,2.8rem)]";
+  }
+
+  if (w === 1) {
+    return "text-[clamp(1rem,2.4vw,1.3rem)]";
+  }
+
+  return "text-[clamp(1.35rem,2.8vw,2rem)]";
+}
+
+function ClockBento({
+  item,
+  activeBreakpoint,
+}: {
+  item: Extract<ProfileBentoItem, { type: "clock" }>;
+  activeBreakpoint: GridBreakpoint;
+}) {
+  const now = useClockNow();
+  const layout = item.layout[activeBreakpoint];
+  const content = { ...normalizeClockWidgetConfig(item.content), showSeconds: true };
+  const backgroundColor = content.style.backgroundColor;
+  const backgroundColorOption = getBackgroundColorOption(backgroundColor);
+  const timezone = content.timezone ?? content.timeZone ?? "";
+  const dateLabel = formatClockDate(now, content);
+
+  return (
+    <article
+      className="flex size-full min-h-0 flex-col overflow-hidden rounded-[1.5rem] ring-1 ring-border p-4"
+      style={{ backgroundColor }}
+    >
+      <div
+        className={cn(
+          "flex min-h-0 flex-1 flex-col gap-2 items-center justify-center text-center",
+          backgroundColorOption.foregroundClassName
+        )}
+      >
+        <time
+          className={cn(
+            "max-w-full whitespace-nowrap text-5xl! font-extrabold leading-[1.05] tracking-tight tabular-nums",
+            getClockTypographyClassName(layout.w, layout.h)
+          )}
+          dateTime={now.toISOString()}
+        >
+          {formatClockTime(now, content)}
+        </time>
+        <span className="text-xs min-w-0 shrink truncate text-right">{timezone}</span>
+      </div>
+      <div
+        className={cn(
+          "flex min-h-0 w-full items-end justify-between gap-3 text-xs font-medium leading-none",
+          backgroundColorOption.foregroundClassName
+        )}
+      >
+        {/*<time className="min-w-0 truncate" dateTime={now.toISOString()}>
+          {dateLabel}
+        </time>*/}
+      </div>
+    </article>
+  );
 }
 
 function LinkFavicon({
@@ -1389,6 +1478,10 @@ function ProfileBentoGridCardContent({
 
   if (item.type === "map") {
     return <ReadonlyMapBento item={item} preventNavigation={preventNavigation} />;
+  }
+
+  if (item.type === "clock") {
+    return <ClockBento activeBreakpoint={activeBreakpoint} item={item} />;
   }
 
   return (

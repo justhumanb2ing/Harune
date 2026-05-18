@@ -87,9 +87,15 @@ function ProfileBentoGridToolbarWidgetCard({ item }: { item: ProfileBentoGridToo
 
 export function ProfileBentoGridToolbarWidget({
   items = defaultToolbarWidgetItems,
+  onClockSelect,
 }: {
   items?: readonly ProfileBentoGridToolbarWidgetItem[];
+  onClockSelect?: () => void;
 }) {
+  const nextItems = items.map((item) =>
+    item.id === "clock" && onClockSelect ? { ...item, onSelect: onClockSelect } : item
+  );
+
   return (
     <Dialog>
       <Tooltip>
@@ -141,7 +147,7 @@ export function ProfileBentoGridToolbarWidget({
         </div>
         <section className="min-h-0 flex-1 overflow-y-auto pr-1">
           <div className="grid grid-cols-2 gap-4">
-            {items.map((item) => (
+            {nextItems.map((item) => (
               <ProfileBentoGridToolbarWidgetCard key={item.id} item={item} />
             ))}
           </div>

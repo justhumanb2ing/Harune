@@ -15,11 +15,32 @@ describe("profile-bento-grid-model", () => {
     expect(createAutoBentoItem("section", currentItems).id.startsWith("preview:")).toBe(false);
     expect(createAutoBentoItem("map", currentItems).id.startsWith("preview:")).toBe(false);
     expect(createAutoBentoItem("media", currentItems).id.startsWith("preview:")).toBe(false);
+    expect(createAutoBentoItem("clock", currentItems).id.startsWith("preview:")).toBe(false);
   });
 
   test("creates a preview upload id separately from the bento id", () => {
     const draftId = createAutoBentoItem("media", []).id;
 
     expect(createPreviewDraftBentoId(draftId)).toBe(`preview:${draftId}`);
+  });
+
+  test("creates clock items with the third resize preset by default", () => {
+    const clockItem = createAutoBentoItem("clock", []);
+
+    expect(clockItem.type).toBe("clock");
+    if (clockItem.type !== "clock") {
+      throw new Error("Expected clock item");
+    }
+
+    expect({ w: clockItem.layout.desktop.w, h: clockItem.layout.desktop.h }).toEqual({
+      w: 2,
+      h: 2,
+    });
+    expect({ w: clockItem.layout.compact.w, h: clockItem.layout.compact.h }).toEqual({
+      w: 2,
+      h: 2,
+    });
+    expect(clockItem.content.showSeconds).toBe(true);
+    expect(clockItem.content.style.backgroundColor).toBe("#ffffff");
   });
 });

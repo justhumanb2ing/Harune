@@ -65,14 +65,25 @@ export function GridResizeControls({
   const [isBackgroundPaletteOpen, setIsBackgroundPaletteOpen] = useState(false);
   const textSurfaceStyle = normalizeGridTextSurfaceStyle(selectedTextSurfaceStyle);
   const selectedBackgroundColorOption = getBackgroundColorOption(textSurfaceStyle.backgroundColor);
+  const isExpandedResizeGroup = options.length > 5;
+  const resizeButtonClassName =
+    "size-8 rounded-md text-primary-foreground hover:bg-primary-foreground data-[state=on]:bg-primary-foreground data-[state=on]:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary";
+  const selectedResizeOption =
+    options.find((option) => option.id === selectedOptionId) ?? options[0];
+  const resolvedSelectedOptionId = selectedResizeOption?.id ?? "1x2";
 
   return (
-    <div className="grid-action absolute -bottom-1.5 left-1/2 z-40 flex -translate-x-1/2 translate-y-1/2 flex-nowrap items-center justify-center gap-1 rounded-lg bg-foreground/95 p-1 opacity-0 shadow-float backdrop-blur-sm transition-opacity group-hover/item:opacity-100 group-has-[button[aria-expanded=true]]/item:opacity-100 focus-within:opacity-100">
+    <div
+      className={cn(
+        "grid-action absolute -bottom-1.5 left-1/2 z-40 flex -translate-x-1/2 translate-y-1/2 items-center justify-center gap-1 rounded-lg bg-foreground/95 p-1 opacity-0 shadow-float backdrop-blur-sm transition-opacity group-hover/item:opacity-100 group-has-[button[aria-expanded=true]]/item:opacity-100 focus-within:opacity-100",
+        isExpandedResizeGroup ? "flex-wrap max-w-[17rem]" : "flex-nowrap"
+      )}
+    >
       <ToggleGroup
         aria-label={`Resize ${item.label}`}
-        className="flex-nowrap justify-center"
+        className={cn("justify-center", isExpandedResizeGroup ? "flex-wrap" : "flex-nowrap")}
         spacing={1}
-        value={[selectedOptionId ?? options[0]?.id ?? "1x2"]}
+        value={[resolvedSelectedOptionId]}
         variant="default"
       >
         {options.map((option) => {
@@ -81,7 +92,7 @@ export function GridResizeControls({
           return (
             <ToggleGroupItem
               aria-label={`Resize ${item.label} to ${option.id}`}
-              className="size-8 rounded-md text-primary-foreground hover:bg-primary-foreground data-[state=on]:bg-primary-foreground data-[state=on]:text-primary aria-pressed:bg-primary-foreground aria-pressed:text-primary"
+              className={resizeButtonClassName}
               key={option.id}
               onClick={() => {
                 onResize(item.id, option);

@@ -113,7 +113,7 @@ export const getUpdateProfilePageUrl = () => {
 };
 
 /**
- * Partially updates the authenticated user's profile page. The server trims text fields, allows null to clear fields, treats empty `bio`, `role`, and `location` strings as null, validates image/backgroundImage as absolute http or https URLs when provided, and can also accept a full `bento` snapshot in the same request so profile fields and bento graph commit together with no-store headers on success. Text bentos resolve style defaults when `content.style` is omitted, using backgroundColor `#ffffff`, textAlign `start`, and verticalAlign `start`. When the authenticated user does not yet have a profile page, the same endpoint accepts the onboarding create payload with `handle` and `name` and creates the page before returning the committed profile snapshot.
+ * Partially updates the authenticated user's profile page. The server trims text fields, allows null to clear fields, treats empty `bio`, `role`, and `location` strings as null, validates image/backgroundImage as absolute http or https URLs when provided, and can also accept a full `bento` snapshot in the same request so profile fields and bento graph commit together with no-store headers on success. Text bentos resolve style defaults when `content.style` is omitted, using backgroundColor `#ffffff`, textAlign `start`, and verticalAlign `start`. Clock bentos resolve `timezone`, `showDate`, `showSeconds`, and `style.backgroundColor` when omitted, defaulting timezone to `Asia/Seoul`, both booleans to `true`, and backgroundColor to `#ffffff`. When the authenticated user does not yet have a profile page, the same endpoint accepts the onboarding create payload with `handle` and `name` and creates the page before returning the committed profile snapshot.
  * @summary Update my profile page
  */
 export const updateProfilePage = async (
@@ -1130,7 +1130,7 @@ export const getGetProfileByHandleUrl = (handle: string) => {
 };
 
 /**
- * Returns a profile page and its bento blocks for the provided handle. This endpoint is read-only and does not require authentication. Text bentos always resolve a style object, defaulting backgroundColor to `#ffffff`, textAlign to `start`, and verticalAlign to `start` when the stored row omits style fields. If a session is present, the `viewer` object reflects whether the current user can edit the page.
+ * Returns a profile page and its bento blocks for the provided handle. This endpoint is read-only and does not require authentication. Text bentos always resolve a style object, defaulting backgroundColor to `#ffffff`, textAlign to `start`, and verticalAlign to `start` when the stored row omits style fields. Clock bentos always resolve `timezone`, `showDate`, `showSeconds`, and `style.backgroundColor` from the stored row, defaulting timezone to `Asia/Seoul`, both booleans to `true`, and backgroundColor to `#ffffff` when the stored row omits those fields. If a session is present, the `viewer` object reflects whether the current user can edit the page.
  * @summary Get a profile by handle
  */
 export const getProfileByHandle = async (

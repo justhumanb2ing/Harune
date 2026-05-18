@@ -3,6 +3,7 @@ import { normalizeGridTextSurfaceStyle } from "@/components/grid/grid-text-surfa
 import { createLayoutItem, normalizeLayouts } from "@/lib/grid/grid-layout-utils";
 import type { GridBreakpoint, GridItem, GridLayouts } from "@/lib/grid/grid-types";
 import { resolveLinkProviderTheme } from "@/lib/metadata/link-provider-theme";
+import { getDefaultClockWidgetConfig, normalizeClockWidgetConfig } from "@/lib/profile/clock";
 import type { ProfileBentoItem, ProfileBentoLayout, ProfileBentoType } from "@/lib/profile/types";
 
 export type CreatableBentoType = ProfileBentoType;
@@ -16,6 +17,7 @@ export const creatableBentoTypes = [
 ] as const satisfies readonly CreatableBentoType[];
 
 export const bentoTypeLabels = {
+  clock: "Clock",
   link: "Link",
   map: "Map",
   media: "Image & Video",
@@ -58,20 +60,26 @@ export const toBentoGridLayouts = (bento: ProfileBentoItem[]): GridLayouts =>
 export const toBentoGridItem = (item: ProfileBentoItem): GridItem => ({
   id: item.id,
   itemType: item.type,
+  clockBackgroundColor:
+    item.type === "clock"
+      ? normalizeClockWidgetConfig(item.content).style.backgroundColor
+      : undefined,
   theme:
     item.type === "link" ? (resolveLinkProviderTheme(item.content.url) ?? undefined) : undefined,
   textSurfaceStyle:
     item.type === "text" ? normalizeGridTextSurfaceStyle(item.content.style) : undefined,
   label:
-    item.type === "text"
-      ? "Text"
-      : item.type === "map"
-        ? item.content.caption || "Map"
-        : item.type === "media"
-          ? item.content.caption || "Media"
-          : item.type === "section"
-            ? item.content.title
-            : item.content.title,
+    item.type === "clock"
+      ? "Clock"
+      : item.type === "text"
+        ? "Text"
+        : item.type === "map"
+          ? item.content.caption || "Map"
+          : item.type === "media"
+            ? item.content.caption || "Media"
+            : item.type === "section"
+              ? item.content.title
+              : item.content.title,
   description: item.type,
 });
 
@@ -85,6 +93,13 @@ const getLinkDomain = (url: string) => {
 
 export const normalizeProfileBentoItems = (items: ProfileBentoItem[]): ProfileBentoItem[] =>
   items.map((item) => {
+    if (item.type === "clock") {
+      return {
+        ...item,
+        content: normalizeClockWidgetConfig(item.content),
+      };
+    }
+
     if (item.type !== "link") {
       if (item.type !== "text") {
         return item;
@@ -135,22 +150,47 @@ export const mergeLayoutsIntoBento = (items: ProfileBentoItem[], layouts: GridLa
 export function createAutoBentoItem(type: CreatableBentoType, currentItems: ProfileBentoItem[]) {
   const id = crypto.randomUUID();
   const count = currentItems.filter((item) => item.type === type).length + 1;
-  const desktopLayout = createLayoutItem(
-    id,
-    "desktop",
-    toBentoLayoutItems(currentItems, "desktop"),
-    { itemType: type }
-  );
-  const compactLayout = createLayoutItem(
-    id,
-    "compact",
-    toBentoLayoutItems(currentItems, "compact"),
-    { itemType: type }
-  );
+  const desktopLayout =
+    type === "clock"
+      ? createLayoutItem(id, "desktop", toBentoLayoutItems(currentItems, "desktop"), {
+          h: 2,
+          itemType: type,
+          minH: 1,
+          minW: 1,
+          w: 2,
+        })
+      : createLayoutItem(id, "desktop", toBentoLayoutItems(currentItems, "desktop"), {
+          itemType: type,
+        });
+  const compactLayout =
+    type === "clock"
+      ? createLayoutItem(id, "compact", toBentoLayoutItems(currentItems, "compact"), {
+          h: 2,
+          itemType: type,
+          minH: 1,
+          minW: 1,
+          w: 2,
+        })
+      : createLayoutItem(id, "compact", toBentoLayoutItems(currentItems, "compact"), {
+          itemType: type,
+        });
   const baseLayout = {
     desktop: toProfileBentoLayout(desktopLayout, desktopLayout.w, desktopLayout.h),
     compact: toProfileBentoLayout(compactLayout, compactLayout.w, compactLayout.h),
   };
+
+  if (type === "clock") {
+    const defaultConfig = getDefaultClockWidgetConfig();
+
+    return {
+      id,
+      type,
+      layout: baseLayout,
+      content: {
+        ...defaultConfig,
+      },
+    } satisfies ProfileBentoItem;
+  }
 
   if (type === "link") {
     return {

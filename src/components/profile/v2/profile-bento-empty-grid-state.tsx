@@ -11,6 +11,7 @@ import type { CreatableBentoType } from "./profile-bento-grid-model";
 
 const toolbarAssetBaseUrl = "https://cdn.harune.me/public/assets";
 const toolbarIconSrcByType: Record<CreatableBentoType, string> = {
+  clock: `${toolbarAssetBaseUrl}/bento-asset/bento-clock.png`,
   link: `${toolbarAssetBaseUrl}/toolbar-link.png`,
   text: `${toolbarAssetBaseUrl}/toolbar-text.png`,
   map: `${toolbarAssetBaseUrl}/toolbar-map2.png`,
@@ -19,6 +20,7 @@ const toolbarIconSrcByType: Record<CreatableBentoType, string> = {
 };
 
 const suggestionLabelByType: Record<CreatableBentoType, string> = {
+  clock: "Add Clock",
   link: "Add Link",
   map: "Add Map",
   media: "Add Media",
@@ -42,6 +44,7 @@ export const getProfileBentoSuggestionGridItems = (hiddenTypes?: ReadonlySet<Cre
     })) satisfies GridItem[];
 
 const suggestionTypeSizes = {
+  clock: { w: 2, h: 2 },
   link: { w: 2, h: 2 },
   text: { w: 1, h: 2 },
   media: { w: 1, h: 4 },

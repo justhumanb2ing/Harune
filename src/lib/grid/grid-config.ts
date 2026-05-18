@@ -39,6 +39,7 @@ export function getGridRowHeight(width: number, breakpoint: GridBreakpoint) {
 }
 
 export const BENTO_GRID_SIZE_CONSTRAINTS = {
+  clock: { minW: 1, maxW: 4, minH: 1, maxH: 4 },
   link: { minW: 1, maxW: 4, minH: 1, maxH: 4 },
   text: { minW: 1, maxW: 4, minH: 1, maxH: 4 },
   section: { minW: 4, maxW: 4, minH: 2, maxH: 2 },

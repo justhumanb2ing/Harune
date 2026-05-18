@@ -142,6 +142,10 @@ export function GridCard({
   const textSurfaceBackgroundColorOption = textSurfaceStyle
     ? getBackgroundColorOption(textSurfaceStyle.backgroundColor)
     : null;
+  const clockBackgroundColorOption =
+    item.itemType === "clock"
+      ? getBackgroundColorOption(item.clockBackgroundColor ?? "#ffffff")
+      : null;
   const textSurfaceClassNames = textSurfaceStyle
     ? getGridTextSurfaceClassNames(textSurfaceStyle)
     : null;
@@ -150,12 +154,14 @@ export function GridCard({
   const shouldShowSectionShadow =
     isSectionItem && !readOnly && (isSectionPointerActive || isSectionFocusActive || isLiftActive);
   const shadowClassName = !isSectionItem || shouldShowSectionShadow ? "shadow-xs" : "shadow-none";
-  const isFullBleedItem = item.itemType === "media" || item.itemType === "map";
+  const isFullBleedItem =
+    item.itemType === "media" || item.itemType === "map" || item.itemType === "clock";
   const shouldRemovePadding = isFullBleedItem || item.itemType === "text";
   const paddingClassName = shouldRemovePadding ? "p-0" : isVisuallyThinItem ? "p-2" : "p-4";
   const radiusClassName = isVisuallyThinItem ? "rounded-2xl" : "rounded-[1.5rem]";
   const bevelClassName =
-    isFullBleedItem ||
+    (isFullBleedItem && item.itemType !== "clock") ||
+    (item.itemType === "clock" && clockBackgroundColorOption?.id !== "white") ||
     (item.itemType === "text" && textSurfaceBackgroundColorOption?.id !== "white")
       ? "surface-bevel"
       : "";

@@ -146,12 +146,27 @@ export const profileMapBentoSyncSchema = profileBentoBaseSchema.extend({
   }),
 });
 
+export const profileClockBentoSyncSchema = profileBentoBaseSchema.extend({
+  type: z.literal("clock"),
+  content: z.object({
+    showDate: z.boolean().optional(),
+    showSeconds: z.boolean().optional(),
+    style: z
+      .object({
+        backgroundColor: z.string().trim().min(1).max(64).optional(),
+      })
+      .optional(),
+    timezone: z.string().trim().min(1).max(128).optional(),
+  }),
+});
+
 export const profileBentoSyncItemSchema = z.discriminatedUnion("type", [
   profileLinkBentoSyncSchema,
   profileTextBentoSyncSchema,
   profileSectionBentoSyncSchema,
   profileMediaBentoSyncSchema,
   profileMapBentoSyncSchema,
+  profileClockBentoSyncSchema,
 ]);
 
 export const profileBentoSyncSchema = z

@@ -8,9 +8,13 @@
 import * as zod from "zod";
 
 /**
- * Partially updates the authenticated user's profile page. The server trims text fields, allows null to clear fields, treats empty `bio`, `role`, and `location` strings as null, validates image/backgroundImage as absolute http or https URLs when provided, and can also accept a full `bento` snapshot in the same request so profile fields and bento graph commit together with no-store headers on success. Text bentos resolve style defaults when `content.style` is omitted, using backgroundColor `#ffffff`, textAlign `start`, and verticalAlign `start`. When the authenticated user does not yet have a profile page, the same endpoint accepts the onboarding create payload with `handle` and `name` and creates the page before returning the committed profile snapshot.
+ * Partially updates the authenticated user's profile page. The server trims text fields, allows null to clear fields, treats empty `bio`, `role`, and `location` strings as null, validates image/backgroundImage as absolute http or https URLs when provided, and can also accept a full `bento` snapshot in the same request so profile fields and bento graph commit together with no-store headers on success. Text bentos resolve style defaults when `content.style` is omitted, using backgroundColor `#ffffff`, textAlign `start`, and verticalAlign `start`. Clock bentos resolve `timezone`, `showDate`, `showSeconds`, and `style.backgroundColor` when omitted, defaulting timezone to `Asia/Seoul`, both booleans to `true`, and backgroundColor to `#ffffff`. When the authenticated user does not yet have a profile page, the same endpoint accepts the onboarding create payload with `handle` and `name` and creates the page before returning the committed profile snapshot.
  * @summary Update my profile page
  */
+export const updateProfilePageBodyBentoItemFiveContentTimezoneDefault = `Asia/Seoul`;
+export const updateProfilePageBodyBentoItemFiveContentShowDateDefault = true;
+export const updateProfilePageBodyBentoItemFiveContentShowSecondsDefault = true;
+
 export const UpdateProfilePageBody = zod.object({
   handle: zod.string().optional(),
   name: zod.string().nullish(),
@@ -150,6 +154,43 @@ export const UpdateProfilePageBody = zod.object({
         }),
         zod.object({
           id: zod.string(),
+          type: zod.enum(["clock"]),
+          layout: zod.object({
+            desktop: zod.object({
+              x: zod.number(),
+              y: zod.number(),
+              w: zod.number(),
+              h: zod.number(),
+            }),
+            compact: zod.object({
+              x: zod.number(),
+              y: zod.number(),
+              w: zod.number(),
+              h: zod.number(),
+            }),
+          }),
+          content: zod.object({
+            timezone: zod
+              .string()
+              .default(updateProfilePageBodyBentoItemFiveContentTimezoneDefault),
+            showDate: zod
+              .boolean()
+              .default(updateProfilePageBodyBentoItemFiveContentShowDateDefault),
+            showSeconds: zod
+              .boolean()
+              .default(updateProfilePageBodyBentoItemFiveContentShowSecondsDefault),
+            style: zod
+              .object({
+                backgroundColor: zod
+                  .string()
+                  .optional()
+                  .describe("Background color applied to the bento surface."),
+              })
+              .optional(),
+          }),
+        }),
+        zod.object({
+          id: zod.string(),
           type: zod.enum(["map"]),
           layout: zod.object({
             desktop: zod.object({
@@ -177,6 +218,10 @@ export const UpdateProfilePageBody = zod.object({
     )
     .optional(),
 });
+
+export const updateProfilePageResponseBentoItemFiveContentTimezoneDefault = `Asia/Seoul`;
+export const updateProfilePageResponseBentoItemFiveContentShowDateDefault = true;
+export const updateProfilePageResponseBentoItemFiveContentShowSecondsDefault = true;
 
 export const UpdateProfilePageResponse = zod.object({
   page: zod.object({
@@ -307,6 +352,40 @@ export const UpdateProfilePageResponse = zod.object({
           href: zod.string().nullable(),
           alt: zod.string(),
           caption: zod.string(),
+        }),
+      }),
+      zod.object({
+        id: zod.string(),
+        type: zod.enum(["clock"]),
+        layout: zod.object({
+          desktop: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+          compact: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+        }),
+        content: zod.object({
+          timezone: zod
+            .string()
+            .default(updateProfilePageResponseBentoItemFiveContentTimezoneDefault),
+          showDate: zod
+            .boolean()
+            .default(updateProfilePageResponseBentoItemFiveContentShowDateDefault),
+          showSeconds: zod
+            .boolean()
+            .default(updateProfilePageResponseBentoItemFiveContentShowSecondsDefault),
+          style: zod.object({
+            backgroundColor: zod
+              .string()
+              .describe("Background color applied to the bento surface."),
+          }),
         }),
       }),
       zod.object({
@@ -512,7 +591,7 @@ export const ListProfilePagesResponse = zod.object({
 });
 
 /**
- * Returns a profile page and its bento blocks for the provided handle. This endpoint is read-only and does not require authentication. Text bentos always resolve a style object, defaulting backgroundColor to `#ffffff`, textAlign to `start`, and verticalAlign to `start` when the stored row omits style fields. If a session is present, the `viewer` object reflects whether the current user can edit the page.
+ * Returns a profile page and its bento blocks for the provided handle. This endpoint is read-only and does not require authentication. Text bentos always resolve a style object, defaulting backgroundColor to `#ffffff`, textAlign to `start`, and verticalAlign to `start` when the stored row omits style fields. Clock bentos always resolve `timezone`, `showDate`, `showSeconds`, and `style.backgroundColor` from the stored row, defaulting timezone to `Asia/Seoul`, both booleans to `true`, and backgroundColor to `#ffffff` when the stored row omits those fields. If a session is present, the `viewer` object reflects whether the current user can edit the page.
  * @summary Get a profile by handle
  */
 export const GetProfileByHandleParams = zod.object({
@@ -522,6 +601,10 @@ export const GetProfileByHandleParams = zod.object({
       "Profile handle from the URL path. The route forwards this value directly to the lookup layer."
     ),
 });
+
+export const getProfileByHandleResponseBentoItemFiveContentTimezoneDefault = `Asia/Seoul`;
+export const getProfileByHandleResponseBentoItemFiveContentShowDateDefault = true;
+export const getProfileByHandleResponseBentoItemFiveContentShowSecondsDefault = true;
 
 export const GetProfileByHandleResponse = zod.object({
   page: zod.object({
@@ -652,6 +735,40 @@ export const GetProfileByHandleResponse = zod.object({
           href: zod.string().nullable(),
           alt: zod.string(),
           caption: zod.string(),
+        }),
+      }),
+      zod.object({
+        id: zod.string(),
+        type: zod.enum(["clock"]),
+        layout: zod.object({
+          desktop: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+          compact: zod.object({
+            x: zod.number(),
+            y: zod.number(),
+            w: zod.number(),
+            h: zod.number(),
+          }),
+        }),
+        content: zod.object({
+          timezone: zod
+            .string()
+            .default(getProfileByHandleResponseBentoItemFiveContentTimezoneDefault),
+          showDate: zod
+            .boolean()
+            .default(getProfileByHandleResponseBentoItemFiveContentShowDateDefault),
+          showSeconds: zod
+            .boolean()
+            .default(getProfileByHandleResponseBentoItemFiveContentShowSecondsDefault),
+          style: zod.object({
+            backgroundColor: zod
+              .string()
+              .describe("Background color applied to the bento surface."),
+          }),
         }),
       }),
       zod.object({

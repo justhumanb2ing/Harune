@@ -14,6 +14,7 @@ export type ProfileBentoGridPreviewMode = "desktop" | "mobile";
 
 const toolbarAssetBaseUrl = "https://cdn.harune.me/public/assets";
 const toolbarIconSrcByType: Record<CreatableBentoType, string> = {
+  clock: `${toolbarAssetBaseUrl}/bento-asset/bento-clock.png`,
   link: `${toolbarAssetBaseUrl}/toolbar-link.png`,
   text: `${toolbarAssetBaseUrl}/toolbar-text.png`,
   map: `${toolbarAssetBaseUrl}/toolbar-map.png?v=3`,
@@ -79,7 +80,7 @@ export function ProfileBentoGridActions({
           </TooltipContent>
         </Tooltip>
       ))}
-      <ProfileBentoGridToolbarWidget />
+      <ProfileBentoGridToolbarWidget onClockSelect={() => onAddItem("clock")} />
       <div className="hidden items-center gap-2 2xl:flex">
         <Separator
           orientation="vertical"

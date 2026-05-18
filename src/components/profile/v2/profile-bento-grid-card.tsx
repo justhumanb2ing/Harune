@@ -1097,7 +1097,7 @@ function EditableMediaBento({
       <MediaPreview item={item} />
       <input
         aria-label="Media caption"
-        className="grid-caption-input grid-action absolute bottom-3 left-3 max-w-[calc(100%-4.5rem)] rounded-md bg-white px-2 py-2 font-medium text-sm text-black outline-none placeholder:text-black/45"
+        className="grid-caption-input grid-action absolute bottom-3 left-3 max-w-[calc(100%-4.5rem)] rounded-md bg-foreground/70 backdrop-blur-sm px-2 py-2 font-medium text-sm text-primary-foreground outline-none placeholder:text-white/45"
         onChange={(event) => {
           onChange({
             ...item,
@@ -1245,7 +1245,7 @@ function EditableMapBento({
       <CenterMapMarker />
       <input
         aria-label="Map caption"
-        className="grid-caption-input grid-action absolute bottom-3 left-3 max-w-[calc(100%-4.5rem)] rounded-md bg-white px-2 py-2 font-medium text-sm text-black outline-none placeholder:text-black/45"
+        className="grid-caption-input grid-action absolute bottom-3 left-3 max-w-[calc(100%-4.5rem)] rounded-md bg-foreground/70 backdrop-blur-sm px-2 py-2 font-medium text-sm text-primary-foreground outline-none placeholder:text-white/45"
         onChange={(event) => {
           onChange({
             ...item,

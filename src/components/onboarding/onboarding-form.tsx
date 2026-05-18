@@ -522,7 +522,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                                 aria-label="Role"
                                 autoComplete="off"
                                 maxLength={100}
-                                className="h-fit rounded-none border-0 p-0! text-base! focus-visible:ring-0"
+                                className="h-fit rounded-none border-0 px-0! text-base! focus-visible:ring-0"
                               />
                               <Input
                                 id="location"
@@ -532,7 +532,7 @@ export function OnboardingForm({ handle }: OnboardingFormProps) {
                                 aria-label="Location"
                                 autoComplete="off"
                                 maxLength={100}
-                                className="h-fit rounded-none border-0 p-0! text-base! focus-visible:ring-0"
+                                className="h-fit rounded-none border-0 px-0! text-base! focus-visible:ring-0"
                               />
                             </div>
                           </div>

@@ -1,6 +1,5 @@
 "use client";
 
-import { SpinnerGapIcon } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
@@ -73,7 +72,7 @@ export function AppEntryCtaButton({
         onFocus={prefetchMe}
         onPointerEnter={prefetchMe}
       >
-        {isResolving ? <SpinnerGapIcon className="size-4 animate-spin" /> : children}
+        {children}
       </button>
     </Button>
   );

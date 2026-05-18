@@ -4,6 +4,7 @@ import {
   formatClock,
   formatClockDate,
   formatClockTime,
+  getClockTimeParts,
   getDefaultClockWidgetConfig,
   normalizeClockWidgetConfig,
 } from "@/lib/profile/clock";
@@ -63,5 +64,26 @@ describe("clock", () => {
     );
 
     expect(time.includes("56")).toBe(true);
+  });
+
+  test("extracts time parts for sliding number rendering", () => {
+    const date = new Date("2026-05-18T12:34:56Z");
+
+    expect(
+      getClockTimeParts(date, {
+        format: "24h",
+        showDate: true,
+        showSeconds: true,
+        style: {
+          backgroundColor: "#ffffff",
+        },
+        timezone: "UTC",
+      })
+    ).toEqual({
+      dayPeriod: undefined,
+      hour: 12,
+      minute: 34,
+      second: 56,
+    });
   });
 });

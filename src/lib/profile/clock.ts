@@ -11,6 +11,13 @@ export type ClockWidgetConfig = {
   timeZone?: string;
 };
 
+export type ClockTimeParts = {
+  dayPeriod?: string;
+  hour: number;
+  minute: number;
+  second?: number;
+};
+
 export const DEFAULT_CLOCK_BACKGROUND_COLOR = "#ffffff";
 
 export function getDefaultClockWidgetConfig(): ClockWidgetConfig {
@@ -48,6 +55,29 @@ export function normalizeClockWidgetConfig(
 
 export function formatClock(date: Date, config: ClockWidgetConfig): string {
   return [formatClockDate(date, config), formatClockTime(date, config)].filter(Boolean).join(" ");
+}
+
+export function getClockTimeParts(date: Date, config: ClockWidgetConfig): ClockTimeParts {
+  const timezone = config.timezone ?? config.timeZone;
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    dayPeriod: config.format === "12h" ? "short" : undefined,
+    hour: "2-digit",
+    hour12: config.format === "12h",
+    minute: "2-digit",
+    second: config.showSeconds !== false ? "2-digit" : undefined,
+    timeZone: timezone,
+  });
+  const parts = formatter.formatToParts(date);
+  const getPartValue = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value;
+
+  return {
+    dayPeriod: getPartValue("dayPeriod"),
+    hour: Number.parseInt(getPartValue("hour") ?? "0", 10),
+    minute: Number.parseInt(getPartValue("minute") ?? "0", 10),
+    second:
+      config.showSeconds !== false ? Number.parseInt(getPartValue("second") ?? "0", 10) : undefined,
+  };
 }
 
 export function formatClockTime(date: Date, config: ClockWidgetConfig): string {

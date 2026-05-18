@@ -19,6 +19,7 @@ import {
   MarkerContent,
 } from "@/components/ui/map";
 import { Textarea } from "@/components/ui/textarea";
+import { SlidingNumber } from "@/components/ui/sliding-number";
 import type { GridBreakpoint, ResizeOptionId } from "@/lib/grid/grid-types";
 import {
   type LinkProviderTheme,
@@ -31,7 +32,12 @@ import {
   isYoutubeProviderMetadata,
   type NormalizedMetadata,
 } from "@/lib/metadata/url-metadata";
-import { formatClockDate, formatClockTime, normalizeClockWidgetConfig } from "@/lib/profile/clock";
+import {
+  formatClockDate,
+  formatClockTime,
+  getClockTimeParts,
+  normalizeClockWidgetConfig,
+} from "@/lib/profile/clock";
 import type { ProfileBentoItem } from "@/lib/profile/types";
 import { cn } from "@/lib/utils";
 
@@ -199,6 +205,8 @@ function ClockBento({
   const backgroundColorOption = getBackgroundColorOption(backgroundColor);
   const timezone = content.timezone ?? content.timeZone ?? "";
   const dateLabel = formatClockDate(now, content);
+  const timeParts = getClockTimeParts(now, content);
+  const clockLabel = formatClockTime(now, content);
 
   return (
     <article
@@ -207,31 +215,51 @@ function ClockBento({
     >
       <div
         className={cn(
-          "flex min-h-0 flex-1 flex-col gap-2 items-center justify-center text-center",
+          "flex min-h-0 flex-1 flex-col gap-1 items-center justify-center text-center",
           backgroundColorOption.foregroundClassName
         )}
       >
         <time
           className={cn(
-            "max-w-full whitespace-nowrap text-5xl! font-extrabold leading-[1.05] tracking-tight tabular-nums",
+            "flex max-w-full items-center justify-center gap-1 whitespace-nowrap font-extrabold",
             getClockTypographyClassName(layout.w, layout.h)
           )}
           dateTime={now.toISOString()}
+          aria-label={clockLabel}
         >
-          {formatClockTime(now, content)}
+          <div className="flex items-center gap-0.5 text-4xl!">
+            <SlidingNumber value={timeParts.hour} padStart />
+            <span aria-hidden className="-translate-y-[0.08em] text-neutral-600">
+              :
+            </span>
+            <SlidingNumber value={timeParts.minute} padStart />
+            {timeParts.second !== undefined ? (
+              <>
+                <span aria-hidden className="-translate-y-[0.08em] text-neutral-600">
+                  :
+                </span>
+                <SlidingNumber value={timeParts.second} padStart />
+              </>
+            ) : null}
+          </div>
+          {timeParts.dayPeriod ? (
+            <span className="ml-2 text-[0.33em] font-semibold uppercase tracking-[0.22em]">
+              {timeParts.dayPeriod}
+            </span>
+          ) : null}
         </time>
         <span className="text-xs min-w-0 shrink truncate text-right">{timezone}</span>
       </div>
-      <div
+      {/*<div
         className={cn(
           "flex min-h-0 w-full items-end justify-between gap-3 text-xs font-medium leading-none",
           backgroundColorOption.foregroundClassName
         )}
       >
-        {/*<time className="min-w-0 truncate" dateTime={now.toISOString()}>
+        <time className="min-w-0 truncate" dateTime={now.toISOString()}>
           {dateLabel}
-        </time>*/}
-      </div>
+        </time>
+      </div>*/}
     </article>
   );
 }

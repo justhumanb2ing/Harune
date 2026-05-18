@@ -87,6 +87,31 @@ Owner editor의 하단 primary button은 현재 상태를 바로 드러내야 �
 - 변경 사항이 있으면 `Save`를 보여주고, sync가 진행 중이면 `Saving`을 보여준다.
 - label만 바꾸지 말고 click behavior도 상태에 맞춰 함께 전환한다.
 
+### Editor Preview Toggle
+
+Owner editor의 desktop/mobile preview 토글은 선택 상태와 hover affordance가 즉시 읽혀야 한다.
+
+- preview 토글은 단일 선택 `ToggleGroup`이어야 하고, 기본 선택은 desktop이다.
+- preview 토글은 profile editor와 grid를 함께 포함한 상단 전체 레이아웃을 실제로 바꿔야 한다.
+- mobile 모드에서는 profile editor와 grid가 화면 정중앙의 compact column으로 모여야 한다.
+- mobile 모드의 compact surface는 외부 border, `shadow-float`, `rounded-[2.5rem]`를 가져야 한다.
+- compact surface는 내부 padding이 아니라 외부 margin으로 위아래 여백을 확보해야 한다.
+- compact surface는 내부 콘텐츠 폭을 실제 mobile/tablet layout과 맞춰야 하며, profile shell과 grid shell은 desktop preview frame보다 좁은 mobile density를 유지해야 한다.
+- compact surface 내부의 avatar, typography, spacing은 실제 mobile viewport에서 보이는 density를 따라야 하며, desktop viewport의 `xl` 확대 규칙을 그대로 쓰지 않아야 한다.
+- compact 모드에서는 브라우저 최상위가 아니라 compact surface 내부에만 vertical scroll이 생겨야 하고, compact surface 높이는 preview toolbar / grid actions 위에서 끝나야 한다.
+- compact 모드의 scrollbar는 보여주지 않고, 스크롤은 내부 surface에서만 동작해야 한다.
+- compact preview에서는 hover / focus overlay가 x축 overflow에 의해 잘리지 않아야 한다.
+- compact 모드에서 footer action은 viewport에 고정되어 page height를 늘리지 않아야 한다.
+- compact surface의 외형 폭은 480px까지 늘릴 수 있지만, 내부 profile avatar/text/grid density는 기존 compact density를 유지해야 한다.
+- compact 전용 scroll wrapper는 desktop surface에 섞이지 않아야 하고, desktop preview는 기존 flex-row layout을 그대로 유지해야 한다.
+- browser viewport가 desktop 이하로 줄어들면 preview state를 강제로 compact로 바꾸지 말고, 기존 responsive mobile/tablet layout만 보여야 한다.
+- editor preview mode는 grid 컴포넌트를 언마운트해서 바꾸지 않는다. desktop/compact 전환은 같은 grid state를 유지한 채 `desktop=860px`, `compact=400px` canvas width를 명시적으로 넘겨야 하며, 전환 애니메이션이나 브라우저 resize 중간 측정값으로 `rowHeight`를 다시 계산하지 않는다.
+- desktop/mobile preview toggle group은 desktop viewport에서만 보여야 한다.
+- desktop/mobile 전환은 width가 부드럽게 줄고 늘어나는 layout transition이어야 하고, 체감이 급하게 끊기지 않도록 약간 느린 duration을 유지해야 한다.
+- 선택된 토글 아이템은 검은색 배경과 흰색 아이콘으로 드러나야 한다.
+- 선택되지 않은 토글 아이템은 배경색이 없어야 하며, hover도 배경을 추가하지 않아야 한다.
+- 각 토글 아이템은 tooltip을 가져야 하고, pointer hover와 keyboard focus에서 같은 label을 보여줘야 한다.
+
 ### Profile Image Crop Surface
 
 Owner editor의 profile image crop은 dialog가 아니라 avatar 슬롯 위에 뜨는 inline surface여야 한다.
@@ -143,6 +168,8 @@ Motion은 장식이 아니라 item 위치, drag affordance, public reveal 순서
 - item 추가/진입 motion은 scroll 위치 이동과 충돌하지 않아야 한다.
 - 섹션 item이 focus-within 상태가 되어도 하단 fixed toolbar보다 위로 올라와서는 안 된다.
 - grid item은 sibling보다 앞에 보여야 할 때만 z-order를 올리고, toolbar를 덮는 수준까지는 올라가지 않게 유지한다.
+- hovered grid item은 인접 카드보다 항상 앞에 떠야 하므로, hover/focus-within 시 해당 item의 stacking order를 올려야 한다.
+- profile bento toolbar와 그 안의 `ProfileBentoGridActions`는 hover 카드보다 더 위에 있어야 하므로, grid item보다 더 높은 z-order를 유지한다.
 - drag motion을 고칠 때는 `docs/solutions/best-practices/profile-bento-v2-drag-motion-and-section-shadow-contract-2026-05-01.md`를 함께 확인한다.
 - `prefers-reduced-motion` 사용자는 과한 motion 없이 같은 정보 구조를 이해할 수 있어야 한다.
 - hover/focus/drag 상태는 pointer interception과 text selection 부작용을 실제로 확인한다.

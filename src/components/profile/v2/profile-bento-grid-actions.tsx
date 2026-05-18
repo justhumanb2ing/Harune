@@ -78,7 +78,7 @@ export function ProfileBentoGridActions({
           </TooltipContent>
         </Tooltip>
       ))}
-      <div className="hidden items-center gap-2 xl:flex">
+      <div className="hidden items-center gap-2 2xl:flex">
         <Separator
           orientation="vertical"
           className={"data-vertical:w-[3px] my-2.5 rounded-lg mx-2"}

@@ -67,6 +67,8 @@ Public readonly surface와 owner editor surface는 의도적으로 같은 profil
 - media/map 외부 링크 action의 size, position, icon weight, contrast는 editor와 readonly에서 같아야 한다.
 - media/map full-bleed editor cards는 shell shadow를 유지한 채 visible frame에 `ring-1 ring-border`를 적용해, 카드 가장자리가 평평하게 보이지 않게 한다.
 - public surface에서 삭제된 fallback text는 editor에도 무심코 되살리지 않는다.
+- mobile/tablet compact column에서는 profile shell과 bento shell이 같은 compact width contract를 공유해야 한다.
+- compact editor preview는 profile shell과 grid shell을 가운데로 다시 밀지 말고, 같은 left edge 기준으로 쌓이게 유지한다.
 
 ### Text Surface Style
 

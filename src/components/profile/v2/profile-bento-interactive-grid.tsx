@@ -501,7 +501,7 @@ export function ProfileBentoInteractiveGrid({
   const interactiveShellClassName = cn(
     "relative flex min-w-0 flex-1 flex-col gap-4 pb-28",
     isCompactCanvas
-      ? "mx-auto w-[360px] max-w-full items-center sm:w-[400px]"
+      ? "mx-auto w-[360px] max-w-full flex-none items-center sm:w-[400px]"
       : "xl:w-[860px] xl:flex-none xl:items-stretch 2xl:w-[860px]"
   );
   const gridClassName = cn(
@@ -1353,6 +1353,7 @@ export function ProfileBentoInteractiveGrid({
       </motion.header>
 
       <ProfileBentoSurfaceMotion
+        className="w-full"
         delay={0.5}
         duration={0.78}
         initialScale={0.96}
@@ -1363,8 +1364,9 @@ export function ProfileBentoInteractiveGrid({
         <div
           className={cn(
             gridClassName,
-            "relative flex min-h-0 flex-1",
-            isCompactCanvas && "mx-auto"
+            isCompactCanvas
+              ? "relative flex min-h-0 w-full flex-none"
+              : "relative flex min-h-0 flex-1"
           )}
           ref={containerRef}
           style={gridStyle}

@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 
 type ProfileBentoSurfaceMotionProps = {
   children: ReactNode;
+  className?: string;
   delay?: number;
   duration?: number;
   initialScale?: number;
@@ -16,6 +17,7 @@ type ProfileBentoSurfaceMotionProps = {
 
 export function ProfileBentoSurfaceMotion({
   children,
+  className,
   delay = 0,
   duration = 0.68,
   initialScale = 1,
@@ -27,6 +29,7 @@ export function ProfileBentoSurfaceMotion({
 
   return (
     <motion.div
+      className={className}
       initial={
         shouldReduceMotion
           ? { opacity: 0, scale: 1, y: reduceMotionY }

@@ -34,6 +34,7 @@ export function ProfileBentoReadonlyGrid({
   const bentoById = useMemo(() => new Map(bento.map((item) => [item.id, item] as const)), [bento]);
   const rowHeight = getGridRowHeight(width, activeBreakpoint);
   const gridMinHeight = getGridLayoutPixelHeight(layouts, activeBreakpoint, rowHeight, 40);
+  const isCompactCanvas = activeBreakpoint === "compact";
   const cardRotate = useMotionValue(0);
   const cardX = useMotionValue(0);
   const gridStyle = {
@@ -42,6 +43,7 @@ export function ProfileBentoReadonlyGrid({
 
   return (
     <ProfileBentoSurfaceMotion
+      className={isCompactCanvas ? "w-full" : undefined}
       delay={0.5}
       duration={0.78}
       initialScale={0.96}
@@ -50,7 +52,11 @@ export function ProfileBentoReadonlyGrid({
       reduceMotionY={8}
     >
       <div
-        className="min-w-0 flex-1 xl:w-[860px] xl:flex-none 2xl:w-[860px]"
+        className={
+          isCompactCanvas
+            ? "mx-auto w-[360px] max-w-full flex-none"
+            : "min-w-0 flex-1 xl:w-[860px] xl:flex-none 2xl:w-[860px]"
+        }
         style={{ minHeight: gridMinHeight }}
       >
         <div

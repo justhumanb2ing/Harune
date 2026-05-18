@@ -9,13 +9,15 @@ import { useProfilePageEditor } from "@/hooks/use-profile-editor";
 import { preloadCropImageSource } from "@/lib/profile/image-crop";
 import { PROFILE_IMAGE_ACCEPT } from "@/lib/profile/image-upload";
 import { ProfileAvatarImage } from "./profile-avatar-image";
-import { PROFILE_BENTO_PROFILE_SHELL_CLASS } from "./profile-bento-profile-shell";
+import { getProfileBentoProfileShellClassName } from "./profile-bento-profile-shell";
 import { ProfileImageCropSurface } from "./profile-image-crop-surface";
 
 export function ProfileBentoProfileEditor({
   initialUser,
+  compactMode = false,
 }: {
   initialUser?: Parameters<typeof useProfilePageEditor>[0];
+  compactMode?: boolean;
 }) {
   const editor = useProfilePageEditor(initialUser);
   const [isCropSurfaceOpen, setIsCropSurfaceOpen] = useState(false);
@@ -36,14 +38,24 @@ export function ProfileBentoProfileEditor({
     return null;
   }
 
+  const profileImageButtonClassName = compactMode
+    ? "relative flex size-32 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-secondary transition-all hover:bg-input disabled:cursor-not-allowed disabled:opacity-70"
+    : "relative flex size-32 xl:size-44 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-secondary transition-all hover:bg-input disabled:cursor-not-allowed disabled:opacity-70";
+  const profileNameClassName = compactMode
+    ? "min-h-8 resize-none overflow-hidden border-0 text-3xl! p-0! py-2! tracking-tighter font-bold focus-visible:ring-0 rounded-none break-all"
+    : "min-h-8 resize-none overflow-hidden border-0 text-3xl! xl:text-5xl! p-0! py-2! tracking-tighter font-bold focus-visible:ring-0 rounded-none break-all";
+  const profileBioClassName = compactMode
+    ? "min-h-8 resize-none overflow-hidden border-0 p-0! text-lg! text-neutral-800 break-all rounded-none focus-visible:ring-0"
+    : "min-h-8 resize-none overflow-hidden border-0 p-0! text-lg! text-neutral-800 xl:text-xl! break-all rounded-none focus-visible:ring-0";
+
   return (
-    <aside className={PROFILE_BENTO_PROFILE_SHELL_CLASS}>
+    <aside className={getProfileBentoProfileShellClassName(compactMode)}>
       <div className="flex flex-col gap-8 overflow-visible">
         <div className="flex px-4">
           <div className="group/profile-image relative overflow-visible">
             <button
               type="button"
-              className="relative flex size-32 xl:size-44 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-secondary transition-all hover:bg-input disabled:cursor-not-allowed disabled:opacity-70"
+              className={profileImageButtonClassName}
               onClick={() => editor.imageInputRef.current?.click()}
               disabled={editor.isSyncing || isCropSurfaceOpen}
               aria-label="Upload profile image"
@@ -128,7 +140,7 @@ export function ProfileBentoProfileEditor({
             aria-label="Name"
             autoComplete="off"
             maxLength={100}
-            className="min-h-8 resize-none overflow-hidden border-0 text-3xl! xl:text-5xl! p-0! py-2! tracking-tighter font-bold focus-visible:ring-0 rounded-none break-all"
+            className={profileNameClassName}
           />
 
           <Textarea
@@ -137,7 +149,7 @@ export function ProfileBentoProfileEditor({
             onChange={(event) => editor.setProfileField("bio", event.target.value)}
             placeholder="Your bio"
             aria-label="Bio"
-            className="min-h-8 resize-none overflow-hidden border-0 p-0! text-lg! text-neutral-800 xl:text-xl! break-all rounded-none focus-visible:ring-0"
+            className={profileBioClassName}
           />
 
           <div className="flex flex-col gap-2 text-neutral-500">

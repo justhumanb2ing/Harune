@@ -18,6 +18,7 @@ import { type LayoutItem, useContainerWidth } from "react-grid-layout";
 import { toast } from "sonner";
 import type { GridCardMotionPhase } from "@/components/grid/grid-card";
 import { ResponsiveGridCanvas } from "@/components/grid/responsive-grid-canvas";
+import type { ProfileBentoGridPreviewMode } from "@/components/profile/v2/profile-bento-grid-actions";
 import { ProfileBentoGridActions } from "@/components/profile/v2/profile-bento-grid-actions";
 import {
   getProfileBentoLinkSize,
@@ -40,7 +41,7 @@ import { getMetadata } from "@/lib/api/generated/http/metadata-api/metadata-api"
 import { uploadProfileBentoMedia } from "@/lib/api/generated/http/profile-api/profile-api";
 import type { UpdateProfilePageBodyBentoItem } from "@/lib/api/generated/http/schemas/profile-api";
 import { appConfig } from "@/lib/config";
-import { BREAKPOINTS, COLS, GRID_MARGIN, getGridRowHeight } from "@/lib/grid/grid-config";
+import { COLS, GRID_MARGIN, getGridRowHeight } from "@/lib/grid/grid-config";
 import { normalizeLayouts } from "@/lib/grid/grid-layout-utils";
 import type { GridBreakpoint, GridLayouts, ResizeOption } from "@/lib/grid/grid-types";
 import {
@@ -86,6 +87,8 @@ import { Separator } from "@/components/ui/separator";
 
 type ProfileBentoInteractiveGridProps = {
   initialBento: ProfileBentoItem[];
+  onPreviewModeChange: (mode: ProfileBentoGridPreviewMode) => void;
+  previewMode: ProfileBentoGridPreviewMode;
 };
 
 const createPayload = (items: ProfileBentoItem[], layouts: GridLayouts) => ({
@@ -117,6 +120,10 @@ const TOOLBAR_EXPAND_TRANSITION = { duration: 0.36, ease: TOOLBAR_EXPAND_EASE } 
 const LINK_INPUT_COLLAPSE_TRANSITION = {
   gridTemplateRows: { duration: 0.44, ease: TOOLBAR_EXPAND_EASE },
 } as const;
+const PREVIEW_CANVAS_WIDTH = {
+  desktop: 860,
+  compact: 400,
+} as const satisfies Record<GridBreakpoint, number>;
 
 const getMetadataErrorMessage = (error: ApiError) => {
   if (typeof error.body !== "string") {
@@ -338,7 +345,11 @@ async function prepareMediaFile(file: File) {
   });
 }
 
-export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoInteractiveGridProps) {
+export function ProfileBentoInteractiveGrid({
+  initialBento,
+  onPreviewModeChange,
+  previewMode,
+}: ProfileBentoInteractiveGridProps) {
   const profileEditor = useProfilePageEditor();
   const pathname = usePathname();
   const currentHandle = getProfileRouteHandle(pathname);
@@ -346,9 +357,6 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     initialWidth: 864,
     measureBeforeMount: true,
   });
-  const lastLayoutBreakpointRef = useRef<GridBreakpoint>(
-    width > BREAKPOINTS.desktop ? "desktop" : "compact"
-  );
   const [bento, setBento] = useState(initialBento);
   const [layouts, setLayouts] = useState<GridLayouts>(() => toBentoGridLayouts(initialBento));
   const [savedSnapshot, setSavedSnapshot] = useState(() =>
@@ -403,11 +411,13 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
     stopResize,
     updateDragPointer,
   } = useGridDragMotion();
-  const activeBreakpoint: GridBreakpoint = width > BREAKPOINTS.desktop ? "desktop" : "compact";
-  // Ignore the automatic responsive layout sync that happens when the viewport crosses a breakpoint.
-  useEffect(() => {
-    lastLayoutBreakpointRef.current = activeBreakpoint;
-  }, [activeBreakpoint]);
+  const previewBreakpoint: GridBreakpoint = previewMode === "desktop" ? "desktop" : "compact";
+  const isCompactCanvas = previewBreakpoint === "compact";
+  const targetCanvasWidth = PREVIEW_CANVAS_WIDTH[previewBreakpoint];
+  const canvasWidth =
+    width > 0 && width < targetCanvasWidth && previewBreakpoint === "compact"
+      ? width
+      : targetCanvasWidth;
   const bentoById = useMemo(() => new Map(bento.map((item) => [item.id, item] as const)), [bento]);
   const bentoTypes = useMemo(
     () => new Set(bento.map((item) => item.type as CreatableBentoType)),
@@ -477,15 +487,29 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   const isSectionDragActive =
     activeDragItemId !== null && itemTypeById.get(activeDragItemId) === "section";
   const isThinPlaceholderShapeActive = isThinPlaceholderActive || isSectionDragActive;
-  const rowHeight = getGridRowHeight(width, activeBreakpoint);
+  const rowHeight = getGridRowHeight(canvasWidth, previewBreakpoint);
   const thinItemVisibleHeight = Math.round(rowHeight * 0.9);
-  const [, verticalMargin] = GRID_MARGIN[activeBreakpoint];
-  const gridClassName = `w-[360px] max-w-full sm:w-[400px] xl:w-full [&_.react-draggable-dragging]:z-20! [&_.react-grid-item:not(.react-grid-placeholder)]:z-10 [&_.react-grid-item:focus-within]:z-20! [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none! [&_.react-grid-placeholder]:z-0! [&_.react-grid-placeholder]:bg-secondary! [&_.react-grid-placeholder]:opacity-100! [&_.react-grid-placeholder]:shadow-[inset_0_1px_6px_rgb(0_0_0_/_0.08),inset_0_-1px_1px_rgb(255_255_255_/_0.8)]! ${isThinPlaceholderShapeActive ? "[&_.react-grid-placeholder]:h-[var(--thin-placeholder-height)]! [&_.react-grid-placeholder]:translate-y-[var(--thin-placeholder-offset)]! [&_.react-grid-placeholder]:rounded-2xl!" : "[&_.react-grid-placeholder]:rounded-[1.5rem]!"}`;
+  const [, verticalMargin] = GRID_MARGIN[previewBreakpoint];
+  const interactiveShellClassName = cn(
+    "relative flex min-w-0 flex-1 flex-col gap-4 pb-28",
+    isCompactCanvas
+      ? "mx-auto w-[360px] max-w-full items-center sm:w-[400px]"
+      : "xl:w-[860px] xl:flex-none xl:items-stretch 2xl:w-[860px]"
+  );
+  const gridClassName = cn(
+    "max-w-full [&_.react-draggable-dragging]:z-40! [&_.react-grid-item:not(.react-grid-placeholder)]:z-10 [&_.react-grid-item:hover]:z-30! [&_.react-grid-item:focus-within]:z-30! [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none! [&_.react-grid-placeholder]:z-0! [&_.react-grid-placeholder]:bg-secondary! [&_.react-grid-placeholder]:opacity-100! [&_.react-grid-placeholder]:shadow-[inset_0_1px_6px_rgb(0_0_0_/_0.08),inset_0_-1px_1px_rgb(255_255_255_/_0.8)]!",
+    "w-full",
+    isThinPlaceholderShapeActive
+      ? "[&_.react-grid-placeholder]:h-[var(--thin-placeholder-height)]! [&_.react-grid-placeholder]:translate-y-[var(--thin-placeholder-offset)]! [&_.react-grid-placeholder]:rounded-2xl!"
+      : "[&_.react-grid-placeholder]:rounded-[1.5rem]!"
+  );
   const gridStyle = {
     "--thin-placeholder-height": `${thinItemVisibleHeight}px`,
     "--thin-placeholder-offset": `${rowHeight * 2 + verticalMargin - thinItemVisibleHeight}px`,
     "--thin-item-visible-height": `${thinItemVisibleHeight}px`,
   } as CSSProperties;
+
+  const handlePreviewModeChange = useCallback(onPreviewModeChange, [onPreviewModeChange]);
 
   useEffect(() => {
     if (!isDirty) {
@@ -1194,9 +1218,9 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
   };
 
   return (
-    <div className="relative flex min-w-0 flex-1 flex-col items-center gap-4 pb-28 xl:w-[860px] xl:flex-none xl:items-stretch 2xl:w-[860px]">
+    <div className={interactiveShellClassName}>
       <motion.header
-        className="fixed bottom-10 left-1/2 z-30 flex w-auto -translate-x-1/2 flex-col items-center justify-center rounded-2xl bg-background/80 p-2.5 shadow-float backdrop-blur"
+        className="fixed bottom-10 left-1/2 z-50 flex w-auto -translate-x-1/2 flex-col items-center justify-center rounded-2xl bg-background p-2.5 shadow-float backdrop-blur"
         layout
         ref={toolbarRef}
         transition={TOOLBAR_EXPAND_TRANSITION}
@@ -1294,7 +1318,9 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
           <ProfileBentoGridActions
             onAddItem={addItem}
             onRequestMediaInput={() => mediaInputRef.current?.click()}
+            onPreviewModeChange={handlePreviewModeChange}
             onToggleLinkInput={() => setIsLinkInputOpen((current) => !current)}
+            previewMode={previewMode}
           />
           <input
             accept={PROFILE_BENTO_MEDIA_ACCEPT}
@@ -1314,13 +1340,13 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
       </motion.header>
 
       <div
-        className={`${gridClassName} relative flex min-h-0 flex-1`}
+        className={cn(gridClassName, "relative flex min-h-0 flex-1", isCompactCanvas && "mx-auto")}
         ref={containerRef}
         style={gridStyle}
       >
         {mounted ? (
           <ResponsiveGridCanvas
-            activeBreakpoint={activeBreakpoint}
+            activeBreakpoint={previewBreakpoint}
             activeDragItemId={activeDragItemId}
             activeDragIntentItemId={activeDragIntentItemId}
             cardRotate={cardRotate}
@@ -1336,11 +1362,6 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
             onDragIntentStop={stopDragIntent}
             onItemMotionComplete={completeItemMotion}
             onLayoutChange={(nextLayouts) => {
-              // Viewport-only resizes can emit a layout rewrite; keep it out of dirty state.
-              if (lastLayoutBreakpointRef.current !== activeBreakpoint) {
-                return;
-              }
-
               if (activeDragItemId === null && layoutInteractionDepthRef.current === 0) {
                 return;
               }
@@ -1366,7 +1387,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
               if (suggestionItemIds.has(gridItem.id)) {
                 return (
                   <ProfileBentoSuggestionCard
-                    activeBreakpoint={activeBreakpoint}
+                    activeBreakpoint={previewBreakpoint}
                     isActive={gridItem.itemType === "link" && isLinkSuggestionPopoverOpen}
                     onAddItem={addItem}
                     onRequestLinkInput={() => {
@@ -1382,15 +1403,15 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
 
               const item = bentoById.get(gridItem.id);
               const activeLayout =
-                layouts[activeBreakpoint]?.find((layoutItem) => layoutItem.i === gridItem.id) ??
-                item?.layout[activeBreakpoint];
+                layouts[previewBreakpoint]?.find((layoutItem) => layoutItem.i === gridItem.id) ??
+                item?.layout[previewBreakpoint];
               const layoutSize = activeLayout
                 ? getProfileBentoLinkSize(activeLayout.w, activeLayout.h)
                 : undefined;
 
               return item ? (
                 <ProfileBentoEditableContentCard
-                  activeBreakpoint={activeBreakpoint}
+                  activeBreakpoint={previewBreakpoint}
                   autoFocus={focusItemId === item.id}
                   isLoading={loadingLinkItemIds.has(item.id)}
                   item={item}
@@ -1431,7 +1452,7 @@ export function ProfileBentoInteractiveGrid({ initialBento }: ProfileBentoIntera
               ) : null;
             }}
             rowHeight={rowHeight}
-            width={width}
+            width={canvasWidth}
           />
         ) : null}
         {isLinkSuggestionPopoverOpen && linkSuggestionPopoverRect ? (

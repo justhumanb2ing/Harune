@@ -1,8 +1,11 @@
 ---
 title: Changelog
-lastUpdated: "2026-05-17"
+lastUpdated: "2026-05-18"
 description: See the latest Harune product updates and user-visible improvements.
 ---
+
+## May 18, 2026
+- Added mobile and desktop preview switching for a better editing experience.
 
 ## May 17, 2026
 - Added text item styling controls.

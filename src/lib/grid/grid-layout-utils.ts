@@ -156,6 +156,26 @@ export function getResizeOptionsForItem(item: GridItem) {
   );
 }
 
+export function getGridLayoutPixelHeight(
+  layouts: GridLayouts,
+  breakpoint: GridBreakpoint,
+  rowHeight: number,
+  verticalMargin: number
+) {
+  const rows = layouts[breakpoint] ?? [];
+
+  if (rows.length === 0) {
+    return 0;
+  }
+
+  const bottomRow = rows.reduce(
+    (currentBottomRow, item) => Math.max(currentBottomRow, item.y + item.h),
+    0
+  );
+
+  return bottomRow * rowHeight + Math.max(0, bottomRow - 1) * verticalMargin;
+}
+
 export function createLayoutItem(
   id: string,
   breakpoint: GridBreakpoint,

@@ -34,7 +34,7 @@ export function ProfileBentoGridActions({
   previewMode: ProfileBentoGridPreviewMode;
 }) {
   return (
-    <div className="flex flex-wrap gap-3 items-center">
+    <div className="flex flex-wrap items-center gap-3">
       {creatableBentoTypes.map((type) => (
         <Tooltip key={type}>
           <TooltipTrigger

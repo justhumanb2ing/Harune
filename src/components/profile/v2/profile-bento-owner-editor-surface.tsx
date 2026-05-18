@@ -9,6 +9,7 @@ import type { ProfileBentoGridPreviewMode } from "@/components/profile/v2/profil
 import { ProfileBentoInteractiveGrid } from "@/components/profile/v2/profile-bento-interactive-grid";
 import { ProfileBentoOwnerSettingPopover } from "@/components/profile/v2/profile-bento-owner-setting-popover";
 import { ProfileBentoProfileEditor } from "@/components/profile/v2/profile-bento-profile-editor";
+import { ProfileBentoSurfaceMotion } from "@/components/profile/v2/profile-bento-readonly-profile-motion";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useIsBelowLg, useIsBelowXxl } from "@/hooks/use-mobile";
@@ -246,7 +247,12 @@ export function ProfileBentoOwnerEditorSurface({
           />
           <div className={previewViewportClassName}>
             <div className={isCompactSurface ? compactInnerClassName : "contents"}>
-              <ProfileBentoProfileEditor compactMode={isCompactSurface} initialUser={initialUser} />
+              <ProfileBentoSurfaceMotion delay={0} duration={0.68} initialScale={1} initialY={28}>
+                <ProfileBentoProfileEditor
+                  compactMode={isCompactSurface}
+                  initialUser={initialUser}
+                />
+              </ProfileBentoSurfaceMotion>
               <ProfileBentoInteractiveGrid
                 initialBento={bento}
                 onPreviewModeChange={setPreviewMode}

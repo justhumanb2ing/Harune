@@ -5,6 +5,7 @@ import { ProfileAvatarImage } from "@/components/profile/v2/profile-avatar-image
 import { PROFILE_BENTO_PROFILE_SHELL_CLASS } from "@/components/profile/v2/profile-bento-profile-shell";
 import { ProfileBentoPublicShareButton } from "@/components/profile/v2/profile-bento-public-share-button";
 import { ProfileBentoReadonlyGrid } from "@/components/profile/v2/profile-bento-readonly-grid";
+import { ProfileBentoSurfaceMotion } from "@/components/profile/v2/profile-bento-readonly-profile-motion";
 import { ProfilePageAnalyticsTracker } from "@/components/site-instrumentation/profile-analytics-tracker";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -51,46 +52,48 @@ export function ProfileBentoProfileAside({
 
   return (
     <aside className={cn(PROFILE_BENTO_PROFILE_SHELL_CLASS)}>
-      <div className="flex flex-col gap-8 overflow-hidden">
-        <div className="flex w-full items-center justify-between gap-4 px-4 xl:px-0">
-          <div className="relative flex size-32 items-center justify-center overflow-hidden rounded-full bg-secondary xl:size-44">
-            {page.image ? (
-              <ProfileAvatarImage
-                alt={imageAlt}
-                className="size-full"
-                fetchPriority="high"
-                imageCrop={page.imageCrop}
-                loading="eager"
-                src={page.image}
-              />
-            ) : (
-              <span className="flex size-full flex-col items-center justify-center gap-2 rounded-full text-muted-foreground"></span>
-            )}
-          </div>
-          {actionSlot ? <div className="shrink-0">{actionSlot}</div> : null}
-        </div>
-
-        <div className="flex flex-col gap-3 pt-0 px-4">
-          {page.name ? (
-            <h1 className="min-h-8 whitespace-pre-line break-all p-0 font-bold text-3xl! xl:text-5xl! tracking-tighter">
-              {page.name}
-            </h1>
-          ) : null}
-
-          {page.bio ? (
-            <p className="min-h-8 whitespace-pre-line break-all p-0 text-lg! text-neutral-800 xl:text-xl!">
-              {page.bio}
-            </p>
-          ) : null}
-
-          {page.role || page.location ? (
-            <div className="flex flex-col gap-2 text-neutral-500 text-base">
-              {page.role ? <p className="h-fit p-0">{page.role}</p> : null}
-              {page.location ? <p className="h-fit p-0">{page.location}</p> : null}
+      <ProfileBentoSurfaceMotion delay={0} duration={0.68} initialScale={1} initialY={28}>
+        <div className="flex flex-col gap-8 overflow-hidden">
+          <div className="flex w-full items-center justify-between gap-4 px-4 xl:px-0">
+            <div className="relative flex size-32 items-center justify-center overflow-hidden rounded-full bg-secondary xl:size-44">
+              {page.image ? (
+                <ProfileAvatarImage
+                  alt={imageAlt}
+                  className="size-full"
+                  fetchPriority="high"
+                  imageCrop={page.imageCrop}
+                  loading="eager"
+                  src={page.image}
+                />
+              ) : (
+                <span className="flex size-full flex-col items-center justify-center gap-2 rounded-full text-muted-foreground"></span>
+              )}
             </div>
-          ) : null}
+            {actionSlot ? <div className="shrink-0">{actionSlot}</div> : null}
+          </div>
+
+          <div className="flex flex-col gap-3 pt-0 px-4">
+            {page.name ? (
+              <h1 className="min-h-8 whitespace-pre-line break-all p-0 font-bold text-3xl! xl:text-5xl! tracking-tighter">
+                {page.name}
+              </h1>
+            ) : null}
+
+            {page.bio ? (
+              <p className="min-h-8 whitespace-pre-line break-all p-0 text-lg! text-neutral-800 xl:text-xl!">
+                {page.bio}
+              </p>
+            ) : null}
+
+            {page.role || page.location ? (
+              <div className="flex flex-col gap-2 text-neutral-500 text-base">
+                {page.role ? <p className="h-fit p-0">{page.role}</p> : null}
+                {page.location ? <p className="h-fit p-0">{page.location}</p> : null}
+              </div>
+            ) : null}
+          </div>
         </div>
-      </div>
+      </ProfileBentoSurfaceMotion>
     </aside>
   );
 }

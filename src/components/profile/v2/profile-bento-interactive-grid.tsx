@@ -2,7 +2,7 @@
 
 import { LinkBreakIcon, LinkSimpleIcon, SpinnerGapIcon } from "@phosphor-icons/react";
 import { CheckIcon, ExpandIcon } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { usePathname } from "next/navigation";
 import type { CSSProperties } from "react";
 import {
@@ -42,7 +42,7 @@ import { uploadProfileBentoMedia } from "@/lib/api/generated/http/profile-api/pr
 import type { UpdateProfilePageBodyBentoItem } from "@/lib/api/generated/http/schemas/profile-api";
 import { appConfig } from "@/lib/config";
 import { COLS, GRID_MARGIN, getGridRowHeight } from "@/lib/grid/grid-config";
-import { normalizeLayouts } from "@/lib/grid/grid-layout-utils";
+import { getGridLayoutPixelHeight, normalizeLayouts } from "@/lib/grid/grid-layout-utils";
 import type { GridBreakpoint, GridLayouts, ResizeOption } from "@/lib/grid/grid-types";
 import {
   isGithubContributionsProviderMetadata,
@@ -81,6 +81,7 @@ import {
   type PendingProfileBentoMediaUpload,
   type PendingProfileBentoMediaUploadsById,
 } from "./profile-bento-media-upload";
+import { ProfileBentoSurfaceMotion } from "./profile-bento-readonly-profile-motion";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { Separator } from "@/components/ui/separator";
@@ -490,6 +491,13 @@ export function ProfileBentoInteractiveGrid({
   const rowHeight = getGridRowHeight(canvasWidth, previewBreakpoint);
   const thinItemVisibleHeight = Math.round(rowHeight * 0.9);
   const [, verticalMargin] = GRID_MARGIN[previewBreakpoint];
+  const gridMinHeight = getGridLayoutPixelHeight(
+    combinedLayouts,
+    previewBreakpoint,
+    rowHeight,
+    verticalMargin
+  );
+  const shouldReduceMotion = Boolean(useReducedMotion());
   const interactiveShellClassName = cn(
     "relative flex min-w-0 flex-1 flex-col gap-4 pb-28",
     isCompactCanvas
@@ -1218,12 +1226,17 @@ export function ProfileBentoInteractiveGrid({
   };
 
   return (
-    <div className={interactiveShellClassName}>
+    <div className={interactiveShellClassName} style={{ minHeight: gridMinHeight }}>
       <motion.header
+        animate={{ opacity: 1, y: 0 }}
         className="fixed bottom-10 left-1/2 z-50 flex w-auto -translate-x-1/2 flex-col items-center justify-center rounded-2xl bg-background p-2.5 shadow-float backdrop-blur"
         layout
+        initial={shouldReduceMotion ? { opacity: 0, y: 8 } : { opacity: 0, y: 18 }}
         ref={toolbarRef}
-        transition={TOOLBAR_EXPAND_TRANSITION}
+        transition={{
+          ...TOOLBAR_EXPAND_TRANSITION,
+          delay: shouldReduceMotion ? 0.06 : 0.16,
+        }}
       >
         <div className="overflow-hidden">
           <motion.form
@@ -1339,212 +1352,225 @@ export function ProfileBentoInteractiveGrid({
         </div>
       </motion.header>
 
-      <div
-        className={cn(gridClassName, "relative flex min-h-0 flex-1", isCompactCanvas && "mx-auto")}
-        ref={containerRef}
-        style={gridStyle}
+      <ProfileBentoSurfaceMotion
+        delay={0.5}
+        duration={0.78}
+        initialScale={0.96}
+        initialY={18}
+        reduceMotionDuration={0.42}
+        reduceMotionY={8}
       >
-        {mounted ? (
-          <ResponsiveGridCanvas
-            activeBreakpoint={previewBreakpoint}
-            activeDragItemId={activeDragItemId}
-            activeDragIntentItemId={activeDragIntentItemId}
-            cardRotate={cardRotate}
-            cardX={cardX}
-            items={gridItems}
-            layouts={combinedLayouts}
-            plainItemIds={suggestionItemIds}
-            mounted={mounted}
-            onDrag={updateDragPointer}
-            onDragStart={handleGridDragStart}
-            onDragStop={handleGridDragStop}
-            onDragIntentStart={startDragIntent}
-            onDragIntentStop={stopDragIntent}
-            onItemMotionComplete={completeItemMotion}
-            onLayoutChange={(nextLayouts) => {
-              if (activeDragItemId === null && layoutInteractionDepthRef.current === 0) {
-                return;
-              }
+        <div
+          className={cn(
+            gridClassName,
+            "relative flex min-h-0 flex-1",
+            isCompactCanvas && "mx-auto"
+          )}
+          ref={containerRef}
+          style={gridStyle}
+        >
+          {mounted ? (
+            <ResponsiveGridCanvas
+              activeBreakpoint={previewBreakpoint}
+              activeDragItemId={activeDragItemId}
+              activeDragIntentItemId={activeDragIntentItemId}
+              cardRotate={cardRotate}
+              cardX={cardX}
+              items={gridItems}
+              layouts={combinedLayouts}
+              plainItemIds={suggestionItemIds}
+              mounted={mounted}
+              onDrag={updateDragPointer}
+              onDragStart={handleGridDragStart}
+              onDragStop={handleGridDragStop}
+              onDragIntentStart={startDragIntent}
+              onDragIntentStop={stopDragIntent}
+              onItemMotionComplete={completeItemMotion}
+              onLayoutChange={(nextLayouts) => {
+                if (activeDragItemId === null && layoutInteractionDepthRef.current === 0) {
+                  return;
+                }
 
-              const nextActualLayouts = {
-                desktop: (nextLayouts.desktop ?? []).filter(
-                  (layoutItem) => !suggestionItemIds.has(layoutItem.i)
-                ),
-                compact: (nextLayouts.compact ?? []).filter(
-                  (layoutItem) => !suggestionItemIds.has(layoutItem.i)
-                ),
-              };
+                const nextActualLayouts = {
+                  desktop: (nextLayouts.desktop ?? []).filter(
+                    (layoutItem) => !suggestionItemIds.has(layoutItem.i)
+                  ),
+                  compact: (nextLayouts.compact ?? []).filter(
+                    (layoutItem) => !suggestionItemIds.has(layoutItem.i)
+                  ),
+                };
 
-              setLayouts(normalizeLayouts(nextActualLayouts, itemTypeById));
-            }}
-            onRemoveItem={removeItem}
-            onResizeItem={resizeItem}
-            onTextSurfaceChange={updateTextSurface}
-            onResizeStart={handleGridResizeStart}
-            onResizeStop={handleGridResizeStop}
-            getItemMotionPhase={getItemMotionPhase}
-            renderItem={(gridItem) => {
-              if (suggestionItemIds.has(gridItem.id)) {
-                return (
-                  <ProfileBentoSuggestionCard
-                    activeBreakpoint={previewBreakpoint}
-                    isActive={gridItem.itemType === "link" && isLinkSuggestionPopoverOpen}
-                    onAddItem={addItem}
-                    onRequestLinkInput={() => {
-                      setIsLinkInputOpen(false);
-                      setLinkUrl("");
-                      setIsLinkSuggestionPopoverOpen(true);
-                    }}
-                    onRequestMediaInput={() => mediaInputRef.current?.click()}
-                    type={gridItem.itemType as CreatableBentoType}
-                  />
-                );
-              }
-
-              const item = bentoById.get(gridItem.id);
-              const activeLayout =
-                layouts[previewBreakpoint]?.find((layoutItem) => layoutItem.i === gridItem.id) ??
-                item?.layout[previewBreakpoint];
-              const layoutSize = activeLayout
-                ? getProfileBentoLinkSize(activeLayout.w, activeLayout.h)
-                : undefined;
-
-              return item ? (
-                <ProfileBentoEditableContentCard
-                  activeBreakpoint={previewBreakpoint}
-                  autoFocus={focusItemId === item.id}
-                  isLoading={loadingLinkItemIds.has(item.id)}
-                  item={item}
-                  layoutSize={item.type === "link" ? layoutSize : undefined}
-                  mapInteractionEnabled={activeMapInteractionItemId === item.id}
-                  onChange={updateItem}
-                  onFocusReady={() => {
-                    setFocusItemId((current) => (current === item.id ? null : current));
-                  }}
-                />
-              ) : null;
-            }}
-            renderTrailingResizeControl={(gridItem) => {
-              const item = bentoById.get(gridItem.id);
-
-              return item?.type === "media" ? (
-                <MediaLinkControl item={item} onChange={updateItem} />
-              ) : item?.type === "map" ? (
-                <Button
-                  aria-label={
-                    activeMapInteractionItemId === item.id
-                      ? "Disable map interaction"
-                      : "Enable map interaction"
-                  }
-                  aria-pressed={activeMapInteractionItemId === item.id}
-                  className="size-8.5 min-h-8 min-w-8 rounded-md text-primary-foreground hover:bg-primary-foreground hover:text-primary aria-pressed:bg-green-400 aria-pressed:text-primary-foreground"
-                  onClick={() => {
-                    setActiveMapInteractionItemId((current) =>
-                      current === item.id ? null : item.id
-                    );
-                  }}
-                  size="icon"
-                  type="button"
-                  variant="ghost"
-                >
-                  <ExpandIcon aria-hidden className="size-5 stroke-3" />
-                </Button>
-              ) : null;
-            }}
-            rowHeight={rowHeight}
-            width={canvasWidth}
-          />
-        ) : null}
-        {isLinkSuggestionPopoverOpen && linkSuggestionPopoverRect ? (
-          <motion.div
-            animate={{ opacity: 1, y: 0 }}
-            className="absolute z-40"
-            initial={{ opacity: 0, y: -6 }}
-            ref={linkSuggestionPopoverRef}
-            style={{
-              left: linkSuggestionPopoverRect.left,
-              top: linkSuggestionPopoverRect.top,
-              width: linkSuggestionPopoverRect.width,
-            }}
-            transition={TOOLBAR_EXPAND_TRANSITION}
-          >
-            <div className="rounded-2xl bg-background/90 p-1.5 px-2 shadow-float backdrop-blur">
-              <form
-                className="w-full"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  void handleLinkCrawl();
-                }}
-              >
-                <Field className="relative rounded-lg !bg-inherit py-1 outline-none">
-                  <InputGroup className="border-0 !bg-inherit ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
-                    <InputGroupInput
-                      aria-label="Link URL"
-                      className="text-sm! h-10 px-1"
-                      disabled={isCrawlingLink}
-                      onPaste={(event) => {
-                        if (isCrawlingLink) {
-                          return;
-                        }
-
-                        const pastedText = event.clipboardData.getData("text/plain").trim();
-
-                        if (!pastedText) {
-                          return;
-                        }
-
-                        event.preventDefault();
-                        void handleLinkCrawl(pastedText);
+                setLayouts(normalizeLayouts(nextActualLayouts, itemTypeById));
+              }}
+              onRemoveItem={removeItem}
+              onResizeItem={resizeItem}
+              onTextSurfaceChange={updateTextSurface}
+              onResizeStart={handleGridResizeStart}
+              onResizeStop={handleGridResizeStop}
+              getItemMotionPhase={getItemMotionPhase}
+              renderItem={(gridItem) => {
+                if (suggestionItemIds.has(gridItem.id)) {
+                  return (
+                    <ProfileBentoSuggestionCard
+                      activeBreakpoint={previewBreakpoint}
+                      isActive={gridItem.itemType === "link" && isLinkSuggestionPopoverOpen}
+                      onAddItem={addItem}
+                      onRequestLinkInput={() => {
+                        setIsLinkInputOpen(false);
+                        setLinkUrl("");
+                        setIsLinkSuggestionPopoverOpen(true);
                       }}
-                      onChange={(event) => setLinkUrl(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key !== "Enter") {
-                          return;
-                        }
-
-                        event.preventDefault();
-                        void handleLinkCrawl();
-                      }}
-                      placeholder="https://example.com"
-                      ref={linkSuggestionInputRef}
-                      value={linkUrl}
+                      onRequestMediaInput={() => mediaInputRef.current?.click()}
+                      type={gridItem.itemType as CreatableBentoType}
                     />
-                    <InputGroupAddon align="inline-end" className="pr-2">
-                      <InputGroupButton
-                        aria-label="Fetch link details"
-                        className="h-8 border-0 bg-background px-3 font-semibold text-base text-black shadow-sm"
-                        disabled={isCrawlingLink || !linkUrl.trim()}
-                        type="submit"
-                        variant="outline"
-                      >
-                        {isCrawlingLink ? <span>Getting...</span> : <span>Get</span>}
-                      </InputGroupButton>
-                    </InputGroupAddon>
-                  </InputGroup>
-                </Field>
-              </form>
-            </div>
-          </motion.div>
-        ) : null}
-        {isSuggestionsHydrated && !isSuggestionsDismissed ? (
-          <Button
-            className="fixed right-10 bottom-12 z-30 rounded-xl bg-background px-6 py-5 text-sm font-bold shadow-float hover:bg-secondary/30"
-            onClick={() => {
-              try {
-                window.localStorage.setItem("profile-bento:suggestions-dismissed", "true");
-              } catch {
-                // Ignore storage failures and keep the in-memory dismissal state.
-              }
+                  );
+                }
 
-              setIsSuggestionsDismissed(true);
-            }}
-            type="button"
-            variant="ghost"
-          >
-            Remove Suggestions
-          </Button>
-        ) : null}
-      </div>
+                const item = bentoById.get(gridItem.id);
+                const activeLayout =
+                  layouts[previewBreakpoint]?.find((layoutItem) => layoutItem.i === gridItem.id) ??
+                  item?.layout[previewBreakpoint];
+                const layoutSize = activeLayout
+                  ? getProfileBentoLinkSize(activeLayout.w, activeLayout.h)
+                  : undefined;
+
+                return item ? (
+                  <ProfileBentoEditableContentCard
+                    activeBreakpoint={previewBreakpoint}
+                    autoFocus={focusItemId === item.id}
+                    isLoading={loadingLinkItemIds.has(item.id)}
+                    item={item}
+                    layoutSize={item.type === "link" ? layoutSize : undefined}
+                    mapInteractionEnabled={activeMapInteractionItemId === item.id}
+                    onChange={updateItem}
+                    onFocusReady={() => {
+                      setFocusItemId((current) => (current === item.id ? null : current));
+                    }}
+                  />
+                ) : null;
+              }}
+              renderTrailingResizeControl={(gridItem) => {
+                const item = bentoById.get(gridItem.id);
+
+                return item?.type === "media" ? (
+                  <MediaLinkControl item={item} onChange={updateItem} />
+                ) : item?.type === "map" ? (
+                  <Button
+                    aria-label={
+                      activeMapInteractionItemId === item.id
+                        ? "Disable map interaction"
+                        : "Enable map interaction"
+                    }
+                    aria-pressed={activeMapInteractionItemId === item.id}
+                    className="size-8.5 min-h-8 min-w-8 rounded-md text-primary-foreground hover:bg-primary-foreground hover:text-primary aria-pressed:bg-green-400 aria-pressed:text-primary-foreground"
+                    onClick={() => {
+                      setActiveMapInteractionItemId((current) =>
+                        current === item.id ? null : item.id
+                      );
+                    }}
+                    size="icon"
+                    type="button"
+                    variant="ghost"
+                  >
+                    <ExpandIcon aria-hidden className="size-5 stroke-3" />
+                  </Button>
+                ) : null;
+              }}
+              rowHeight={rowHeight}
+              width={canvasWidth}
+            />
+          ) : null}
+          {isLinkSuggestionPopoverOpen && linkSuggestionPopoverRect ? (
+            <motion.div
+              animate={{ opacity: 1, y: 0 }}
+              className="absolute z-40"
+              initial={{ opacity: 0, y: -6 }}
+              ref={linkSuggestionPopoverRef}
+              style={{
+                left: linkSuggestionPopoverRect.left,
+                top: linkSuggestionPopoverRect.top,
+                width: linkSuggestionPopoverRect.width,
+              }}
+              transition={TOOLBAR_EXPAND_TRANSITION}
+            >
+              <div className="rounded-2xl bg-background/90 p-1.5 px-2 shadow-float backdrop-blur">
+                <form
+                  className="w-full"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    void handleLinkCrawl();
+                  }}
+                >
+                  <Field className="relative rounded-lg !bg-inherit py-1 outline-none">
+                    <InputGroup className="border-0 !bg-inherit ring-0 has-[[data-slot=input-group-control]:focus-visible]:border-transparent has-[[data-slot=input-group-control]:focus-visible]:ring-0">
+                      <InputGroupInput
+                        aria-label="Link URL"
+                        className="text-sm! h-10 px-1"
+                        disabled={isCrawlingLink}
+                        onPaste={(event) => {
+                          if (isCrawlingLink) {
+                            return;
+                          }
+
+                          const pastedText = event.clipboardData.getData("text/plain").trim();
+
+                          if (!pastedText) {
+                            return;
+                          }
+
+                          event.preventDefault();
+                          void handleLinkCrawl(pastedText);
+                        }}
+                        onChange={(event) => setLinkUrl(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key !== "Enter") {
+                            return;
+                          }
+
+                          event.preventDefault();
+                          void handleLinkCrawl();
+                        }}
+                        placeholder="https://example.com"
+                        ref={linkSuggestionInputRef}
+                        value={linkUrl}
+                      />
+                      <InputGroupAddon align="inline-end" className="pr-2">
+                        <InputGroupButton
+                          aria-label="Fetch link details"
+                          className="h-8 border-0 bg-background px-3 font-semibold text-base text-black shadow-sm"
+                          disabled={isCrawlingLink || !linkUrl.trim()}
+                          type="submit"
+                          variant="outline"
+                        >
+                          {isCrawlingLink ? <span>Getting...</span> : <span>Get</span>}
+                        </InputGroupButton>
+                      </InputGroupAddon>
+                    </InputGroup>
+                  </Field>
+                </form>
+              </div>
+            </motion.div>
+          ) : null}
+        </div>
+      </ProfileBentoSurfaceMotion>
+      {isSuggestionsHydrated && !isSuggestionsDismissed ? (
+        <Button
+          className="fixed right-10 bottom-12 z-30 rounded-xl bg-background px-6 py-5 text-sm font-bold shadow-float hover:bg-secondary/30"
+          onClick={() => {
+            try {
+              window.localStorage.setItem("profile-bento:suggestions-dismissed", "true");
+            } catch {
+              // Ignore storage failures and keep the in-memory dismissal state.
+            }
+
+            setIsSuggestionsDismissed(true);
+          }}
+          type="button"
+          variant="ghost"
+        >
+          Remove Suggestions
+        </Button>
+      ) : null}
     </div>
   );
 }

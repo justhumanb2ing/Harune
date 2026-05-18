@@ -173,6 +173,11 @@ Motion은 장식이 아니라 item 위치, drag affordance, public reveal 순서
 - drag motion을 고칠 때는 `docs/solutions/best-practices/profile-bento-v2-drag-motion-and-section-shadow-contract-2026-05-01.md`를 함께 확인한다.
 - `prefers-reduced-motion` 사용자는 과한 motion 없이 같은 정보 구조를 이해할 수 있어야 한다.
 - hover/focus/drag 상태는 pointer interception과 text selection 부작용을 실제로 확인한다.
+- public readonly `/[handle]` 진입 motion은 profile surface가 먼저 아래에서 위로 올라오고, 그 뒤 bento surface가 더 작은 scale과 opacity 0 상태에서 늦게 등장해야 한다.
+- readonly public 진입 motion은 layout 측정과 충돌하지 않게 wrapper transform/opacity만 바꾸고, grid geometry와 viewport-driven layout semantics는 그대로 유지한다.
+- reduced-motion 환경에서는 y/scale 이동폭을 줄이고 opacity 위주로 같은 reveal 순서를 유지한다.
+- owner editor `/[handle]` 진입 motion도 같은 reveal 순서를 유지하되, profile editor와 interactive grid 바깥의 root wrapper에서만 transform/opacity를 바꿔야 한다.
+- editor 진입 motion은 grid drag/resize state와 분리되어야 하고, preview surface의 width/borderRadius transition과 겹쳐도 layout shift를 만들지 않아야 한다.
 
 ### Link Media Fallback
 
@@ -244,6 +249,8 @@ UI/UX 변경 후 가능한 범위에서 아래를 확인한다.
 - hover-only controls는 keyboard focus로도 접근 가능하다.
 - scroll/focus 변경은 autofocus, fixed footer toolbar, nested scroll container와 충돌하지 않는다.
 - public readonly page와 owner editor가 의도한 차이만 갖는다.
+- public readonly `/[handle]` 진입에서 profile surface와 bento surface reveal 순서가 기대대로 보이고, grid 측정이나 layout shift가 섞이지 않는다.
+- owner editor `/[handle]` 진입에서 profile editor와 bento grid가 순서대로 드러나고, preview surface width transition과 충돌하지 않는다.
 
 ## Related
 

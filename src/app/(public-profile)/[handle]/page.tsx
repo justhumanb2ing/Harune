@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { ProfileBentoPage } from "@/components/profile/v2/profile-bento-page";
 import { WebPageJsonLd } from "@/components/site-instrumentation/structured-data";
 import { ApiError } from "@/lib/api/error";
-import { getMeAnalytics } from "@/lib/api/generated/http/me-api/me-api";
 import { getProfileByHandle } from "@/lib/api/generated/http/profile-api/profile-api";
 import type {
   GetProfileByHandle200BentoItem,
@@ -72,29 +70,6 @@ const getPublicProfilePage = async (handle: string) => {
   return toPublicProfilePageData(response);
 };
 
-const getOwnerAnalyticsViews = async (cookieHeader: string) => {
-  if (!cookieHeader) {
-    return 0;
-  }
-
-  try {
-    const response = await getMeAnalytics({
-      cache: "no-store",
-      headers: {
-        cookie: cookieHeader,
-      },
-    });
-
-    if (response.status !== 200) {
-      return 0;
-    }
-
-    return response.data.visitors ?? 0;
-  } catch {
-    return 0;
-  }
-};
-
 export async function generateMetadata({ params }: HandlePageProps): Promise<Metadata> {
   const { handle } = await params;
   const data = await getPublicProfilePage(handle);
@@ -120,7 +95,6 @@ export async function generateMetadata({ params }: HandlePageProps): Promise<Met
 
 export default async function HandlePage({ params }: HandlePageProps) {
   const { handle } = await params;
-  const cookieHeader = (await cookies()).toString();
   const dataPromise = getPublicProfilePage(handle);
   const mePromise = getServerMe();
   const [data, me, initialProfileResponse] = await Promise.all([
@@ -135,7 +109,6 @@ export default async function HandlePage({ params }: HandlePageProps) {
 
   const isOwner = me?.profilePage?.handle === data.page.handle;
   const editorData = isOwner ? toProfilePageEditorDataFromPublicPage(data.page) : null;
-  const analyticsViews = isOwner ? await getOwnerAnalyticsViews(cookieHeader) : 0;
   const title = `${data.page.name || data.page.userName || data.page.handle} on ${appConfig.projectName}`;
 
   return (
@@ -164,7 +137,6 @@ export default async function HandlePage({ params }: HandlePageProps) {
           isOwner={isOwner}
           initialProfileResponse={initialProfileResponse}
           initialUser={me}
-          analyticsViews={analyticsViews}
           viewerProfilePage={me?.profilePage ?? null}
         />
       </main>

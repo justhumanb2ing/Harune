@@ -2,6 +2,7 @@
 
 import { CompassIcon } from "lucide-react";
 import { motion, useAnimate } from "motion/react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ProfilePageEditorProvider } from "@/components/profile/layout/profile-editor-provider";
@@ -13,7 +14,6 @@ import { ProfileBentoSurfaceMotion } from "@/components/profile/v2/profile-bento
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useIsBelowLg, useIsBelowXxl } from "@/hooks/use-mobile";
-import { getAppApiBaseURL } from "@/lib/api/base-url";
 import type { getProfileByHandle } from "@/lib/api/generated/http/profile-api/profile-api";
 import type { GetMe200 } from "@/lib/api/generated/http/schemas/me-api";
 import type { ProfileBentoItem, ProfilePageData } from "@/lib/profile/types";
@@ -21,7 +21,6 @@ import { cn } from "@/lib/utils";
 
 type ProfileBentoOwnerEditorSurfaceProps = {
   bento: ProfileBentoItem[];
-  analyticsViews: number;
   disableAnalytics: boolean;
   editorData: ProfilePageData;
   initialProfileResponse: Awaited<ReturnType<typeof getProfileByHandle>> | null;
@@ -29,64 +28,43 @@ type ProfileBentoOwnerEditorSurfaceProps = {
   ownerHandle: string;
 };
 
-const numberFormatter = new Intl.NumberFormat("en-US");
 const PREVIEW_SURFACE_TRANSITION = {
   borderRadius: { duration: 0.56, ease: [0.16, 1, 0.3, 1] },
   opacity: { duration: 0.36, ease: [0.16, 1, 0.3, 1] },
   width: { duration: 0.56, ease: [0.16, 1, 0.3, 1] },
 } as const;
 
+const ProfileBentoOwnerAnalyticsViews = dynamic(
+  () =>
+    import("@/components/profile/v2/profile-bento-owner-analytics-views").then(
+      (module) => module.ProfileBentoOwnerAnalyticsViews
+    ),
+  {
+    loading: () => (
+      <button
+        aria-disabled="true"
+        className="inline-flex min-h-9 items-center gap-2 rounded-md px-3 py-2 text-neutral-500 transition-colors hover:bg-secondary/80 hover:text-neutral-500 focus-visible:outline-none focus-visible:ring-0 cursor-wait opacity-70"
+        disabled
+        type="button"
+      >
+        <span className="flex flex-col items-start leading-none text-xs">Loading...</span>
+      </button>
+    ),
+    ssr: false,
+  }
+);
+
 function ProfileBentoOwnerFooterAction({
   className,
-  analyticsViews,
   disableAnalytics,
   ownerHandle,
 }: {
   className?: string;
-  analyticsViews: number;
   disableAnalytics: boolean;
   ownerHandle: string;
 }) {
-  const [displayAnalyticsViews, setDisplayAnalyticsViews] = useState(analyticsViews);
-  const actionClassName =
-    "inline-flex min-h-9 items-center gap-2 rounded-md px-3 py-2 text-neutral-500 transition-colors hover:bg-secondary/80 hover:text-neutral-500 focus-visible:outline-none focus-visible:ring-0";
   const iconButtonClassName =
     "border-0 bg-transparent text-neutral-500 shadow-none outline-none ring-0 hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-0";
-  const analyticsViewsLabel =
-    displayAnalyticsViews === 0
-      ? "No Views Today"
-      : `${numberFormatter.format(displayAnalyticsViews)} views`;
-
-  useEffect(() => {
-    if (disableAnalytics) {
-      return;
-    }
-
-    const controller = new AbortController();
-
-    void (async () => {
-      try {
-        const response = await fetch(`${getAppApiBaseURL()}/me/analytics`, {
-          cache: "no-store",
-          credentials: "include",
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          return;
-        }
-
-        const data = (await response.json()) as { visitors?: number };
-        setDisplayAnalyticsViews(data.visitors ?? 0);
-      } catch {
-        // Keep the server-rendered fallback when the client refresh fails.
-      }
-    })();
-
-    return () => {
-      controller.abort();
-    };
-  }, [disableAnalytics]);
 
   return (
     <footer className={cn("flex items-center justify-center gap-0", className)}>
@@ -115,49 +93,16 @@ function ProfileBentoOwnerFooterAction({
         orientation="vertical"
         className={"data-vertical:w-[2.5px] data-vertical:my-2.5 rounded-lg mx-3"}
       />
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            disableAnalytics ? (
-              <button
-                aria-disabled="true"
-                className={cn(
-                  actionClassName,
-                  "cursor-not-allowed disabled:!opacity-100 disabled:!text-neutral-500"
-                )}
-                disabled
-                type="button"
-              >
-                {/*<ChartColumnBigIcon aria-hidden className="size-4 shrink-0" />*/}
-                <span className="flex flex-col items-start leading-none text-xs">
-                  {analyticsViewsLabel}
-                </span>
-              </button>
-            ) : (
-              <Link
-                aria-label="Analytics"
-                href={`/${ownerHandle}/analytics`}
-                className={actionClassName}
-              >
-                {/*<ChartColumnBigIcon aria-hidden className="size-4 shrink-0" />*/}
-                <span className="flex flex-col items-start leading-none text-xs">
-                  {analyticsViewsLabel}
-                </span>
-              </Link>
-            )
-          }
-        />
-        <TooltipContent side="top" sideOffset={8}>
-          Upgrade plan for details (comming soon)
-        </TooltipContent>
-      </Tooltip>
+      <ProfileBentoOwnerAnalyticsViews
+        disableAnalytics={disableAnalytics}
+        ownerHandle={ownerHandle}
+      />
     </footer>
   );
 }
 
 export function ProfileBentoOwnerEditorSurface({
   bento,
-  analyticsViews,
   disableAnalytics,
   editorData,
   initialProfileResponse,
@@ -263,7 +208,6 @@ export function ProfileBentoOwnerEditorSurface({
         </motion.div>
         <ProfileBentoOwnerFooterAction
           className={footerActionClassName}
-          analyticsViews={analyticsViews}
           disableAnalytics={disableAnalytics}
           ownerHandle={ownerHandle}
         />

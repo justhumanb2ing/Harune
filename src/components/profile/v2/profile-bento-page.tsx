@@ -23,7 +23,6 @@ type ProfileBentoPageProps = {
     userName: string | null;
   };
   bento: GetProfileByHandle200BentoItem[];
-  analyticsViews: number;
   editorData: ProfilePageData | null;
   isOwner: boolean;
   initialProfileResponse: Awaited<ReturnType<typeof getProfileByHandle>> | null;
@@ -172,7 +171,6 @@ function ProfileBentoFooterAction({
 }
 
 export async function ProfileBentoPage({
-  analyticsViews,
   page,
   bento,
   editorData,
@@ -198,7 +196,6 @@ export async function ProfileBentoPage({
         />
         <ProfileBentoOwnerEditorSurface
           bento={normalizedBento}
-          analyticsViews={analyticsViews}
           disableAnalytics={isDeploymentEnvironment}
           editorData={editorData}
           initialProfileResponse={initialProfileResponse}

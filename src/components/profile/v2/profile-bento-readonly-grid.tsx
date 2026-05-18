@@ -2,7 +2,7 @@
 
 import { useMotionValue } from "motion/react";
 import type { CSSProperties } from "react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useContainerWidth } from "react-grid-layout";
 import { ResponsiveGridCanvas } from "@/components/grid/responsive-grid-canvas";
 import { BREAKPOINTS, getGridRowHeight } from "@/lib/grid/grid-config";
@@ -15,24 +15,100 @@ import { ProfileBentoSurfaceMotion } from "./profile-bento-readonly-profile-moti
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
+const PUBLIC_PAGE_DESKTOP_VIEWPORT_WIDTH = 1536;
+const PUBLIC_PAGE_COMPACT_CANVAS_WIDTH = 400;
+const PUBLIC_PAGE_COMPACT_CANVAS_WIDTH_FALLBACK = 360;
+
+type ProfileBentoReadonlyGridSurface = "contained" | "public-page";
+
 type ProfileBentoReadonlyGridProps = {
   bento: ProfileBentoItem[];
   preventNavigation?: boolean;
+  surface?: ProfileBentoReadonlyGridSurface;
 };
+
+function useViewportWidth() {
+  const [width, setWidth] = useState(864);
+
+  useEffect(() => {
+    const updateWidth = () => {
+      setWidth(window.innerWidth);
+    };
+
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+
+    return () => {
+      window.removeEventListener("resize", updateWidth);
+    };
+  }, []);
+
+  return width;
+}
+
+export function getProfileBentoReadonlyGridBreakpoint({
+  measuredWidth,
+  surface = "contained",
+  viewportWidth,
+}: {
+  measuredWidth: number;
+  surface?: ProfileBentoReadonlyGridSurface;
+  viewportWidth: number;
+}): GridBreakpoint {
+  if (surface === "public-page") {
+    return viewportWidth >= PUBLIC_PAGE_DESKTOP_VIEWPORT_WIDTH ? "desktop" : "compact";
+  }
+
+  return measuredWidth > BREAKPOINTS.desktop ? "desktop" : "compact";
+}
+
+export function getProfileBentoReadonlyGridCanvasWidth({
+  activeBreakpoint,
+  measuredWidth,
+  surface = "contained",
+}: {
+  activeBreakpoint: GridBreakpoint;
+  measuredWidth: number;
+  surface?: ProfileBentoReadonlyGridSurface;
+}) {
+  if (activeBreakpoint === "desktop") {
+    return Math.max(measuredWidth, 860);
+  }
+
+  if (surface === "public-page") {
+    return Math.min(
+      measuredWidth || PUBLIC_PAGE_COMPACT_CANVAS_WIDTH_FALLBACK,
+      PUBLIC_PAGE_COMPACT_CANVAS_WIDTH
+    );
+  }
+
+  return measuredWidth;
+}
 
 export function ProfileBentoReadonlyGrid({
   bento,
   preventNavigation = false,
+  surface = "contained",
 }: ProfileBentoReadonlyGridProps) {
+  const viewportWidth = useViewportWidth();
   const { width, containerRef, mounted } = useContainerWidth({
     initialWidth: 864,
     measureBeforeMount: true,
   });
-  const activeBreakpoint: GridBreakpoint = width > BREAKPOINTS.desktop ? "desktop" : "compact";
+  const activeBreakpoint = getProfileBentoReadonlyGridBreakpoint({
+    measuredWidth: width,
+    surface,
+    viewportWidth,
+  });
+  const canvasWidth = getProfileBentoReadonlyGridCanvasWidth({
+    activeBreakpoint,
+    measuredWidth: width,
+    surface,
+  });
   const layouts = useMemo(() => toBentoGridLayouts(bento), [bento]);
   const gridItems = useMemo(() => bento.map(toBentoGridItem), [bento]);
   const bentoById = useMemo(() => new Map(bento.map((item) => [item.id, item] as const)), [bento]);
-  const rowHeight = getGridRowHeight(width, activeBreakpoint);
+  const rowHeight = getGridRowHeight(canvasWidth, activeBreakpoint);
   const gridMinHeight = getGridLayoutPixelHeight(layouts, activeBreakpoint, rowHeight, 40);
   const isCompactCanvas = activeBreakpoint === "compact";
   const cardRotate = useMotionValue(0);
@@ -54,7 +130,7 @@ export function ProfileBentoReadonlyGrid({
       <div
         className={
           isCompactCanvas
-            ? "mx-auto w-[360px] max-w-full flex-none"
+            ? "mx-auto w-[360px] max-w-full flex-none sm:w-[400px]"
             : "min-w-0 flex-1 xl:w-[860px] xl:flex-none 2xl:w-[860px]"
         }
         style={{ minHeight: gridMinHeight }}
@@ -86,7 +162,7 @@ export function ProfileBentoReadonlyGrid({
               onResizeStop={() => {}}
               readOnly
               rowHeight={rowHeight}
-              width={width}
+              width={canvasWidth}
               renderItem={(gridItem) => {
                 const item = bentoById.get(gridItem.id);
 

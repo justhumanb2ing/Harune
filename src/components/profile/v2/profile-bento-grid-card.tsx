@@ -1299,7 +1299,7 @@ function ReadonlyMapBento({
         </MapMarker>
       </BentoMap>
       {item.content.caption ? (
-        <p className="pointer-events-none absolute bottom-3 left-3 line-clamp-2 max-w-[calc(100%-4.5rem)] rounded-md bg-white px-2 py-1 font-medium text-sm text-black">
+        <p className="min-w-24 pointer-events-none absolute bottom-3 left-3 line-clamp-2 max-w-[calc(100%-4.5rem)] rounded-md bg-foreground/70 backdrop-blur-sm px-2 py-1.5 font-medium text-sm text-white">
           {item.content.caption}
         </p>
       ) : null}
@@ -1367,7 +1367,7 @@ function ProfileBentoGridCardContent({
       <article className="relative size-full overflow-hidden rounded-[1.5rem] bg-muted">
         <MediaPreview item={item} />
         {item.content.caption ? (
-          <p className="min-w-0 truncate pointer-events-none absolute bottom-3 left-3 line-clamp-2 max-w-[calc(100%-4.5rem)] rounded-md bg-white px-2 py-1 font-medium text-sm text-black">
+          <p className="min-w-24 truncate pointer-events-none absolute bottom-3 left-3 line-clamp-2 max-w-[calc(100%-4.5rem)] rounded-md bg-foreground/70 backdrop-blur-sm px-2 py-1.5 font-medium text-sm text-white">
             {item.content.caption}
           </p>
         ) : null}

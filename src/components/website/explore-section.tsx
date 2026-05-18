@@ -1,6 +1,5 @@
 import type { Variants } from "motion/react";
 import * as motion from "motion/react-client";
-import Image from "next/image";
 import Link from "next/link";
 import type { ListProfilePages200PagesItem } from "@/lib/api/generated/http/schemas/profile-api";
 import { absoluteUrl } from "@/lib/seo";
@@ -82,13 +81,14 @@ export default function ExploreSection({ pages }: ExploreSectionProps) {
                   >
                     <div className="relative aspect-square size-28 overflow-hidden bg-muted/40 rounded-full surface-bevel">
                       {imageUrl ? (
-                        <Image
-                          alt={`${displayName} profile image`}
-                          className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                          fill
-                          sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                        // biome-ignore lint/performance/noImgElement: This above-the-fold public image should load eagerly without next/image remount flicker.
+                        <img
+                          alt={displayName}
+                          className="absolute inset-0 block h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                          decoding="async"
+                          fetchPriority="high"
+                          loading="eager"
                           src={imageUrl}
-                          unoptimized
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-secondary"></div>

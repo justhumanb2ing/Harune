@@ -12,6 +12,7 @@ import { useGetProfileByHandle } from "@/lib/api/generated/http/profile-api/prof
 import { toProfilePageEditorDataFromPublicPage } from "@/lib/profile/public-profile-page";
 import { PROFILE_PAGE_STALE_TIME_MS } from "@/lib/profile/query-policy";
 import type { ProfilePageData } from "@/lib/profile/types";
+import { getQueryClient } from "@/lib/react-query/query-client";
 
 const ProfilePageEditorStoreContext = React.createContext<ProfilePageEditorStore | null>(null);
 
@@ -48,20 +49,24 @@ export function ProfilePageEditorProvider({
   initialProfileResponse: Awaited<ReturnType<typeof getProfileByHandle>> | null;
   handle: string;
 }) {
-  const profilePageQuery = useGetProfileByHandle(handle, {
-    query: {
-      initialData: initialProfileResponse ?? undefined,
-      enabled: !!handle,
-      select: (response) => {
-        if (response.status !== 200) {
-          throw new Error("Failed to load profile page.");
-        }
+  const profilePageQuery = useGetProfileByHandle(
+    handle,
+    {
+      query: {
+        initialData: initialProfileResponse ?? undefined,
+        enabled: !!handle,
+        select: (response) => {
+          if (response.status !== 200) {
+            throw new Error("Failed to load profile page.");
+          }
 
-        return toProfilePageEditorDataFromPublicPage(response.data.page);
+          return toProfilePageEditorDataFromPublicPage(response.data.page);
+        },
+        staleTime: PROFILE_PAGE_STALE_TIME_MS,
       },
-      staleTime: PROFILE_PAGE_STALE_TIME_MS,
     },
-  });
+    getQueryClient()
+  );
   const storeRef = React.useRef<ProfilePageEditorStore | null>(null);
 
   if (!storeRef.current) {

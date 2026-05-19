@@ -3,6 +3,7 @@ import { describe, expect, test } from "bun:test";
 import {
   createAutoBentoItem,
   createPreviewDraftBentoId,
+  normalizeProfileBentoItems,
 } from "@/components/profile/v2/profile-bento-grid-model";
 import type { ProfileBentoItem } from "@/lib/profile/types";
 
@@ -42,5 +43,32 @@ describe("profile-bento-grid-model", () => {
     });
     expect(clockItem.content.showSeconds).toBe(true);
     expect(clockItem.content.style.backgroundColor).toBe("#ffffff");
+  });
+
+  test("creates text items with a nullable url and normalizes text urls", () => {
+    const textItem = createAutoBentoItem("text", []);
+
+    expect(textItem.type).toBe("text");
+    if (textItem.type !== "text") {
+      throw new Error("Expected text item");
+    }
+
+    expect(textItem.content.url).toBeNull();
+
+    const normalized = normalizeProfileBentoItems([
+      {
+        ...textItem,
+        content: {
+          ...textItem.content,
+          url: "  https://example.com/note  ",
+        },
+      },
+    ]);
+
+    expect(normalized[0]).toMatchObject({
+      content: {
+        url: "https://example.com/note",
+      },
+    });
   });
 });

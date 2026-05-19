@@ -315,6 +315,8 @@ export type GetProfileByHandle200BentoItem =
       };
       content: {
         content: string;
+        /** @nullable */
+        url: string | null;
         style: {
           /** Background color applied to the text surface. */
           backgroundColor: string;
@@ -595,6 +597,8 @@ export type UpdateProfilePageBodyBentoItem =
       };
       content: {
         content: string;
+        /** @nullable */
+        url?: string | null;
         style?: {
           /** Background color applied to the text surface. */
           backgroundColor?: string;
@@ -791,6 +795,8 @@ export type UpdateProfilePage200BentoItem =
       };
       content: {
         content: string;
+        /** @nullable */
+        url: string | null;
         style: {
           /** Background color applied to the text surface. */
           backgroundColor: string;

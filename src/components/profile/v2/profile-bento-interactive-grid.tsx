@@ -127,6 +127,16 @@ const createPayload = (items: ProfileBentoItem[], layouts: GridLayouts) => ({
       };
     }
 
+    if (item.type === "text") {
+      return {
+        ...item,
+        content: {
+          ...item.content,
+          url: item.content.url?.trim() || null,
+        },
+      };
+    }
+
     if (item.type !== "link") {
       return item;
     }
@@ -429,7 +439,6 @@ function MediaLinkControl({
   onChange: (item: ProfileBentoItem) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const inputId = `media-link-${item.id}`;
   const href = item.content.href ?? "";
@@ -450,49 +459,33 @@ function MediaLinkControl({
     };
   }, [href.length, isOpen]);
 
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target;
-
-      if (
-        !containerRef.current ||
-        !(target instanceof Node) ||
-        containerRef.current.contains(target)
-      ) {
-        return;
-      }
-
-      setIsOpen(false);
-    };
-
-    document.addEventListener("pointerdown", handlePointerDown);
-
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-    };
-  }, [isOpen]);
-
   return (
-    <div className="relative" ref={containerRef}>
-      <button
-        aria-controls={isOpen ? inputId : undefined}
-        aria-expanded={isOpen}
-        aria-label={href ? "Edit media link" : "Add media link"}
-        className={cn(
-          "flex size-8 items-center justify-center rounded-md transition-colors hover:bg-primary-foreground hover:text-primary",
-          href ? "bg-primary-foreground text-primary" : "text-primary-foreground"
-        )}
-        onClick={() => setIsOpen((current) => !current)}
-        type="button"
-      >
-        <Icon aria-hidden className="size-5" weight="bold" />
-      </button>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger
+        render={
+          <Button
+            aria-controls={isOpen ? inputId : undefined}
+            aria-expanded={isOpen}
+            aria-label={href ? "Edit media link" : "Add media link"}
+            className={cn(
+              "size-8 rounded-md border-0 bg-transparent p-1 text-primary-foreground shadow-none hover:bg-primary-foreground focus-visible:outline-none focus-visible:ring-0",
+              href ? "!bg-green-400 !text-white hover:!bg-green-400" : "text-primary-foreground"
+            )}
+            size="icon"
+            type="button"
+            variant="ghost"
+          >
+            <Icon aria-hidden className="size-5" weight="bold" />
+          </Button>
+        }
+      />
       {isOpen ? (
-        <div className="absolute right-0 bottom-full z-50 mb-2 w-64 rounded-xl border border-white/10 bg-foreground/95 p-1 shadow-float backdrop-blur-sm">
+        <PopoverPanel
+          align="end"
+          className="grid-action z-50 w-64 rounded-xl border border-white/10 bg-foreground/95 p-1 shadow-float backdrop-blur-sm"
+          side="bottom"
+          sideOffset={10}
+        >
           <Input
             aria-label="Media link URL"
             className="h-9 border-0 bg-black/25 text-primary-foreground placeholder:text-primary-foreground/45 hover:border-white/10 focus-visible:border-white/10 focus-visible:ring-0"
@@ -512,9 +505,9 @@ function MediaLinkControl({
             ref={inputRef}
             value={href}
           />
-        </div>
+        </PopoverPanel>
       ) : null}
-    </div>
+    </Popover>
   );
 }
 
@@ -687,7 +680,7 @@ export function ProfileBentoInteractiveGrid({
   );
   const shouldReduceMotion = Boolean(useReducedMotion());
   const interactiveShellClassName = cn(
-    "relative flex min-w-0 flex-1 flex-col gap-4 pb-28",
+    "relative flex min-w-0 flex-1 flex-col gap-4 pb-40",
     isCompactCanvas
       ? "mx-auto w-[360px] max-w-full flex-none items-center sm:w-[400px]"
       : "xl:w-[860px] xl:flex-none xl:items-stretch 2xl:w-[860px]"
@@ -1139,6 +1132,21 @@ export function ProfileBentoInteractiveGrid({
               content: {
                 ...item.content,
                 style: nextStyle,
+              },
+            }
+          : item
+      )
+    );
+  }, []);
+  const updateTextUrl = useCallback((id: string, nextUrl: string | null) => {
+    setBento((currentItems) =>
+      currentItems.map((item) =>
+        item.id === id && item.type === "text"
+          ? {
+              ...item,
+              content: {
+                ...item.content,
+                url: nextUrl?.trim() ? nextUrl.trim() : null,
               },
             }
           : item
@@ -1616,6 +1624,7 @@ export function ProfileBentoInteractiveGrid({
               onResizeStart={handleGridResizeStart}
               onResizeStop={handleGridResizeStop}
               getItemMotionPhase={getItemMotionPhase}
+              onTextUrlChange={updateTextUrl}
               renderItem={(gridItem) => {
                 if (suggestionItemIds.has(gridItem.id)) {
                   return (

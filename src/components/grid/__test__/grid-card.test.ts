@@ -1,6 +1,10 @@
 import { describe, expect, test } from "bun:test";
 
-import { getGridCardMotion, getGridCardTapScale } from "@/components/grid/grid-card";
+import {
+  GRID_CARD_INTERACTIVE_TARGET_SELECTOR,
+  getGridCardMotion,
+  getGridCardTapScale,
+} from "@/components/grid/grid-card";
 
 describe("grid-card motion", () => {
   test("uses full motion when reduce motion is off", () => {
@@ -31,11 +35,17 @@ describe("grid-card motion", () => {
     });
   });
 
-  test("disables tap scale for readonly text cards", () => {
+  test("disables tap scale for readonly text and section cards", () => {
     expect(getGridCardTapScale("text", true, false)).toBe(1);
     expect(getGridCardTapScale("text", false, false)).toBe(1.025);
-    expect(getGridCardTapScale("section", true, false)).toBe(1.025);
+    expect(getGridCardTapScale("section", true, false)).toBe(1);
     expect(getGridCardTapScale("link", true, false)).toBe(1);
     expect(getGridCardTapScale("text", true, true)).toBe(1);
+  });
+
+  test("treats popover panels as drag-cancel interactive targets", () => {
+    expect(GRID_CARD_INTERACTIVE_TARGET_SELECTOR).toContain(".grid-action");
+    expect(GRID_CARD_INTERACTIVE_TARGET_SELECTOR).toContain("[data-slot='popover-positioner']");
+    expect(GRID_CARD_INTERACTIVE_TARGET_SELECTOR).toContain("[data-slot='popover-popup']");
   });
 });

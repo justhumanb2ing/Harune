@@ -1,3 +1,4 @@
+import { LinkBreakIcon, LinkSimpleIcon } from "@phosphor-icons/react";
 import {
   AlignVerticalJustifyCenterIcon,
   AlignVerticalJustifyEndIcon,
@@ -12,7 +13,7 @@ import {
   TextAlignStartIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   backgroundColorOptions,
   type GridTextSurfaceStyle,
@@ -25,6 +26,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/animate-ui/components/base/popover";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -37,7 +39,9 @@ type GridResizeControlsProps = {
   selectedOptionId: ResizeOptionId | null;
   onResize: (id: string, option: ResizeOption) => void;
   selectedTextSurfaceStyle?: GridTextSurfaceStyle;
+  selectedTextUrl?: string | null;
   onTextSurfaceChange?: (nextStyle: GridTextSurfaceStyle) => void;
+  onTextUrlChange?: (nextUrl: string | null) => void;
   trailingControl?: ReactNode;
 };
 
@@ -57,12 +61,16 @@ export function GridResizeControls({
   selectedOptionId,
   onResize,
   selectedTextSurfaceStyle,
+  selectedTextUrl,
   onTextSurfaceChange,
+  onTextUrlChange,
   trailingControl,
 }: GridResizeControlsProps) {
   const shouldShowTextSurfaceControl = item.itemType === "text";
   const [isTextSurfacePopoverOpen, setIsTextSurfacePopoverOpen] = useState(false);
   const [isBackgroundPaletteOpen, setIsBackgroundPaletteOpen] = useState(false);
+  const [isTextUrlPopoverOpen, setIsTextUrlPopoverOpen] = useState(false);
+  const isTextUrlPointerInteractionActive = useRef(false);
   const textSurfaceStyle = normalizeGridTextSurfaceStyle(selectedTextSurfaceStyle);
   const selectedBackgroundColorOption = getBackgroundColorOption(textSurfaceStyle.backgroundColor);
   const isExpandedResizeGroup = options.length > 5;
@@ -119,11 +127,37 @@ export function GridResizeControls({
           />
           <Popover
             open={isTextSurfacePopoverOpen}
-            onOpenChange={(nextOpen) => {
+            onOpenChange={(nextOpen, details) => {
+              if (
+                !nextOpen &&
+                (details.reason === "focus-out" || details.reason === "outside-press") &&
+                isTextUrlPointerInteractionActive.current
+              ) {
+                details.cancel();
+                return;
+              }
+
+              if (
+                !nextOpen &&
+                details.reason === "focus-out" &&
+                details.event instanceof FocusEvent
+              ) {
+                const relatedTarget = details.event.relatedTarget;
+
+                if (
+                  relatedTarget instanceof Element &&
+                  relatedTarget.closest(".grid-text-url-control")
+                ) {
+                  details.cancel();
+                  return;
+                }
+              }
+
               setIsTextSurfacePopoverOpen(nextOpen);
 
               if (!nextOpen) {
                 setIsBackgroundPaletteOpen(false);
+                setIsTextUrlPopoverOpen(false);
               }
             }}
           >
@@ -142,7 +176,7 @@ export function GridResizeControls({
             />
             <PopoverPanel
               align="center"
-              className="flex w-auto flex-col gap-2 overflow-hidden rounded-lg border-0 bg-foreground p-1 shadow-float"
+              className="grid-action flex w-auto flex-col gap-2 overflow-hidden rounded-lg border-0 bg-foreground p-1 shadow-float"
               side="bottom"
               sideOffset={8}
             >
@@ -243,7 +277,15 @@ export function GridResizeControls({
                   aria-label={`Toggle background color options for ${item.label}`}
                   className="size-8 rounded-sm border-0 bg-transparent p-1 text-primary-foreground shadow-none hover:bg-background/30 focus-visible:outline-none focus-visible:ring-0"
                   onClick={() => {
-                    setIsBackgroundPaletteOpen((current) => !current);
+                    setIsBackgroundPaletteOpen((current) => {
+                      const nextOpen = !current;
+
+                      if (nextOpen) {
+                        setIsTextUrlPopoverOpen(false);
+                      }
+
+                      return nextOpen;
+                    });
                   }}
                   size="icon"
                   type="button"
@@ -257,6 +299,33 @@ export function GridResizeControls({
                     )}
                   />
                 </Button>
+                {onTextUrlChange ? (
+                  <>
+                    <Separator
+                      orientation="vertical"
+                      className="data-vertical:my-2 data-vertical:w-[2px] rounded-lg bg-background/30"
+                    />
+                    <TextUrlControl
+                      item={item}
+                      isOpen={isTextUrlPopoverOpen}
+                      onOpenChange={(nextOpen) => {
+                        setIsTextUrlPopoverOpen(nextOpen);
+
+                        if (nextOpen) {
+                          setIsBackgroundPaletteOpen(false);
+                        }
+                      }}
+                      onPointerInteractionEnd={() => {
+                        isTextUrlPointerInteractionActive.current = false;
+                      }}
+                      onPointerInteractionStart={() => {
+                        isTextUrlPointerInteractionActive.current = true;
+                      }}
+                      onTextUrlChange={onTextUrlChange}
+                      selectedTextUrl={selectedTextUrl ?? null}
+                    />
+                  </>
+                ) : null}
               </div>
 
               {isBackgroundPaletteOpen ? (
@@ -306,6 +375,143 @@ export function GridResizeControls({
       ) : null}
 
       {trailingControl}
+    </div>
+  );
+}
+
+function TextUrlControl({
+  item,
+  isOpen,
+  onOpenChange,
+  onPointerInteractionEnd,
+  onPointerInteractionStart,
+  onTextUrlChange,
+  selectedTextUrl,
+}: {
+  item: GridItem;
+  isOpen: boolean;
+  onOpenChange: (nextOpen: boolean) => void;
+  onPointerInteractionEnd: () => void;
+  onPointerInteractionStart: () => void;
+  onTextUrlChange: (nextUrl: string | null) => void;
+  selectedTextUrl: string | null;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const isPointerInteractionActive = useRef(false);
+  const inputId = `grid-text-url-${item.id}`;
+  const [draftUrl, setDraftUrl] = useState(selectedTextUrl ?? "");
+  const hasUrl = (selectedTextUrl ?? "").trim().length > 0;
+  const Icon = hasUrl ? LinkSimpleIcon : LinkBreakIcon;
+
+  useEffect(() => {
+    setDraftUrl(selectedTextUrl ?? "");
+  }, [selectedTextUrl]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const frame = requestAnimationFrame(() => {
+      inputRef.current?.focus();
+      inputRef.current?.setSelectionRange(draftUrl.length, draftUrl.length);
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [draftUrl.length, isOpen]);
+
+  const handlePointerInteractionEnd = () => {
+    window.setTimeout(() => {
+      isPointerInteractionActive.current = false;
+      onPointerInteractionEnd();
+    }, 0);
+  };
+
+  const handlePointerInteractionStart = () => {
+    isPointerInteractionActive.current = true;
+    onPointerInteractionStart();
+
+    const handleWindowPointerEnd = () => {
+      handlePointerInteractionEnd();
+      window.removeEventListener("pointerup", handleWindowPointerEnd, true);
+      window.removeEventListener("pointercancel", handleWindowPointerEnd, true);
+    };
+
+    window.addEventListener("pointerup", handleWindowPointerEnd, true);
+    window.addEventListener("pointercancel", handleWindowPointerEnd, true);
+  };
+
+  return (
+    <div className="grid-text-url-control flex flex-col items-end gap-2" ref={containerRef}>
+      <Popover
+        open={isOpen}
+        onOpenChange={(nextOpen, details) => {
+          if (
+            !nextOpen &&
+            (details.reason === "focus-out" || details.reason === "outside-press") &&
+            isPointerInteractionActive.current
+          ) {
+            details.cancel();
+            return;
+          }
+
+          if (!nextOpen && details.reason === "focus-out") {
+            return;
+          }
+
+          onOpenChange(nextOpen);
+        }}
+      >
+        <PopoverTrigger
+          render={
+            <Button
+              aria-controls={isOpen ? inputId : undefined}
+              aria-expanded={isOpen}
+              aria-label={
+                hasUrl ? `Edit text link for ${item.label}` : `Add text link for ${item.label}`
+              }
+              className={cn(
+                "size-8 rounded-md border-0 bg-transparent p-1 text-primary-foreground shadow-none hover:bg-primary-foreground focus-visible:outline-none focus-visible:ring-0",
+                hasUrl ? "!bg-green-400 !text-white hover:!bg-green-400" : "text-primary-foreground"
+              )}
+              size="icon"
+              type="button"
+              variant="ghost"
+            >
+              <Icon aria-hidden className="size-5" weight="bold" />
+            </Button>
+          }
+        />
+        {isOpen ? (
+          <PopoverPanel
+            align="end"
+            className="grid-action z-50 w-64 rounded-xl border border-white/10 bg-foreground/95 p-1 shadow-float backdrop-blur-sm"
+            side="bottom"
+            sideOffset={10}
+            onPointerCancelCapture={handlePointerInteractionEnd}
+            onPointerDownCapture={handlePointerInteractionStart}
+            onPointerUpCapture={handlePointerInteractionEnd}
+          >
+            <Input
+              aria-label={`Text link URL for ${item.label}`}
+              className="h-9 border-0 bg-black/25 text-primary-foreground placeholder:text-primary-foreground/45 hover:border-white/10 focus-visible:border-white/10 focus-visible:ring-0"
+              id={inputId}
+              onChange={(event) => {
+                const nextUrl = event.target.value;
+
+                setDraftUrl(nextUrl);
+                onTextUrlChange(nextUrl.trim().length > 0 ? nextUrl.trim() : null);
+              }}
+              placeholder="https://example.com"
+              ref={inputRef}
+              value={draftUrl}
+            />
+          </PopoverPanel>
+        ) : null}
+      </Popover>
     </div>
   );
 }

@@ -68,6 +68,7 @@ export const toBentoGridItem = (item: ProfileBentoItem): GridItem => ({
     item.type === "link" ? (resolveLinkProviderTheme(item.content.url) ?? undefined) : undefined,
   textSurfaceStyle:
     item.type === "text" ? normalizeGridTextSurfaceStyle(item.content.style) : undefined,
+  textUrl: item.type === "text" ? item.content.url : undefined,
   label:
     item.type === "clock"
       ? "Clock"
@@ -109,6 +110,7 @@ export const normalizeProfileBentoItems = (items: ProfileBentoItem[]): ProfileBe
         ...item,
         content: {
           ...item.content,
+          url: item.content.url?.trim() || null,
           style: normalizeGridTextSurfaceStyle(item.content.style),
         },
       };
@@ -260,6 +262,7 @@ export function createAutoBentoItem(type: CreatableBentoType, currentItems: Prof
     layout: baseLayout,
     content: {
       content: `New text ${count}`,
+      url: null,
       style: normalizeGridTextSurfaceStyle(null),
     },
   } satisfies ProfileBentoItem;

@@ -18,8 +18,8 @@ import {
   type MapViewport,
   MarkerContent,
 } from "@/components/ui/map";
-import { Textarea } from "@/components/ui/textarea";
 import { SlidingNumber } from "@/components/ui/sliding-number";
+import { Textarea } from "@/components/ui/textarea";
 import type { GridBreakpoint, ResizeOptionId } from "@/lib/grid/grid-types";
 import {
   type LinkProviderTheme,
@@ -33,13 +33,29 @@ import {
   type NormalizedMetadata,
 } from "@/lib/metadata/url-metadata";
 import {
-  formatClockDate,
   formatClockTime,
   getClockTimeParts,
   normalizeClockWidgetConfig,
 } from "@/lib/profile/clock";
 import type { ProfileBentoItem } from "@/lib/profile/types";
 import { cn } from "@/lib/utils";
+
+const getClockTimezoneLabel = (timezone: string) => {
+  const labelByTimezone: Record<string, string> = {
+    "America/Los_Angeles": "Los Angeles",
+    "America/New_York": "New York",
+    "Asia/Seoul": "Seoul",
+    "Asia/Shanghai": "Shanghai",
+    "Asia/Singapore": "Singapore",
+    "Asia/Tokyo": "Tokyo",
+    "Australia/Sydney": "Sydney",
+    "Europe/London": "London",
+    "Europe/Paris": "Paris",
+    UTC: "UTC",
+  };
+
+  return labelByTimezone[timezone] ?? timezone.split("/").pop() ?? timezone;
+};
 
 type ProfileBentoLinkSize = ResizeOptionId;
 type ProfileBentoEditableContentCardProps = {
@@ -204,13 +220,14 @@ function ClockBento({
   const backgroundColor = content.style.backgroundColor;
   const backgroundColorOption = getBackgroundColorOption(backgroundColor);
   const timezone = content.timezone ?? content.timeZone ?? "";
-  const dateLabel = formatClockDate(now, content);
+  const timezoneLabel = getClockTimezoneLabel(timezone);
   const timeParts = getClockTimeParts(now, content);
   const clockLabel = formatClockTime(now, content);
 
   return (
     <article
       className="flex size-full min-h-0 flex-col overflow-hidden rounded-[1.5rem] ring-1 ring-border p-4"
+      aria-label={clockLabel}
       style={{ backgroundColor }}
     >
       <div
@@ -225,7 +242,6 @@ function ClockBento({
             getClockTypographyClassName(layout.w, layout.h)
           )}
           dateTime={now.toISOString()}
-          aria-label={clockLabel}
         >
           <div className="flex items-center gap-0.5 text-4xl!">
             <SlidingNumber value={timeParts.hour} padStart />
@@ -248,18 +264,8 @@ function ClockBento({
             </span>
           ) : null}
         </time>
-        <span className="text-xs min-w-0 shrink truncate text-right">{timezone}</span>
+        <span className="text-xs min-w-0 shrink truncate text-right">{timezoneLabel}</span>
       </div>
-      {/*<div
-        className={cn(
-          "flex min-h-0 w-full items-end justify-between gap-3 text-xs font-medium leading-none",
-          backgroundColorOption.foregroundClassName
-        )}
-      >
-        <time className="min-w-0 truncate" dateTime={now.toISOString()}>
-          {dateLabel}
-        </time>
-      </div>*/}
     </article>
   );
 }
@@ -1115,6 +1121,7 @@ function EditableTextBento({
           value={item.content.content}
         />
       </div>
+      {item.content.url ? <TextLinkAction href={item.content.url} label="Open text link" /> : null}
     </div>
   );
 }
@@ -1255,6 +1262,9 @@ const MAP_INTERACTION_OPTIONS = {
 
 const overlayActionLinkClassName =
   "absolute right-3 bottom-4 flex size-7 items-center justify-center rounded-full bg-white text-black shadow-md backdrop-blur-sm transition-colors hover:bg-white/60";
+
+const overlayTextActionLinkClassName =
+  "absolute right-0 bottom-0 z-20 flex size-7 items-center justify-center rounded-full bg-white text-black shadow-md backdrop-blur-sm transition-colors hover:bg-white/60";
 
 function MapPulseMarker({ className }: { className?: string }) {
   return (
@@ -1476,7 +1486,13 @@ function ProfileBentoGridCardContent({
   }
 
   if (item.type === "text") {
-    return <ReadonlyTextBento content={item.content.content} />;
+    return (
+      <ReadonlyTextBento
+        content={item.content.content}
+        preventNavigation={preventNavigation}
+        url={item.content.url}
+      />
+    );
   }
 
   if (item.type === "media") {
@@ -1521,9 +1537,16 @@ function ProfileBentoGridCardContent({
   );
 }
 
-function ReadonlyTextBento({ content }: { content: string }) {
+function ReadonlyTextBento({
+  content,
+  preventNavigation,
+  url,
+}: {
+  content: string;
+  preventNavigation: boolean;
+  url: string | null;
+}) {
   const textSurface = useGridTextSurface();
-
   return (
     <article className="relative flex size-full min-h-0 flex-col overflow-y-auto overscroll-contain rounded-lg p-1">
       <div className={cn("flex h-full w-full", textSurface?.verticalAlignClassName)}>
@@ -1537,6 +1560,32 @@ function ReadonlyTextBento({ content }: { content: string }) {
           {content}
         </p>
       </div>
+      {url ? (
+        <TextLinkAction href={url} label="Open text link" preventNavigation={preventNavigation} />
+      ) : null}
     </article>
+  );
+}
+
+function TextLinkAction({
+  href,
+  label,
+  preventNavigation = false,
+}: {
+  href: string;
+  label: string;
+  preventNavigation?: boolean;
+}) {
+  return (
+    <a
+      aria-label={label}
+      className={cn("grid-action", overlayTextActionLinkClassName)}
+      href={href}
+      onClick={preventNavigation ? (event) => event.preventDefault() : undefined}
+      rel="noreferrer"
+      target="_blank"
+    >
+      <ArrowCircleUpRightIcon aria-hidden className="size-7" weight="fill" />
+    </a>
   );
 }

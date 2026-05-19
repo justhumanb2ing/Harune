@@ -37,6 +37,7 @@ type GridCardProps = {
   onRemove: (id: string) => void;
   onResize: (id: string, breakpoint: GridBreakpoint, option: ResizeOption) => void;
   onTextSurfaceChange?: (id: string, nextStyle: GridTextSurfaceStyle) => void;
+  onTextUrlChange?: (id: string, nextUrl: string | null) => void;
   readOnly?: boolean;
   trailingResizeControl?: ReactNode;
   shouldReduceMotion: boolean;
@@ -45,6 +46,8 @@ type GridCardProps = {
 
 const GRID_CARD_MOTION_EASE = [0.22, 1, 0.36, 1] as const;
 const GRID_CARD_DRAG_EASE = [0.18, 0.9, 0.22, 1] as const;
+export const GRID_CARD_INTERACTIVE_TARGET_SELECTOR =
+  "button, input, textarea, select, a, [contenteditable='true'], [role='radio'], [data-slot='radio-group-item'], [data-slot='popover-positioner'], [data-slot='popover-popup'], .grid-action, .grid-text-selection";
 
 type GridCardStyle = MotionStyle & {
   "--grid-card-muted-foreground"?: string;
@@ -124,6 +127,7 @@ export function GridCard({
   onRemove,
   onResize,
   onTextSurfaceChange,
+  onTextUrlChange,
   readOnly = false,
   trailingResizeControl,
   shouldReduceMotion,
@@ -139,6 +143,7 @@ export function GridCard({
   const [isSectionFocusActive, setIsSectionFocusActive] = useState(false);
   const textSurfaceStyle =
     item.itemType === "text" ? normalizeGridTextSurfaceStyle(item.textSurfaceStyle) : null;
+  const textUrl = item.itemType === "text" ? (item.textUrl ?? null) : null;
   const textSurfaceBackgroundColorOption = textSurfaceStyle
     ? getBackgroundColorOption(textSurfaceStyle.backgroundColor)
     : null;
@@ -206,189 +211,195 @@ export function GridCard({
       : "bg-white";
 
   return (
-    <motion.div
-      className={`group/item relative w-full pointer-events-auto ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} ${dragInteractionClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isLiftActive || motionPhase ? "will-change-transform" : ""} ${isLiftActive ? "drop-shadow-xs" : ""} ${isExiting ? "pointer-events-none select-none" : ""}`}
-      data-link-provider-theme={item.theme ? "true" : undefined}
-      onPointerDownCapture={(event) => {
-        if (readOnly || isLiftActive) {
-          return;
-        }
-
-        const target = event.target;
-
-        if (
-          !(target instanceof Element) ||
-          target.closest(
-            "button, input, textarea, select, a, [contenteditable='true'], [role='radio'], [data-slot='radio-group-item'], .grid-action"
-          )
-        ) {
-          return;
-        }
-
-        onDragIntentStart?.(item.id);
-      }}
-      onPointerUpCapture={() => {
-        if (isDragIntentActive && !isDragActive) {
-          onDragIntentStop?.(item.id);
-        }
-      }}
-      onPointerCancelCapture={() => {
-        if (isDragIntentActive && !isDragActive) {
-          onDragIntentStop?.(item.id);
-        }
-      }}
-      onBlurCapture={(event) => {
-        if (!isSectionItem || event.currentTarget.contains(event.relatedTarget)) {
-          return;
-        }
-
-        setIsSectionFocusActive(false);
-      }}
-      onFocusCapture={() => {
-        if (isSectionItem) {
-          setIsSectionFocusActive(true);
-        }
-      }}
-      onMouseEnter={() => {
-        if (isSectionItem) {
-          setIsSectionPointerActive(true);
-        }
-      }}
-      onMouseLeave={() => {
-        if (isSectionItem) {
-          setIsSectionPointerActive(false);
-        }
-      }}
-      onAnimationComplete={() => {
-        if (motionPhase) {
-          onMotionComplete?.(item.id, motionPhase);
-        }
-      }}
-      whileTap={
-        shouldReduceMotion || tapScale === 1
-          ? undefined
-          : {
-              scale: tapScale,
-            }
-      }
-      style={{ rotate: isDragActive ? cardRotate : 0, x: isDragActive ? cardX : 0 }}
-      {...motionProps}
-    >
+    <>
       <motion.div
-        animate={
-          shouldReduceMotion
-            ? { y: 0 }
+        className={`relative w-full pointer-events-auto ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} ${dragInteractionClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)] " : "h-full"} ${isLiftActive || motionPhase ? "will-change-transform" : ""} ${isLiftActive ? "drop-shadow-xs" : ""} ${isExiting ? "pointer-events-none select-none" : ""}`}
+        data-link-provider-theme={item.theme ? "true" : undefined}
+        onPointerDownCapture={(event) => {
+          if (readOnly || isLiftActive) {
+            return;
+          }
+
+          const target = event.target;
+
+          if (
+            !(target instanceof Element) ||
+            target.closest(GRID_CARD_INTERACTIVE_TARGET_SELECTOR)
+          ) {
+            return;
+          }
+
+          onDragIntentStart?.(item.id);
+        }}
+        onPointerUpCapture={() => {
+          if (isDragIntentActive && !isDragActive) {
+            onDragIntentStop?.(item.id);
+          }
+        }}
+        onPointerCancelCapture={() => {
+          if (isDragIntentActive && !isDragActive) {
+            onDragIntentStop?.(item.id);
+          }
+        }}
+        onBlurCapture={(event) => {
+          if (!isSectionItem || event.currentTarget.contains(event.relatedTarget)) {
+            return;
+          }
+
+          setIsSectionFocusActive(false);
+        }}
+        onFocusCapture={() => {
+          if (isSectionItem) {
+            setIsSectionFocusActive(true);
+          }
+        }}
+        onMouseEnter={() => {
+          if (isSectionItem) {
+            setIsSectionPointerActive(true);
+          }
+        }}
+        onMouseLeave={() => {
+          if (isSectionItem) {
+            setIsSectionPointerActive(false);
+          }
+        }}
+        onAnimationComplete={() => {
+          if (motionPhase) {
+            onMotionComplete?.(item.id, motionPhase);
+          }
+        }}
+        whileTap={
+          shouldReduceMotion || tapScale === 1
+            ? undefined
             : {
-                scale: dragScale,
-                y: isLiftActive ? -6 : 0,
+                scale: tapScale,
               }
         }
-        className={`relative flex h-full min-h-0 w-full flex-col justify-between ${frameClassName} ${radiusClassName} ${shellBackgroundClassName} ${paddingClassName} transition-shadow ${bevelClassName} ${shellShadowClassName} ${isExiting ? "pointer-events-none select-none shadow-none" : ""} ${isDragActive || motionPhase ? "will-change-transform" : ""}`}
-        style={
-          {
-            ...shellStyle,
-            transformOrigin: "50% 70%",
-          } satisfies GridCardStyle
-        }
-        transition={
-          shouldReduceMotion
-            ? { duration: 0.12, ease: GRID_CARD_MOTION_EASE }
-            : {
-                y: {
-                  duration: isLiftActive ? 0.28 : 0.32,
-                  ease: GRID_CARD_DRAG_EASE,
-                },
-                scale: {
-                  duration: isLiftActive ? 0.32 : 0.36,
-                  ease: GRID_CARD_DRAG_EASE,
-                },
-              }
-        }
+        style={{ rotate: isDragActive ? cardRotate : 0, x: isDragActive ? cardX : 0 }}
+        {...motionProps}
       >
-        <div
-          aria-hidden
-          className={`pointer-events-none absolute inset-0 rounded-[inherit] ${shadowLayerClassName}`}
-        />
-        {children ? (
-          <div className="min-h-0 flex-1">
-            {item.itemType === "text" && textSurfaceClassNames ? (
-              <div
-                className={`relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-[1.5rem] ${
-                  textSurfaceBackgroundColorOption?.id === "white" ? "" : "surface-bevel"
-                }`}
-              >
-                <div className="min-h-0 flex-1 p-4">
-                  <GridTextSurfaceProvider
-                    backgroundColorClassName={textSurfaceClassNames.backgroundColorClassName}
-                    focusVisibleBackgroundClassName={
-                      textSurfaceClassNames.focusVisibleBackgroundClassName
-                    }
-                    foregroundClassName={textSurfaceClassNames.foregroundClassName}
-                    hoverBackgroundClassName={textSurfaceClassNames.hoverBackgroundClassName}
-                    textAlignClassName={textSurfaceClassNames.textAlignClassName}
-                    verticalAlignClassName={textSurfaceClassNames.verticalAlignClassName}
-                  >
-                    {children}
-                  </GridTextSurfaceProvider>
-                </div>
-              </div>
-            ) : (
-              children
-            )}
-          </div>
-        ) : (
-          <div>
-            <div className="flex items-start justify-between gap-3">
-              <p className="font-medium text-sm text-stone-950">{item.label}</p>
-              {shouldShowActions ? (
-                <button
-                  aria-label={`Remove ${item.label}`}
-                  className="pointer-events-none absolute -top-3 -right-3 z-10 size-9 cursor-pointer rounded-full border-[0.5px] border-border bg-background px-2 py-1 text-[10px] text-black opacity-0 shadow-sm transition-opacity hover:bg-secondary group-hover/item:pointer-events-auto group-hover/item:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 grid-action"
-                  onClick={() => {
-                    onRemove(item.id);
-                  }}
-                  type="button"
-                >
-                  <TrashIcon className="size-5 stroke-3" />
-                </button>
-              ) : null}
-            </div>
-            <p className="mt-1 text-stone-500 text-xs">{item.description}</p>
-          </div>
-        )}
-        {children && shouldShowActions ? (
-          <div className="flex items-start justify-between gap-3">
-            <Button
-              size="icon-lg"
-              aria-label={`Remove ${item.label}`}
-              className="pointer-events-none absolute -top-3 -right-3 z-10 size-9 cursor-pointer rounded-full border-[0.5px] border-border bg-background px-2 py-1 text-[10px] text-black opacity-0 shadow-sm transition-opacity hover:bg-secondary group-hover/item:pointer-events-auto group-hover/item:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 grid-action"
-              onClick={() => {
-                onRemove(item.id);
-              }}
-              type="button"
-            >
-              <TrashIcon className="size-4 stroke-3" />
-            </Button>
-          </div>
-        ) : null}
-        {shouldShowActions && resizeOptions.length > 0 ? (
-          <GridResizeControls
-            item={item}
-            onResize={(id, option) => {
-              onResize(id, activeBreakpoint, option);
-            }}
-            onTextSurfaceChange={
-              item.itemType === "text" && onTextSurfaceChange
-                ? (nextStyle) => onTextSurfaceChange(item.id, nextStyle)
-                : undefined
-            }
-            options={resizeOptions}
-            selectedTextSurfaceStyle={textSurfaceStyle ?? undefined}
-            selectedOptionId={selectedResizeOption}
-            trailingControl={trailingResizeControl}
+        <motion.div
+          animate={
+            shouldReduceMotion
+              ? { y: 0 }
+              : {
+                  scale: dragScale,
+                  y: isLiftActive ? -6 : 0,
+                }
+          }
+          className={`relative flex h-full min-h-0 w-full flex-col justify-between ${frameClassName} ${radiusClassName} ${shellBackgroundClassName} ${paddingClassName} transition-shadow ${bevelClassName} ${shellShadowClassName} ${isExiting ? "pointer-events-none select-none shadow-none" : ""} ${isDragActive || motionPhase ? "will-change-transform" : ""}`}
+          style={
+            {
+              ...shellStyle,
+              transformOrigin: "50% 70%",
+            } satisfies GridCardStyle
+          }
+          transition={
+            shouldReduceMotion
+              ? { duration: 0.12, ease: GRID_CARD_MOTION_EASE }
+              : {
+                  y: {
+                    duration: isLiftActive ? 0.28 : 0.32,
+                    ease: GRID_CARD_DRAG_EASE,
+                  },
+                  scale: {
+                    duration: isLiftActive ? 0.32 : 0.36,
+                    ease: GRID_CARD_DRAG_EASE,
+                  },
+                }
+          }
+        >
+          <div
+            aria-hidden
+            className={`pointer-events-none absolute inset-0 rounded-[inherit] ${shadowLayerClassName}`}
           />
-        ) : null}
+          {children ? (
+            <div className="min-h-0 flex-1">
+              {item.itemType === "text" && textSurfaceClassNames ? (
+                <div
+                  className={`relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-[1.5rem] ${
+                    textSurfaceBackgroundColorOption?.id === "white" ? "" : "surface-bevel"
+                  }`}
+                >
+                  <div className="min-h-0 flex-1 p-4">
+                    <GridTextSurfaceProvider
+                      backgroundColorClassName={textSurfaceClassNames.backgroundColorClassName}
+                      focusVisibleBackgroundClassName={
+                        textSurfaceClassNames.focusVisibleBackgroundClassName
+                      }
+                      foregroundClassName={textSurfaceClassNames.foregroundClassName}
+                      hoverBackgroundClassName={textSurfaceClassNames.hoverBackgroundClassName}
+                      textAlignClassName={textSurfaceClassNames.textAlignClassName}
+                      verticalAlignClassName={textSurfaceClassNames.verticalAlignClassName}
+                    >
+                      {children}
+                    </GridTextSurfaceProvider>
+                  </div>
+                </div>
+              ) : (
+                children
+              )}
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-start justify-between gap-3">
+                <p className="font-medium text-sm text-stone-950">{item.label}</p>
+                {shouldShowActions ? (
+                  <button
+                    aria-label={`Remove ${item.label}`}
+                    className="pointer-events-none absolute -top-3 -left-3 z-10 size-9 cursor-pointer rounded-full border-[0.5px] border-border bg-background px-2 py-1 text-[10px] text-black opacity-0 shadow-sm transition-opacity hover:bg-secondary group-hover/item:pointer-events-auto group-hover/item:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 grid-action"
+                    onClick={() => {
+                      onRemove(item.id);
+                    }}
+                    type="button"
+                  >
+                    <TrashIcon className="size-5 stroke-3" />
+                  </button>
+                ) : null}
+              </div>
+              <p className="mt-1 text-stone-500 text-xs">{item.description}</p>
+            </div>
+          )}
+          {children && shouldShowActions ? (
+            <div className="flex items-start justify-between gap-3">
+              <Button
+                size="icon-lg"
+                aria-label={`Remove ${item.label}`}
+                className="pointer-events-none absolute -top-3 -left-3 z-10 size-9 cursor-pointer rounded-full border-[0.5px] border-border bg-background px-2 py-1 text-[10px] text-black opacity-0 shadow-sm transition-opacity hover:bg-secondary group-hover/item:pointer-events-auto group-hover/item:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 grid-action"
+                onClick={() => {
+                  onRemove(item.id);
+                }}
+                type="button"
+              >
+                <TrashIcon className="size-4 stroke-3" />
+              </Button>
+            </div>
+          ) : null}
+        </motion.div>
       </motion.div>
-    </motion.div>
+      {shouldShowActions && resizeOptions.length > 0 ? (
+        <GridResizeControls
+          item={item}
+          onResize={(id, option) => {
+            onResize(id, activeBreakpoint, option);
+          }}
+          onTextSurfaceChange={
+            item.itemType === "text" && onTextSurfaceChange
+              ? (nextStyle) => onTextSurfaceChange(item.id, nextStyle)
+              : undefined
+          }
+          onTextUrlChange={
+            item.itemType === "text" && onTextUrlChange
+              ? (nextUrl) => onTextUrlChange(item.id, nextUrl)
+              : undefined
+          }
+          selectedTextUrl={textUrl}
+          options={resizeOptions}
+          selectedTextSurfaceStyle={textSurfaceStyle ?? undefined}
+          selectedOptionId={selectedResizeOption}
+          trailingControl={trailingResizeControl}
+        />
+      ) : null}
+    </>
   );
 }

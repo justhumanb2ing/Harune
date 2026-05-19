@@ -300,14 +300,36 @@ export function LandingMediaCard({ item }: { item: ProfileMediaBento }) {
 export function LandingTextCard({ item }: { item: ProfileTextBento }) {
   const textSurfaceStyle = normalizeGridTextSurfaceStyle(item.content.style);
   const backgroundColorOption = getBackgroundColorOption(textSurfaceStyle.backgroundColor);
+  const className = cn(
+    "relative flex size-full min-h-0 flex-col rounded-[1.5rem] p-3.5 shadow-float outline outline-border/35",
+    backgroundColorOption.className
+  );
+
+  if (item.content.url) {
+    return (
+      <a className={className} href={item.content.url} rel="noreferrer" target="_blank">
+        <div
+          className={cn(
+            "relative flex size-full min-h-0 flex-col overflow-y-auto overscroll-contain rounded-lg p-1",
+            getVerticalAlignClassName(textSurfaceStyle.verticalAlign)
+          )}
+        >
+          <p
+            className={cn(
+              "w-full break-all whitespace-pre-line text-lg! font-medium leading-relaxed",
+              getTextAlignClassName(textSurfaceStyle.textAlign),
+              backgroundColorOption.foregroundClassName
+            )}
+          >
+            {item.content.content}
+          </p>
+        </div>
+      </a>
+    );
+  }
 
   return (
-    <article
-      className={cn(
-        "pointer-events-none relative flex size-full min-h-0 flex-col rounded-[1.5rem] p-3.5 shadow-float outline outline-border/35",
-        backgroundColorOption.className
-      )}
-    >
+    <article className={className}>
       <div
         className={cn(
           "relative flex size-full min-h-0 flex-col overflow-y-auto overscroll-contain rounded-lg p-1",
@@ -413,6 +435,7 @@ export const showcaseItems = [
         verticalAlign: "start",
       }),
       content: "New York always feels busy, but somehow the calmest moment still shows up here.",
+      url: "https://example.com/new-york-note",
     },
     id: "showcase-text",
     layout: { compact: { h: 2, w: 1, x: 0, y: 0 }, desktop: { h: 2, w: 1, x: 0, y: 0 } },

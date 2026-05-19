@@ -75,6 +75,7 @@ export type ProfileTextBento = {
   layout: ProfileBentoLayouts;
   content: {
     content: string;
+    url: string | null;
     style: ProfileTextSurfaceStyle;
   };
 };

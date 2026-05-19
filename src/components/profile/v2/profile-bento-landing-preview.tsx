@@ -112,6 +112,7 @@ const landingBento: ProfileBentoItem[] = [
         verticalAlign: "start",
       }),
       content: "New works, references, and notes from the studio.",
+      url: "https://example.com/studio-notes",
     },
   },
   {

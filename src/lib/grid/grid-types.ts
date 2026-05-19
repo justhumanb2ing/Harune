@@ -18,6 +18,7 @@ export type GridItem = {
   theme?: GridItemTheme;
   clockBackgroundColor?: string;
   textSurfaceStyle?: ProfileTextSurfaceStyle;
+  textUrl?: string | null;
 };
 
 export type GridTextSurfaceStyle = ProfileTextSurfaceStyle;

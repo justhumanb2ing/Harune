@@ -3,7 +3,11 @@ import type { ReactNode } from "react";
 import type { LayoutItem } from "react-grid-layout";
 import { Responsive } from "react-grid-layout";
 import { fastVerticalCompactor } from "react-grid-layout/extras";
-import { GridCard, type GridCardMotionPhase } from "@/components/grid/grid-card";
+import {
+  GRID_CARD_INTERACTIVE_TARGET_SELECTOR,
+  GridCard,
+  type GridCardMotionPhase,
+} from "@/components/grid/grid-card";
 import {
   BREAKPOINTS,
   COLS,
@@ -39,6 +43,7 @@ type ResponsiveGridCanvasProps = {
   onRemoveItem: (id: string) => void;
   onResizeItem: (id: string, breakpoint: GridBreakpoint, option: ResizeOption) => void;
   onTextSurfaceChange?: (id: string, nextStyle: GridTextSurfaceStyle) => void;
+  onTextUrlChange?: (id: string, nextUrl: string | null) => void;
   onResizeStart: (newItem: LayoutItem | null | undefined) => void;
   onResizeStop: () => void;
   readOnly?: boolean;
@@ -69,6 +74,7 @@ export function ResponsiveGridCanvas({
   onRemoveItem,
   onResizeItem,
   onTextSurfaceChange,
+  onTextUrlChange,
   onResizeStart,
   onResizeStop,
   readOnly = false,
@@ -94,7 +100,11 @@ export function ResponsiveGridCanvas({
       cols={COLS}
       compactor={fastVerticalCompactor}
       containerPadding={GRID_PADDING}
-      dragConfig={{ bounded: false, cancel: ".grid-action", enabled: !readOnly }}
+      dragConfig={{
+        bounded: false,
+        cancel: GRID_CARD_INTERACTIVE_TARGET_SELECTOR,
+        enabled: !readOnly,
+      }}
       layouts={layouts}
       margin={GRID_MARGIN}
       maxRows={48}
@@ -128,7 +138,7 @@ export function ResponsiveGridCanvas({
         if (isPlainItem) {
           return (
             <div
-              className={`overflow-visible ${radiusClassName} ${isVisuallyThinItem ? "flex items-end" : ""}`}
+              className={`group/item relative overflow-visible ${radiusClassName} ${isVisuallyThinItem ? "flex items-end" : ""}`}
               data-profile-bento-grid-item-id={item.id}
               key={item.id}
             >
@@ -139,7 +149,7 @@ export function ResponsiveGridCanvas({
 
         return (
           <div
-            className={`overflow-visible ${radiusClassName} ${isVisuallyThinItem ? "flex items-end" : ""} ${item.id === THIN_PLACEHOLDER_ITEM_ID ? "pointer-events-none" : ""}`}
+            className={`group/item relative overflow-visible ${radiusClassName} ${isVisuallyThinItem ? "flex items-end" : ""} ${item.id === THIN_PLACEHOLDER_ITEM_ID ? "pointer-events-none" : ""}`}
             data-profile-bento-grid-item-id={item.id}
             key={item.id}
           >
@@ -158,6 +168,7 @@ export function ResponsiveGridCanvas({
               onRemove={onRemoveItem}
               onResize={onResizeItem}
               onTextSurfaceChange={onTextSurfaceChange}
+              onTextUrlChange={onTextUrlChange}
               readOnly={readOnly}
               shouldReduceMotion={shouldReduceMotion}
               trailingResizeControl={renderTrailingResizeControl?.(item)}

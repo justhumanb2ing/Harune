@@ -5,8 +5,10 @@ description: See the latest Harune product updates and user-visible improvements
 ---
 
 ## May 19, 2026
-- Added CHZZK follower count UI when adding CHZZK links to profile bento cards.
-- Added Spotify widget support for Spotify links in profile bento cards.
+- Added CHZZK follower count UI when adding CHZZK link.
+- Added Twitch follower count UI when adding Twitch link.
+- Added Discord member count UI when adding Discord link.
+- Added Spotify widget support for Spotify link.
 
 ## May 18, 2026
 - Added mobile and desktop preview switching for a better editing experience.

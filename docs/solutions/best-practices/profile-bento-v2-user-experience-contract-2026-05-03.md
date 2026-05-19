@@ -79,6 +79,8 @@ Public readonly surface와 owner editor surface는 의도적으로 같은 profil
 Text item은 content만이 아니라 surface style도 함께 저장하고, editor와 public/landing preview가 같은 style contract를 따라야 한다.
 
 - text item의 `content.style`는 `backgroundColor`, `textAlign`, `verticalAlign`을 포함해야 한다.
+- text item의 `content.url`이 있으면 owner editor의 ellipsis popover에서 색상 아이콘 옆 링크 버튼으로 편집할 수 있어야 하고, public/landing surface는 같은 text surface를 anchor로 렌더링해야 한다.
+- owner editor의 ellipsis/link popover panel은 portal로 렌더링되어도 grid drag cancel target이어야 한다. 패널, 내부 input, composite controls에서 pointer를 누른 채 움직이거나 텍스트를 selection해도 parent grid item의 press intent, `whileTap`, drag로 이어지면 안 된다.
 - editor의 resize control은 단순한 preview가 아니라 실제 text item state를 갱신해야 한다.
 - `backgroundColor`는 text card shell 배경에 적용하고, `textAlign`은 텍스트 블록 정렬에 적용하고, `verticalAlign`은 텍스트 surface wrapper 정렬에 적용한다.
 - style 값이 비어 있거나 옛 데이터로 누락되면 `#ffffff`, `start`, `start`를 기본값으로 복원한다.

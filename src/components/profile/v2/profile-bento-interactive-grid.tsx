@@ -1324,6 +1324,8 @@ export function ProfileBentoInteractiveGrid({
       return false;
     }
 
+    setIsLinkInputOpen(false);
+
     const liveBento = mergeLayoutsIntoBento(bento, layouts);
     const placeholderItem = createLinkBentoSkeleton(rawUrl, liveBento, {
       spotifyEmbed: options.spotifyEmbed,

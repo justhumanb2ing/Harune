@@ -3,7 +3,6 @@ import { COLS, RESIZE_OPTIONS, THIN_PLACEHOLDER_ITEM_ID } from "@/lib/grid/grid-
 import type { GridBreakpoint, GridItem, GridLayouts, ResizeOptionId } from "@/lib/grid/grid-types";
 
 const CLOCK_RESIZE_OPTION_IDS = new Set<ResizeOptionId>(["2x2", "2x4"]);
-const LINK_RESIZE_OPTION_IDS = new Set<ResizeOptionId>(["2x2", "2x4"]);
 
 export function snapCardHeight(height: number) {
   if (height <= 1) {
@@ -170,8 +169,10 @@ export function getResizeOptionsForItem(item: GridItem) {
     return [];
   }
 
-  if (item.itemType === "link") {
-    return RESIZE_OPTIONS.filter((option) => LINK_RESIZE_OPTION_IDS.has(option.id));
+  if (item.resizeOptionIds) {
+    const resizeOptionIds = new Set(item.resizeOptionIds);
+
+    return RESIZE_OPTIONS.filter((option) => resizeOptionIds.has(option.id));
   }
 
   if (item.itemType === "clock") {

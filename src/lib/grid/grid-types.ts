@@ -16,6 +16,7 @@ export type GridItem = {
   description: string;
   isFullBleed?: boolean;
   itemType?: string;
+  resizeOptionIds?: readonly ResizeOptionId[];
   theme?: GridItemTheme;
   clockBackgroundColor?: string;
   textSurfaceStyle?: ProfileTextSurfaceStyle;

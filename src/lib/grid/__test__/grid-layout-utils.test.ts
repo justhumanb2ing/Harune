@@ -4,12 +4,26 @@ import { getResizeOptionId, getResizeOptionsForItem } from "@/lib/grid/grid-layo
 import type { GridItem, GridLayouts } from "@/lib/grid/grid-types";
 
 describe("grid-layout-utils", () => {
-  test("exposes only the third and fifth resize presets for link items", () => {
+  test("exposes all visible resize presets for regular link items", () => {
     const linkItem: GridItem = {
       id: "link-1",
       label: "Link",
       description: "Link widget",
       itemType: "link",
+    };
+
+    const options = getResizeOptionsForItem(linkItem);
+
+    expect(options.map((option) => option.id)).toEqual(["1x2", "2x1", "2x2", "1x4", "2x4"]);
+  });
+
+  test("exposes explicit resize presets for spotify embed link items", () => {
+    const linkItem: GridItem = {
+      id: "link-1",
+      label: "Link",
+      description: "Link widget",
+      itemType: "link",
+      resizeOptionIds: ["2x2", "2x4"],
     };
 
     const options = getResizeOptionsForItem(linkItem);

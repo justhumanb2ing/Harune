@@ -1,7 +1,7 @@
 "use client";
 
-import { LinkBreakIcon, LinkSimpleIcon, SpinnerGapIcon } from "@phosphor-icons/react";
-import { CheckIcon, ExpandIcon } from "lucide-react";
+import { LinkBreakIcon, LinkSimpleIcon } from "@phosphor-icons/react";
+import { ExpandIcon } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { usePathname } from "next/navigation";
 import type { CSSProperties, RefObject } from "react";
@@ -107,6 +107,7 @@ import {
   type PendingProfileBentoMediaUploadsById,
 } from "./profile-bento-media-upload";
 import { ProfileBentoSurfaceMotion } from "./profile-bento-readonly-profile-motion";
+import { ProfileBentoShareActionDialog } from "./profile-bento-share-action-dialog";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
@@ -732,6 +733,7 @@ export function ProfileBentoInteractiveGrid({
   );
   const currentPayload = useMemo(() => createPayload(bento, layouts), [bento, layouts]);
   const currentSnapshot = useMemo(() => JSON.stringify(currentPayload), [currentPayload]);
+  const profilePage = profileEditor.data?.page;
   const isDirty = currentSnapshot !== savedSnapshot;
   const hasProfileChanges = profileEditor.hasUnsyncedChanges;
   const isCrawlingLink = loadingLinkItemIds.size > 0;
@@ -739,13 +741,6 @@ export function ProfileBentoInteractiveGrid({
   const isSaving = isPending || profileEditor.isSyncing;
   const isPrimaryActionBusy = isSaving || isCrawlingLink || isUploadingMedia;
   const canSave = isDirty || hasProfileChanges;
-  const primaryActionLabel = isPrimaryActionBusy
-    ? "Saving"
-    : isCopied
-      ? "Copied"
-      : canSave
-        ? "Save"
-        : "Share page";
   const isSectionDragActive =
     activeDragItemId !== null && itemTypeById.get(activeDragItemId) === "section";
   const isThinPlaceholderShapeActive = isThinPlaceholderActive || isSectionDragActive;
@@ -1568,19 +1563,6 @@ export function ProfileBentoInteractiveGrid({
     }
   };
 
-  const handlePrimaryAction = () => {
-    if (isPrimaryActionBusy) {
-      return;
-    }
-
-    if (canSave) {
-      save();
-      return;
-    }
-
-    void copyMyPage();
-  };
-
   return (
     <div className={interactiveShellClassName} style={{ minHeight: gridMinHeight }}>
       <motion.header
@@ -1668,18 +1650,28 @@ export function ProfileBentoInteractiveGrid({
           </motion.form>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-2" ref={actionRowRef}>
-          <Button
-            aria-busy={isPrimaryActionBusy}
-            disabled={isPrimaryActionBusy}
-            onClick={handlePrimaryAction}
-            type="button"
-            size={"lg"}
-            className={"brand-button w-36 font-semibold py-5 text-base shadow-none border-0"}
-          >
-            {isSaving ? <SpinnerGapIcon className="size-4 animate-spin" /> : null}
-            {!isSaving && isCopied ? <CheckIcon className="size-4" /> : null}
-            <span>{primaryActionLabel}</span>
-          </Button>
+          <ProfileBentoShareActionDialog
+            handle={currentHandle}
+            isBusy={isPrimaryActionBusy}
+            isCopied={isCopied}
+            isSaving={isSaving}
+            triggerLabel={canSave ? "Save" : "Share page"}
+            image={profilePage?.image ?? null}
+            imageCrop={profilePage?.imageCrop ?? null}
+            name={profilePage?.name ?? currentHandle}
+            onPrimaryAction={() => {
+              if (isPrimaryActionBusy) {
+                return;
+              }
+
+              if (canSave) {
+                save();
+                return;
+              }
+
+              void copyMyPage();
+            }}
+          />
           <Separator
             orientation="vertical"
             className={"data-vertical:w-[3px] my-3 rounded-lg mx-2"}

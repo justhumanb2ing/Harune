@@ -2,6 +2,7 @@
 
 import { HandPeaceIcon } from "@phosphor-icons/react";
 import Image from "next/image";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -92,12 +93,21 @@ export function ProfileBentoGridToolbarWidget({
   items?: readonly ProfileBentoGridToolbarWidgetItem[];
   onClockSelect?: () => void;
 }) {
+  const [open, setOpen] = useState(false);
   const nextItems = items.map((item) =>
-    item.id === "clock" && onClockSelect ? { ...item, onSelect: onClockSelect } : item
+    item.id === "clock" && onClockSelect
+      ? {
+          ...item,
+          onSelect: () => {
+            onClockSelect();
+            setOpen(false);
+          },
+        }
+      : item
   );
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <Tooltip>
         <TooltipTrigger
           render={

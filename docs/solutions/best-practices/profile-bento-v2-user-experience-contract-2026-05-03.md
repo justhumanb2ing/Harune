@@ -91,6 +91,7 @@ Text item은 content만이 아니라 surface style도 함께 저장하고, edito
 Clock widget은 사용자가 추가 직후 바로 “시간 카드”로 인식할 수 있어야 하고, background color 변경과 size 조절이 다른 카드와 충돌하지 않아야 한다.
 
 - widget dialog의 `Clock` 항목을 누르면 clock bento가 grid에 즉시 추가되어야 한다.
+- widget dialog의 `Clock` 항목을 누른 뒤에는 사용자가 추가된 grid item을 바로 볼 수 있도록 dialog가 닫혀야 한다.
 - clock bento는 초까지 보이도록 `showSeconds`를 기본 활성화하고, 날짜는 좌측 하단, timezone 문자열은 우측 하단에 `justify-between`으로 배치한다.
 - clock bento의 날짜는 `May 18, 2026`처럼 영문 long month, day, year 순서로 표시한다.
 - clock bento는 저장된 `showSeconds`가 누락되었거나 false인 옛 데이터도 초 표시를 기본값으로 복원해 실제 전자시계처럼 매초 갱신되어야 한다.

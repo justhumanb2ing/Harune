@@ -128,7 +128,7 @@ export function ProfileBentoOwnerEditorSurface({
     "relative mx-auto flex min-w-0 gap-8 xl:gap-8",
     isCompactSurface
       ? "w-full flex-col items-center"
-      : "flex-col items-center 2xl:flex-row 2xl:items-stretch 2xl:justify-center 2xl:gap-[clamp(7.5rem,calc((100vw-96rem)*0.6+7.5rem),18rem)]",
+      : "flex-col items-center 2xl:flex-row 2xl:items-stretch 2xl:justify-evenly 2xl:gap-[clamp(7.5rem,calc((100vw-96rem)*0.6+7.5rem),18rem)]",
     shouldFrameCompactSurface && "mb-12 h-[calc(100dvh-13rem)]"
   );
   const previewSurfaceWidth = shouldFrameCompactSurface ? "min(480px, calc(100vw - 3rem))" : "100%";

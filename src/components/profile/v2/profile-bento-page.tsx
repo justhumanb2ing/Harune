@@ -73,7 +73,7 @@ export function ProfileBentoProfileAside({
             {actionSlot ? <div className="shrink-0">{actionSlot}</div> : null}
           </div>
 
-          <div className="flex flex-col gap-2 px-4 pt-0 2xl:px-0">
+          <div className="flex flex-col gap-4 px-4 pt-0 2xl:px-0">
             {page.name ? (
               <h1 className="min-h-8 whitespace-pre-line break-all p-0 font-bold text-3xl! tracking-tighter 2xl:text-5xl!">
                 {page.name}

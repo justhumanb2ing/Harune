@@ -113,6 +113,7 @@ export function ProfileBentoOwnerEditorSurface({
   const isBelowXxl = useIsBelowXxl();
   const [previewMode, setPreviewMode] = useState<ProfileBentoGridPreviewMode>("desktop");
   const [previewSurfaceScope, animatePreviewSurface] = useAnimate<HTMLDivElement>();
+  const previewViewportRef = useRef<HTMLDivElement>(null);
   const didMountPreviewSurfaceRef = useRef(false);
   const isCompactSurface = isBelowXxl || previewMode === "mobile";
   const shouldFrameCompactSurface = !isBelowXxl && isCompactSurface;
@@ -190,7 +191,7 @@ export function ProfileBentoOwnerEditorSurface({
             ref={previewSurfaceScope}
             transition={PREVIEW_SURFACE_TRANSITION}
           />
-          <div className={previewViewportClassName}>
+          <div className={previewViewportClassName} ref={previewViewportRef}>
             <div className={isCompactSurface ? compactInnerClassName : "contents"}>
               <ProfileBentoSurfaceMotion delay={0} duration={0.68} initialScale={1} initialY={28}>
                 <ProfileBentoProfileEditor
@@ -202,6 +203,7 @@ export function ProfileBentoOwnerEditorSurface({
                 initialBento={bento}
                 onPreviewModeChange={setPreviewMode}
                 previewMode={activePreviewMode}
+                scrollViewportRef={previewViewportRef}
               />
             </div>
           </div>

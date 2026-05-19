@@ -4,7 +4,7 @@ import { LinkBreakIcon, LinkSimpleIcon, SpinnerGapIcon } from "@phosphor-icons/r
 import { CheckIcon, ExpandIcon } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { usePathname } from "next/navigation";
-import type { CSSProperties } from "react";
+import type { CSSProperties, RefObject } from "react";
 import {
   useCallback,
   useEffect,
@@ -114,6 +114,7 @@ type ProfileBentoInteractiveGridProps = {
   initialBento: ProfileBentoItem[];
   onPreviewModeChange: (mode: ProfileBentoGridPreviewMode) => void;
   previewMode: ProfileBentoGridPreviewMode;
+  scrollViewportRef?: RefObject<HTMLElement | null>;
 };
 
 const createPayload = (items: ProfileBentoItem[], layouts: GridLayouts) => ({
@@ -586,6 +587,7 @@ export function ProfileBentoInteractiveGrid({
   initialBento,
   onPreviewModeChange,
   previewMode,
+  scrollViewportRef,
 }: ProfileBentoInteractiveGridProps) {
   const profileEditor = useProfilePageEditor();
   const pathname = usePathname();
@@ -745,7 +747,8 @@ export function ProfileBentoInteractiveGrid({
 
     const step = () => {
       const pointer = dragPointerRef.current;
-      const scrollContainer = getVerticalScrollContainer(containerRef.current);
+      const scrollContainer =
+        scrollViewportRef?.current ?? getVerticalScrollContainer(containerRef.current);
 
       if (pointer && scrollContainer) {
         applyVerticalAutoScroll(scrollContainer, pointer.y);
@@ -759,7 +762,31 @@ export function ProfileBentoInteractiveGrid({
     return () => {
       window.cancelAnimationFrame(frame);
     };
-  }, [activeDragItemId, containerRef]);
+  }, [activeDragItemId, containerRef, scrollViewportRef]);
+
+  useEffect(() => {
+    if (activeDragItemId === null) {
+      return;
+    }
+
+    const updatePointer = (event: PointerEvent | MouseEvent | TouchEvent) => {
+      const pointer = getPointerCoordinatesFromEvent(event);
+
+      if (pointer) {
+        dragPointerRef.current = pointer;
+      }
+    };
+
+    window.addEventListener("pointermove", updatePointer, { passive: true });
+    window.addEventListener("mousemove", updatePointer, { passive: true });
+    window.addEventListener("touchmove", updatePointer, { passive: true });
+
+    return () => {
+      window.removeEventListener("pointermove", updatePointer);
+      window.removeEventListener("mousemove", updatePointer);
+      window.removeEventListener("touchmove", updatePointer);
+    };
+  }, [activeDragItemId]);
   const interactiveShellClassName = cn(
     "relative flex min-w-0 flex-1 flex-col gap-4 pb-40",
     isCompactCanvas

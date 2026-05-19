@@ -41,7 +41,7 @@ export default function ExploreSection({ pages }: ExploreSectionProps) {
                     href={`/${page.handle}`}
                     className="group relative flex aspect-3/4 flex-col items-center justify-start gap-4 overflow-hidden rounded-xl bg-secondary/80 p-4 transition-transform duration-200 hover:-translate-y-1 lg:aspect-square"
                   >
-                    <div className="relative aspect-square size-20 overflow-hidden bg-muted/40 rounded-full surface-bevel">
+                    <div className="relative aspect-square size-20 overflow-hidden bg-muted/40 rounded-full">
                       {imageUrl ? (
                         <img
                           alt={displayName}
@@ -52,7 +52,7 @@ export default function ExploreSection({ pages }: ExploreSectionProps) {
                           src={imageUrl}
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-secondary"></div>
+                        <div className="flex h-full w-full items-center justify-center bg-input"></div>
                       )}
                     </div>
 

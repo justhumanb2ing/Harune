@@ -38,7 +38,7 @@ type ProfileBentoPageProps = {
 const isDeploymentEnvironment = process.env.VERCEL === "1" || Boolean(process.env.VERCEL_ENV);
 
 export const PROFILE_BENTO_PAGE_SECTION_CLASS =
-  "mx-auto flex min-h-lvh w-full flex-col items-center gap-8 px-6 pb-8 pt-[var(--v2-page-top-offset)] [--v2-page-top-offset:2rem] sm:px-8 2xl:[--v2-page-top-offset:5rem] 2xl:flex-row 2xl:items-stretch 2xl:justify-center 2xl:gap-[clamp(7.5rem,calc((100vw-96rem)*0.6+7.5rem),18rem)] 2xl:px-10";
+  "mx-auto flex min-h-lvh w-full flex-col items-center gap-8 px-6 pb-8 pt-[var(--v2-page-top-offset)] [--v2-page-top-offset:2rem] sm:px-8 2xl:[--v2-page-top-offset:5rem] 2xl:flex-row 2xl:items-stretch 2xl:justify-evenly 2xl:gap-[clamp(7.5rem,calc((100vw-96rem)*0.6+7.5rem),18rem)] 2xl:px-10";
 
 export const PROFILE_BENTO_PUBLIC_PROFILE_SHELL_CLASS =
   "flex w-[360px] max-w-full shrink-0 flex-col sm:w-[400px] 2xl:sticky 2xl:top-[var(--v2-page-top-offset)] 2xl:self-start 2xl:min-w-[20rem] 2xl:w-[500px] 2xl:shrink-0";

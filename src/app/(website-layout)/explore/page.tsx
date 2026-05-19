@@ -1,32 +1,15 @@
+import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 import type { Metadata } from "next";
 import {
   BreadcrumbJsonLd,
   WebPageStructuredData,
 } from "@/components/site-instrumentation/structured-data";
 import ExploreSection from "@/components/website/explore-section";
-import { getAppApiBaseURL } from "@/lib/api/base-url";
-import type { ListProfilePages200 } from "@/lib/api/generated/http/schemas/profile-api";
+import { prefetchListProfilePagesQuery } from "@/lib/api/generated/http/profile-api/profile-api";
 import { appConfig } from "@/lib/config";
 import { createPageMetadata } from "@/lib/seo";
 
 const exploreDescription = `Discover ${appConfig.projectName} creator pages and explore public profiles across the community.`;
-
-async function getExploreProfilePages(): Promise<ListProfilePages200["pages"]> {
-  try {
-    const response = await fetch(`${getAppApiBaseURL()}/profile/pages`, {
-      cache: "no-store",
-    });
-    
-    if (!response.ok) {
-      return [];
-    }
-
-    const data = (await response.json()) as ListProfilePages200;
-    return data.pages;
-  } catch {
-    return [];
-  }
-}
 
 export const metadata: Metadata = createPageMetadata({
   path: "/explore",
@@ -44,7 +27,11 @@ export const metadata: Metadata = createPageMetadata({
 });
 
 export default async function ExplorePage() {
-  const pages = await getExploreProfilePages();
+  const queryClient = new QueryClient();
+
+  await prefetchListProfilePagesQuery(queryClient, {
+    request: { cache: "no-store" },
+  });
 
   return (
     <>
@@ -56,7 +43,9 @@ export default async function ExplorePage() {
         ]}
       />
       <main className="relative">
-        <ExploreSection pages={pages} />
+        <HydrationBoundary state={dehydrate(queryClient)}>
+          <ExploreSection />
+        </HydrationBoundary>
       </main>
     </>
   );

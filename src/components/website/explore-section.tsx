@@ -1,10 +1,8 @@
-import Link from "next/link";
-import type { ListProfilePages200PagesItem } from "@/lib/api/generated/http/schemas/profile-api";
-import { absoluteUrl } from "@/lib/seo";
+"use client";
 
-type ExploreSectionProps = {
-  pages: ListProfilePages200PagesItem[];
-};
+import Link from "next/link";
+import { useListProfilePages } from "@/lib/api/generated/http/profile-api/profile-api";
+import { absoluteUrl } from "@/lib/seo";
 
 const resolveImageUrl = (image: string | null) => {
   if (!image) return null;
@@ -16,7 +14,12 @@ const resolveImageUrl = (image: string | null) => {
   }
 };
 
-export default function ExploreSection({ pages }: ExploreSectionProps) {
+export default function ExploreSection() {
+  const profilePagesQuery = useListProfilePages({
+    request: { cache: "no-store" },
+  });
+  const pages = profilePagesQuery.data?.status === 200 ? profilePagesQuery.data.data.pages : [];
+
   return (
     <section className="flex h-full flex-col">
       <header className="mt-8 flex flex-1 flex-col items-center justify-center px-6 pb-8 pt-16">

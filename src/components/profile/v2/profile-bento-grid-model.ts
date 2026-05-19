@@ -58,35 +58,41 @@ export const toBentoGridLayouts = (bento: ProfileBentoItem[]): GridLayouts =>
     toBentoItemTypeById(bento)
   );
 
-export const toBentoGridItem = (item: ProfileBentoItem): GridItem => ({
-  id: item.id,
-  itemType: item.type,
-  isFullBleed:
-    item.type === "link" &&
-    Boolean(getSpotifyProviderEmbedUri(item.content.metadata?.providerMetadata)),
-  clockBackgroundColor:
-    item.type === "clock"
-      ? normalizeClockWidgetConfig(item.content).style.backgroundColor
-      : undefined,
-  theme:
-    item.type === "link" ? (resolveLinkProviderTheme(item.content.url) ?? undefined) : undefined,
-  textSurfaceStyle:
-    item.type === "text" ? normalizeGridTextSurfaceStyle(item.content.style) : undefined,
-  textUrl: item.type === "text" ? item.content.url : undefined,
-  label:
-    item.type === "clock"
-      ? "Clock"
-      : item.type === "text"
-        ? "Text"
-        : item.type === "map"
-          ? item.content.caption || "Map"
-          : item.type === "media"
-            ? item.content.caption || "Media"
-            : item.type === "section"
-              ? item.content.title
-              : item.content.title,
-  description: item.type,
-});
+export const toBentoGridItem = (item: ProfileBentoItem): GridItem => {
+  const spotifyEmbedUri =
+    item.type === "link"
+      ? getSpotifyProviderEmbedUri(item.content.metadata?.providerMetadata)
+      : null;
+
+  return {
+    id: item.id,
+    itemType: item.type,
+    isFullBleed: Boolean(spotifyEmbedUri),
+    resizeOptionIds: spotifyEmbedUri ? ["2x2", "2x4"] : undefined,
+    clockBackgroundColor:
+      item.type === "clock"
+        ? normalizeClockWidgetConfig(item.content).style.backgroundColor
+        : undefined,
+    theme:
+      item.type === "link" ? (resolveLinkProviderTheme(item.content.url) ?? undefined) : undefined,
+    textSurfaceStyle:
+      item.type === "text" ? normalizeGridTextSurfaceStyle(item.content.style) : undefined,
+    textUrl: item.type === "text" ? item.content.url : undefined,
+    label:
+      item.type === "clock"
+        ? "Clock"
+        : item.type === "text"
+          ? "Text"
+          : item.type === "map"
+            ? item.content.caption || "Map"
+            : item.type === "media"
+              ? item.content.caption || "Media"
+              : item.type === "section"
+                ? item.content.title
+                : item.content.title,
+    description: item.type,
+  };
+};
 
 export function isSpotifyLinkUrl(url: string) {
   return resolveLinkProviderTheme(url)?.provider === "spotify";

@@ -1,6 +1,6 @@
 "use client";
 
-import { LinkBreakIcon, LinkSimpleIcon } from "@phosphor-icons/react";
+import { LinkBreakIcon, LinkSimpleIcon, SpinnerGapIcon } from "@phosphor-icons/react";
 import { ExpandIcon } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { usePathname } from "next/navigation";
@@ -64,7 +64,9 @@ import { COLS, GRID_MARGIN, getGridRowHeight } from "@/lib/grid/grid-config";
 import { getGridLayoutPixelHeight, normalizeLayouts } from "@/lib/grid/grid-layout-utils";
 import type { GridBreakpoint, GridLayouts, ResizeOption } from "@/lib/grid/grid-types";
 import {
+  getSpotifyProviderEmbedUri,
   isGithubContributionsProviderMetadata,
+  isSpotifyProviderMetadata,
   type MetadataErrorResponse,
   type NormalizedMetadata,
 } from "@/lib/metadata/url-metadata";
@@ -412,15 +414,17 @@ const getMetadataErrorMessage = (error: ApiError) => {
 
 function createLinkBentoSkeleton(
   rawUrl: string,
-  currentBento: ProfileBentoItem[]
+  currentBento: ProfileBentoItem[],
+  options: { spotifyEmbed?: boolean } = {}
 ): Extract<ProfileBentoItem, { type: "link" }> {
   const nextItem = createAutoBentoItem("link", currentBento, {
-    layoutOverrides: isSpotifyLinkUrl(rawUrl)
-      ? {
-          desktop: { w: 2, h: 2 },
-          compact: { w: 2, h: 2 },
-        }
-      : undefined,
+    layoutOverrides:
+      options.spotifyEmbed && isSpotifyLinkUrl(rawUrl)
+        ? {
+            desktop: { w: 2, h: 2 },
+            compact: { w: 2, h: 2 },
+          }
+        : undefined,
   });
 
   if (nextItem.type !== "link") {
@@ -444,10 +448,15 @@ function createLinkBentoSkeleton(
 function createLinkBentoFromCrawl(
   item: Extract<ProfileBentoItem, { type: "link" }>,
   rawUrl: string,
-  data: NormalizedMetadata
+  data: NormalizedMetadata,
+  options: { spotifyEmbed?: boolean } = {}
 ): Extract<ProfileBentoItem, { type: "link" }> {
   const providerMetadata = data.providerMetadata;
   const githubContributionsMetadata = isGithubContributionsProviderMetadata(providerMetadata);
+  const metadata =
+    !options.spotifyEmbed && isSpotifyProviderMetadata(providerMetadata)
+      ? { ...data, providerMetadata: null }
+      : data;
   const resolvedUrl =
     (githubContributionsMetadata ? providerMetadata.payload.profileUrl.trim() : "") ||
     data.url?.trim() ||
@@ -473,7 +482,7 @@ function createLinkBentoFromCrawl(
       domain: data.domain?.trim() || fallbackTitle,
       thumbnail: githubContributionsMetadata ? "" : data.image?.trim() || "",
       url: resolvedUrl,
-      metadata: data,
+      metadata,
     },
   };
 }
@@ -741,6 +750,7 @@ export function ProfileBentoInteractiveGrid({
   const isSaving = isPending || profileEditor.isSyncing;
   const isPrimaryActionBusy = isSaving || isCrawlingLink || isUploadingMedia;
   const canSave = isDirty || hasProfileChanges;
+  const showSaveAction = canSave || isSaving;
   const isSectionDragActive =
     activeDragItemId !== null && itemTypeById.get(activeDragItemId) === "section";
   const isThinPlaceholderShapeActive = isThinPlaceholderActive || isSectionDragActive;
@@ -1291,23 +1301,33 @@ export function ProfileBentoInteractiveGrid({
     );
   }, []);
 
-  const handleLinkCrawl = async (inputUrl = linkUrl) => {
+  const handleLinkCrawl = async (
+    inputUrl = linkUrl,
+    options: { onSuccess?: () => void; spotifyEmbed?: boolean } = {}
+  ) => {
     const rawUrl = normalizeLinkInputUrl(inputUrl);
 
     if (!rawUrl) {
       toast.error("Please enter a URL");
-      return;
+      return false;
     }
 
     try {
       new URL(rawUrl);
     } catch {
       toast.error("Please enter a valid URL");
-      return;
+      return false;
+    }
+
+    if (options.spotifyEmbed && !isSpotifyLinkUrl(rawUrl)) {
+      toast.error("Please enter a Spotify URL");
+      return false;
     }
 
     const liveBento = mergeLayoutsIntoBento(bento, layouts);
-    const placeholderItem = createLinkBentoSkeleton(rawUrl, liveBento);
+    const placeholderItem = createLinkBentoSkeleton(rawUrl, liveBento, {
+      spotifyEmbed: options.spotifyEmbed,
+    });
     const nextBento = [...liveBento, placeholderItem];
 
     setPendingScrollItemId(placeholderItem.id);
@@ -1325,12 +1345,23 @@ export function ProfileBentoInteractiveGrid({
         throw new Error("Could not fetch link details");
       }
 
-      const nextItem = createLinkBentoFromCrawl(placeholderItem, rawUrl, response.data);
+      if (
+        options.spotifyEmbed &&
+        !getSpotifyProviderEmbedUri(response.data.providerMetadata, rawUrl)
+      ) {
+        throw new Error("Could not fetch Spotify embed details");
+      }
+
+      const nextItem = createLinkBentoFromCrawl(placeholderItem, rawUrl, response.data, {
+        spotifyEmbed: options.spotifyEmbed,
+      });
 
       setBento((currentItems) =>
         currentItems.map((item) => (item.id === placeholderItem.id ? nextItem : item))
       );
       removeLoadingLinkId(placeholderItem.id);
+      options.onSuccess?.();
+      return true;
     } catch (error) {
       toast.error(
         error instanceof ApiError
@@ -1350,6 +1381,7 @@ export function ProfileBentoInteractiveGrid({
         delete next[placeholderItem.id];
         return next;
       });
+      return false;
     }
   };
 
@@ -1650,28 +1682,37 @@ export function ProfileBentoInteractiveGrid({
           </motion.form>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-2" ref={actionRowRef}>
-          <ProfileBentoShareActionDialog
-            handle={currentHandle}
-            isBusy={isPrimaryActionBusy}
-            isCopied={isCopied}
-            isSaving={isSaving}
-            triggerLabel={canSave ? "Save" : "Share page"}
-            image={profilePage?.image ?? null}
-            imageCrop={profilePage?.imageCrop ?? null}
-            name={profilePage?.name ?? currentHandle}
-            onPrimaryAction={() => {
-              if (isPrimaryActionBusy) {
-                return;
-              }
+          {showSaveAction ? (
+            <Button
+              aria-busy={isPrimaryActionBusy}
+              className="brand-button w-36 border-0 px-0 py-5 text-base font-semibold shadow-none"
+              disabled={isPrimaryActionBusy}
+              onClick={save}
+              size="lg"
+              type="button"
+            >
+              {isSaving ? <SpinnerGapIcon className="size-4 animate-spin" /> : null}
+              <span>{isSaving ? "Saving..." : "Save"}</span>
+            </Button>
+          ) : (
+            <ProfileBentoShareActionDialog
+              handle={currentHandle}
+              isBusy={isPrimaryActionBusy}
+              isCopied={isCopied}
+              isSaving={isSaving}
+              triggerLabel="Share page"
+              image={profilePage?.image ?? null}
+              imageCrop={profilePage?.imageCrop ?? null}
+              name={profilePage?.name ?? currentHandle}
+              onPrimaryAction={() => {
+                if (isPrimaryActionBusy) {
+                  return;
+                }
 
-              if (canSave) {
-                save();
-                return;
-              }
-
-              void copyMyPage();
-            }}
-          />
+                void copyMyPage();
+              }}
+            />
+          )}
           <Separator
             orientation="vertical"
             className={"data-vertical:w-[3px] my-3 rounded-lg mx-2"}
@@ -1679,6 +1720,7 @@ export function ProfileBentoInteractiveGrid({
           <ProfileBentoGridActions
             onAddItem={addItem}
             onRequestMediaInput={() => mediaInputRef.current?.click()}
+            onRequestMusicEmbed={(url) => handleLinkCrawl(url, { spotifyEmbed: true })}
             onPreviewModeChange={handlePreviewModeChange}
             onToggleLinkInput={() => setIsLinkInputOpen((current) => !current)}
             previewMode={previewMode}

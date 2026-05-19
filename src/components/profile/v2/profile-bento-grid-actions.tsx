@@ -25,12 +25,14 @@ const toolbarIconSrcByType: Record<CreatableBentoType, string> = {
 export function ProfileBentoGridActions({
   onAddItem,
   onRequestMediaInput,
+  onRequestMusicEmbed,
   onToggleLinkInput,
   onPreviewModeChange,
   previewMode,
 }: {
   onAddItem: (type: CreatableBentoType) => void;
   onRequestMediaInput: () => void;
+  onRequestMusicEmbed: (url: string) => Promise<boolean>;
   onToggleLinkInput: () => void;
   onPreviewModeChange: (mode: ProfileBentoGridPreviewMode) => void;
   previewMode: ProfileBentoGridPreviewMode;
@@ -80,7 +82,10 @@ export function ProfileBentoGridActions({
           </TooltipContent>
         </Tooltip>
       ))}
-      <ProfileBentoGridToolbarWidget onClockSelect={() => onAddItem("clock")} />
+      <ProfileBentoGridToolbarWidget
+        onClockSelect={() => onAddItem("clock")}
+        onMusicLinkSubmit={onRequestMusicEmbed}
+      />
       <div className="hidden items-center gap-2 2xl:flex">
         <Separator
           orientation="vertical"

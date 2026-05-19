@@ -4,15 +4,15 @@ import { getResizeOptionId, getResizeOptionsForItem } from "@/lib/grid/grid-layo
 import type { GridItem, GridLayouts } from "@/lib/grid/grid-types";
 
 describe("grid-layout-utils", () => {
-  test("exposes the third and fifth resize presets for clock items", () => {
-    const clockItem: GridItem = {
-      id: "clock-1",
-      label: "Clock",
-      description: "Clock widget",
-      itemType: "clock",
+  test("exposes only the third and fifth resize presets for link items", () => {
+    const linkItem: GridItem = {
+      id: "link-1",
+      label: "Link",
+      description: "Link widget",
+      itemType: "link",
     };
 
-    const options = getResizeOptionsForItem(clockItem);
+    const options = getResizeOptionsForItem(linkItem);
 
     expect(options.map((option) => option.id)).toEqual(["2x2", "2x4"]);
   });

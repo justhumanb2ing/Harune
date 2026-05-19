@@ -81,6 +81,10 @@ import type { ProfileBentoItem, ProfileTextSurfaceStyle } from "@/lib/profile/ty
 import { uploadToPresignedUrl } from "@/lib/s3/upload-to-presigned-url";
 import { cn } from "@/lib/utils";
 import {
+  getPointerCoordinatesFromEvent,
+  getVerticalAutoScrollDelta,
+} from "./profile-bento-drag-scroll";
+import {
   getProfileBentoSuggestionGridItems,
   getProfileBentoSuggestionLayouts,
   ProfileBentoSuggestionCard,
@@ -90,6 +94,7 @@ import {
   type CreatableBentoType,
   createAutoBentoItem,
   createPreviewDraftBentoId,
+  isSpotifyLinkUrl,
   mergeLayoutsIntoBento,
   normalizeProfileBentoItems,
   toBentoGridItem,
@@ -188,6 +193,49 @@ const getClockTimezoneOptions = (timezone: string) => {
 
   return [{ label: timezone, value: timezone }, ...CLOCK_TIMEZONE_OPTIONS];
 };
+
+function getVerticalScrollContainer(element: HTMLElement | null) {
+  let current = element?.parentElement ?? null;
+
+  while (current) {
+    const overflowY = window.getComputedStyle(current).overflowY;
+
+    if (
+      (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") &&
+      current.scrollHeight > current.clientHeight
+    ) {
+      return current;
+    }
+
+    current = current.parentElement;
+  }
+
+  return document.scrollingElement instanceof HTMLElement ? document.scrollingElement : null;
+}
+
+function applyVerticalAutoScroll(scrollContainer: HTMLElement, pointerY: number) {
+  const delta = getVerticalAutoScrollDelta(
+    pointerY,
+    scrollContainer.getBoundingClientRect().top,
+    scrollContainer.getBoundingClientRect().bottom
+  );
+
+  if (delta === 0) {
+    return;
+  }
+
+  const nextScrollTop = Math.max(
+    0,
+    Math.min(
+      scrollContainer.scrollTop + delta,
+      scrollContainer.scrollHeight - scrollContainer.clientHeight
+    )
+  );
+
+  if (nextScrollTop !== scrollContainer.scrollTop) {
+    scrollContainer.scrollTop = nextScrollTop;
+  }
+}
 
 function ClockTimezoneControl({
   item,
@@ -342,7 +390,14 @@ function createLinkBentoSkeleton(
   rawUrl: string,
   currentBento: ProfileBentoItem[]
 ): Extract<ProfileBentoItem, { type: "link" }> {
-  const nextItem = createAutoBentoItem("link", currentBento);
+  const nextItem = createAutoBentoItem("link", currentBento, {
+    layoutOverrides: isSpotifyLinkUrl(rawUrl)
+      ? {
+          desktop: { w: 2, h: 2 },
+          compact: { w: 2, h: 2 },
+        }
+      : undefined,
+  });
 
   if (nextItem.type !== "link") {
     throw new Error("Expected link bento item.");
@@ -579,6 +634,7 @@ export function ProfileBentoInteractiveGrid({
   } | null>(null);
   const linkSuggestionPopoverRef = useRef<HTMLDivElement>(null);
   const layoutInteractionDepthRef = useRef(0);
+  const dragPointerRef = useRef<{ x: number; y: number } | null>(null);
   const {
     activeDragItemId,
     activeDragIntentItemId,
@@ -679,6 +735,31 @@ export function ProfileBentoInteractiveGrid({
     verticalMargin
   );
   const shouldReduceMotion = Boolean(useReducedMotion());
+  useEffect(() => {
+    if (activeDragItemId === null) {
+      dragPointerRef.current = null;
+      return;
+    }
+
+    let frame = 0;
+
+    const step = () => {
+      const pointer = dragPointerRef.current;
+      const scrollContainer = getVerticalScrollContainer(containerRef.current);
+
+      if (pointer && scrollContainer) {
+        applyVerticalAutoScroll(scrollContainer, pointer.y);
+      }
+
+      frame = window.requestAnimationFrame(step);
+    };
+
+    frame = window.requestAnimationFrame(step);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+    };
+  }, [activeDragItemId, containerRef]);
   const interactiveShellClassName = cn(
     "relative flex min-w-0 flex-1 flex-col gap-4 pb-40",
     isCompactCanvas
@@ -982,6 +1063,7 @@ export function ProfileBentoInteractiveGrid({
   const handleGridDragStart = useCallback(
     (newItem: LayoutItem | null | undefined, event: Event) => {
       layoutInteractionDepthRef.current += 1;
+      dragPointerRef.current = getPointerCoordinatesFromEvent(event);
       startDrag(newItem, event);
     },
     [startDrag]
@@ -989,8 +1071,17 @@ export function ProfileBentoInteractiveGrid({
 
   const handleGridDragStop = useCallback(() => {
     layoutInteractionDepthRef.current = Math.max(0, layoutInteractionDepthRef.current - 1);
+    dragPointerRef.current = null;
     stopDrag();
   }, [stopDrag]);
+
+  const handleGridDrag = useCallback(
+    (event: Event) => {
+      updateDragPointer(event);
+      dragPointerRef.current = getPointerCoordinatesFromEvent(event);
+    },
+    [updateDragPointer]
+  );
 
   const handleGridResizeStart = useCallback(
     (newItem: LayoutItem | null | undefined) => {
@@ -1596,7 +1687,7 @@ export function ProfileBentoInteractiveGrid({
               layouts={combinedLayouts}
               plainItemIds={suggestionItemIds}
               mounted={mounted}
-              onDrag={updateDragPointer}
+              onDrag={handleGridDrag}
               onDragStart={handleGridDragStart}
               onDragStop={handleGridDragStop}
               onDragIntentStart={startDragIntent}

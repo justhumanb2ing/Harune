@@ -11,6 +11,7 @@ import {
 } from "react";
 import { getBackgroundColorOption } from "@/components/grid/grid-text-surface";
 import { useGridTextSurface } from "@/components/grid/grid-text-surface-context";
+import { SpotifyEmbedPanel } from "@/components/profile/v2/spotify-embed-panel";
 import {
   Map as BentoMap,
   MapControls,
@@ -27,9 +28,12 @@ import {
 } from "@/lib/metadata/link-provider-theme";
 import {
   formatCompactCount,
+  getSpotifyProviderEmbedUri,
   getYoutubeThumbnailUrl,
   isChzzkProviderMetadata,
+  isDiscordProviderMetadata,
   isGithubContributionsProviderMetadata,
+  isTwitchProviderMetadata,
   isYoutubeProviderMetadata,
   type NormalizedMetadata,
 } from "@/lib/metadata/url-metadata";
@@ -509,6 +513,10 @@ function getLinkProviderMetadata(item: Extract<ProfileBentoItem, { type: "link" 
   return item.content.metadata?.providerMetadata ?? null;
 }
 
+function getLinkSpotifyEmbedUri(item: Extract<ProfileBentoItem, { type: "link" }>) {
+  return getSpotifyProviderEmbedUri(getLinkProviderMetadata(item));
+}
+
 function getLinkProviderActionLabel(
   providerTheme: LinkProviderTheme | null,
   providerMetadata: NormalizedMetadata["providerMetadata"]
@@ -522,6 +530,20 @@ function getLinkProviderActionLabel(
 
     return subscriberCount
       ? `${providerTheme.actionLabel} ${subscriberCount}`
+      : providerTheme.actionLabel;
+  }
+
+  if (providerTheme.provider === "discord" && isDiscordProviderMetadata(providerMetadata)) {
+    const memberCount = formatCompactCount(providerMetadata.payload.memberCount);
+
+    return memberCount ? `${providerTheme.actionLabel} ${memberCount}` : providerTheme.actionLabel;
+  }
+
+  if (providerTheme.provider === "twitch" && isTwitchProviderMetadata(providerMetadata)) {
+    const followerCount = formatCompactCount(providerMetadata.payload.followerCount);
+
+    return followerCount
+      ? `${providerTheme.actionLabel} ${followerCount}`
       : providerTheme.actionLabel;
   }
 
@@ -711,6 +733,12 @@ function ReadonlyLinkBento({
   layoutSize: ProfileBentoLinkSize;
   preventNavigation: boolean;
 }) {
+  const spotifyEmbedUri = getLinkSpotifyEmbedUri(item);
+
+  if (spotifyEmbedUri) {
+    return <SpotifyEmbedPanel uri={spotifyEmbedUri} className="size-full min-h-0 min-w-0" />;
+  }
+
   const providerTheme = resolveLinkProviderTheme(item.content.url);
   const providerActionLabel = getLinkProviderActionLabel(
     providerTheme,
@@ -797,7 +825,7 @@ function ReadonlyLinkBento({
             />
           ) : null}
         </div>
-        <LinkSupportingPanel item={item} className="h-[58%] w-full min-h-0 min-w-0 shrink-0" />
+        <LinkSupportingPanel item={item} className="h-[42%] w-full min-h-0 min-w-0 shrink-0" />
       </article>
     );
   }
@@ -873,6 +901,18 @@ function EditableLinkBento({
 }) {
   const activeLayout = item.layout[activeBreakpoint];
   const size = layoutSize ?? getProfileBentoLinkSize(activeLayout.w, activeLayout.h);
+  const spotifyEmbedUri = getLinkSpotifyEmbedUri(item);
+
+  if (spotifyEmbedUri) {
+    return (
+      <SpotifyEmbedPanel
+        uri={spotifyEmbedUri}
+        showDragHandle
+        className="size-full min-h-0 min-w-0"
+      />
+    );
+  }
+
   const providerTheme = resolveLinkProviderTheme(item.content.url);
   const providerActionLabel = getLinkProviderActionLabel(
     providerTheme,
@@ -954,7 +994,7 @@ function EditableLinkBento({
             />
           ) : null}
         </div>
-        <LinkSupportingPanel item={item} className="h-[58%] w-full shrink-0" />
+        <LinkSupportingPanel item={item} className="h-[42%] w-full shrink-0" />
       </article>
     );
   }

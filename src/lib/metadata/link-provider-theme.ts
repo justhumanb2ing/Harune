@@ -26,6 +26,14 @@ const linkProviderThemeEntries = [
     hosts: ["youtube.com", "youtu.be"],
   },
   {
+    provider: "discord",
+    actionForegroundColor: "#ffffff",
+    actionLabel: "Join",
+    color: "#5865f2",
+    pastelColor: "#f2f3ff",
+    hosts: ["discord.com", "discord.gg"],
+  },
+  {
     provider: "github",
     actionLabel: "Follow",
     color: "#000000",
@@ -45,7 +53,7 @@ const linkProviderThemeEntries = [
     actionLabel: "Play",
     color: "#1ED760",
     pastelColor: "#f0fbf4",
-    hosts: ["spotify.com", "open.spotify.com"],
+    hosts: ["spotify.com", "open.spotify.com", "spotify.link"],
   },
   {
     provider: "threads",

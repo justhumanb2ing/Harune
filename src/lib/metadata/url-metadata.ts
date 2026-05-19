@@ -31,6 +31,38 @@ export type GithubContributionsProviderMetadata = {
   payload: GithubContributionsPayload;
 };
 
+export type TwitchProviderMetadata = {
+  provider: "twitch";
+  viewType: string;
+  fetchedAt: string;
+  payload: {
+    broadcasterId?: string;
+    broadcasterLogin?: string;
+    broadcasterName?: string;
+    description?: string;
+    displayName?: string;
+    followerCount: string | number;
+    offlineImageUrl?: string;
+    profileImageUrl?: string;
+    viewCount?: string | number;
+  };
+};
+
+export type DiscordProviderMetadata = {
+  provider: "discord";
+  viewType: string;
+  fetchedAt: string;
+  payload: {
+    code: string;
+    guildDescription?: string | null;
+    guildId: string;
+    guildName: string;
+    iconUrl?: string | null;
+    memberCount: string | number;
+    presenceCount?: string | number;
+  };
+};
+
 export type YoutubeProviderMetadata = {
   provider: "youtube";
   viewType: string;
@@ -50,9 +82,28 @@ export type YoutubeProviderMetadata = {
         url: string;
       };
     };
-    statistics: {
-      subscriberCount: string | number;
+    player?: {
+      embedHeight?: number;
+      embedHtml: string;
+      embedWidth?: number;
     };
+    statistics: {
+      commentCount?: string | number;
+      hiddenSubscriberCount?: boolean;
+      likeCount?: string | number;
+      subscriberCount?: string | number;
+      viewCount?: string | number;
+    };
+  };
+};
+
+export type SpotifyProviderMetadata = {
+  provider: "spotify";
+  viewType: "spotify_oembed";
+  fetchedAt: string;
+  payload: {
+    html: string;
+    [key: string]: unknown;
   };
 };
 
@@ -81,7 +132,10 @@ export type NormalizedMetadata = {
   providerMetadata:
     | MetadataProviderMetadata
     | GithubContributionsProviderMetadata
+    | TwitchProviderMetadata
+    | DiscordProviderMetadata
     | YoutubeProviderMetadata
+    | SpotifyProviderMetadata
     | ChzzkProviderMetadata
     | null;
 };
@@ -197,6 +251,10 @@ function isGithubContributionsPayload(value: unknown): value is GithubContributi
   );
 }
 
+function isCountValue(value: unknown): value is string | number {
+  return typeof value === "string" || typeof value === "number";
+}
+
 function isYoutubeProviderMetadataPayload(
   value: unknown
 ): value is YoutubeProviderMetadata["payload"] {
@@ -215,20 +273,48 @@ function isYoutubeProviderMetadataPayload(
     typeof value.snippet.thumbnails.high.url === "string"
       ? value.snippet.thumbnails.high.url
       : null;
+  const playerEmbedHtml =
+    isRecord(value) && isRecord(value.player) && typeof value.player.embedHtml === "string"
+      ? value.player.embedHtml
+      : null;
+  const subscriberCount =
+    isRecord(value) && isRecord(value.statistics) ? value.statistics.subscriberCount : null;
+  const viewCount =
+    isRecord(value) && isRecord(value.statistics) ? value.statistics.viewCount : null;
 
   return (
     isRecord(value) &&
     isRecord(value.statistics) &&
-    (typeof value.statistics.subscriberCount === "string" ||
-      typeof value.statistics.subscriberCount === "number") &&
-    Boolean(topLevelThumbnailUrl || nestedThumbnailUrl)
+    (isCountValue(subscriberCount) || isCountValue(viewCount)) &&
+    Boolean(topLevelThumbnailUrl || nestedThumbnailUrl || playerEmbedHtml)
   );
 }
 
 function isChzzkProviderMetadataPayload(value: unknown): value is ChzzkProviderMetadata["payload"] {
+  return isRecord(value) && isCountValue(value.followerCount);
+}
+
+function isSpotifyProviderMetadataPayload(
+  value: unknown
+): value is SpotifyProviderMetadata["payload"] {
+  return isRecord(value) && typeof value.html === "string" && value.html.length > 0;
+}
+
+function isTwitchProviderMetadataPayload(
+  value: unknown
+): value is TwitchProviderMetadata["payload"] {
+  return isRecord(value) && isCountValue(value.followerCount);
+}
+
+function isDiscordProviderMetadataPayload(
+  value: unknown
+): value is DiscordProviderMetadata["payload"] {
   return (
     isRecord(value) &&
-    (typeof value.followerCount === "string" || typeof value.followerCount === "number")
+    typeof value.code === "string" &&
+    typeof value.guildId === "string" &&
+    typeof value.guildName === "string" &&
+    isCountValue(value.memberCount)
   );
 }
 
@@ -237,7 +323,10 @@ function normalizeProviderMetadata(
 ):
   | MetadataProviderMetadata
   | GithubContributionsProviderMetadata
+  | TwitchProviderMetadata
+  | DiscordProviderMetadata
   | YoutubeProviderMetadata
+  | SpotifyProviderMetadata
   | ChzzkProviderMetadata
   | null {
   if (
@@ -287,7 +376,38 @@ function normalizeProviderMetadata(
     };
   }
 
+  if (value.provider === "twitch" && isTwitchProviderMetadataPayload(value.payload)) {
+    return {
+      provider: value.provider,
+      viewType: value.viewType,
+      fetchedAt: value.fetchedAt,
+      payload: value.payload,
+    };
+  }
+
+  if (value.provider === "discord" && isDiscordProviderMetadataPayload(value.payload)) {
+    return {
+      provider: value.provider,
+      viewType: value.viewType,
+      fetchedAt: value.fetchedAt,
+      payload: value.payload,
+    };
+  }
+
   if (value.provider === "chzzk" && isChzzkProviderMetadataPayload(value.payload)) {
+    return {
+      provider: value.provider,
+      viewType: value.viewType,
+      fetchedAt: value.fetchedAt,
+      payload: value.payload,
+    };
+  }
+
+  if (
+    value.provider === "spotify" &&
+    value.viewType === "spotify_oembed" &&
+    isSpotifyProviderMetadataPayload(value.payload)
+  ) {
     return {
       provider: value.provider,
       viewType: value.viewType,
@@ -308,7 +428,11 @@ export function isGithubContributionsProviderMetadata(
   value:
     | MetadataProviderMetadata
     | GithubContributionsProviderMetadata
+    | TwitchProviderMetadata
+    | DiscordProviderMetadata
     | YoutubeProviderMetadata
+    | SpotifyProviderMetadata
+    | ChzzkProviderMetadata
     | null
     | undefined
 ): value is GithubContributionsProviderMetadata {
@@ -328,12 +452,40 @@ export function isYoutubeProviderMetadata(value: unknown): value is YoutubeProvi
   );
 }
 
+export function isTwitchProviderMetadata(value: unknown): value is TwitchProviderMetadata {
+  return Boolean(
+    isRecord(value) &&
+      typeof value.provider === "string" &&
+      value.provider === "twitch" &&
+      isTwitchProviderMetadataPayload(value.payload)
+  );
+}
+
+export function isDiscordProviderMetadata(value: unknown): value is DiscordProviderMetadata {
+  return Boolean(
+    isRecord(value) &&
+      typeof value.provider === "string" &&
+      value.provider === "discord" &&
+      isDiscordProviderMetadataPayload(value.payload)
+  );
+}
+
 export function isChzzkProviderMetadata(value: unknown): value is ChzzkProviderMetadata {
   return Boolean(
     isRecord(value) &&
       typeof value.provider === "string" &&
       value.provider === "chzzk" &&
       isChzzkProviderMetadataPayload(value.payload)
+  );
+}
+
+export function isSpotifyProviderMetadata(value: unknown): value is SpotifyProviderMetadata {
+  return Boolean(
+    isRecord(value) &&
+      typeof value.provider === "string" &&
+      value.provider === "spotify" &&
+      value.viewType === "spotify_oembed" &&
+      isSpotifyProviderMetadataPayload(value.payload)
   );
 }
 
@@ -375,6 +527,84 @@ export function getYoutubeThumbnailUrl(
   }
 
   return null;
+}
+
+export function getYoutubePlayerEmbedHtml(
+  value: YoutubeProviderMetadata["payload"] | null | undefined
+) {
+  const embedHtml = value?.player?.embedHtml;
+
+  return typeof embedHtml === "string" && embedHtml.length > 0 ? embedHtml : null;
+}
+
+export function getSpotifyPlayerEmbedHtml(
+  value: SpotifyProviderMetadata["payload"] | null | undefined
+) {
+  const embedHtml = value?.html;
+
+  return typeof embedHtml === "string" && embedHtml.length > 0 ? embedHtml : null;
+}
+
+function getSpotifyUriFromSpotifyUrl(value: string | null | undefined) {
+  if (typeof value !== "string" || value.length === 0) {
+    return null;
+  }
+
+  let parsedUrl: URL;
+
+  try {
+    parsedUrl = new URL(value);
+  } catch {
+    return null;
+  }
+
+  if (parsedUrl.hostname !== "open.spotify.com" && parsedUrl.hostname !== "spotify.link") {
+    return null;
+  }
+
+  const embedPathMatch = parsedUrl.pathname.match(/^\/embed\/([^/]+)\/([^/]+)$/);
+
+  if (embedPathMatch) {
+    return `spotify:${embedPathMatch[1]}:${embedPathMatch[2]}`;
+  }
+
+  const pathMatch = parsedUrl.pathname.match(/^\/([^/]+)\/([^/]+)$/);
+
+  if (pathMatch) {
+    return `spotify:${pathMatch[1]}:${pathMatch[2]}`;
+  }
+
+  return null;
+}
+
+function getSpotifyUriFromSpotifyEmbedHtml(value: string | null | undefined) {
+  if (typeof value !== "string" || value.length === 0) {
+    return null;
+  }
+
+  const srcMatch = value.match(/src=["']([^"']+)["']/i);
+
+  return getSpotifyUriFromSpotifyUrl(srcMatch?.[1] ?? null);
+}
+
+export function getSpotifyProviderEmbedUri(
+  value: NormalizedMetadata["providerMetadata"] | null | undefined,
+  fallbackUrl?: string | null
+) {
+  if (!isSpotifyProviderMetadata(value)) {
+    return null;
+  }
+
+  return (
+    getSpotifyUriFromSpotifyEmbedHtml(value.payload.html) ??
+    getSpotifyUriFromSpotifyUrl(fallbackUrl ?? null)
+  );
+}
+
+export function getSpotifyProviderEmbedHtml(
+  value: NormalizedMetadata["providerMetadata"] | null | undefined
+) {
+  return isSpotifyProviderMetadata(value) ? getSpotifyPlayerEmbedHtml(value.payload) : null;
 }
 
 function normalizeMetadataResponse(value: unknown): NormalizedMetadata {

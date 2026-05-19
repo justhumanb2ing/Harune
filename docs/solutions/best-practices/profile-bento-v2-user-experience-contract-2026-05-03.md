@@ -225,6 +225,8 @@ Link item의 thumbnail과 favicon 영역은 이미지 유무와 관계없이 같
 - YouTube link item은 `providerMetadata.payload.thumbnails.high.url`이 있으면 기존 `item.content.thumbnail`보다 우선해서 thumbnail slot에 렌더링한다. `providerMetadata.payload.statistics.subscriberCount`가 있으면 CTA label 옆에 compact 표기(`999`, `1K`, `1.3M`)로 함께 보여준다.
 - CHZZK link item은 `providerMetadata.provider === "chzzk"`이고 `providerMetadata.payload.followerCount`가 있으면 CTA label 옆에 compact follower count 표기(`374.7K`)를 함께 보여준다.
 - GitHub link item이 `provider === "github"`이고 `providerMetadata.viewType`가 `github_contributions_`로 시작하는 contributions view일 때는 thumbnail slot 대신 잔디 패널을 렌더링한다. `providerMetadata`가 없거나 contributions view가 아니면 기존 thumbnail 기반 metadata UI를 유지한다. 이 패널은 thumbnail-capable size에서만 보여야 한다.
+- Spotify link item은 `providerMetadata.provider === "spotify"`이고 Spotify URI를 추출할 수 있는 `spotify_oembed` metadata일 때만 item 전체를 iframe panel로 렌더링한다. 이때 Spotify iFrame API를 사용해 controller를 만들고, `theme`는 `"dark"`로 고정한다. iframe은 wrapper의 `height: 100%`, `width: 100%`에 맞춰 item 크기를 채운다. iframe 내부 버튼/플레이어 상호작용은 grid drag보다 우선한다. owner editor에서는 iframe을 막지 않는 얇은 top drag strip만 드래그 시작 영역으로 둔다. Spotify URI를 만들 수 없는 경우는 기존 일반 link item thumbnail/fallback UI를 유지한다.
+- Spotify link item의 기본 배치는 `desktop`과 `compact` 모두 `2x2`여야 한다. Spotify URL을 추가하는 순간 두 breakpoint 모두 `2x2`로 시작해, iframe panel이 들어갈 충분한 면적을 먼저 확보한다.
 
 ### Text And Section Density
 

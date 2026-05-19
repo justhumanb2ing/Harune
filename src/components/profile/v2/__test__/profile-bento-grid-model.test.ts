@@ -3,7 +3,9 @@ import { describe, expect, test } from "bun:test";
 import {
   createAutoBentoItem,
   createPreviewDraftBentoId,
+  isSpotifyLinkUrl,
   normalizeProfileBentoItems,
+  toBentoGridItem,
 } from "@/components/profile/v2/profile-bento-grid-model";
 import type { ProfileBentoItem } from "@/lib/profile/types";
 
@@ -43,6 +45,78 @@ describe("profile-bento-grid-model", () => {
     });
     expect(clockItem.content.showSeconds).toBe(true);
     expect(clockItem.content.style.backgroundColor).toBe("#ffffff");
+  });
+
+  test("creates spotify link items with a 2x2 compact default layout", () => {
+    const spotifyLinkItem = createAutoBentoItem("link", [], {
+      layoutOverrides: {
+        compact: { w: 2, h: 2 },
+      },
+    });
+
+    expect(spotifyLinkItem.layout.desktop).toMatchObject({
+      w: 1,
+      h: 2,
+    });
+    expect(spotifyLinkItem.layout.compact).toMatchObject({
+      w: 2,
+      h: 2,
+    });
+  });
+
+  test("detects spotify urls by host", () => {
+    expect(isSpotifyLinkUrl("https://open.spotify.com/track/abc")).toBe(true);
+    expect(isSpotifyLinkUrl("https://spotify.link/abc123")).toBe(true);
+    expect(isSpotifyLinkUrl("https://example.com")).toBe(false);
+  });
+
+  test("marks spotify link items as full bleed only when spotify oembed metadata is present", () => {
+    const baseItem: ProfileBentoItem = {
+      id: "spotify-link",
+      type: "link",
+      layout: {
+        desktop: { x: 0, y: 0, w: 1, h: 2 },
+        compact: { x: 0, y: 0, w: 2, h: 2 },
+      },
+      content: {
+        title: "Spotify",
+        description: null,
+        favicon: null,
+        domain: "open.spotify.com",
+        thumbnail: null,
+        url: "https://open.spotify.com/track/abc",
+      },
+    };
+
+    expect(toBentoGridItem(baseItem)).not.toHaveProperty("isFullBleed", true);
+    expect(
+      toBentoGridItem({
+        ...baseItem,
+        content: {
+          ...baseItem.content,
+          metadata: {
+            url: "https://open.spotify.com/track/abc",
+            domain: "open.spotify.com",
+            title: "Spotify",
+            description: null,
+            image: null,
+            siteName: "Spotify",
+            favicon: null,
+            provider: "spotify",
+            providerMetadata: {
+              provider: "spotify",
+              viewType: "spotify_oembed",
+              fetchedAt: "2026-05-19T00:00:00.000Z",
+              payload: {
+                html: '<iframe src="https://open.spotify.com/embed/track/abc?utm_source=oembed"></iframe>',
+              },
+            },
+          },
+        },
+      })
+    ).toMatchObject({
+      isFullBleed: true,
+    });
   });
 
   test("creates text items with a nullable url and normalizes text urls", () => {

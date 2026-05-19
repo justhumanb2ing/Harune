@@ -3,6 +3,7 @@ import { normalizeGridTextSurfaceStyle } from "@/components/grid/grid-text-surfa
 import { createLayoutItem, normalizeLayouts } from "@/lib/grid/grid-layout-utils";
 import type { GridBreakpoint, GridItem, GridLayouts } from "@/lib/grid/grid-types";
 import { resolveLinkProviderTheme } from "@/lib/metadata/link-provider-theme";
+import { getSpotifyProviderEmbedUri } from "@/lib/metadata/url-metadata";
 import { getDefaultClockWidgetConfig, normalizeClockWidgetConfig } from "@/lib/profile/clock";
 import type { ProfileBentoItem, ProfileBentoLayout, ProfileBentoType } from "@/lib/profile/types";
 
@@ -60,6 +61,9 @@ export const toBentoGridLayouts = (bento: ProfileBentoItem[]): GridLayouts =>
 export const toBentoGridItem = (item: ProfileBentoItem): GridItem => ({
   id: item.id,
   itemType: item.type,
+  isFullBleed:
+    item.type === "link" &&
+    Boolean(getSpotifyProviderEmbedUri(item.content.metadata?.providerMetadata)),
   clockBackgroundColor:
     item.type === "clock"
       ? normalizeClockWidgetConfig(item.content).style.backgroundColor
@@ -83,6 +87,10 @@ export const toBentoGridItem = (item: ProfileBentoItem): GridItem => ({
               : item.content.title,
   description: item.type,
 });
+
+export function isSpotifyLinkUrl(url: string) {
+  return resolveLinkProviderTheme(url)?.provider === "spotify";
+}
 
 const getLinkDomain = (url: string) => {
   try {
@@ -149,32 +157,68 @@ export const mergeLayoutsIntoBento = (items: ProfileBentoItem[], layouts: GridLa
   });
 };
 
-export function createAutoBentoItem(type: CreatableBentoType, currentItems: ProfileBentoItem[]) {
+export function createAutoBentoItem(
+  type: CreatableBentoType,
+  currentItems: ProfileBentoItem[],
+  options: CreateAutoBentoItemOptions = {}
+) {
+  return createAutoBentoItemWithLayouts(type, currentItems, options);
+}
+
+type CreateAutoBentoItemLayoutOverride = {
+  h?: number;
+  maxH?: number;
+  maxW?: number;
+  minH?: number;
+  minW?: number;
+  w?: number;
+};
+
+type CreateAutoBentoItemOptions = {
+  layoutOverrides?: Partial<Record<GridBreakpoint, CreateAutoBentoItemLayoutOverride>>;
+};
+
+function createAutoBentoLayout(
+  id: string,
+  breakpoint: GridBreakpoint,
+  layout: readonly LayoutItem[],
+  itemType: CreatableBentoType,
+  options?: CreateAutoBentoItemOptions
+) {
+  const override = options?.layoutOverrides?.[breakpoint];
+
+  return createLayoutItem(id, breakpoint, layout, {
+    itemType,
+    ...override,
+  });
+}
+
+export function createAutoBentoItemWithLayouts(
+  type: CreatableBentoType,
+  currentItems: ProfileBentoItem[],
+  options: CreateAutoBentoItemOptions = {}
+) {
   const id = crypto.randomUUID();
   const count = currentItems.filter((item) => item.type === type).length + 1;
   const desktopLayout =
     type === "clock"
-      ? createLayoutItem(id, "desktop", toBentoLayoutItems(currentItems, "desktop"), {
-          h: 2,
-          itemType: type,
-          minH: 1,
-          minW: 1,
-          w: 2,
+      ? createAutoBentoLayout(id, "desktop", toBentoLayoutItems(currentItems, "desktop"), type, {
+          layoutOverrides: {
+            desktop: { h: 2, minH: 1, minW: 1, w: 2 },
+          },
         })
-      : createLayoutItem(id, "desktop", toBentoLayoutItems(currentItems, "desktop"), {
-          itemType: type,
+      : createAutoBentoLayout(id, "desktop", toBentoLayoutItems(currentItems, "desktop"), type, {
+          layoutOverrides: options.layoutOverrides,
         });
   const compactLayout =
     type === "clock"
-      ? createLayoutItem(id, "compact", toBentoLayoutItems(currentItems, "compact"), {
-          h: 2,
-          itemType: type,
-          minH: 1,
-          minW: 1,
-          w: 2,
+      ? createAutoBentoLayout(id, "compact", toBentoLayoutItems(currentItems, "compact"), type, {
+          layoutOverrides: {
+            compact: { h: 2, minH: 1, minW: 1, w: 2 },
+          },
         })
-      : createLayoutItem(id, "compact", toBentoLayoutItems(currentItems, "compact"), {
-          itemType: type,
+      : createAutoBentoLayout(id, "compact", toBentoLayoutItems(currentItems, "compact"), type, {
+          layoutOverrides: options.layoutOverrides,
         });
   const baseLayout = {
     desktop: toProfileBentoLayout(desktopLayout, desktopLayout.w, desktopLayout.h),

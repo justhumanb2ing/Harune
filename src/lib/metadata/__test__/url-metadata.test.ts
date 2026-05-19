@@ -2,8 +2,15 @@ import { describe, expect, test } from "bun:test";
 import {
   fetchUrlMetadata,
   formatCompactCount,
+  getSpotifyPlayerEmbedHtml,
+  getSpotifyProviderEmbedHtml,
+  getSpotifyProviderEmbedUri,
+  getYoutubePlayerEmbedHtml,
   isChzzkProviderMetadata,
+  isDiscordProviderMetadata,
   isGithubContributionsProviderMetadata,
+  isSpotifyProviderMetadata,
+  isTwitchProviderMetadata,
   isYoutubeProviderMetadata,
   MetadataFetchError,
 } from "@/lib/metadata/url-metadata";
@@ -235,6 +242,301 @@ describe("fetchUrlMetadata", () => {
       expect(formatCompactCount("999")).toBe("999");
       expect(formatCompactCount("1000")).toBe("1K");
       expect(formatCompactCount("1253400")).toBe("1.3M");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  test("preserves youtube video provider metadata and accepts player embeds", async () => {
+    const originalFetch = globalThis.fetch;
+
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          description: "YouTube video",
+          favicon: "https://www.youtube.com/favicon.ico",
+          fetchedAt: "2026-05-19T00:00:00.000Z",
+          image: "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+          siteName: "YouTube",
+          title: "Never Gonna Give You Up",
+          domain: "youtube.com",
+          url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          provider: "youtube",
+          providerMetadata: {
+            provider: "youtube",
+            viewType: "youtube_video",
+            fetchedAt: "2026-05-19T00:00:00.000Z",
+            payload: {
+              videoId: "dQw4w9WgXcQ",
+              channelId: "UCuAXFkgsw1L7xaCfnd5JJOw",
+              channelTitle: "Rick Astley",
+              snippet: {
+                title: "Never Gonna Give You Up",
+                description: "Music video",
+              },
+              statistics: {
+                viewCount: 123456789,
+                likeCount: 9876543,
+                commentCount: 12345,
+              },
+              player: {
+                embedHtml: '<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ"></iframe>',
+                embedWidth: 640,
+                embedHeight: 360,
+              },
+            },
+          },
+        }),
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        }
+      )) as typeof fetch;
+
+    try {
+      const metadata = await fetchUrlMetadata("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+
+      expect(metadata.provider).toBe("youtube");
+      expect(metadata.domain).toBe("youtube.com");
+      expect(isYoutubeProviderMetadata(metadata.providerMetadata)).toBe(true);
+      expect(getYoutubePlayerEmbedHtml(metadata.providerMetadata?.payload)).toBe(
+        '<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ"></iframe>'
+      );
+      expect(metadata.providerMetadata).toEqual({
+        provider: "youtube",
+        viewType: "youtube_video",
+        fetchedAt: "2026-05-19T00:00:00.000Z",
+        payload: {
+          videoId: "dQw4w9WgXcQ",
+          channelId: "UCuAXFkgsw1L7xaCfnd5JJOw",
+          channelTitle: "Rick Astley",
+          snippet: {
+            title: "Never Gonna Give You Up",
+            description: "Music video",
+          },
+          statistics: {
+            viewCount: 123456789,
+            likeCount: 9876543,
+            commentCount: 12345,
+          },
+          player: {
+            embedHtml: '<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ"></iframe>',
+            embedWidth: 640,
+            embedHeight: 360,
+          },
+        },
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  test("preserves spotify oembed provider metadata and accepts iframe html", async () => {
+    const originalFetch = globalThis.fetch;
+
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          description: "Spotify artist",
+          favicon: "https://open.spotify.com/favicon.ico",
+          fetchedAt: "2026-05-19T00:00:00.000Z",
+          image: "https://i.scdn.co/image/ab67616d0000b273000000000000000000000000",
+          siteName: "Spotify",
+          title: "Mingginyu",
+          domain: "open.spotify.com",
+          url: "https://open.spotify.com/artist/29UQ130XMQDR55X4Rmjapd",
+          provider: "spotify",
+          providerMetadata: {
+            provider: "spotify",
+            viewType: "spotify_oembed",
+            fetchedAt: "2026-05-19T00:00:00.000Z",
+            payload: {
+              html: '<iframe style="border-radius: 12px" width="100%" height="352" title="Spotify Embed: Mingginyu" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" src="https://open.spotify.com/embed/artist/29UQ130XMQDR55X4Rmjapd?utm_source=oembed"></iframe>',
+            },
+          },
+        }),
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        }
+      )) as typeof fetch;
+
+    try {
+      const metadata = await fetchUrlMetadata(
+        "https://open.spotify.com/artist/29UQ130XMQDR55X4Rmjapd"
+      );
+
+      expect(metadata.provider).toBe("spotify");
+      expect(metadata.domain).toBe("open.spotify.com");
+      expect(isSpotifyProviderMetadata(metadata.providerMetadata)).toBe(true);
+      expect(getSpotifyPlayerEmbedHtml(metadata.providerMetadata?.payload)).toBe(
+        '<iframe style="border-radius: 12px" width="100%" height="352" title="Spotify Embed: Mingginyu" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" src="https://open.spotify.com/embed/artist/29UQ130XMQDR55X4Rmjapd?utm_source=oembed"></iframe>'
+      );
+      expect(
+        getSpotifyProviderEmbedUri(
+          metadata.providerMetadata,
+          "https://open.spotify.com/artist/29UQ130XMQDR55X4Rmjapd"
+        )
+      ).toBe("spotify:artist:29UQ130XMQDR55X4Rmjapd");
+      expect(getSpotifyProviderEmbedHtml(metadata.providerMetadata)).toBe(
+        '<iframe style="border-radius: 12px" width="100%" height="352" title="Spotify Embed: Mingginyu" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" src="https://open.spotify.com/embed/artist/29UQ130XMQDR55X4Rmjapd?utm_source=oembed"></iframe>'
+      );
+      expect(metadata.providerMetadata).toEqual({
+        provider: "spotify",
+        viewType: "spotify_oembed",
+        fetchedAt: "2026-05-19T00:00:00.000Z",
+        payload: {
+          html: '<iframe style="border-radius: 12px" width="100%" height="352" title="Spotify Embed: Mingginyu" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" src="https://open.spotify.com/embed/artist/29UQ130XMQDR55X4Rmjapd?utm_source=oembed"></iframe>',
+        },
+      });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  test("does not return spotify embed html without oembed provider metadata", () => {
+    expect(
+      getSpotifyProviderEmbedHtml({
+        provider: "spotify",
+        viewType: "generic_html",
+        fetchedAt: "2026-05-19T00:00:00.000Z",
+        payload: {
+          title: "Spotify fallback",
+        },
+      })
+    ).toBeNull();
+
+    expect(getSpotifyProviderEmbedHtml(null)).toBeNull();
+  });
+
+  test("preserves twitch provider metadata and compacts follower counts", async () => {
+    const originalFetch = globalThis.fetch;
+
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          description: "Twitch channel",
+          favicon: "https://static-cdn.jtvnw.net/favicon.ico",
+          fetchedAt: "2026-05-19T00:00:00.000Z",
+          image: "https://static-cdn.jtvnw.net/user.png",
+          siteName: "Twitch",
+          title: "TwitchDev",
+          domain: "twitch.tv",
+          url: "https://www.twitch.tv/twitchdev",
+          provider: "twitch",
+          providerMetadata: {
+            provider: "twitch",
+            viewType: "twitch_channel",
+            fetchedAt: "2026-05-19T00:00:00.000Z",
+            payload: {
+              broadcasterId: "141981764",
+              broadcasterLogin: "twitchdev",
+              broadcasterName: "TwitchDev",
+              displayName: "TwitchDev",
+              description: "Supporting third-party developers.",
+              profileImageUrl: "https://static-cdn.jtvnw.net/user.png",
+              offlineImageUrl: "https://static-cdn.jtvnw.net/offline.png",
+              followerCount: 1234567,
+              viewCount: 5980557,
+            },
+          },
+        }),
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        }
+      )) as typeof fetch;
+
+    try {
+      const metadata = await fetchUrlMetadata("https://www.twitch.tv/twitchdev");
+
+      expect(metadata.provider).toBe("twitch");
+      expect(metadata.domain).toBe("twitch.tv");
+      expect(isTwitchProviderMetadata(metadata.providerMetadata)).toBe(true);
+      expect(metadata.providerMetadata).toEqual({
+        provider: "twitch",
+        viewType: "twitch_channel",
+        fetchedAt: "2026-05-19T00:00:00.000Z",
+        payload: {
+          broadcasterId: "141981764",
+          broadcasterLogin: "twitchdev",
+          broadcasterName: "TwitchDev",
+          displayName: "TwitchDev",
+          description: "Supporting third-party developers.",
+          profileImageUrl: "https://static-cdn.jtvnw.net/user.png",
+          offlineImageUrl: "https://static-cdn.jtvnw.net/offline.png",
+          followerCount: 1234567,
+          viewCount: 5980557,
+        },
+      });
+      expect(formatCompactCount(1234567)).toBe("1.2M");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  test("preserves discord provider metadata and compacts member counts", async () => {
+    const originalFetch = globalThis.fetch;
+
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          description: "Discord invite",
+          favicon: "https://cdn.discordapp.com/favicon.ico",
+          fetchedAt: "2026-05-19T00:00:00.000Z",
+          image: "https://cdn.discordapp.com/icons/123456789012345678/guild_icon.png?size=256",
+          siteName: "Discord",
+          title: "Harune Community",
+          domain: "discord.gg",
+          url: "https://discord.gg/abc123",
+          provider: "discord",
+          providerMetadata: {
+            provider: "discord",
+            viewType: "discord_invite",
+            fetchedAt: "2026-05-19T00:00:00.000Z",
+            payload: {
+              code: "abc123",
+              guildId: "123456789012345678",
+              guildName: "Harune Community",
+              guildDescription: "A friendly place",
+              iconUrl:
+                "https://cdn.discordapp.com/icons/123456789012345678/guild_icon.png?size=256",
+              memberCount: 12345,
+              presenceCount: 321,
+            },
+          },
+        }),
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        }
+      )) as typeof fetch;
+
+    try {
+      const metadata = await fetchUrlMetadata("https://discord.gg/abc123");
+
+      expect(metadata.provider).toBe("discord");
+      expect(metadata.domain).toBe("discord.gg");
+      expect(isDiscordProviderMetadata(metadata.providerMetadata)).toBe(true);
+      expect(metadata.providerMetadata).toEqual({
+        provider: "discord",
+        viewType: "discord_invite",
+        fetchedAt: "2026-05-19T00:00:00.000Z",
+        payload: {
+          code: "abc123",
+          guildId: "123456789012345678",
+          guildName: "Harune Community",
+          guildDescription: "A friendly place",
+          iconUrl: "https://cdn.discordapp.com/icons/123456789012345678/guild_icon.png?size=256",
+          memberCount: 12345,
+          presenceCount: 321,
+        },
+      });
+      expect(formatCompactCount(12345)).toBe("12.3K");
     } finally {
       globalThis.fetch = originalFetch;
     }

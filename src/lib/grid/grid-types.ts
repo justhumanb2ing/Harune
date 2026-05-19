@@ -14,6 +14,7 @@ export type GridItem = {
   id: string;
   label: string;
   description: string;
+  isFullBleed?: boolean;
   itemType?: string;
   theme?: GridItemTheme;
   clockBackgroundColor?: string;

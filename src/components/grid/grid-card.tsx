@@ -160,7 +160,10 @@ export function GridCard({
     isSectionItem && !readOnly && (isSectionPointerActive || isSectionFocusActive || isLiftActive);
   const shadowClassName = !isSectionItem || shouldShowSectionShadow ? "shadow-xs" : "shadow-none";
   const isFullBleedItem =
-    item.itemType === "media" || item.itemType === "map" || item.itemType === "clock";
+    item.isFullBleed ||
+    item.itemType === "media" ||
+    item.itemType === "map" ||
+    item.itemType === "clock";
   const shouldRemovePadding = isFullBleedItem || item.itemType === "text";
   const paddingClassName = shouldRemovePadding ? "p-0" : isVisuallyThinItem ? "p-2" : "p-4";
   const radiusClassName = isVisuallyThinItem ? "rounded-2xl" : "rounded-[1.5rem]";

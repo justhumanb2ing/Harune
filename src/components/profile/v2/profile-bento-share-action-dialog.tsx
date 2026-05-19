@@ -71,7 +71,7 @@ export function ProfileBentoShareActionDialog({
       />
       <DialogContent
         showCloseButton={false}
-        className="max-w-[calc(100%-2rem)] rounded-[3rem] p-6 shadow-float-lg sm:max-w-md"
+        className="max-w-[calc(100%-2rem)] rounded-[3rem] p-6 drop-shadow-2xl shadow-float-lg sm:max-w-md"
       >
         <DialogHeader className="flex-row items-center gap-3">
           <div className="relative size-14 shrink-0 overflow-hidden rounded-full bg-secondary">

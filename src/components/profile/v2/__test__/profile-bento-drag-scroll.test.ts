@@ -31,5 +31,7 @@ describe("profile bento drag scroll", () => {
     expect(getVerticalAutoScrollDelta(0, 0, 800)).toBe(-PROFILE_BENTO_DRAG_SCROLL_MAX_SPEED_PX);
     expect(getVerticalAutoScrollDelta(800, 0, 800)).toBe(PROFILE_BENTO_DRAG_SCROLL_MAX_SPEED_PX);
     expect(getVerticalAutoScrollDelta(PROFILE_BENTO_DRAG_SCROLL_EDGE_PX / 2, 0, 800)).toBe(-14);
+    expect(getVerticalAutoScrollDelta(-20, 0, 800)).toBe(-PROFILE_BENTO_DRAG_SCROLL_MAX_SPEED_PX);
+    expect(getVerticalAutoScrollDelta(820, 0, 800)).toBe(PROFILE_BENTO_DRAG_SCROLL_MAX_SPEED_PX);
   });
 });

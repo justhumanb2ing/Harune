@@ -195,16 +195,20 @@ const getClockTimezoneOptions = (timezone: string) => {
   return [{ label: timezone, value: timezone }, ...CLOCK_TIMEZONE_OPTIONS];
 };
 
+function isVerticalScrollContainer(element: HTMLElement) {
+  const overflowY = window.getComputedStyle(element).overflowY;
+
+  return (
+    (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") &&
+    element.scrollHeight > element.clientHeight
+  );
+}
+
 function getVerticalScrollContainer(element: HTMLElement | null) {
   let current = element?.parentElement ?? null;
 
   while (current) {
-    const overflowY = window.getComputedStyle(current).overflowY;
-
-    if (
-      (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") &&
-      current.scrollHeight > current.clientHeight
-    ) {
+    if (isVerticalScrollContainer(current)) {
       return current;
     }
 
@@ -214,12 +218,30 @@ function getVerticalScrollContainer(element: HTMLElement | null) {
   return document.scrollingElement instanceof HTMLElement ? document.scrollingElement : null;
 }
 
+function getVerticalAutoScrollContainer(
+  preferredContainer: HTMLElement | null | undefined,
+  fallbackElement: HTMLElement | null
+) {
+  if (preferredContainer && isVerticalScrollContainer(preferredContainer)) {
+    return preferredContainer;
+  }
+
+  return getVerticalScrollContainer(fallbackElement);
+}
+
+function getVerticalAutoScrollBounds(scrollContainer: HTMLElement) {
+  if (scrollContainer === document.scrollingElement) {
+    return { bottom: window.innerHeight, top: 0 };
+  }
+
+  const rect = scrollContainer.getBoundingClientRect();
+
+  return { bottom: rect.bottom, top: rect.top };
+}
+
 function applyVerticalAutoScroll(scrollContainer: HTMLElement, pointerY: number) {
-  const delta = getVerticalAutoScrollDelta(
-    pointerY,
-    scrollContainer.getBoundingClientRect().top,
-    scrollContainer.getBoundingClientRect().bottom
-  );
+  const bounds = getVerticalAutoScrollBounds(scrollContainer);
+  const delta = getVerticalAutoScrollDelta(pointerY, bounds.top, bounds.bottom);
 
   if (delta === 0) {
     return;
@@ -747,8 +769,10 @@ export function ProfileBentoInteractiveGrid({
 
     const step = () => {
       const pointer = dragPointerRef.current;
-      const scrollContainer =
-        scrollViewportRef?.current ?? getVerticalScrollContainer(containerRef.current);
+      const scrollContainer = getVerticalAutoScrollContainer(
+        scrollViewportRef?.current,
+        containerRef.current
+      );
 
       if (pointer && scrollContainer) {
         applyVerticalAutoScroll(scrollContainer, pointer.y);

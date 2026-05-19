@@ -36,12 +36,9 @@ export function getVerticalAutoScrollDelta(
   viewportTop: number,
   viewportBottom: number
 ) {
-  if (pointerY < viewportTop || pointerY > viewportBottom) {
-    return 0;
-  }
-
-  const distanceToTop = pointerY - viewportTop;
-  const distanceToBottom = viewportBottom - pointerY;
+  const clampedPointerY = Math.min(Math.max(pointerY, viewportTop), viewportBottom);
+  const distanceToTop = clampedPointerY - viewportTop;
+  const distanceToBottom = viewportBottom - clampedPointerY;
 
   if (distanceToTop < PROFILE_BENTO_DRAG_SCROLL_EDGE_PX) {
     const ratio = 1 - distanceToTop / PROFILE_BENTO_DRAG_SCROLL_EDGE_PX;

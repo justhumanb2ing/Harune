@@ -28,6 +28,7 @@ import {
 import {
   formatCompactCount,
   getYoutubeThumbnailUrl,
+  isChzzkProviderMetadata,
   isGithubContributionsProviderMetadata,
   isYoutubeProviderMetadata,
   type NormalizedMetadata,
@@ -521,6 +522,14 @@ function getLinkProviderActionLabel(
 
     return subscriberCount
       ? `${providerTheme.actionLabel} ${subscriberCount}`
+      : providerTheme.actionLabel;
+  }
+
+  if (providerTheme.provider === "chzzk" && isChzzkProviderMetadata(providerMetadata)) {
+    const followerCount = formatCompactCount(providerMetadata.payload.followerCount);
+
+    return followerCount
+      ? `${providerTheme.actionLabel} ${followerCount}`
       : providerTheme.actionLabel;
   }
 

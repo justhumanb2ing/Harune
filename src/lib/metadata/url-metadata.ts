@@ -56,6 +56,19 @@ export type YoutubeProviderMetadata = {
   };
 };
 
+export type ChzzkProviderMetadata = {
+  provider: "chzzk";
+  viewType: string;
+  fetchedAt: string;
+  payload: {
+    channelId?: string;
+    channelName?: string;
+    channelImageUrl?: string;
+    followerCount: string | number;
+    verifiedMark?: boolean;
+  };
+};
+
 export type NormalizedMetadata = {
   url: string;
   domain: string;
@@ -69,6 +82,7 @@ export type NormalizedMetadata = {
     | MetadataProviderMetadata
     | GithubContributionsProviderMetadata
     | YoutubeProviderMetadata
+    | ChzzkProviderMetadata
     | null;
 };
 
@@ -211,9 +225,21 @@ function isYoutubeProviderMetadataPayload(
   );
 }
 
+function isChzzkProviderMetadataPayload(value: unknown): value is ChzzkProviderMetadata["payload"] {
+  return (
+    isRecord(value) &&
+    (typeof value.followerCount === "string" || typeof value.followerCount === "number")
+  );
+}
+
 function normalizeProviderMetadata(
   value: unknown
-): MetadataProviderMetadata | GithubContributionsProviderMetadata | YoutubeProviderMetadata | null {
+):
+  | MetadataProviderMetadata
+  | GithubContributionsProviderMetadata
+  | YoutubeProviderMetadata
+  | ChzzkProviderMetadata
+  | null {
   if (
     !isRecord(value) ||
     typeof value.provider !== "string" ||
@@ -261,6 +287,15 @@ function normalizeProviderMetadata(
     };
   }
 
+  if (value.provider === "chzzk" && isChzzkProviderMetadataPayload(value.payload)) {
+    return {
+      provider: value.provider,
+      viewType: value.viewType,
+      fetchedAt: value.fetchedAt,
+      payload: value.payload,
+    };
+  }
+
   return {
     provider: value.provider,
     viewType: value.viewType,
@@ -290,6 +325,15 @@ export function isYoutubeProviderMetadata(value: unknown): value is YoutubeProvi
       typeof value.provider === "string" &&
       value.provider === "youtube" &&
       isYoutubeProviderMetadataPayload(value.payload)
+  );
+}
+
+export function isChzzkProviderMetadata(value: unknown): value is ChzzkProviderMetadata {
+  return Boolean(
+    isRecord(value) &&
+      typeof value.provider === "string" &&
+      value.provider === "chzzk" &&
+      isChzzkProviderMetadataPayload(value.payload)
   );
 }
 

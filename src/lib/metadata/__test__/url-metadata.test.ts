@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   fetchUrlMetadata,
   formatCompactCount,
+  isChzzkProviderMetadata,
   isGithubContributionsProviderMetadata,
   isYoutubeProviderMetadata,
   MetadataFetchError,
@@ -234,6 +235,67 @@ describe("fetchUrlMetadata", () => {
       expect(formatCompactCount("999")).toBe("999");
       expect(formatCompactCount("1000")).toBe("1K");
       expect(formatCompactCount("1253400")).toBe("1.3M");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  test("preserves chzzk provider metadata and compacts follower counts", async () => {
+    const originalFetch = globalThis.fetch;
+
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          description: "CHZZK channel",
+          favicon: "https://chzzk.naver.com/favicon.ico",
+          fetchedAt: "2026-05-19T04:48:46.085Z",
+          image: "https://nng-phinf.pstatic.net/channel.png",
+          siteName: "CHZZK",
+          title: "한동숙",
+          domain: "chzzk.naver.com",
+          url: "https://chzzk.naver.com/75cbf189b3bb8f9f687d2aca0d0a382b",
+          provider: "chzzk",
+          providerMetadata: {
+            provider: "chzzk",
+            viewType: "chzzk_channel",
+            fetchedAt: "2026-05-19T04:48:46.085Z",
+            payload: {
+              channelId: "75cbf189b3bb8f9f687d2aca0d0a382b",
+              channelName: "한동숙",
+              channelImageUrl: "https://nng-phinf.pstatic.net/channel.png",
+              followerCount: 374700,
+              verifiedMark: true,
+            },
+          },
+        }),
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+        }
+      )) as typeof fetch;
+
+    try {
+      const metadata = await fetchUrlMetadata(
+        "https://chzzk.naver.com/75cbf189b3bb8f9f687d2aca0d0a382b"
+      );
+
+      expect(metadata.provider).toBe("chzzk");
+      expect(metadata.domain).toBe("chzzk.naver.com");
+      expect(isChzzkProviderMetadata(metadata.providerMetadata)).toBe(true);
+      expect(metadata.providerMetadata).toEqual({
+        provider: "chzzk",
+        viewType: "chzzk_channel",
+        fetchedAt: "2026-05-19T04:48:46.085Z",
+        payload: {
+          channelId: "75cbf189b3bb8f9f687d2aca0d0a382b",
+          channelName: "한동숙",
+          channelImageUrl: "https://nng-phinf.pstatic.net/channel.png",
+          followerCount: 374700,
+          verifiedMark: true,
+        },
+      });
+      expect(formatCompactCount(374700)).toBe("374.7K");
     } finally {
       globalThis.fetch = originalFetch;
     }

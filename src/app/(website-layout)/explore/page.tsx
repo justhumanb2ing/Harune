@@ -1,9 +1,11 @@
 import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import {
   BreadcrumbJsonLd,
   WebPageStructuredData,
 } from "@/components/site-instrumentation/structured-data";
+import { AppEntryCtaButton } from "@/components/website/app-entry-cta-button";
 import ExploreSection from "@/components/website/explore-section";
 import { prefetchListProfilePagesQuery } from "@/lib/api/generated/http/profile-api/profile-api";
 import { appConfig } from "@/lib/config";
@@ -43,8 +45,21 @@ export default async function ExplorePage() {
         ]}
       />
       <main className="relative">
+        <div className="p-5">
+          <div className="mx-auto flex max-w-7xl justify-end">
+            <AppEntryCtaButton
+              next="/"
+              size="lg"
+              className="brand-button py-5 px-5 rounded-sm font-bold shadow-sm"
+            >
+              Make your page
+            </AppEntryCtaButton>
+          </div>
+        </div>
         <HydrationBoundary state={dehydrate(queryClient)}>
-          <ExploreSection />
+          <Suspense>
+            <ExploreSection />
+          </Suspense>
         </HydrationBoundary>
       </main>
     </>

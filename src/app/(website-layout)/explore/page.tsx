@@ -6,7 +6,7 @@ import {
   WebPageStructuredData,
 } from "@/components/site-instrumentation/structured-data";
 import { AppEntryCtaButton } from "@/components/website/app-entry-cta-button";
-import ExploreSection from "@/components/website/explore-section";
+import ExploreSection, { ExploreSectionFallback } from "@/components/website/explore-section";
 import { prefetchListProfilePagesQuery } from "@/lib/api/generated/http/profile-api/profile-api";
 import { appConfig } from "@/lib/config";
 import { createPageMetadata } from "@/lib/seo";
@@ -56,11 +56,20 @@ export default async function ExplorePage() {
             </AppEntryCtaButton>
           </div>
         </div>
-        <HydrationBoundary state={dehydrate(queryClient)}>
-          <Suspense>
-            <ExploreSection />
-          </Suspense>
-        </HydrationBoundary>
+        <section className="flex h-full flex-col">
+          <header className="flex flex-1 flex-col items-center justify-center px-6 py-8 pt-12">
+            <div className="container flex max-w-7xl flex-col gap-4">
+              <h2 className="text-primary text-3xl font-extrabold tracking-tight text-pretty lg:text-4xl">
+                Explore beautiful pages crafted by others
+              </h2>
+            </div>
+          </header>
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <Suspense fallback={<ExploreSectionFallback />}>
+              <ExploreSection />
+            </Suspense>
+          </HydrationBoundary>
+        </section>
       </main>
     </>
   );

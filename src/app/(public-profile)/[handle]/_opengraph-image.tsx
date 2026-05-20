@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { loadPretendardFonts } from "@/lib/opengraph-fonts";
 import { absoluteUrl } from "@/lib/seo";
 
 export const opengraphImageSize = {
@@ -25,10 +26,11 @@ const resolveImageUrl = (image: string | null) => {
 const getDisplayName = (profile: OpenGraphProfile | null) =>
   profile?.name || (profile?.handle ? `@${profile.handle}` : "");
 
-export function createProfileOpenGraphImage(profile: OpenGraphProfile | null) {
+export async function createProfileOpenGraphImage(profile: OpenGraphProfile | null) {
   const displayName = getDisplayName(profile);
   const imageUrl = resolveImageUrl(profile?.image ?? null);
   const handleText = profile?.handle ? `harune.me/${profile.handle}` : "harune.me";
+  const fonts = await loadPretendardFonts([700, 600]);
 
   return new ImageResponse(
     <div
@@ -40,7 +42,7 @@ export function createProfileOpenGraphImage(profile: OpenGraphProfile | null) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        fontFamily: "Inter, Arial, sans-serif",
+        fontFamily: "Pretendard, Arial, sans-serif",
       }}
     >
       <div
@@ -117,7 +119,7 @@ export function createProfileOpenGraphImage(profile: OpenGraphProfile | null) {
               lineHeight: 1,
               textAlign: "center",
               letterSpacing: "-0.02em",
-              color: "#4a4a4a",
+              // color: "#4a4a4a",
             }}
           >
             {handleText}
@@ -125,6 +127,9 @@ export function createProfileOpenGraphImage(profile: OpenGraphProfile | null) {
         </div>
       </div>
     </div>,
-    opengraphImageSize
+    {
+      ...opengraphImageSize,
+      fonts,
+    }
   );
 }

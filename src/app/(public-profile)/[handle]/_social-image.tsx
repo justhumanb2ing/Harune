@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { appConfig } from "@/lib/config";
+import { loadPretendardFonts } from "@/lib/opengraph-fonts";
 import { absoluteUrl } from "@/lib/seo";
 
 export const socialImageSize = {
@@ -29,7 +30,7 @@ const resolveImageUrl = (image: string | null) => {
 const truncate = (value: string, maxLength: number) =>
   value.length > maxLength ? `${value.slice(0, maxLength - 1)}...` : value;
 
-export function createProfileSocialImage(profile: ProfileSocialImageData | null) {
+export async function createProfileSocialImage(profile: ProfileSocialImageData | null) {
   const displayName = truncate(
     profile?.name ||
       profile?.userName ||
@@ -41,6 +42,7 @@ export function createProfileSocialImage(profile: ProfileSocialImageData | null)
   const imageUrl = resolveImageUrl(profile?.image ?? null);
   const avatarInitial = displayName.trim().charAt(0).toUpperCase() || "H";
   const logoUrl = absoluteUrl("/assets/logo.png");
+  const fonts = await loadPretendardFonts([400, 900]);
 
   return new ImageResponse(
     <div
@@ -53,7 +55,7 @@ export function createProfileSocialImage(profile: ProfileSocialImageData | null)
         flexDirection: "column",
         position: "relative",
         padding: "64px",
-        fontFamily: "Inter, Arial, sans-serif",
+        fontFamily: "Pretendard, Arial, sans-serif",
       }}
     >
       {/* biome-ignore lint/performance/noImgElement: next/og renders standard img elements in the generated image */}
@@ -156,6 +158,9 @@ export function createProfileSocialImage(profile: ProfileSocialImageData | null)
         </span>
       </div>
     </div>,
-    socialImageSize
+    {
+      ...socialImageSize,
+      fonts,
+    }
   );
 }

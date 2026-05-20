@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
+import { loadPretendardFonts } from "@/lib/opengraph-fonts";
 import { seoConfig } from "@/lib/seo";
 
 export const alt = `${seoConfig.siteName} twitter image`;
@@ -14,6 +15,7 @@ export const contentType = "image/png";
 export default async function Image() {
   const logoData = await readFile(join(process.cwd(), "public/assets/logo.png"), "base64");
   const logoSrc = `data:image/png;base64,${logoData}`;
+  const fonts = await loadPretendardFonts([700]);
 
   return new ImageResponse(
     <div
@@ -26,6 +28,7 @@ export default async function Image() {
         justifyContent: "center",
         position: "relative",
         width: "100%",
+        fontFamily: "Pretendard, Arial, sans-serif",
       }}
     >
       {/* biome-ignore lint/performance/noImgElement: next/og renders standard img elements in the generated image */}
@@ -58,6 +61,7 @@ export default async function Image() {
     </div>,
     {
       ...size,
+      fonts,
     }
   );
 }

@@ -19,7 +19,7 @@ export async function GET(_request: Request, { params }: ProfileImageRouteContex
     });
 
     if (response.status === 200) {
-      return createProfileOpenGraphImage({
+      return await createProfileOpenGraphImage({
         handle: response.data.page.handle,
         image: response.data.page.image,
         name: response.data.page.name,
@@ -31,7 +31,7 @@ export async function GET(_request: Request, { params }: ProfileImageRouteContex
     }
   }
 
-  return createProfileOpenGraphImage({
+  return await createProfileOpenGraphImage({
     handle,
     image: null,
     name: null,

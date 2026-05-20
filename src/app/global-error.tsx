@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { inter } from "@/lib/fonts";
+import { inter, pretendard } from "@/lib/fonts";
 import "./globals.css";
 
 export default function GlobalError({
@@ -17,8 +17,8 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html lang="en" className={`${inter.variable} ${inter.className} h-full`}>
-      <body className="h-full bg-background text-foreground antialiased">
+    <html lang="en" className={`${pretendard.variable} ${inter.variable} h-full`}>
+      <body className="h-full bg-background font-sans text-foreground antialiased">
         <main className="flex h-full items-center justify-center">
           <section className="flex flex-col items-center gap-10">
             <header className="flex flex-col items-center gap-1">

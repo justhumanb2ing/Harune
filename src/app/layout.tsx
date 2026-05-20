@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { AnalyticsScript } from "@/components/site-instrumentation/analytics-script";
 import { SiteStructuredData } from "@/components/site-instrumentation/structured-data";
-import { inter } from "@/lib/fonts";
+import { inter, pretendard } from "@/lib/fonts";
 import { absoluteUrl, seoConfig } from "@/lib/seo";
 import Providers from "./providers";
 import "./globals.css";
@@ -67,13 +67,13 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${inter.className} h-full`}
+      className={`${pretendard.variable} ${inter.variable} h-full`}
     >
       <head>
         <AnalyticsScript />
         <SiteStructuredData />
       </head>
-      <body className="h-full bg-background antialiased">
+      <body className="h-full bg-background font-sans antialiased">
         <Providers>
           <div className="relative h-full min-h-lvh">{children}</div>
         </Providers>

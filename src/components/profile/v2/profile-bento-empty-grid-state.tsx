@@ -2,7 +2,6 @@
 
 import { Plus } from "lucide-react";
 import Image from "next/image";
-import type { CSSProperties } from "react";
 import type { LayoutItem } from "react-grid-layout";
 import { createLayoutItem } from "@/lib/grid/grid-layout-utils";
 import type { GridBreakpoint, GridItem, GridLayouts } from "@/lib/grid/grid-types";
@@ -49,7 +48,7 @@ const suggestionTypeSizes = {
   text: { w: 1, h: 2 },
   media: { w: 1, h: 4 },
   map: { w: 2, h: 4 },
-  section: { w: 4, h: 2 },
+  section: { w: 4, h: 1 },
 } satisfies Record<CreatableBentoType, { h?: number; w?: number }>;
 
 export const getProfileBentoSuggestionLayouts = (
@@ -121,14 +120,6 @@ export function ProfileBentoSuggestionCard({
       onRequestMediaInput();
     }
   };
-  const style = isSectionSuggestion
-    ? ({
-        height: "calc(100% - 6rem)",
-        marginBottom: "1.5rem",
-        marginTop: "1.5rem",
-      } as CSSProperties)
-    : undefined;
-
   return (
     <button
       aria-label={suggestionLabelByType[type]}
@@ -143,7 +134,6 @@ export function ProfileBentoSuggestionCard({
       )}
       disabled={type !== "link" && !isClickable}
       onClick={handleClick}
-      style={style}
       type="button"
     >
       <Plus

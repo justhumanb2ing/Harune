@@ -63,6 +63,7 @@ const getClockTimezoneLabel = (timezone: string) => {
 };
 
 type ProfileBentoLinkSize = ResizeOptionId;
+
 type ProfileBentoEditableContentCardProps = {
   autoFocus?: boolean;
   activeBreakpoint?: GridBreakpoint;

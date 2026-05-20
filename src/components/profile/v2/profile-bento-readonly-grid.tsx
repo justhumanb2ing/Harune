@@ -114,7 +114,9 @@ export function ProfileBentoReadonlyGrid({
   const gridWrapperStyle = surface === "public-page" ? undefined : { minHeight: gridMinHeight };
   const cardRotate = useMotionValue(0);
   const cardX = useMotionValue(0);
+  const sectionItemTopMargin = activeBreakpoint === "compact" ? "1rem" : "2rem";
   const gridStyle = {
+    "--section-item-top-margin": sectionItemTopMargin,
     "--thin-item-visible-height": `${Math.round(rowHeight * 0.9)}px`,
   } as CSSProperties;
 

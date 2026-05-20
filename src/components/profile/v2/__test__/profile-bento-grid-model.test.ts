@@ -47,6 +47,24 @@ describe("profile-bento-grid-model", () => {
     expect(clockItem.content.style.backgroundColor).toBe("#ffffff");
   });
 
+  test("creates section items with a 4x1 default layout", () => {
+    const sectionItem = createAutoBentoItem("section", []);
+
+    expect(sectionItem.type).toBe("section");
+    if (sectionItem.type !== "section") {
+      throw new Error("Expected section item");
+    }
+
+    expect({ w: sectionItem.layout.desktop.w, h: sectionItem.layout.desktop.h }).toEqual({
+      w: 4,
+      h: 1,
+    });
+    expect({ w: sectionItem.layout.compact.w, h: sectionItem.layout.compact.h }).toEqual({
+      w: 2,
+      h: 1,
+    });
+  });
+
   test("creates spotify link items with a 2x2 compact default layout", () => {
     const spotifyLinkItem = createAutoBentoItem("link", [], {
       layoutOverrides: {

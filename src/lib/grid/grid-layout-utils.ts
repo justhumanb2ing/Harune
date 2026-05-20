@@ -23,8 +23,7 @@ type CreateLayoutItemOptions = {
   w?: number;
 };
 
-const isFullRowThinItem = (id: string, itemType?: string) =>
-  id === THIN_PLACEHOLDER_ITEM_ID || itemType === "section";
+const isFullRowThinItem = (id: string) => id === THIN_PLACEHOLDER_ITEM_ID;
 
 function getItemType(itemTypeById: ReadonlyMap<string, string> | undefined, id: string) {
   return itemTypeById?.get(id);
@@ -92,7 +91,7 @@ export function normalizeLayoutItem(
   breakpoint: GridBreakpoint,
   itemType?: string
 ): LayoutItem {
-  if (isFullRowThinItem(item.i, itemType)) {
+  if (isFullRowThinItem(item.i)) {
     const cols = COLS[breakpoint];
 
     return {
@@ -104,6 +103,22 @@ export function normalizeLayoutItem(
       maxW: cols,
       minH: 2,
       maxH: 2,
+      isResizable: false,
+    };
+  }
+
+  if (itemType === "section") {
+    const cols = COLS[breakpoint];
+
+    return {
+      ...item,
+      x: 0,
+      w: cols,
+      h: 1,
+      minW: cols,
+      maxW: cols,
+      minH: 1,
+      maxH: 1,
       isResizable: false,
     };
   }
@@ -212,8 +227,31 @@ export function createLayoutItem(
 ): LayoutItem {
   const cols = COLS[breakpoint];
   const itemType = options.itemType;
-  const w = isFullRowThinItem(id, itemType) ? cols : Math.min(options.w ?? 1, cols);
-  const h = isFullRowThinItem(id, itemType) ? 2 : (options.h ?? 2);
+  if (itemType === "section") {
+    const w = cols;
+    const h = 1;
+    const nextPosition = findFirstAvailablePosition(layout, cols, w, h);
+
+    return normalizeLayoutItem(
+      {
+        i: id,
+        x: nextPosition.x,
+        y: nextPosition.y,
+        w,
+        h,
+        minW: w,
+        maxW: w,
+        minH: h,
+        maxH: h,
+        isResizable: false,
+      },
+      breakpoint,
+      itemType
+    );
+  }
+
+  const w = isFullRowThinItem(id) ? cols : Math.min(options.w ?? 1, cols);
+  const h = isFullRowThinItem(id) ? 2 : (options.h ?? 2);
   const nextPosition = findFirstAvailablePosition(layout, cols, w, h);
 
   return normalizeLayoutItem(

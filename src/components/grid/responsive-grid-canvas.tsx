@@ -129,16 +129,19 @@ export function ResponsiveGridCanvas({
       {items.map((item) => {
         const isPlainItem = plainItemIds?.has(item.id) ?? false;
         const isSectionItem = item.itemType === "section";
-        const isVisuallyThinItem = item.id === THIN_PLACEHOLDER_ITEM_ID || isSectionItem;
+        const isVisuallyThinItem = item.id === THIN_PLACEHOLDER_ITEM_ID;
         const isDragActive = activeDragItemId === item.id;
         const isDragIntentActive = activeDragIntentItemId === item.id;
         const motionPhase = getItemMotionPhase?.(item.id);
         const radiusClassName = isVisuallyThinItem ? "rounded-2xl" : "rounded-[1.5rem]";
+        const sectionItemTopMarginClassName = isSectionItem
+          ? "mt-[var(--section-item-top-margin)]"
+          : "";
 
         if (isPlainItem) {
           return (
             <div
-              className={`group/item relative overflow-visible ${radiusClassName} ${isVisuallyThinItem ? "flex items-end" : ""}`}
+              className={`relative overflow-visible ${radiusClassName} ${isVisuallyThinItem ? "flex items-end" : ""} ${sectionItemTopMarginClassName}`}
               data-profile-bento-grid-item-id={item.id}
               key={item.id}
             >
@@ -149,7 +152,7 @@ export function ResponsiveGridCanvas({
 
         return (
           <div
-            className={`group/item relative overflow-visible ${radiusClassName} ${isVisuallyThinItem ? "flex items-end" : ""} ${item.id === THIN_PLACEHOLDER_ITEM_ID ? "pointer-events-none" : ""}`}
+            className={`relative overflow-visible ${radiusClassName} ${isVisuallyThinItem ? "flex items-end" : ""} ${sectionItemTopMarginClassName} ${item.id === THIN_PLACEHOLDER_ITEM_ID ? "pointer-events-none" : ""}`}
             data-profile-bento-grid-item-id={item.id}
             key={item.id}
           >

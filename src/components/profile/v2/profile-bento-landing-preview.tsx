@@ -59,8 +59,8 @@ const landingBento: ProfileBentoItem[] = [
     id: "landing-section",
     type: "section",
     layout: {
-      desktop: { x: 0, y: 0, w: 4, h: 2 },
-      compact: { x: 0, y: 0, w: 2, h: 2 },
+      desktop: { x: 0, y: 0, w: 4, h: 1 },
+      compact: { x: 0, y: 0, w: 2, h: 1 },
     },
     content: {
       title: "Selected work",

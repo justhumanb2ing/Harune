@@ -753,7 +753,7 @@ export function ProfileBentoInteractiveGrid({
   const showSaveAction = canSave || isSaving;
   const isSectionDragActive =
     activeDragItemId !== null && itemTypeById.get(activeDragItemId) === "section";
-  const isThinPlaceholderShapeActive = isThinPlaceholderActive || isSectionDragActive;
+  const isThinPlaceholderShapeActive = isThinPlaceholderActive;
   const rowHeight = getGridRowHeight(canvasWidth, previewBreakpoint);
   const thinItemVisibleHeight = Math.round(rowHeight * 0.9);
   const [, verticalMargin] = GRID_MARGIN[previewBreakpoint];
@@ -825,11 +825,16 @@ export function ProfileBentoInteractiveGrid({
   const gridClassName = cn(
     "max-w-full [&_.react-draggable-dragging]:z-40! [&_.react-grid-item:not(.react-grid-placeholder)]:z-10 [&_.react-grid-item:hover]:z-30! [&_.react-grid-item:focus-within]:z-30! [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none! [&_.react-grid-placeholder]:z-0! [&_.react-grid-placeholder]:bg-secondary! [&_.react-grid-placeholder]:opacity-100! [&_.react-grid-placeholder]:shadow-[inset_0_1px_6px_rgb(0_0_0_/_0.08),inset_0_-1px_1px_rgb(255_255_255_/_0.8)]!",
     "w-full",
+    isSectionDragActive
+      ? "[&_.react-grid-placeholder]:translate-y-[var(--section-item-top-margin)]!"
+      : "",
     isThinPlaceholderShapeActive
       ? "[&_.react-grid-placeholder]:h-[var(--thin-placeholder-height)]! [&_.react-grid-placeholder]:translate-y-[var(--thin-placeholder-offset)]! [&_.react-grid-placeholder]:rounded-2xl!"
       : "[&_.react-grid-placeholder]:rounded-[1.5rem]!"
   );
+  const sectionItemTopMargin = previewBreakpoint === "compact" ? "1rem" : "2rem";
   const gridStyle = {
+    "--section-item-top-margin": sectionItemTopMargin,
     "--thin-placeholder-height": `${thinItemVisibleHeight}px`,
     "--thin-placeholder-offset": `${rowHeight * 2 + verticalMargin - thinItemVisibleHeight}px`,
     "--thin-item-visible-height": `${thinItemVisibleHeight}px`,
@@ -1687,7 +1692,10 @@ export function ProfileBentoInteractiveGrid({
           {showSaveAction ? (
             <Button
               aria-busy={isPrimaryActionBusy}
-              className="brand-button w-36 border-0 px-0 py-5 text-base font-semibold shadow-none"
+              className={cn(
+                "brand-success-button w-36 border-0 px-0 py-5 text-base font-semibold shadow-none",
+                isSaving && "brand-success-button-saving"
+              )}
               disabled={isPrimaryActionBusy}
               onClick={save}
               size="lg"

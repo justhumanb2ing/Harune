@@ -138,11 +138,11 @@ export default function HandleCardSection() {
           className="flex w-full flex-col items-center gap-3 text-center"
           variants={itemVariants}
         >
-          <p className="text-3xl font-semibold tracking-normal text-foreground md:text-5xl">
+          <p className="text-3xl font-bold tracking-normal text-foreground md:text-5xl">
             Claim your handle
             <span className="text-indigo-400">.</span>
           </p>
-          <p className="text-2xl font-normal md:text-3xl">Choose a unique name for your page.</p>
+          <p className="text-xl font-normal md:text-2xl">Choose a unique name for your page.</p>
         </motion.header>
 
         <div className="flex flex-col items-center gap-16 w-full">

@@ -60,13 +60,13 @@ export default function LiveCardSection() {
           viewport={{ once: true, margin: "-80px" }}
           whileInView="visible"
         >
-          <h2 className="max-w-full text-balance text-3xl font-semibold leading-tight tracking-normal md:text-5xl">
+          <h2 className="max-w-full text-balance text-3xl font-bold leading-tight tracking-normal md:text-5xl">
             A simple page, just for you
             <span className="text-indigo-400">.</span>
           </h2>
-          <p className="max-w-[42rem] text-pretty text-lg leading-relaxed md:text-2xl">
+          {/*<p className="max-w-[42rem] text-pretty text-xl font-normal leading-relaxed md:text-2xl">
             Add maps, text, links, images, and videos into one page.
-          </p>
+          </p>*/}
         </motion.div>
 
         <div className="relative">

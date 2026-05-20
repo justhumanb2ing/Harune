@@ -6,6 +6,7 @@ import LiveCardSection from "@/components/website/landing/live-card-section";
 import MainHeroSection from "@/components/website/landing/main-hero-section";
 import { appConfig } from "@/lib/config";
 import { createPageMetadata } from "@/lib/seo";
+import LinkProviderSection from "@/components/website/landing/link-provider-section";
 
 const homepageTitle = "Harune, A Link in bio: One page, all of you.";
 const homepageDescription = `Create a free ${appConfig.projectName} page to share your links, social profiles in one place.`;
@@ -25,6 +26,7 @@ export default function WebsiteHomepage() {
       <main className="relative h-full">
         <MainHeroSection />
         <LiveCardSection />
+        <LinkProviderSection />
         <HandleCardSection />
         {/*<AnalyticsCardSection />*/}
         {/*<DonateSection />*/}

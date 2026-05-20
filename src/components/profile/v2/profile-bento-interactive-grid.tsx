@@ -1606,7 +1606,7 @@ export function ProfileBentoInteractiveGrid({
     <div className={interactiveShellClassName} style={{ minHeight: gridMinHeight }}>
       <motion.header
         animate={{ opacity: 1, y: 0 }}
-        className="fixed bottom-10 left-1/2 z-50 flex w-auto -translate-x-1/2 flex-col items-center justify-center rounded-2xl bg-background p-2.5 shadow-float backdrop-blur"
+        className="fixed bottom-10 left-1/2 z-50 flex w-auto -translate-x-1/2 flex-col items-center justify-center rounded-2xl bg-background p-3 shadow-float backdrop-blur"
         layout
         initial={shouldReduceMotion ? { opacity: 0, y: 8 } : { opacity: 0, y: 18 }}
         ref={toolbarRef}

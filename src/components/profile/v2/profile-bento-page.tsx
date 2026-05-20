@@ -112,21 +112,26 @@ function ProfileBentoFooterAction({
   } | null;
 }) {
   const href = viewerProfilePage?.handle ? `/${viewerProfilePage.handle}` : "/sign-in";
-  const label = viewerProfilePage?.handle ? "my page" : "Create";
+  const label = viewerProfilePage?.handle ? "my page" : "Create your page";
   const imageAlt = viewerProfilePage?.name ?? viewerProfilePage?.handle ?? "My page";
+  const footerActionClassName = cn(
+    "h-auto flex items-center rounded-sm border-0 px-4 py-2 text-sm",
+    viewerProfilePage ? "" : "brand-button shadow-float"
+  );
 
   return (
     <footer className={cn("flex items-center justify-center gap-2", className)}>
       <Button
         nativeButton={false}
         variant={"ghost"}
+        className={footerActionClassName}
         render={
           <Link
             href={href}
-            className="inline-flex items-center gap-2 rounded-md p-2 py-1.5 font-normal text-sm text-muted-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+            className="inline-flex items-center gap-2 rounded-sm px-4 py-2 text-sm font-medium"
           >
             {viewerProfilePage ? (
-              <span className="relative size-5 shrink-0 overflow-hidden rounded-full bg-secondary">
+              <span className="relative size-5 shrink-0 overflow-hidden rounded-full">
                 {viewerProfilePage.image ? (
                   <ProfileAvatarImage
                     alt={imageAlt}

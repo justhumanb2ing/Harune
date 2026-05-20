@@ -45,7 +45,7 @@ export default async function ExplorePage() {
         ]}
       />
       <main className="relative">
-        <div className="p-5">
+        <div className="p-5 sm:px-6 lg:px-8">
           <div className="mx-auto flex max-w-7xl justify-end">
             <AppEntryCtaButton
               next="/"
@@ -57,7 +57,7 @@ export default async function ExplorePage() {
           </div>
         </div>
         <section className="flex h-full flex-col">
-          <header className="flex flex-1 flex-col items-center justify-center px-6 py-8 pt-12">
+          <header className="flex flex-1 flex-col items-center justify-center px-6 py-8 pt-12 sm:px-6 lg:px-8">
             <div className="container flex max-w-7xl flex-col gap-4">
               <h2 className="text-primary text-3xl font-extrabold tracking-tight text-pretty lg:text-4xl">
                 Explore beautiful pages crafted by others

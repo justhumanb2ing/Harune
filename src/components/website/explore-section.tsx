@@ -22,7 +22,7 @@ export default function ExploreSection() {
 
   return (
     <section className="flex h-full flex-col">
-      <header className="mt-8 flex flex-1 flex-col items-center justify-center px-6 pb-8 pt-16">
+      <header className="flex flex-1 flex-col items-center justify-center px-6 py-8 pt-12">
         <div className="container flex max-w-7xl flex-col gap-4">
           <h2 className="text-primary text-3xl font-extrabold tracking-tight text-pretty lg:text-4xl">
             Explore beautiful pages crafted by others

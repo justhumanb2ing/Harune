@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { ProfileBentoPage } from "@/components/profile/v2/profile-bento-page";
+import { PROFILE_BENTO_SHARE_COPY } from "@/components/profile/v2/profile-bento-share-intents";
 import { WebPageJsonLd } from "@/components/site-instrumentation/structured-data";
 import { ApiError } from "@/lib/api/error";
 import { getProfileByHandle } from "@/lib/api/generated/http/profile-api/profile-api";
@@ -84,7 +85,7 @@ export async function generateMetadata({ params }: HandlePageProps): Promise<Met
     ...createPageMetadata({
       path: `/${data.page.handle}`,
       title,
-      description: data.page.bio || `Visit @${data.page.handle}'s page.`,
+      description: PROFILE_BENTO_SHARE_COPY,
       imageAlt: title,
       imagePath: `/${data.page.handle}/opengraph-image`,
       twitterImagePath: `/${data.page.handle}/twitter-image`,
@@ -115,7 +116,7 @@ export default async function HandlePage({ params }: HandlePageProps) {
     <>
       <WebPageJsonLd
         id={absoluteUrl(`/${data.page.handle}`)}
-        description={data.page.bio || `Visit @${data.page.handle}'s page.`}
+        description={PROFILE_BENTO_SHARE_COPY}
         title={title}
         lastUpdated={data.page.updatedAt}
         isAccessibleForFree

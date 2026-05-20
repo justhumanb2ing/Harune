@@ -543,4 +543,7 @@ html[data-onboarding-step-transition="back"]::view-transition-new(onboarding-ste
   .brand-success-button {
     @apply bg-green-400! border-green-400! hover:bg-green-500! shadow-lg text-white hover:text-white!;
   }
+  .brand-success-button-saving {
+    @apply bg-white! border-white! text-neutral-500! shadow-none! hover:bg-white! hover:text-foreground!;
+  }
 }

@@ -1,8 +1,11 @@
 ---
 title: Changelog
-lastUpdated: "2026-05-19"
+lastUpdated: "2026-05-20"
 description: See the latest Harune product updates and user-visible improvements.
 ---
+
+## May 20, 2026
+- Added share options for profile pages.
 
 ## May 19, 2026
 - Added CHZZK follower count UI when adding CHZZK link.

@@ -246,7 +246,7 @@ export function ProfileBentoGridToolbarWidget({
         className="flex h-[600px] max-h-[80vh] flex-col overflow-hidden rounded-[3rem] p-8 px-6 drop-shadow-2xl shadow-float-lg sm:max-w-md"
       >
         <div className="relative min-h-0 flex-1 overflow-hidden">
-          <AnimatePresence custom={activityDirection} initial={false} mode="wait">
+          <AnimatePresence custom={activityDirection} initial={false} mode="sync">
             {activeActivityId === null ? (
               <motion.div
                 animate={{ opacity: 1, x: 0 }}

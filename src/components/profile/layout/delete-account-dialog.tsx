@@ -50,7 +50,7 @@ export function DeleteAccountDialog({
       />
       <AlertDialogContent
         size="default"
-        className="flex h-96 flex-col gap-4 rounded-[2.5rem] p-7 shadow-float"
+        className="flex h-96 flex-col gap-4 rounded-[2.5rem] p-7 shadow-float-lg drop-shadow-2xl"
       >
         <AlertDialogHeader>
           <AlertDialogTitle className="text-2xl w-full text-left font-bold tracking-tight">

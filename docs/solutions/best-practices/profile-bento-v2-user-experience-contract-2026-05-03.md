@@ -115,6 +115,7 @@ Owner editor의 하단 primary button은 현재 상태를 바로 드러내야 �
 - 변경 사항이 있으면 `Save`를 보여주고, sync가 진행 중이면 `Saving`을 보여준다.
 - label만 바꾸지 말고 click behavior도 상태에 맞춰 함께 전환한다.
 - `Save` 상태의 primary button은 share dialog trigger가 아니어야 하며, 클릭 즉시 저장 동작을 실행해야 한다.
+- `Saving` 상태의 primary button은 흰 배경과 검은 텍스트를 유지해, 저장 중임을 배경색 변화로 즉시 읽을 수 있어야 한다.
 
 ### Editor Preview Toggle
 

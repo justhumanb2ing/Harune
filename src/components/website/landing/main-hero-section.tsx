@@ -138,7 +138,7 @@ export default function MainHeroSection() {
       <HeroShowcaseLayer />
       <div className="relative z-20 mx-auto flex min-h-[calc(100dvh-10rem)] max-w-5xl flex-col items-center justify-center gap-40">
         <header className="flex flex-col items-center gap-4">
-          <motion.div className="mb-20 flex flex-col items-center gap-2">
+          {/*<motion.div className="mb-20 flex flex-col items-center gap-2">
             <div className="size-16 aspect-square rounded-xl">
               <Image
                 src={"/assets/logo.png"}
@@ -149,7 +149,7 @@ export default function MainHeroSection() {
               />
             </div>
             <h1 className="text-xl font-extrabold tracking-tighter sm:text-xl">Harune</h1>
-          </motion.div>
+          </motion.div>*/}
           <motion.div
             animate="visible"
             className="cursor-default origin-left self-center rounded-2xl bg-background p-2 shadow-lg"

@@ -30,21 +30,26 @@ const resolveImageUrl = (image: string | null) => {
 
 export function ExploreSectionFallback() {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-      {loadingSlots.map((slot) => (
-        <div
-          key={slot}
-          className="flex aspect-3/4 flex-col items-center gap-4 overflow-hidden rounded-xl bg-secondary/80 p-4 lg:aspect-square"
-        >
-          <Skeleton className="size-20 rounded-full" />
-          <div className="flex w-full min-w-0 flex-col gap-2">
-            <Skeleton className="mx-auto h-5 w-2/3" />
-            <Skeleton className="mx-auto h-4 w-full max-w-[12rem]" />
-            <Skeleton className="mx-auto h-4 w-5/6" />
-          </div>
+    <main className="flex-1 px-6 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {loadingSlots.map((slot) => (
+            <div
+              key={slot}
+              className="flex aspect-3/4 flex-col items-center justify-start gap-4 overflow-hidden rounded-xl bg-secondary/80 p-4 lg:aspect-square"
+            >
+              <Skeleton className="size-20 rounded-full" />
+              <div className="flex w-full min-w-0 flex-col gap-1">
+                <Skeleton className="mx-auto h-5 w-2/3" />
+                <Skeleton className="mx-auto h-4 w-full max-w-[11rem]" />
+                <Skeleton className="mx-auto h-4 w-5/6" />
+                <Skeleton className="mx-auto h-4 w-2/3" />
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
+      </div>
+    </main>
   );
 }
 

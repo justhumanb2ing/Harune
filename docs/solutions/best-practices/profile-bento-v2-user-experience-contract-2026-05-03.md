@@ -101,7 +101,7 @@ Clock widget은 사용자가 추가 직후 바로 “시간 카드”로 인식�
 - clock bento는 저장된 `showSeconds`가 누락되었거나 false인 옛 데이터도 초 표시를 기본값으로 복원해 실제 전자시계처럼 매초 갱신되어야 한다.
 - clock bento의 시간 텍스트는 초까지 보이는 `HH:mm:ss` 길이를 compact width에서도 잘리지 않게 유지해야 한다.
 - clock bento의 resize option은 3번째 preset인 `2x2`와 5번째 preset인 `2x4`만 보여야 하며, 추가 직후 기본 크기는 `2x2`여야 한다.
-- clock bento의 background color는 editor surface에서 palette로 바꿀 수 있어야 하고, `content.style.backgroundColor` 저장 payload에도 그대로 반영되어야 한다. `bg-white`일 때는 text item과 동일하게 `surface-bevel`을 적용하지 않는다.
+- clock bento의 background color는 editor surface에서 palette로 바꿀 수 있어야 하고, `content.style.backgroundColor` 저장 payload에도 그대로 반영되어야 한다. clock item은 background color와 무관하게 외부 ring/outline/bevel 없이 렌더링한다.
 - clock bento의 background color control도 text item과 같은 hex input을 제공해야 한다. custom hex는 clock trigger swatch, editor card, public card, 저장 payload에서 palette fallback 없이 유지되어야 한다.
 - clock bento의 timezone은 owner editor resize control에 주입된 `Select`로 바꿀 수 있어야 하고, 선택값은 저장 payload의 `content.timezone`에 반영되어야 한다. timezone 선택 후에는 select popup이 닫혀야 한다.
 - clock bento의 timezone select popup에서 item을 눌러도 grid card의 drag intent나 press scale 상태가 켜지면 안 되며, hover 시 resize/background controls가 그대로 다시 보여야 한다.
@@ -222,6 +222,7 @@ Link item의 thumbnail과 favicon 영역은 이미지 유무와 관계없이 같
 - link URL text를 숨기는 경우 editor와 readonly 모두 숨겨야 하며, title과 thumbnail hierarchy만으로 같은 card rhythm을 유지한다.
 - provider theme가 있는 link item은 provider 특성에 맞춘 짧은 CTA label을 보여준다. 이 label은 `src/lib/metadata/link-provider-theme.ts`의 provider theme entry에서 theme와 함께 관리한다.
 - CTA label의 배경은 provider brand color를 사용하고, 텍스트는 brand color 대비가 더 높은 black 또는 white로 계산한다. 시각 의도상 더 선명한 white가 필요한 provider는 theme entry에서 override한다.
+- CTA label의 폰트 굵기는 editor와 readonly 모두 semibold를 유지한다. Provider별 CTA는 `src/lib/metadata/link-provider-theme.ts`의 `isOutlineButton`으로 outline variant를 선택할 수 있다. CTA background는 항상 `actionBackgroundColor`로 강제하고, outline variant는 border/text에 기본 토큰을 사용한다.
 - readonly link item은 카드 전체가 이미 anchor이므로 CTA를 실제 nested button으로 만들지 않는다. 버튼처럼 보이는 text label로 렌더링해 invalid interactive nesting을 피한다.
 - owner editor에서는 같은 CTA footprint를 유지하되 grid drag/edit affordance와 충돌하지 않도록 `grid-action` 외부 링크 action으로 렌더링한다.
 - CTA label은 모바일/태블릿의 작은 card에서도 제목을 밀어내지 않도록 compact height와 responsive padding을 유지한다.

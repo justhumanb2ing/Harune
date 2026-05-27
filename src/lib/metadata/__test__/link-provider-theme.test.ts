@@ -5,7 +5,7 @@ describe("resolveLinkProviderTheme", () => {
   const cases = [
     ["https://youtube.com/watch?v=abc", "youtube", "#fff2f5", "Subscribe", "#ff0033", "#ffffff"],
     ["https://discord.gg/abc123", "discord", "#f2f3ff", "Join", "#5865f2", "#ffffff"],
-    ["https://github.com/leeve/leeve", "github", "#ffffff", "Follow", "#000000", "#ffffff"],
+    ["https://github.com/leeve/leeve", "github", "#ffffff", "Follow", "#f6f8fa", "#000000", true],
     ["https://x.com/leeve/status/1", "x", "#f7f7f7", "Follow", "#000000", "#ffffff"],
     ["https://open.spotify.com/track/abc", "spotify", "#f0fbf4", "Play", "#1ED760", "#ffffff"],
     ["https://spotify.link/abc123", "spotify", "#f0fbf4", "Play", "#1ED760", "#ffffff"],
@@ -41,6 +41,7 @@ describe("resolveLinkProviderTheme", () => {
     actionLabel,
     actionBackgroundColor,
     actionForegroundColor,
+    isOutlineButton = false,
   ] of cases) {
     test(`resolves ${url}`, () => {
       const theme = resolveLinkProviderTheme(url);
@@ -52,10 +53,12 @@ describe("resolveLinkProviderTheme", () => {
         expect(theme?.actionLabel).toBe(actionLabel);
         expect(theme?.actionBackgroundColor).toBe(actionBackgroundColor);
         expect(theme?.actionForegroundColor).toBe(actionForegroundColor);
+        expect(theme?.isOutlineButton).toBe(isOutlineButton);
       } else {
         expect(typeof theme?.actionLabel).toBe("string");
         expect(typeof theme?.actionBackgroundColor).toBe("string");
         expect(["#000000", "#ffffff"].includes(theme?.actionForegroundColor ?? "")).toBe(true);
+        expect(theme?.isOutlineButton).toBe(false);
       }
     });
   }

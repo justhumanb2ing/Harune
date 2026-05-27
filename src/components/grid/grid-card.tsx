@@ -147,10 +147,6 @@ export function GridCard({
   const textSurfaceBackgroundColorOption = textSurfaceStyle
     ? getBackgroundColorOption(textSurfaceStyle.backgroundColor)
     : null;
-  const clockBackgroundColorOption =
-    item.itemType === "clock"
-      ? getBackgroundColorOption(item.clockBackgroundColor ?? "#ffffff")
-      : null;
   const textSurfaceClassNames = textSurfaceStyle
     ? getGridTextSurfaceClassNames(textSurfaceStyle)
     : null;
@@ -169,7 +165,6 @@ export function GridCard({
   const radiusClassName = isVisuallyThinItem ? "rounded-2xl" : "rounded-[1.5rem]";
   const bevelClassName =
     (isFullBleedItem && item.itemType !== "clock") ||
-    (item.itemType === "clock" && clockBackgroundColorOption?.id !== "white") ||
     (item.itemType === "text" && textSurfaceBackgroundColorOption?.id !== "white")
       ? "surface-bevel"
       : "";
@@ -187,7 +182,7 @@ export function GridCard({
           ? "outline-none"
           : "outline-border/35 inset-ring-1";
   const shellShadowClassName = shadowClassName;
-  const shadowLayerClassName = isDragActive ? "shadow-float" : "";
+  const shadowLayerClassName = isDragActive ? "" : "";
   const dragInteractionClassName = isLiftActive
     ? "select-none [&_.grid-action]:pointer-events-none [&_.grid-action]:select-none [&_input:not(.grid-caption-input)]:pointer-events-none [&_input:not(.grid-caption-input)]:select-none [&_input:not(.grid-caption-input)]:!bg-transparent [&_textarea:not(.grid-caption-input)]:pointer-events-none [&_textarea:not(.grid-caption-input)]:select-none [&_textarea:not(.grid-caption-input)]:!bg-transparent"
     : "";
@@ -239,7 +234,7 @@ export function GridCard({
 
   return (
     <motion.div
-      className={`group/item relative w-full pointer-events-auto ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} ${dragInteractionClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)]" : "h-full"} ${isLiftActive || motionPhase ? "will-change-transform" : ""} ${isLiftActive ? "drop-shadow-xs" : ""} ${isExiting ? "pointer-events-none select-none" : ""}`}
+      className={`group/item relative w-full pointer-events-auto ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} ${dragInteractionClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)]" : "h-full"} ${isLiftActive || motionPhase ? "will-change-transform" : ""} ${isExiting ? "pointer-events-none select-none" : ""}`}
       data-link-provider-theme={item.theme ? "true" : undefined}
       onPointerDownCapture={(event) => {
         if (readOnly || isLiftActive) {

@@ -29,6 +29,7 @@ Section item은 React Grid Layout 상으로는 h=2 영역을 예약하지만, �
 - `useGridDragMotion`의 `cardRotate`와 `cardX`는 실제 editor item body에 연결되어야 한다.
 - `/[handle]` owner editor에서 실제 렌더링되는 item shell은 `motion.div`여야 한다.
 - Drag 중 active item은 `rotate: cardRotate`, `x: cardX`를 적용해야 한다.
+- Drag 중 active item wrapper에는 별도 `drop-shadow-*` filter를 붙이지 않는다.
 - Section item은 hover, 내부 input focus, drag 상태에서 `shadow-float`를 표시해야 한다.
 - Section item의 `shadow-float`는 h=2 RGL wrapper가 아니라 h=1로 보이는 item body에 적용해야 한다.
 

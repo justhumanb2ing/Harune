@@ -4,6 +4,7 @@ export type LinkProviderTheme = GridItemTheme & {
   actionBackgroundColor: string;
   actionForegroundColor: "#000000" | "#ffffff";
   actionLabel: string;
+  isOutlineButton: boolean;
   provider: string;
 };
 
@@ -11,6 +12,7 @@ type LinkProviderThemeEntry = {
   actionForegroundColor?: "#000000" | "#ffffff";
   actionLabel: string;
   provider: string;
+  isOutlineButton?: boolean;
   color: `#${string}`;
   pastelColor: `#${string}`;
   hosts: readonly string[];
@@ -36,7 +38,8 @@ const linkProviderThemeEntries = [
   {
     provider: "github",
     actionLabel: "Follow",
-    color: "#000000",
+    isOutlineButton: true,
+    color: "#f6f8fa",
     pastelColor: "#ffffff",
     hosts: ["github.com"],
   },
@@ -241,6 +244,7 @@ export function resolveLinkProviderTheme(url: string): LinkProviderTheme | null 
         ? entry.actionForegroundColor
         : getBestReadableTextColor(entry.color),
     actionLabel: entry.actionLabel,
+    isOutlineButton: entry.isOutlineButton ?? false,
     provider: entry.provider,
     ...createGridItemTheme(entry.pastelColor),
   };

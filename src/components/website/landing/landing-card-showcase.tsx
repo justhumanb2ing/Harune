@@ -149,18 +149,23 @@ function ReadonlyLinkAction({
   backgroundColor,
   foregroundColor,
   href,
+  isOutlineButton,
   label,
 }: {
   backgroundColor: string;
   foregroundColor: string;
   href: string;
+  isOutlineButton: boolean;
   label: string;
 }) {
   return (
     <a
       aria-label={label}
       className={cn(
-        "outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring/50 !bg-[var(--link-provider-action-background)] !text-[var(--link-provider-action-foreground)]",
+        "outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring/50",
+        isOutlineButton
+          ? "border border-border text-foreground !bg-[var(--link-provider-action-background)]"
+          : "!bg-[var(--link-provider-action-background)] !text-[var(--link-provider-action-foreground)]",
         "inline-flex h-6 max-w-fit shrink-0 items-center justify-center truncate rounded-full px-4 py-4 font-semibold text-sm leading-none sm:h-8 sm:px-4 sm:text-sm md:px-4 md:py-4.5"
       )}
       href={href}
@@ -228,6 +233,7 @@ export function LandingLinkCard({ item }: { item: ProfileLinkBento }) {
               backgroundColor={providerTheme.actionBackgroundColor}
               foregroundColor={providerTheme.actionForegroundColor}
               href={item.content.url}
+              isOutlineButton={providerTheme.isOutlineButton}
               label={providerTheme.actionLabel}
             />
           ) : null}

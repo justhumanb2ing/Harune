@@ -417,12 +417,14 @@ function ReadonlyLinkAction({
   backgroundColor,
   foregroundColor,
   href,
+  isOutlineButton,
   label,
   preventNavigation,
 }: {
   backgroundColor: string;
   foregroundColor: string;
   href: string;
+  isOutlineButton: boolean;
   label: string;
   preventNavigation: boolean;
 }) {
@@ -430,7 +432,10 @@ function ReadonlyLinkAction({
     <a
       aria-label={label}
       className={cn(
-        "grid-action rounded-xs outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring/50 !bg-[var(--link-provider-action-background)] !text-[var(--link-provider-action-foreground)]",
+        "grid-action rounded-xs outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring/50",
+        isOutlineButton
+          ? "border border-border text-foreground !bg-[var(--link-provider-action-background)]"
+          : "!bg-[var(--link-provider-action-background)] !text-[var(--link-provider-action-foreground)]",
         LINK_PROVIDER_ACTION_LABEL_CLASS_NAME
       )}
       href={href}
@@ -450,24 +455,29 @@ function ReadonlyLinkAction({
 }
 
 const LINK_PROVIDER_ACTION_LABEL_CLASS_NAME =
-  "inline-flex h-8 max-w-fit shrink-0 items-center justify-center truncate rounded-md px-4 font-medium leading-none text-xs";
+  "inline-flex h-8 max-w-fit shrink-0 items-center justify-center truncate rounded-sm px-4 font-bold leading-none text-xs";
 
 function EditableLinkProviderAction({
   backgroundColor,
   foregroundColor,
   href,
+  isOutlineButton,
   label,
 }: {
   backgroundColor: string;
   foregroundColor: string;
   href: string;
+  isOutlineButton: boolean;
   label: string;
 }) {
   return (
     <a
       aria-label={label}
       className={cn(
-        "grid-action rounded-xs outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring/50 !bg-[var(--link-provider-action-background)] !text-[var(--link-provider-action-foreground)]",
+        "grid-action rounded-xs outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring/50",
+        isOutlineButton
+          ? "border border-border text-foreground !bg-[var(--link-provider-action-background)]"
+          : "!bg-[var(--link-provider-action-background)] !text-[var(--link-provider-action-foreground)]",
         LINK_PROVIDER_ACTION_LABEL_CLASS_NAME
       )}
       href={href}
@@ -761,6 +771,7 @@ function ReadonlyLinkBento({
             backgroundColor={providerTheme.actionBackgroundColor}
             foregroundColor={providerTheme.actionForegroundColor}
             href={item.content.url}
+            isOutlineButton={providerTheme.isOutlineButton}
             label={providerActionLabel}
             preventNavigation={preventNavigation}
           />
@@ -790,6 +801,7 @@ function ReadonlyLinkBento({
               backgroundColor={providerTheme.actionBackgroundColor}
               foregroundColor={providerTheme.actionForegroundColor}
               href={item.content.url}
+              isOutlineButton={providerTheme.isOutlineButton}
               label={providerActionLabel}
               preventNavigation={preventNavigation}
             />
@@ -821,6 +833,7 @@ function ReadonlyLinkBento({
               backgroundColor={providerTheme.actionBackgroundColor}
               foregroundColor={providerTheme.actionForegroundColor}
               href={item.content.url}
+              isOutlineButton={providerTheme.isOutlineButton}
               label={providerActionLabel}
               preventNavigation={preventNavigation}
             />
@@ -852,6 +865,7 @@ function ReadonlyLinkBento({
               backgroundColor={providerTheme.actionBackgroundColor}
               foregroundColor={providerTheme.actionForegroundColor}
               href={item.content.url}
+              isOutlineButton={providerTheme.isOutlineButton}
               label={providerActionLabel}
               preventNavigation={preventNavigation}
             />
@@ -881,6 +895,7 @@ function ReadonlyLinkBento({
           backgroundColor={providerTheme.actionBackgroundColor}
           foregroundColor={providerTheme.actionForegroundColor}
           href={item.content.url}
+          isOutlineButton={providerTheme.isOutlineButton}
           label={providerActionLabel}
           preventNavigation={preventNavigation}
         />
@@ -934,6 +949,7 @@ function EditableLinkBento({
             backgroundColor={providerTheme.actionBackgroundColor}
             foregroundColor={providerTheme.actionForegroundColor}
             href={item.content.url}
+            isOutlineButton={providerTheme.isOutlineButton}
             label={providerActionLabel}
           />
         ) : null}
@@ -961,6 +977,7 @@ function EditableLinkBento({
               backgroundColor={providerTheme.actionBackgroundColor}
               foregroundColor={providerTheme.actionForegroundColor}
               href={item.content.url}
+              isOutlineButton={providerTheme.isOutlineButton}
               label={providerActionLabel}
             />
           ) : null}
@@ -991,6 +1008,7 @@ function EditableLinkBento({
               backgroundColor={providerTheme.actionBackgroundColor}
               foregroundColor={providerTheme.actionForegroundColor}
               href={item.content.url}
+              isOutlineButton={providerTheme.isOutlineButton}
               label={providerActionLabel}
             />
           ) : null}
@@ -1020,6 +1038,7 @@ function EditableLinkBento({
               backgroundColor={providerTheme.actionBackgroundColor}
               foregroundColor={providerTheme.actionForegroundColor}
               href={item.content.url}
+              isOutlineButton={providerTheme.isOutlineButton}
               label={providerActionLabel}
             />
           ) : null}
@@ -1047,6 +1066,7 @@ function EditableLinkBento({
           backgroundColor={providerTheme.actionBackgroundColor}
           foregroundColor={providerTheme.actionForegroundColor}
           href={item.content.url}
+          isOutlineButton={providerTheme.isOutlineButton}
           label={providerActionLabel}
         />
       ) : null}

@@ -244,7 +244,7 @@ export function resolveLinkProviderTheme(url: string): LinkProviderTheme | null 
         ? entry.actionForegroundColor
         : getBestReadableTextColor(entry.color),
     actionLabel: entry.actionLabel,
-    isOutlineButton: entry.isOutlineButton ?? false,
+    isOutlineButton: "isOutlineButton" in entry ? entry.isOutlineButton : false,
     provider: entry.provider,
     ...createGridItemTheme(entry.pastelColor),
   };

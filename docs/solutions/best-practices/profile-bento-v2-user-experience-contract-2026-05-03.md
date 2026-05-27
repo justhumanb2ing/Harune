@@ -76,7 +76,7 @@ Public readonly surface와 owner editor surface는 의도적으로 같은 profil
 - owner editor desktop-flow surface도 public readonly와 같은 top padding, horizontal padding, profile-grid gap clamp를 따라야 하며, desktop 안의 framed mobile preview만 frame alignment를 위해 `px-0`을 사용할 수 있다.
 - public readonly page shell에서 grid resize transition을 `overflow-x-clip`/`overflow-hidden`으로 자르지 않는다. compact 전환 시 grid canvas width를 editor처럼 먼저 compact target으로 제한해 horizontal overflow 자체를 줄인다.
 - profile avatar가 있는 public/editor surface는 이미지 로드 또는 crop frame 계산 전 회색 `bg-secondary` overlay를 덮지 않아야 하며, 회색 배경은 이미지가 없는 fallback 상태에만 사용한다.
-- bio와 location은 public readonly profile surface와 owner editor input surface 모두에서 숨기고, 저장 데이터가 있어도 화면에 렌더링하지 않는다. role은 계속 표시/편집할 수 있다.
+- role과 location은 public readonly profile surface와 owner editor input surface 모두에서 숨기고, 저장 데이터가 있어도 화면에 렌더링하지 않는다. bio는 계속 표시/편집할 수 있다.
 
 ### Text Surface Style
 

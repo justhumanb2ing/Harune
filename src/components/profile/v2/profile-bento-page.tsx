@@ -85,10 +85,10 @@ export function ProfileBentoProfileAside({
               </h1>
             ) : null}
 
-            {page.role ? (
-              <div className="flex flex-col gap-1 text-base text-neutral-500 mt-2">
-                <p className="h-fit p-0">{page.role}</p>
-              </div>
+            {page.bio ? (
+              <p className="min-h-16 whitespace-pre-line break-all p-0 text-base! text-neutral-600 2xl:text-xl!">
+                {page.bio}
+              </p>
             ) : null}
           </div>
         </div>

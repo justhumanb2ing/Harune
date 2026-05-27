@@ -3,7 +3,6 @@
 import { CircleFadingArrowUpIcon, CropIcon, Loader2, TrashIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useProfilePageEditor } from "@/hooks/use-profile-editor";
 import { preloadCropImageSource } from "@/lib/profile/image-crop";
@@ -57,6 +56,9 @@ export function ProfileBentoProfileEditor({
   const profileNameClassName = compactMode
     ? "min-h-8 resize-none overflow-hidden border-0 text-[32px]! py-0 tracking-tighter font-bold focus-visible:ring-0 rounded-none break-all"
     : "min-h-8 resize-none overflow-hidden border-0 text-[32px]! py-0 2xl:text-[44px]! tracking-tighter font-bold focus-visible:ring-0 rounded-none break-all";
+  const profileBioClassName = compactMode
+    ? "min-h-20 resize-none overflow-hidden border-0 py-0 text-base! text-neutral-600 break-all rounded-none focus-visible:ring-0"
+    : "min-h-24 resize-none overflow-hidden border-0 py-0 text-base! text-neutral-600 2xl:text-xl! break-all rounded-none focus-visible:ring-0";
 
   return (
     <aside className={getProfileBentoProfileShellClassName(compactMode)}>
@@ -153,17 +155,14 @@ export function ProfileBentoProfileEditor({
             className={profileNameClassName}
           />
 
-          <div className="flex flex-col gap-1 text-neutral-500 mt-2">
-            <Input
-              id="v2-profile-role"
-              value={editor.profileForm.role}
-              onChange={(event) => editor.setProfileField("role", event.target.value)}
-              placeholder="What do you do?"
-              aria-label="Role"
-              autoComplete="off"
-              className="h-fit border-0 text-base! py-0 focus-visible:ring-0 rounded-none"
-            />
-          </div>
+          <Textarea
+            id="v2-profile-bio"
+            value={editor.profileForm.bio}
+            onChange={(event) => editor.setProfileField("bio", event.target.value)}
+            placeholder="Your bio"
+            aria-label="Bio"
+            className={profileBioClassName}
+          />
         </div>
       </div>
     </aside>

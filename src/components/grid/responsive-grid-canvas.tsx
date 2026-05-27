@@ -49,6 +49,7 @@ type ResponsiveGridCanvasProps = {
   readOnly?: boolean;
   getItemMotionPhase?: (id: string) => GridCardMotionPhase | undefined;
   renderItem?: (item: GridItem) => ReactNode;
+  renderItemShell?: (item: GridItem, children: ReactNode) => ReactNode;
   renderTrailingResizeControl?: (item: GridItem) => ReactNode;
   rowHeight: number;
   width: number;
@@ -80,6 +81,7 @@ export function ResponsiveGridCanvas({
   readOnly = false,
   getItemMotionPhase,
   renderItem,
+  renderItemShell,
   renderTrailingResizeControl,
   rowHeight,
   width,
@@ -139,16 +141,43 @@ export function ResponsiveGridCanvas({
           : "";
 
         if (isPlainItem) {
+          const content = renderItem?.(item);
+
           return (
             <div
               className={`relative overflow-visible ${radiusClassName} ${isVisuallyThinItem ? "flex items-end" : ""} ${sectionItemTopMarginClassName}`}
               data-profile-bento-grid-item-id={item.id}
               key={item.id}
             >
-              {renderItem?.(item)}
+              {renderItemShell ? renderItemShell(item, content) : content}
             </div>
           );
         }
+
+        const content = (
+          <GridCard
+            activeBreakpoint={activeBreakpoint}
+            cardRotate={cardRotate}
+            cardX={cardX}
+            isDragIntentActive={isDragIntentActive}
+            isDragActive={isDragActive}
+            item={item}
+            layouts={layouts}
+            motionPhase={motionPhase}
+            onDragIntentStart={onDragIntentStart}
+            onDragIntentStop={onDragIntentStop}
+            onMotionComplete={onItemMotionComplete}
+            onRemove={onRemoveItem}
+            onResize={onResizeItem}
+            onTextSurfaceChange={onTextSurfaceChange}
+            onTextUrlChange={onTextUrlChange}
+            readOnly={readOnly}
+            shouldReduceMotion={shouldReduceMotion}
+            trailingResizeControl={renderTrailingResizeControl?.(item)}
+          >
+            {renderItem?.(item)}
+          </GridCard>
+        );
 
         return (
           <div
@@ -156,28 +185,7 @@ export function ResponsiveGridCanvas({
             data-profile-bento-grid-item-id={item.id}
             key={item.id}
           >
-            <GridCard
-              activeBreakpoint={activeBreakpoint}
-              cardRotate={cardRotate}
-              cardX={cardX}
-              isDragIntentActive={isDragIntentActive}
-              isDragActive={isDragActive}
-              item={item}
-              layouts={layouts}
-              motionPhase={motionPhase}
-              onDragIntentStart={onDragIntentStart}
-              onDragIntentStop={onDragIntentStop}
-              onMotionComplete={onItemMotionComplete}
-              onRemove={onRemoveItem}
-              onResize={onResizeItem}
-              onTextSurfaceChange={onTextSurfaceChange}
-              onTextUrlChange={onTextUrlChange}
-              readOnly={readOnly}
-              shouldReduceMotion={shouldReduceMotion}
-              trailingResizeControl={renderTrailingResizeControl?.(item)}
-            >
-              {renderItem?.(item)}
-            </GridCard>
+            {renderItemShell ? renderItemShell(item, content) : content}
           </div>
         );
       })}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { preload } from "react-dom";
 import {
   getLoadedImageSize,
   getProfileImageCropFrameStyle,
@@ -18,6 +19,10 @@ type ProfileAvatarImageProps = {
   src: string;
 };
 
+function canPreloadAvatarImage(src: string) {
+  return Boolean(src) && !src.startsWith("blob:") && !src.startsWith("data:");
+}
+
 export function ProfileAvatarImage({
   alt,
   className,
@@ -28,6 +33,13 @@ export function ProfileAvatarImage({
 }: ProfileAvatarImageProps) {
   const [naturalSize, setNaturalSize] = useState<ImageSize | null>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
+
+  if (canPreloadAvatarImage(src)) {
+    preload(src, {
+      as: "image",
+      fetchPriority,
+    });
+  }
 
   useEffect(() => {
     if (!src) {
@@ -45,7 +57,6 @@ export function ProfileAvatarImage({
   }, [src]);
 
   const cropFrameStyle = getProfileImageCropFrameStyle(imageCrop, naturalSize);
-  const isCropPending = Boolean(imageCrop && !cropFrameStyle);
 
   return (
     <span className={cn("relative block size-full overflow-hidden", className)}>
@@ -79,7 +90,6 @@ export function ProfileAvatarImage({
               }
         }
       />
-      {isCropPending ? <span aria-hidden className="absolute inset-0 bg-secondary" /> : null}
     </span>
   );
 }

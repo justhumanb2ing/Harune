@@ -13,6 +13,7 @@ type ProfileBentoSurfaceMotionProps = {
   initialY?: number;
   reduceMotionDuration?: number;
   reduceMotionY?: number;
+  revealMode?: "transform" | "opacity";
 };
 
 export function ProfileBentoSurfaceMotion({
@@ -24,24 +25,28 @@ export function ProfileBentoSurfaceMotion({
   initialY = 28,
   reduceMotionDuration = 0.34,
   reduceMotionY = 8,
+  revealMode = "transform",
 }: ProfileBentoSurfaceMotionProps) {
   const shouldReduceMotion = Boolean(useReducedMotion());
+  const usesTransform = revealMode === "transform";
 
   return (
     <motion.div
       className={className}
       initial={
-        shouldReduceMotion
-          ? { opacity: 0, scale: 1, y: reduceMotionY }
-          : { opacity: 0, scale: initialScale, y: initialY }
+        usesTransform
+          ? shouldReduceMotion
+            ? { opacity: 0, scale: 1, y: reduceMotionY }
+            : { opacity: 0, scale: initialScale, y: initialY }
+          : { opacity: 0 }
       }
-      animate={{ opacity: 1, scale: 1, y: 0 }}
+      animate={usesTransform ? { opacity: 1, scale: 1, y: 0 } : { opacity: 1 }}
       transition={{
         delay: shouldReduceMotion ? delay * 0.4 : delay,
         duration: shouldReduceMotion ? reduceMotionDuration : duration,
         ease: [0.16, 1, 0.3, 1],
       }}
-      style={{ willChange: "transform, opacity" }}
+      style={{ willChange: usesTransform ? "transform, opacity" : "opacity" }}
     >
       {children}
     </motion.div>

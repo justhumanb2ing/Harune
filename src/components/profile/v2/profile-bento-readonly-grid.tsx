@@ -10,6 +10,7 @@ import { getGridLayoutPixelHeight } from "@/lib/grid/grid-layout-utils";
 import type { GridBreakpoint } from "@/lib/grid/grid-types";
 import type { ProfileBentoItem } from "@/lib/profile/types";
 import { getProfileBentoLinkSize, ProfileBentoGridCard } from "./profile-bento-grid-card";
+import { ProfileBentoGridItemRevealMotion } from "./profile-bento-grid-item-reveal-motion";
 import { toBentoGridItem, toBentoGridLayouts } from "./profile-bento-grid-model";
 import { ProfileBentoSurfaceMotion } from "./profile-bento-readonly-profile-motion";
 import "react-grid-layout/css/styles.css";
@@ -18,7 +19,6 @@ import "react-resizable/css/styles.css";
 const PUBLIC_PAGE_DESKTOP_VIEWPORT_WIDTH = 1536;
 const PUBLIC_PAGE_COMPACT_CANVAS_WIDTH = 400;
 const PUBLIC_PAGE_COMPACT_CANVAS_WIDTH_FALLBACK = 360;
-
 type ProfileBentoReadonlyGridSurface = "contained" | "public-page";
 
 type ProfileBentoReadonlyGridProps = {
@@ -107,6 +107,10 @@ export function ProfileBentoReadonlyGrid({
   });
   const layouts = useMemo(() => toBentoGridLayouts(bento), [bento]);
   const gridItems = useMemo(() => bento.map(toBentoGridItem), [bento]);
+  const gridItemRevealIndexById = useMemo(
+    () => new Map(gridItems.map((item, index) => [item.id, index] as const)),
+    [gridItems]
+  );
   const bentoById = useMemo(() => new Map(bento.map((item) => [item.id, item] as const)), [bento]);
   const rowHeight = getGridRowHeight(canvasWidth, activeBreakpoint);
   const gridMinHeight = getGridLayoutPixelHeight(layouts, activeBreakpoint, rowHeight, 40);
@@ -119,25 +123,29 @@ export function ProfileBentoReadonlyGrid({
     "--section-item-top-margin": sectionItemTopMargin,
     "--thin-item-visible-height": `${Math.round(rowHeight * 0.9)}px`,
   } as CSSProperties;
+  const motionClassName =
+    surface === "public-page"
+      ? "w-full 2xl:w-[860px] 2xl:flex-none"
+      : isCompactCanvas
+        ? "w-full"
+        : undefined;
+  const gridWrapperClassName =
+    isCompactCanvas && surface === "public-page"
+      ? "mx-auto w-[360px] max-w-full flex-none sm:w-[400px] 2xl:w-[860px]"
+      : isCompactCanvas
+        ? "mx-auto w-[360px] max-w-full flex-none sm:w-[400px]"
+        : "min-w-0 flex-1 xl:w-[860px] xl:flex-none 2xl:w-[860px]";
 
   return (
     <ProfileBentoSurfaceMotion
-      className={isCompactCanvas ? "w-full" : undefined}
-      delay={0.5}
-      duration={0.78}
-      initialScale={0.96}
+      className={motionClassName}
+      delay={0}
+      duration={1}
+      initialScale={1}
       initialY={18}
-      reduceMotionDuration={0.42}
-      reduceMotionY={8}
+      revealMode="opacity"
     >
-      <div
-        className={
-          isCompactCanvas
-            ? "mx-auto w-[360px] max-w-full flex-none sm:w-[400px]"
-            : "min-w-0 flex-1 xl:w-[860px] xl:flex-none 2xl:w-[860px]"
-        }
-        style={gridWrapperStyle}
-      >
+      <div className={gridWrapperClassName} style={gridWrapperStyle}>
         <div
           className="w-[360px] max-w-full sm:w-[400px] xl:w-full [&_.react-grid-item]:duration-[600ms]! [&_.react-grid-item]:ease-out! [&_.react-resizable-handle]:hidden! [&_.react-resizable-handle]:pointer-events-none!"
           ref={containerRef}
@@ -166,6 +174,13 @@ export function ProfileBentoReadonlyGrid({
               readOnly
               rowHeight={rowHeight}
               width={canvasWidth}
+              renderItemShell={(gridItem, children) => (
+                <ProfileBentoGridItemRevealMotion
+                  index={gridItemRevealIndexById.get(gridItem.id) ?? 0}
+                >
+                  {children}
+                </ProfileBentoGridItemRevealMotion>
+              )}
               renderItem={(gridItem) => {
                 const item = bentoById.get(gridItem.id);
 

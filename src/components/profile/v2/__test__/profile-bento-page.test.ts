@@ -11,6 +11,7 @@ describe("profile-bento page section", () => {
   test("keeps the public readonly shell centered in compact widths", () => {
     expect(PROFILE_BENTO_PAGE_SECTION_CLASS).toContain("items-center");
     expect(PROFILE_BENTO_PAGE_SECTION_CLASS).toContain("px-6");
-    expect(PROFILE_BENTO_PAGE_SECTION_CLASS).toContain("sm:px-8");
+    expect(PROFILE_BENTO_PAGE_SECTION_CLASS).toContain("sm:px-16");
+    expect(PROFILE_BENTO_PAGE_SECTION_CLASS).toContain("pt-16");
   });
 });

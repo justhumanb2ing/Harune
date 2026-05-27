@@ -72,7 +72,11 @@ Public readonly surface와 owner editor surface는 의도적으로 같은 profil
 - desktop 복귀 시 readonly bento grid는 owner editor의 `2xl` desktop-flow 전환과 같은 타이밍에 4열 layout으로 돌아와야 한다.
 - compact editor preview는 profile shell과 grid shell을 가운데로 다시 밀지 말고, 같은 left edge 기준으로 쌓이게 유지한다.
 - public readonly surface의 compact 구간은 editor처럼 중앙 폭이 잡혀야 하고, profile shell과 bento shell은 같은 양쪽 여백 안에서 측정되어야 한다.
+- public readonly desktop surface는 profile shell과 bento grid 사이의 gap을 viewport 폭에 맞는 clamp 값으로 유지하고, 2xl 진입 구간에서도 좌우 padding이 사라지거나 grid가 transform으로 잘리지 않아야 한다.
+- owner editor desktop-flow surface도 public readonly와 같은 top padding, horizontal padding, profile-grid gap clamp를 따라야 하며, desktop 안의 framed mobile preview만 frame alignment를 위해 `px-0`을 사용할 수 있다.
 - public readonly page shell에서 grid resize transition을 `overflow-x-clip`/`overflow-hidden`으로 자르지 않는다. compact 전환 시 grid canvas width를 editor처럼 먼저 compact target으로 제한해 horizontal overflow 자체를 줄인다.
+- profile avatar가 있는 public/editor surface는 이미지 로드 또는 crop frame 계산 전 회색 `bg-secondary` overlay를 덮지 않아야 하며, 회색 배경은 이미지가 없는 fallback 상태에만 사용한다.
+- bio와 location은 public readonly profile surface와 owner editor input surface 모두에서 숨기고, 저장 데이터가 있어도 화면에 렌더링하지 않는다. role은 계속 표시/편집할 수 있다.
 
 ### Text Surface Style
 
@@ -205,9 +209,11 @@ Motion은 장식이 아니라 item 위치, drag affordance, public reveal 순서
 - drag motion을 고칠 때는 `docs/solutions/best-practices/profile-bento-v2-drag-motion-and-section-shadow-contract-2026-05-01.md`를 함께 확인한다.
 - `prefers-reduced-motion` 사용자는 과한 motion 없이 같은 정보 구조를 이해할 수 있어야 한다.
 - hover/focus/drag 상태는 pointer interception과 text selection 부작용을 실제로 확인한다.
-- public readonly `/[handle]` 진입 motion은 profile surface가 먼저 아래에서 위로 올라오고, 그 뒤 bento surface가 더 작은 scale과 opacity 0 상태에서 늦게 등장해야 한다.
-- readonly public 진입 motion은 layout 측정과 충돌하지 않게 wrapper transform/opacity만 바꾸고, grid geometry와 viewport-driven layout semantics는 그대로 유지한다.
-- reduced-motion 환경에서는 y/scale 이동폭을 줄이고 opacity 위주로 같은 reveal 순서를 유지한다.
+- public readonly `/[handle]` 진입 motion은 profile surface가 먼저 아래에서 위로 올라오고, 그 뒤 bento surface가 transform 없이 opacity 0에서 1로 늦게 등장해야 한다.
+- readonly public 진입 motion은 layout 측정과 충돌하지 않게 wrapper opacity만 바꾸고, grid geometry와 viewport-driven layout semantics는 그대로 유지한다.
+- readonly grid 내부 item reveal은 `react-grid-layout`이 소유한 position/size wrapper는 건드리지 않되, `GridCard` shell 전체를 감싸 scale 없이 opacity 0과 얕은 아래쪽 y offset에서 부드럽게 stagger 처리해 카드 형태 자체가 순서대로 등장해야 한다.
+- owner editor의 초기 grid item reveal도 readonly와 같은 shared shell-level motion을 사용하되, 새 item 추가/삭제처럼 `GridCard` motion phase가 있는 경우에는 기존 편집 motion을 우선해야 한다.
+- reduced-motion 환경에서도 같은 reveal 순서를 유지하되, readonly bento surface는 opacity만 바꾼다.
 - owner editor `/[handle]` 진입 motion도 같은 reveal 순서를 유지하되, profile editor와 interactive grid 바깥의 root wrapper에서만 transform/opacity를 바꿔야 한다.
 - editor 진입 motion은 grid drag/resize state와 분리되어야 하고, preview surface의 width/borderRadius transition과 겹쳐도 layout shift를 만들지 않아야 한다.
 

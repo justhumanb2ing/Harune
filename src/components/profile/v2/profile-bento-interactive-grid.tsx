@@ -93,6 +93,7 @@ import {
   ProfileBentoSuggestionCard,
   profileBentoSuggestionItemId,
 } from "./profile-bento-empty-grid-state";
+import { ProfileBentoGridItemRevealMotion } from "./profile-bento-grid-item-reveal-motion";
 import {
   type CreatableBentoType,
   createAutoBentoItem,
@@ -722,6 +723,10 @@ export function ProfileBentoInteractiveGrid({
   const gridItems = useMemo(
     () => [...bento.map(toBentoGridItem), ...suggestionGridItems],
     [bento, suggestionGridItems]
+  );
+  const gridItemRevealIndexById = useMemo(
+    () => new Map(gridItems.map((item, index) => [item.id, index] as const)),
+    [gridItems]
   );
   const suggestionLayouts = useMemo(
     () =>
@@ -1772,12 +1777,11 @@ export function ProfileBentoInteractiveGrid({
 
       <ProfileBentoSurfaceMotion
         className="w-full"
-        delay={0.5}
-        duration={0.78}
-        initialScale={0.96}
+        delay={0}
+        duration={1}
+        initialScale={1}
         initialY={18}
-        reduceMotionDuration={0.42}
-        reduceMotionY={8}
+        revealMode="opacity"
       >
         <div
           className={cn(
@@ -1829,6 +1833,17 @@ export function ProfileBentoInteractiveGrid({
               onResizeStop={handleGridResizeStop}
               getItemMotionPhase={getItemMotionPhase}
               onTextUrlChange={updateTextUrl}
+              renderItemShell={(gridItem, children) =>
+                getItemMotionPhase(gridItem.id) ? (
+                  children
+                ) : (
+                  <ProfileBentoGridItemRevealMotion
+                    index={gridItemRevealIndexById.get(gridItem.id) ?? 0}
+                  >
+                    {children}
+                  </ProfileBentoGridItemRevealMotion>
+                )
+              }
               renderItem={(gridItem) => {
                 if (suggestionItemIds.has(gridItem.id)) {
                   return (

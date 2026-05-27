@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useProfilePageEditor } from "@/hooks/use-profile-editor";
 import { preloadCropImageSource } from "@/lib/profile/image-crop";
 import { PROFILE_IMAGE_ACCEPT } from "@/lib/profile/image-upload";
+import { cn } from "@/lib/utils";
 import { ProfileAvatarImage } from "./profile-avatar-image";
 import { getProfileBentoProfileShellClassName } from "./profile-bento-profile-shell";
 import { ProfileImageCropSurface } from "./profile-image-crop-surface";
@@ -39,8 +40,14 @@ export function ProfileBentoProfileEditor({
   }
 
   const profileImageButtonClassName = compactMode
-    ? "relative flex size-30 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-secondary ring-1 ring-border transition-all hover:bg-input disabled:cursor-pointer disabled:opacity-100 disabled:hover:bg-secondary"
-    : "relative flex size-30 xl:size-44 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-secondary ring-1 ring-border transition-all hover:bg-input disabled:cursor-pointer disabled:opacity-100 disabled:hover:bg-secondary";
+    ? cn(
+        "relative flex size-30 cursor-pointer items-center justify-center overflow-hidden rounded-full ring-1 ring-border transition-all hover:bg-input disabled:cursor-pointer disabled:opacity-100 disabled:hover:bg-secondary",
+        profileImageSrc ? "bg-transparent" : "bg-secondary"
+      )
+    : cn(
+        "relative flex size-30 xl:size-44 cursor-pointer items-center justify-center overflow-hidden rounded-full ring-1 ring-border transition-all hover:bg-input disabled:cursor-pointer disabled:opacity-100 disabled:hover:bg-secondary",
+        profileImageSrc ? "bg-transparent" : "bg-secondary"
+      );
   const profileImageActionClassName = editor.isSyncing
     ? "hidden pointer-events-none absolute top-1 left-1 z-10 size-10 rounded-full border-[0.5px] border-border bg-background text-black shadow-sm transition-opacity hover:bg-secondary disabled:opacity-100 disabled:hover:bg-background"
     : "pointer-events-none absolute top-1 left-1 z-10 size-10 rounded-full border-[0.5px] border-border bg-background text-black opacity-0 shadow-sm transition-opacity hover:bg-secondary group-hover/profile-image:pointer-events-auto group-hover/profile-image:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 disabled:opacity-100 disabled:hover:bg-background";
@@ -50,9 +57,6 @@ export function ProfileBentoProfileEditor({
   const profileNameClassName = compactMode
     ? "min-h-8 resize-none overflow-hidden border-0 text-[32px]! py-0 tracking-tighter font-bold focus-visible:ring-0 rounded-none break-all"
     : "min-h-8 resize-none overflow-hidden border-0 text-[32px]! py-0 2xl:text-[44px]! tracking-tighter font-bold focus-visible:ring-0 rounded-none break-all";
-  const profileBioClassName = compactMode
-    ? "min-h-20 resize-none overflow-hidden border-0 py-0 text-base! text-neutral-600 break-all rounded-none focus-visible:ring-0"
-    : "min-h-24 resize-none overflow-hidden border-0 py-0 text-base! text-neutral-600 2xl:text-xl! break-all rounded-none focus-visible:ring-0";
 
   return (
     <aside className={getProfileBentoProfileShellClassName(compactMode)}>
@@ -149,15 +153,6 @@ export function ProfileBentoProfileEditor({
             className={profileNameClassName}
           />
 
-          <Textarea
-            id="v2-profile-bio"
-            value={editor.profileForm.bio}
-            onChange={(event) => editor.setProfileField("bio", event.target.value)}
-            placeholder="Your bio"
-            aria-label="Bio"
-            className={profileBioClassName}
-          />
-
           <div className="flex flex-col gap-1 text-neutral-500 mt-2">
             <Input
               id="v2-profile-role"
@@ -165,15 +160,6 @@ export function ProfileBentoProfileEditor({
               onChange={(event) => editor.setProfileField("role", event.target.value)}
               placeholder="What do you do?"
               aria-label="Role"
-              autoComplete="off"
-              className="h-fit border-0 text-base! py-0 focus-visible:ring-0 rounded-none"
-            />
-            <Input
-              id="v2-profile-location"
-              value={editor.profileForm.location}
-              onChange={(event) => editor.setProfileField("location", event.target.value)}
-              placeholder="Where are you based?"
-              aria-label="Location"
               autoComplete="off"
               className="h-fit border-0 text-base! py-0 focus-visible:ring-0 rounded-none"
             />

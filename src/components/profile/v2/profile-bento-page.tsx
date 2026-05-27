@@ -38,7 +38,7 @@ type ProfileBentoPageProps = {
 const isDeploymentEnvironment = process.env.VERCEL === "1" || Boolean(process.env.VERCEL_ENV);
 
 export const PROFILE_BENTO_PAGE_SECTION_CLASS =
-  "mx-auto flex min-h-lvh w-full flex-col items-center gap-8 px-6 pb-8 pt-[var(--v2-page-top-offset)] [--v2-page-top-offset:2rem] sm:px-8 2xl:[--v2-page-top-offset:5rem] 2xl:flex-row 2xl:items-stretch 2xl:justify-evenly 2xl:gap-[clamp(7.5rem,calc((100vw-96rem)*0.6+7.5rem),18rem)] 2xl:px-10";
+  "mx-auto flex min-h-lvh w-full flex-col items-center gap-8 px-6 pb-8 pt-[var(--v2-page-top-offset)] [--v2-page-top-offset:3rem] sm:px-8 2xl:[--v2-page-top-offset:5rem] 2xl:flex-row 2xl:items-stretch 2xl:justify-evenly 2xl:gap-[clamp(7.5rem,calc((100vw-96rem)*0.6+7.5rem),18rem)] 2xl:px-10";
 
 export const PROFILE_BENTO_PUBLIC_PROFILE_SHELL_CLASS =
   "flex w-[360px] max-w-full shrink-0 flex-col sm:w-[400px] 2xl:sticky 2xl:top-[var(--v2-page-top-offset)] 2xl:self-start 2xl:min-w-[20rem] 2xl:w-[500px] 2xl:shrink-0";
@@ -56,7 +56,7 @@ export function ProfileBentoProfileAside({
       <ProfileBentoSurfaceMotion delay={0} duration={0.68} initialScale={1} initialY={28}>
         <div className="flex flex-col gap-8 overflow-hidden">
           <div className="flex w-full items-center justify-between gap-4 px-0 2xl:px-0">
-            <div className="relative flex size-32 items-center justify-center overflow-hidden rounded-full bg-secondary 2xl:size-44">
+            <div className="relative flex size-30 items-center justify-center overflow-hidden rounded-full bg-secondary ring-1 ring-border 2xl:size-44">
               {page.image ? (
                 <ProfileAvatarImage
                   alt={imageAlt}
@@ -73,21 +73,21 @@ export function ProfileBentoProfileAside({
             {actionSlot ? <div className="shrink-0">{actionSlot}</div> : null}
           </div>
 
-          <div className="flex flex-col gap-4 px-4 pt-0 2xl:px-0">
+          <div className="flex flex-col gap-1 px-2 pt-0">
             {page.name ? (
-              <h1 className="min-h-8 whitespace-pre-line break-all p-0 font-bold text-3xl! tracking-tighter 2xl:text-5xl!">
+              <h1 className="min-h-8 whitespace-pre-line break-all p-0 font-bold text-[32px]! tracking-tighter 2xl:text-[44px]!">
                 {page.name}
               </h1>
             ) : null}
 
             {page.bio ? (
-              <p className="min-h-16 whitespace-pre-line break-all p-0 text-lg! text-neutral-800 2xl:text-xl!">
+              <p className="min-h-16 whitespace-pre-line break-all p-0 text-base! text-neutral-600 2xl:text-xl!">
                 {page.bio}
               </p>
             ) : null}
 
             {page.role || page.location ? (
-              <div className="flex flex-col gap-1 text-base text-neutral-500">
+              <div className="flex flex-col gap-1 text-base text-neutral-500 mt-2">
                 {page.role ? <p className="h-fit p-0">{page.role}</p> : null}
                 {page.location ? <p className="h-fit p-0">{page.location}</p> : null}
               </div>

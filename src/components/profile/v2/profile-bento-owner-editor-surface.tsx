@@ -120,7 +120,7 @@ export function ProfileBentoOwnerEditorSurface({
   const previewSurfaceMode = shouldFrameCompactSurface ? "compact-frame" : "desktop-flow";
   const activePreviewMode: ProfileBentoGridPreviewMode = isCompactSurface ? "mobile" : "desktop";
   const sectionClassName = cn(
-    "mx-auto flex min-h-lvh w-full flex-col items-center justify-center gap-8 px-6 pb-8 pt-[var(--v2-page-top-offset)] [--v2-page-top-offset:2rem] sm:px-8 xl:[--v2-page-top-offset:5rem] xl:px-10",
+    "mx-auto flex min-h-lvh w-full flex-col items-center justify-center gap-8 px-6 pb-8 pt-[var(--v2-page-top-offset)] [--v2-page-top-offset:3rem] sm:px-8 xl:[--v2-page-top-offset:5rem] xl:px-10",
     isCompactSurface
       ? "justify-start px-0 sm:px-8"
       : "2xl:flex-row 2xl:items-stretch 2xl:justify-center 2xl:gap-[clamp(7.5rem,calc((100vw-96rem)*0.6+7.5rem),18rem)]"

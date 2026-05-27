@@ -205,9 +205,19 @@ export function GridCard({
         backgroundColor: item.theme.backgroundColor,
         color: item.theme.foregroundColor,
       }
-    : {
-        "--tw-inset-ring-color": "color-mix(in srgb, var(--border) 80%, transparent)",
-      };
+    : textSurfaceStyle
+      ? {
+          "--tw-inset-ring-color": "color-mix(in srgb, var(--border) 80%, transparent)",
+          backgroundColor: textSurfaceStyle.backgroundColor,
+        }
+      : item.itemType === "clock" && item.clockBackgroundColor
+        ? {
+            "--tw-inset-ring-color": "color-mix(in srgb, var(--border) 80%, transparent)",
+            backgroundColor: item.clockBackgroundColor,
+          }
+        : {
+            "--tw-inset-ring-color": "color-mix(in srgb, var(--border) 80%, transparent)",
+          };
   const shellBackgroundClassName =
     item.itemType === "text" && textSurfaceClassNames
       ? textSurfaceClassNames.backgroundColorClassName

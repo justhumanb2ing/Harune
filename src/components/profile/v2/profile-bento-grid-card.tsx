@@ -251,13 +251,13 @@ function ClockBento({
         >
           <div className="flex items-center gap-0.5 text-4xl!">
             <SlidingNumber value={timeParts.hour} padStart />
-            <span aria-hidden className="-translate-y-[0.08em] text-neutral-600">
+            <span aria-hidden className="-translate-y-[0.08em]">
               :
             </span>
             <SlidingNumber value={timeParts.minute} padStart />
             {timeParts.second !== undefined ? (
               <>
-                <span aria-hidden className="-translate-y-[0.08em] text-neutral-600">
+                <span aria-hidden className="-translate-y-[0.08em]">
                   :
                 </span>
                 <SlidingNumber value={timeParts.second} padStart />

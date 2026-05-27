@@ -91,10 +91,52 @@ export type BackgroundColorId = (typeof backgroundColorOptions)[number]["id"];
 
 export type GridTextSurfaceStyle = ProfileTextSurfaceStyle;
 
+const HEX_COLOR_PATTERN = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i;
+
+export function normalizeHexColorInput(value: string) {
+  const match = value.trim().match(HEX_COLOR_PATTERN);
+
+  if (!match) {
+    return null;
+  }
+
+  const hex = match[1].toLowerCase();
+  const normalizedHex =
+    hex.length === 3
+      ? hex
+          .split("")
+          .map((char) => `${char}${char}`)
+          .join("")
+      : hex;
+
+  return `#${normalizedHex}`;
+}
+
+function getHexColorLuminance(hexColor: string) {
+  const normalizedHex = normalizeHexColorInput(hexColor);
+
+  if (!normalizedHex) {
+    return 1;
+  }
+
+  const channels = [1, 3, 5].map((startIndex) => {
+    const channel = Number.parseInt(normalizedHex.slice(startIndex, startIndex + 2), 16) / 255;
+
+    return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+
+  return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+}
+
+export function getForegroundClassNameForBackgroundColor(backgroundColor: string) {
+  return getHexColorLuminance(backgroundColor) > 0.45 ? "text-black" : "text-white";
+}
+
 export function normalizeGridTextSurfaceStyle(
   style?: Partial<GridTextSurfaceStyle> | null
 ): GridTextSurfaceStyle {
-  const backgroundColor = style?.backgroundColor?.trim() || backgroundColorOptions[0].value;
+  const backgroundColor =
+    normalizeHexColorInput(style?.backgroundColor ?? "") ?? backgroundColorOptions[0].value;
 
   return {
     backgroundColor,
@@ -108,11 +150,27 @@ export function normalizeGridTextSurfaceStyle(
 }
 
 export function getBackgroundColorOption(backgroundColor: string) {
-  return (
-    backgroundColorOptions.find(
-      (option) => option.id === backgroundColor || option.value === backgroundColor
-    ) ?? backgroundColorOptions[0]
+  const normalizedBackgroundColor = normalizeHexColorInput(backgroundColor);
+  const presetOption = backgroundColorOptions.find(
+    (option) => option.id === backgroundColor || option.value === normalizedBackgroundColor
   );
+
+  if (presetOption) {
+    return presetOption;
+  }
+
+  if (!normalizedBackgroundColor) {
+    return backgroundColorOptions[0];
+  }
+
+  return {
+    id: "custom",
+    label: normalizedBackgroundColor,
+    value: normalizedBackgroundColor,
+    className: "bg-transparent",
+    checkedClassName: "",
+    foregroundClassName: getForegroundClassNameForBackgroundColor(normalizedBackgroundColor),
+  };
 }
 
 export function getTextAlignClassName(textAlign: ProfileTextAlign) {

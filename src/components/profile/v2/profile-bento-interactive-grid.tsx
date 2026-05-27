@@ -16,6 +16,7 @@ import {
 } from "react";
 import { type LayoutItem, useContainerWidth } from "react-grid-layout";
 import { toast } from "sonner";
+import { GridBackgroundColorInput } from "@/components/grid/grid-background-color-input";
 import type { GridCardMotionPhase } from "@/components/grid/grid-card";
 import {
   backgroundColorOptions,
@@ -346,7 +347,7 @@ function ClockBackgroundControl({
             <span
               aria-hidden
               className="size-full rounded-full border border-white/20"
-              style={{ backgroundColor: selectedBackgroundColorOption.value }}
+              style={{ backgroundColor: content.style.backgroundColor }}
             />
           </Button>
         }
@@ -354,7 +355,7 @@ function ClockBackgroundControl({
       <PopoverPanel
         align="center"
         className="flex w-auto flex-col gap-2 overflow-hidden rounded-lg border-0 bg-foreground p-1 shadow-float"
-        side="top"
+        side="bottom"
         sideOffset={8}
       >
         <RadioGroup
@@ -393,6 +394,23 @@ function ClockBackgroundControl({
             );
           })}
         </RadioGroup>
+        <GridBackgroundColorInput
+          ariaLabel="Clock background hex color"
+          inputId={`clock-background-hex-${item.id}`}
+          onColorChange={(nextBackgroundColor) => {
+            onChange({
+              ...item,
+              content: {
+                ...content,
+                style: {
+                  ...content.style,
+                  backgroundColor: nextBackgroundColor,
+                },
+              },
+            });
+          }}
+          value={content.style.backgroundColor}
+        />
       </PopoverPanel>
     </Popover>
   );

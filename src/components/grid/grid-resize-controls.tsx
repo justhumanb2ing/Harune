@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
+import { GridBackgroundColorInput } from "@/components/grid/grid-background-color-input";
 import {
   backgroundColorOptions,
   type GridTextSurfaceStyle,
@@ -297,6 +298,7 @@ export function GridResizeControls({
                       "size-full rounded-full border border-white/20",
                       selectedBackgroundColorOption.className
                     )}
+                    style={{ backgroundColor: textSurfaceStyle.backgroundColor }}
                   />
                 </Button>
                 {onTextUrlChange ? (
@@ -367,6 +369,17 @@ export function GridResizeControls({
                       );
                     })}
                   </RadioGroup>
+                  <GridBackgroundColorInput
+                    ariaLabel={`Background hex color for ${item.label}`}
+                    inputId={`grid-text-background-hex-${item.id}`}
+                    onColorChange={(nextBackgroundColor) => {
+                      onTextSurfaceChange?.({
+                        ...textSurfaceStyle,
+                        backgroundColor: nextBackgroundColor,
+                      });
+                    }}
+                    value={textSurfaceStyle.backgroundColor}
+                  />
                 </div>
               ) : null}
             </PopoverPanel>

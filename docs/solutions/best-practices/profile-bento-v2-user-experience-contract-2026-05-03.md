@@ -83,6 +83,7 @@ Text item은 content만이 아니라 surface style도 함께 저장하고, edito
 - owner editor의 ellipsis/link popover panel은 portal로 렌더링되어도 grid drag cancel target이어야 한다. 패널, 내부 input, composite controls에서 pointer를 누른 채 움직이거나 텍스트를 selection해도 parent grid item의 press intent, `whileTap`, drag로 이어지면 안 된다.
 - editor의 resize control은 단순한 preview가 아니라 실제 text item state를 갱신해야 한다.
 - `backgroundColor`는 text card shell 배경에 적용하고, `textAlign`은 텍스트 블록 정렬에 적용하고, `verticalAlign`은 텍스트 surface wrapper 정렬에 적용한다.
+- text item의 background color control은 palette만 제공하지 않고 `#ffffff` 같은 hex 값을 직접 입력할 수 있어야 한다. custom hex는 저장 payload의 `content.style.backgroundColor`에 정규화된 6자리 lowercase hex로 반영하고, editor/public/landing surface에서 같은 배경과 대비 텍스트 색으로 렌더링한다.
 - style 값이 비어 있거나 옛 데이터로 누락되면 `#ffffff`, `start`, `start`를 기본값으로 복원한다.
 - readonly/public/landing surface는 editor와 같은 style 해석을 써야 하며, 다른 surface에서만 보이는 별도 폴백 규칙을 만들지 않는다.
 
@@ -101,6 +102,7 @@ Clock widget은 사용자가 추가 직후 바로 “시간 카드”로 인식�
 - clock bento의 시간 텍스트는 초까지 보이는 `HH:mm:ss` 길이를 compact width에서도 잘리지 않게 유지해야 한다.
 - clock bento의 resize option은 3번째 preset인 `2x2`와 5번째 preset인 `2x4`만 보여야 하며, 추가 직후 기본 크기는 `2x2`여야 한다.
 - clock bento의 background color는 editor surface에서 palette로 바꿀 수 있어야 하고, `content.style.backgroundColor` 저장 payload에도 그대로 반영되어야 한다. `bg-white`일 때는 text item과 동일하게 `surface-bevel`을 적용하지 않는다.
+- clock bento의 background color control도 text item과 같은 hex input을 제공해야 한다. custom hex는 clock trigger swatch, editor card, public card, 저장 payload에서 palette fallback 없이 유지되어야 한다.
 - clock bento의 timezone은 owner editor resize control에 주입된 `Select`로 바꿀 수 있어야 하고, 선택값은 저장 payload의 `content.timezone`에 반영되어야 한다. timezone 선택 후에는 select popup이 닫혀야 한다.
 - clock bento의 timezone select popup에서 item을 눌러도 grid card의 drag intent나 press scale 상태가 켜지면 안 되며, hover 시 resize/background controls가 그대로 다시 보여야 한다.
 - clock bento의 기본 timezone은 추가 당시의 로컬 timezone을 따라야 하며, 저장 후에는 persisted timezone을 우선한다.

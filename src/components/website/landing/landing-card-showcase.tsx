@@ -307,7 +307,13 @@ export function LandingTextCard({ item }: { item: ProfileTextBento }) {
 
   if (item.content.url) {
     return (
-      <a className={className} href={item.content.url} rel="noreferrer" target="_blank">
+      <a
+        className={className}
+        href={item.content.url}
+        rel="noreferrer"
+        style={{ backgroundColor: textSurfaceStyle.backgroundColor }}
+        target="_blank"
+      >
         <div
           className={cn(
             "relative flex size-full min-h-0 flex-col overflow-y-auto overscroll-contain rounded-lg p-1",
@@ -329,7 +335,7 @@ export function LandingTextCard({ item }: { item: ProfileTextBento }) {
   }
 
   return (
-    <article className={className}>
+    <article className={className} style={{ backgroundColor: textSurfaceStyle.backgroundColor }}>
       <div
         className={cn(
           "relative flex size-full min-h-0 flex-col overflow-y-auto overscroll-contain rounded-lg p-1",

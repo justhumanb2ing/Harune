@@ -218,7 +218,7 @@ export async function ProfileBentoPage({
       />
       <section className={PROFILE_BENTO_PAGE_SECTION_CLASS}>
         <ProfileBentoProfileAside
-          actionSlot={<ProfileBentoPublicShareButton className="2xl:hidden" handle={page.handle} />}
+          actionSlot={<ProfileBentoPublicShareButton className="hidden" handle={page.handle} />}
           page={page}
         />
         <ProfileBentoReadonlyGrid bento={normalizedBento} surface="public-page" />

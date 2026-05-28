@@ -655,6 +655,9 @@ export function ProfileBentoInteractiveGrid({
   const [itemMotionPhaseById, setItemMotionPhaseById] = useState<
     Record<string, GridCardMotionPhase>
   >({});
+  const [enteredMotionItemIds, setEnteredMotionItemIds] = useState<ReadonlySet<string>>(
+    () => new Set()
+  );
   const [focusItemId, setFocusItemId] = useState<string | null>(null);
   const [isLinkInputOpen, setIsLinkInputOpen] = useState(false);
   const [activeMapInteractionItemId, setActiveMapInteractionItemId] = useState<string | null>(null);
@@ -1189,6 +1192,15 @@ export function ProfileBentoInteractiveGrid({
     delete pendingMediaUploadByIdRef.current[id];
 
     setBento((currentItems) => currentItems.filter((item) => item.id !== id));
+    setEnteredMotionItemIds((current) => {
+      if (!current.has(id)) {
+        return current;
+      }
+
+      const next = new Set(current);
+      next.delete(id);
+      return next;
+    });
     setActiveMapInteractionItemId((current) => (current === id ? null : current));
     setLayouts((currentLayouts) => ({
       desktop: (currentLayouts.desktop ?? []).filter((item) => item.i !== id),
@@ -1265,7 +1277,10 @@ export function ProfileBentoInteractiveGrid({
 
       if (phase === "exiting") {
         removeItemFromGrid(id);
+        return;
       }
+
+      setEnteredMotionItemIds((current) => (current.has(id) ? current : new Set(current).add(id)));
     },
     [removeItemFromGrid]
   );
@@ -1834,7 +1849,7 @@ export function ProfileBentoInteractiveGrid({
               getItemMotionPhase={getItemMotionPhase}
               onTextUrlChange={updateTextUrl}
               renderItemShell={(gridItem, children) =>
-                getItemMotionPhase(gridItem.id) ? (
+                getItemMotionPhase(gridItem.id) || enteredMotionItemIds.has(gridItem.id) ? (
                   children
                 ) : (
                   <ProfileBentoGridItemRevealMotion

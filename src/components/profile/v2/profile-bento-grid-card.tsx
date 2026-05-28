@@ -249,7 +249,7 @@ function ClockBento({
           )}
           dateTime={now.toISOString()}
         >
-          <div className="flex items-center gap-0.5 text-4xl!">
+          <div className="flex items-center gap-0.5 text-5xl! lg:text-6xl!">
             <SlidingNumber value={timeParts.hour} padStart />
             <span aria-hidden className="-translate-y-[0.08em]">
               :
@@ -270,7 +270,7 @@ function ClockBento({
             </span>
           ) : null}
         </time>
-        <span className="text-xs min-w-0 shrink truncate text-right">{timezoneLabel}</span>
+        <span className="text-sm min-w-0 shrink truncate">{timezoneLabel}</span>
       </div>
     </article>
   );
@@ -296,13 +296,14 @@ function LinkFavicon({
       )}
     >
       {hasFavicon ? (
-        // biome-ignore lint/performance/noImgElement: Link favicon thumbnails are rendered directly.
-        <img
-          src={`${favicon}?v=2&s=130`}
-          alt="favicon"
-          height={40}
-          width={40}
+        <Image
+          alt=""
           className="w-full h-full pointer-events-none object-cover select-none"
+          height={40}
+          loading="lazy"
+          src={`${favicon}?v=2&s=130`}
+          unoptimized={shouldBypassNextImageOptimization(favicon)}
+          width={40}
         />
       ) : (
         <span className="size-full bg-muted/40" aria-hidden />
@@ -456,6 +457,10 @@ function ReadonlyLinkAction({
 
 const LINK_PROVIDER_ACTION_LABEL_CLASS_NAME =
   "inline-flex h-8 max-w-fit shrink-0 items-center justify-center truncate rounded-sm px-4 font-bold leading-none text-xs";
+
+function shouldBypassNextImageOptimization(src: string) {
+  return src.startsWith("blob:") || src.startsWith("data:");
+}
 
 function EditableLinkProviderAction({
   backgroundColor,
@@ -1272,10 +1277,15 @@ function MediaPreview({ item }: { item: Extract<ProfileBentoItem, { type: "media
   }
 
   return (
-    // Media previews can point at blob URLs during editing and public R2 URLs after upload.
-    // Use a plain img so both cases render consistently.
-    // biome-ignore lint/performance/noImgElement: Media previews must support blob and public URLs.
-    <img alt={item.content.alt} className="size-full object-cover" src={item.content.url} />
+    <Image
+      alt={item.content.alt}
+      className="object-cover"
+      fill
+      loading="lazy"
+      sizes="(min-width: 1536px) 33vw, (min-width: 768px) 50vw, 100vw"
+      src={item.content.url}
+      unoptimized={shouldBypassNextImageOptimization(item.content.url)}
+    />
   );
 }
 

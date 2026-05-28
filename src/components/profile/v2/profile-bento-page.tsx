@@ -38,10 +38,10 @@ type ProfileBentoPageProps = {
 const isDeploymentEnvironment = process.env.VERCEL === "1" || Boolean(process.env.VERCEL_ENV);
 
 export const PROFILE_BENTO_PAGE_SECTION_CLASS =
-  "mx-auto flex min-h-lvh w-full flex-col items-center gap-8 px-6 pb-8 pt-16 [--v2-page-top-offset:4rem] sm:px-16 2xl:flex-row 2xl:items-stretch 2xl:justify-center 2xl:gap-[clamp(8rem,calc((100vw-96rem)*0.35+8rem),20rem)] 2xl:px-16 min-[1700px]:px-16 min-[1800px]:px-20";
+  "mx-auto flex min-h-lvh w-full flex-col items-center gap-8 px-6 pb-8 pt-12 [--v2-page-top-offset:3rem] sm:px-16 2xl:flex-row 2xl:items-stretch 2xl:justify-center 2xl:gap-[clamp(8rem,calc((100vw-96rem)*0.35+8rem),20rem)] 2xl:px-16 2xl:pt-16 2xl:[--v2-page-top-offset:4rem] min-[1700px]:px-16 min-[1800px]:px-20";
 
 export const PROFILE_BENTO_PUBLIC_PROFILE_SHELL_CLASS =
-  "flex w-[360px] max-w-full shrink-0 flex-col sm:w-[400px] 2xl:sticky 2xl:top-[var(--v2-page-top-offset)] 2xl:self-start 2xl:min-w-[20rem] 2xl:w-[500px] 2xl:shrink-0";
+  "flex w-sm max-w-full shrink-0 flex-col sm:w-[400px] px-4 mb-4 2xl:sticky 2xl:top-[var(--v2-page-top-offset)] 2xl:self-start 2xl:min-w-[20rem] 2xl:w-[500px] 2xl:shrink-0";
 
 export function ProfileBentoProfileAside({
   actionSlot,
@@ -86,7 +86,7 @@ export function ProfileBentoProfileAside({
             ) : null}
 
             {page.bio ? (
-              <p className="min-h-16 whitespace-pre-line break-all p-0 leading-loose text-base! text-neutral-500 2xl:text-xl!">
+              <p className="min-h-fit whitespace-pre-line break-all p-0 leading-loose text-base! text-neutral-500 2xl:text-xl!">
                 {page.bio}
               </p>
             ) : null}

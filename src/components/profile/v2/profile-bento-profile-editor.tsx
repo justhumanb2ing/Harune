@@ -57,13 +57,13 @@ export function ProfileBentoProfileEditor({
     ? "min-h-8 resize-none overflow-hidden border-0 text-[32px]! py-0 tracking-tighter font-bold focus-visible:ring-0 rounded-none break-all"
     : "min-h-8 resize-none overflow-hidden border-0 text-[32px]! py-0 2xl:text-[44px]! tracking-tighter font-bold focus-visible:ring-0 rounded-none break-all";
   const profileBioClassName = compactMode
-    ? "min-h-20 resize-none leading-loose overflow-hidden border-0 py-0 text-base! text-neutral-500 break-all rounded-none focus-visible:ring-0"
-    : "min-h-24 resize-none leading-loose overflow-hidden border-0 py-0 text-base! text-neutral-500 2xl:text-xl! break-all rounded-none focus-visible:ring-0";
+    ? "min-h-fit resize-none leading-loose overflow-hidden border-0 py-0 text-base! text-neutral-500 break-all rounded-none focus-visible:ring-0"
+    : "min-h-fit resize-none leading-loose overflow-hidden border-0 py-0 text-base! text-neutral-500 2xl:text-xl! break-all rounded-none focus-visible:ring-0";
 
   return (
     <aside className={getProfileBentoProfileShellClassName(compactMode)}>
       <div className="flex flex-col gap-4 overflow-visible">
-        <div className="flex px-4">
+        <div className="flex">
           <div className="group/profile-image relative overflow-visible">
             <button
               type="button"
@@ -143,7 +143,7 @@ export function ProfileBentoProfileEditor({
           />
         </div>
 
-        <div className="flex flex-col gap-1 p-4 pt-0">
+        <div className="flex flex-col gap-1 px-2 pt-0">
           <Textarea
             id="v2-profile-name"
             value={editor.profileForm.name}

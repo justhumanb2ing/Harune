@@ -74,6 +74,7 @@ Public readonly surface와 owner editor surface는 의도적으로 같은 profil
 - public readonly surface의 compact 구간은 editor처럼 중앙 폭이 잡혀야 하고, profile shell과 bento shell은 같은 양쪽 여백 안에서 측정되어야 한다.
 - public readonly desktop surface는 profile shell과 bento grid 사이의 gap을 viewport 폭에 맞는 clamp 값으로 유지하고, 2xl 진입 구간에서도 좌우 padding이 사라지거나 grid가 transform으로 잘리지 않아야 한다.
 - owner editor desktop-flow surface도 public readonly와 같은 top padding, horizontal padding, profile-grid gap clamp를 따라야 하며, desktop 안의 framed mobile preview만 frame alignment를 위해 `px-0`을 사용할 수 있다.
+- public readonly와 owner editor의 profile shell은 mobile/tablet에서 `pt-12`와 `--v2-page-top-offset:3rem`, `2xl` desktop-flow에서 `pt-16`과 `--v2-page-top-offset:4rem`, `w-sm`, `px-4`, `mb-4`, `2xl` sticky 전환을 공유하고, bio surface는 고정 최소 높이 대신 content-fit 높이로 렌더링해야 한다.
 - public readonly page shell에서 grid resize transition을 `overflow-x-clip`/`overflow-hidden`으로 자르지 않는다. compact 전환 시 grid canvas width를 editor처럼 먼저 compact target으로 제한해 horizontal overflow 자체를 줄인다.
 - profile avatar가 있는 public/editor surface는 이미지 로드 또는 crop frame 계산 전 회색 `bg-secondary` overlay를 덮지 않아야 하며, 회색 배경은 이미지가 없는 fallback 상태에만 사용한다.
 - role과 location은 public readonly profile surface와 owner editor input surface 모두에서 숨기고, 저장 데이터가 있어도 화면에 렌더링하지 않는다. bio는 계속 표시/편집할 수 있다.

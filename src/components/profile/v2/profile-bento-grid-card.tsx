@@ -1284,7 +1284,7 @@ function MediaPreview({ item }: { item: Extract<ProfileBentoItem, { type: "media
       loading="lazy"
       sizes="(min-width: 1536px) 33vw, (min-width: 768px) 50vw, 100vw"
       src={item.content.url}
-      unoptimized={shouldBypassNextImageOptimization(item.content.url)}
+      unoptimized
     />
   );
 }

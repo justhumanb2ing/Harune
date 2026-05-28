@@ -269,6 +269,7 @@ Text item과 section item은 owner가 editor에서 맞춘 밀도와 줄바꿈이
 - public profile data는 짧은 revalidate cache를 사용하고, profile sync API는 cache tag와 path를 함께 무효화한다.
 - playlist iframe은 저장된 embed HTML에 `loading` attribute가 없어도 기본 lazy loading을 적용한다.
 - media video는 public initial load에서 metadata/body fetch를 강제하지 않도록 `preload="none"`을 기본으로 둔다.
+- media image item은 `next/image`의 `Image` 컴포넌트를 사용하되 R2/CDN public URL을 Vercel `_next/image` optimizer로 프록시하지 않는다. 저장된 이미지가 배포 환경에서 optimizer fetch/transform 실패로 alt text만 보이면 안 되므로 media image preview는 direct CDN URL 렌더링을 유지한다.
 
 ## Update Rule
 

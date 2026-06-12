@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { getAuthClientBaseURL } from "@/lib/auth-client";
+import { getAuthClientBaseURL } from "@/lib/auth/client";
 
 describe("auth client config", () => {
   test("uses the backend api base URL", () => {

@@ -14,7 +14,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { getAppUrl } from "@/lib/auth/app-url";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth/client";
 import { appConfig } from "@/lib/config";
 import { invalidateAuthenticatedAppQueries } from "@/lib/react-query/app-cache";
 import { cn } from "@/lib/utils";

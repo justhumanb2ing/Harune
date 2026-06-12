@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import { ProfileBentoPage } from "@/components/profile/v2/profile-bento-page";
-import { PROFILE_BENTO_SHARE_COPY } from "@/components/profile/v2/profile-bento-share-intents";
+import { ProfileBentoPage } from "@/components/profile/public/profile-bento-page";
+import { PROFILE_BENTO_SHARE_COPY } from "@/components/profile/share/profile-bento-share-intents";
 import { WebPageJsonLd } from "@/components/site-instrumentation/structured-data";
 import { ApiError } from "@/lib/api/error";
 import { getProfileByHandle } from "@/lib/api/generated/http/profile-api/profile-api";

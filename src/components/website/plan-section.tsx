@@ -1,12 +1,12 @@
 "use client";
 
+import { CheckIcon } from "lucide-react";
 import * as React from "react";
 import type { ListBillingProducts200ItemsItem } from "@/lib/api/generated/http/schemas/billing-api";
 import type { GetMe200CurrentPlan } from "@/lib/api/generated/http/schemas/me-api";
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth/client";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
-import { CheckIcon } from "lucide-react";
 
 type BillingProduct = ListBillingProducts200ItemsItem;
 
@@ -87,8 +87,8 @@ function PricingWrapper({
         <div className="flex h-full w-full items-end justify-end text-base">
           <Button
             type="button"
-            size={'lg'}
-            variant={'ghost'}
+            size={"lg"}
+            variant={"ghost"}
             disabled={actionDisabled}
             onClick={onAction}
             className="h-12 w-full rounded-lg font-bold text-lg bg-background text-foreground"
@@ -157,11 +157,7 @@ export const Paragraph = ({
 }: {
   children: React.ReactNode;
   className?: string;
-}) => (
-  <div className={cn("text-lg font-semibold", className)}>
-    {children}
-  </div>
-);
+}) => <div className={cn("text-lg font-semibold", className)}>{children}</div>;
 
 export default function PlanSection({ products, errorMessage, currentPlan }: PlanSectionProps) {
   const session = authClient.useSession();
@@ -228,9 +224,8 @@ export default function PlanSection({ products, errorMessage, currentPlan }: Pla
           {products.length > 0 ? (
             products.map((product, index) => {
               const currentPlanProduct = isCurrentPlanProduct(product);
-              const actionLabel = pendingAction === product.productId
-                  ? "Checking out..."
-                  : "Get it now";
+              const actionLabel =
+                pendingAction === product.productId ? "Checking out..." : "Get it now";
 
               return (
                 <PricingWrapper
@@ -255,15 +250,15 @@ export default function PlanSection({ products, errorMessage, currentPlan }: Pla
                     {product.quotas ? (
                       <ol>
                         <li className="flex items-center gap-1">
-                          <CheckIcon className="size-5 stroke-3"/>
+                          <CheckIcon className="size-5 stroke-3" />
                           <span>feature 1</span>
                         </li>
                         <li className="flex items-center gap-1">
-                          <CheckIcon className="size-5 stroke-3"/>
+                          <CheckIcon className="size-5 stroke-3" />
                           <span>feature 1</span>
                         </li>
                         <li className="flex items-center gap-1">
-                          <CheckIcon className="size-5 stroke-3"/>
+                          <CheckIcon className="size-5 stroke-3" />
                           <span>feature 1</span>
                         </li>
                       </ol>

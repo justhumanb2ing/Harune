@@ -1,4 +1,4 @@
-import { getErrorMessage } from "@/lib/error-message";
+import { getErrorMessage } from "@/lib/shared/error-message";
 
 export interface ClientS3UploaderOptions {
   presignedRouteProvider: string;

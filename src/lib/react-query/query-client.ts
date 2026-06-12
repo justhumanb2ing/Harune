@@ -2,7 +2,7 @@
 
 import { environmentManager, MutationCache, QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getErrorMessage } from "@/lib/error-message";
+import { getErrorMessage } from "@/lib/shared/error-message";
 
 const STALE_TIME_MS = 60 * 1000;
 

@@ -8,7 +8,7 @@ import {
   getTextAlignClassName,
   getVerticalAlignClassName,
   normalizeGridTextSurfaceStyle,
-} from "@/components/grid/grid-text-surface";
+} from "@/components/profile/grid/grid-text-surface";
 import { Map as BentoMap, MapMarker, type MapViewport, MarkerContent } from "@/components/ui/map";
 import { resolveLinkProviderTheme } from "@/lib/metadata/link-provider-theme";
 import type {

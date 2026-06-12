@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isReservedHandle, isValidHandleFormat, normalizeHandle } from "@/lib/handles";
+import { isReservedHandle, isValidHandleFormat, normalizeHandle } from "@/lib/profile/handles";
 import { MAX_SOCIAL_LINKS } from "@/lib/profile/types";
 
 const emptyStringToUndefined = (value: unknown) => {

@@ -21,13 +21,13 @@ import {
   InputGroupText,
 } from "@/components/ui/input-group";
 import { Textarea } from "@/components/ui/textarea";
-import { useHandleAvailability } from "@/hooks/use-handle-availability";
-import { useProfileImageUpload } from "@/hooks/use-profile-image-upload";
+import { useHandleAvailability } from "@/hooks/profile/use-handle-availability";
+import { useProfileImageUpload } from "@/hooks/profile/use-profile-image-upload";
 import { getCheckHandleAvailabilityQueryKey } from "@/lib/api/generated/http/handle-api/handle-api";
 import { useUpdateProfilePage } from "@/lib/api/generated/http/profile-api/profile-api";
 import { UpdateProfilePageBody as updateProfilePageBodySchema } from "@/lib/api/generated/zod/profile-api/profile-api.zod";
-import { authClient } from "@/lib/auth-client";
-import { normalizeHandle, validateHandle } from "@/lib/handles";
+import { authClient } from "@/lib/auth/client";
+import { normalizeHandle, validateHandle } from "@/lib/profile/handles";
 import { PROFILE_IMAGE_ACCEPT } from "@/lib/profile/image-upload";
 import {
   clearAuthenticatedAppQueries,

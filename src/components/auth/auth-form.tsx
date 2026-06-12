@@ -272,7 +272,7 @@ function EmailPasswordForm({
                 aria-label={passwordVisible ? "Hide password" : "Show password"}
                 title="Toggle Password"
                 onClick={handleTogglePasswordVisiblity}
-                className="bg-background h-8 text-black font-semibold shadow-xs px-3"
+                className="bg-background h-8 text-black font-semibold shadow-xs px-3 hover:bg-background"
               >
                 {passwordVisible ? "Hide" : "Show"}
               </InputGroupButton>

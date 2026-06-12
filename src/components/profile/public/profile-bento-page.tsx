@@ -1,6 +1,7 @@
 import { CompassIcon } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { ProfileBentoOwnerEditorGate } from "@/components/profile/editor/profile-bento-owner-editor-gate";
 import { normalizeProfileBentoItems } from "@/components/profile/grid/profile-bento-grid-model";
 import { ProfileAvatarImage } from "@/components/profile/media/profile-avatar-image";
 import { ProfileBentoReadonlyGrid } from "@/components/profile/public/profile-bento-readonly-grid";
@@ -186,10 +187,6 @@ export async function ProfileBentoPage({
   const normalizedBento = normalizeProfileBentoItems(bento as ProfileBentoItem[]);
 
   if (isOwner && editorData) {
-    const { ProfileBentoOwnerEditorSurface } = await import(
-      "@/components/profile/editor/profile-bento-owner-editor-surface"
-    );
-
     return (
       <>
         <ProfilePageAnalyticsTracker
@@ -197,7 +194,7 @@ export async function ProfileBentoPage({
           handle={page.handle}
           profilePageId={page.id}
         />
-        <ProfileBentoOwnerEditorSurface
+        <ProfileBentoOwnerEditorGate
           bento={normalizedBento}
           disableAnalytics={isDeploymentEnvironment}
           editorData={editorData}

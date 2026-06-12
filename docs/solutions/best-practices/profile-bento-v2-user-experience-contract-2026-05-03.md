@@ -60,9 +60,12 @@ EditableTextBento / EditableSectionBento
 Public readonly surface와 owner editor surface는 의도적으로 같은 profile presentation을 보여준다.
 
 - read-only라고 해서 card radius, padding, shadow, media crop, link provider theme를 다르게 만들지 않는다.
+- readonly grid card shell에는 `contain: paint`처럼 box-shadow를 item bounds 안으로 자르는 containment를 적용하지 않는다.
 - link item의 favicon wrapper, title density, provider action chip은 editor와 readonly에서 같은 모서리, 높이, 폰트 밀도를 유지한다.
 - `medium`, `threads`, `tiktok`, `chzzk` link item은 provider theme 배경을 white로 유지한다.
-- 일반 item의 card outline은 콘텐츠보다 앞서 보이지 않도록 옅게 유지하고, section item은 outline 없이 얇은 구분선 텍스트처럼 보여야 한다.
+- 일반 item의 card outline은 콘텐츠보다 앞서 보이지 않도록 옅게 유지하고, section item은 outline과 shadow 없이 얇은 구분선 텍스트처럼 보여야 한다.
+- readonly section item은 owner editor와 같은 compact `1rem`, desktop `2rem` top margin을 사용해 h=2 grid slot 안에서 보이는 h=1 body 위치가 같아야 한다.
+- readonly section title은 보이는 h=1 body의 세로 중앙에 와야 하며, editor input의 행 기준 중앙 정렬과 어긋나면 안 된다.
 - owner-only controls, input affordance, upload/loading state만 editor 전용으로 둔다.
 - media/map 외부 링크 action의 size, position, icon weight, contrast는 editor와 readonly에서 같아야 한다.
 - media/map full-bleed editor cards는 shell shadow를 유지한 채 visible frame에 `ring-1 ring-border`를 적용해, 카드 가장자리가 평평하게 보이지 않게 한다.
@@ -104,6 +107,7 @@ Clock widget은 사용자가 추가 직후 바로 “시간 카드”로 인식�
 - clock bento는 초까지 보이도록 `showSeconds`를 기본 활성화하고, 날짜는 좌측 하단, timezone 문자열은 우측 하단에 `justify-between`으로 배치한다.
 - clock bento의 날짜는 `May 18, 2026`처럼 영문 long month, day, year 순서로 표시한다.
 - clock bento는 저장된 `showSeconds`가 누락되었거나 false인 옛 데이터도 초 표시를 기본값으로 복원해 실제 전자시계처럼 매초 갱신되어야 한다.
+- clock bento는 SSR hydration 첫 렌더에서 `new Date()` 값을 직접 HTML attribute로 내보내지 않는다. 서버/클라이언트 첫 렌더는 같은 placeholder를 쓰고, mount 직후 실제 시간으로 전환해야 한다.
 - clock bento의 시간 텍스트는 초까지 보이는 `HH:mm:ss` 길이를 compact width에서도 잘리지 않게 유지해야 한다.
 - clock bento의 resize option은 3번째 preset인 `2x2`와 5번째 preset인 `2x4`만 보여야 하며, 추가 직후 기본 크기는 `2x2`여야 한다.
 - clock bento의 background color는 editor surface에서 palette로 바꿀 수 있어야 하고, `content.style.backgroundColor` 저장 payload에도 그대로 반영되어야 한다. clock item은 background color와 무관하게 외부 ring/outline/bevel 없이 렌더링한다.
@@ -257,9 +261,12 @@ Text item과 section item은 owner가 editor에서 맞춘 밀도와 줄바꿈이
 
 공개 profile 접근은 링크 공유, 검색, 소셜 인앱 브라우저에서 가장 먼저 체감되는 surface다. 따라서 public readonly route는 아래 contract를 유지한다.
 
-- public readonly grid는 `react-grid-layout`이 계산하는 compact/desktop 좌표, rowHeight, section height, card wrapper를 기준으로 editor와 같은 visual contract를 유지한다. CSS grid로 대체하면 저장된 layout semantics와 short viewport parity가 깨질 수 있다.
-- public/editor grid는 `useContainerWidth({ measureBeforeMount: true })`의 `mounted`가 true가 되기 전까지 `react-grid-layout` canvas를 렌더하지 않는다. `initialWidth` 기반 첫 layout이 화면에 잡힌 뒤 실제 container width layout으로 재계산되면 entry reveal 중에 grid item transform transition이 겹쳐 끊겨 보인다.
-- grid entry motion은 container width 측정이 끝난 뒤 실제 breakpoint와 rowHeight 기준 layout을 대상으로 시작해야 한다. 측정 전 shell은 ref만 유지하고 opacity/y hidden state에 머물러야 한다.
+- public readonly grid는 drag/resize가 필요 없으므로 `react-grid-layout`과 resize CSS를 초기 client bundle에 싣지 않는다. CSS grid로 저장된 compact/desktop `x`, `y`, `w`, `h` 좌표를 직접 배치하되, editor와 같은 `2xl` breakpoint, compact width, desktop width, gap, rowHeight 계산을 유지한다.
+- public readonly grid의 card shell은 editor `GridCard`의 radius, padding, text surface provider, provider theme, outline/bevel 의미를 맞춰야 한다. RGL wrapper를 쓰지 않더라도 visible card contract가 달라지면 안 된다.
+- public readonly grid item은 editor grid item과 같은 `ProfileBentoGridItemRevealMotion` stagger reveal을 사용한다. RGL wrapper를 제거해도 grid 영역의 opacity/y entry motion은 읽기 모드와 편집 모드에서 같아야 한다.
+- public readonly route에서 map, Spotify, share dialog처럼 외부 script/CSS나 modal content가 필요한 surface는 lazy boundary 뒤에 둔다. map/Spotify는 해당 card가 실제로 렌더될 때 로드하고, share dialog는 trigger button만 초기 bundle에 두고 dialog content, confetti, social channel assets는 open 뒤에 로드한다.
+- owner editor surface는 owner일 때만 client gate를 통해 editor chunk를 로드한다. anonymous/public readonly 진입에서 `ProfileBentoOwnerEditorSurface`, `ProfileBentoInteractiveGrid`, `react-grid-layout` chunk가 preload되면 public FCP contract 위반이다.
+- public/editor grid에서 viewport-driven layout 측정은 저장 dirty state와 분리한다. public readonly는 `matchMedia("(min-width: 1536px)")`로 presentation breakpoint만 바꾸고, editor는 기존 RGL 측정/drag semantics를 유지한다.
 - public readonly grid breakpoint는 editor compact/desktop 전환과 같은 `2xl` 기준을 써야 하며, 모바일/태블릿에서 desktop layout이 먼저 풀리면 안 된다.
 - public readonly `/[handle]` shell은 viewport를 줄이는 동안 가로 스크롤이 생기지 않도록 grid canvas width를 compact target으로 제한해야 한다. page shell clipping으로 숨기면 editor와 다른 잘림이 생긴다.
 - public readonly grid는 public page에서만 viewport 폭으로 desktop 복귀를 판단하고, 내부 container가 잠깐 좁게 남아 있어도 desktop 4열 상태를 다시 풀 수 있어야 한다. contained preview surface는 실제 container width 기준을 유지한다.

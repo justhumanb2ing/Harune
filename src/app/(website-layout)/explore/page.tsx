@@ -13,6 +13,8 @@ import { createPageMetadata } from "@/lib/seo";
 
 const exploreDescription = `Discover ${appConfig.projectName} creator pages and explore public profiles across the community.`;
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = createPageMetadata({
   path: "/explore",
   title: "Explore",
@@ -31,9 +33,13 @@ export const metadata: Metadata = createPageMetadata({
 export default async function ExplorePage() {
   const queryClient = new QueryClient();
 
-  await prefetchListProfilePagesQuery(queryClient, {
-    request: { cache: "no-store" },
-  });
+  try {
+    await prefetchListProfilePagesQuery(queryClient, {
+      request: { cache: "no-store" },
+    });
+  } catch {
+    // Keep the build resilient when the API origin is unavailable during prerender.
+  }
 
   return (
     <>

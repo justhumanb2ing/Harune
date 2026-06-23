@@ -2,17 +2,255 @@
 
 import type { Variants } from "motion/react";
 import * as motion from "motion/react-client";
-import Image from "next/image";
-import { AppEntryCtaButton } from "@/components/website/app-entry-cta-button";
+import type { CSSProperties, ReactNode } from "react";
+import { normalizeGridTextSurfaceStyle } from "@/components/profile/grid/grid-text-surface";
 import {
-  getLandingCardShowcaseSize,
-  LandingShowcaseItem,
-  showcaseItems,
-} from "@/components/website/landing/landing-card-showcase";
+  getProfileBentoLinkSize,
+  ProfileBentoGridCard,
+} from "@/components/profile/grid/profile-bento-grid-card";
+import { toBentoGridItem } from "@/components/profile/grid/profile-bento-grid-model";
+import { AppEntryCtaButton } from "@/components/website/app-entry-cta-button";
 import { env } from "@/env";
+import type { GridItem } from "@/lib/grid/grid-types";
+import type { ProfileBentoItem } from "@/lib/profile/types";
 import { cn } from "@/lib/utils";
 
 const signInEnabled = env.NEXT_PUBLIC_SIGNIN_ENABLED === "true";
+const providerIconBaseUrl = "https://cdn.harune.me/public/assets/link-provider-icon";
+
+const landingCardShowcaseScale = 1;
+const landingCardShowcaseGridMetrics = {
+  compact: {
+    columnWidth: 174,
+    margin: 32,
+    rowHeight: 71,
+  },
+  desktop: {
+    columnWidth: 184,
+    margin: 32,
+    rowHeight: 76,
+  },
+} as const;
+type LandingCardShowcaseBreakpoint = "compact" | "desktop";
+
+type HeroShowcaseCardShellStyle = CSSProperties & {
+  [key: `--${string}`]: string | number | undefined;
+  "--grid-card-control-background"?: string;
+  "--grid-card-muted-foreground"?: string;
+  "--tw-inset-ring-color"?: string;
+};
+
+function getLandingCardShowcaseSize(
+  item: ProfileBentoItem,
+  breakpoint: LandingCardShowcaseBreakpoint
+) {
+  const layout = item.layout[breakpoint];
+  const metrics = landingCardShowcaseGridMetrics[breakpoint];
+  const width = layout.w * metrics.columnWidth + Math.max(0, layout.w - 1) * metrics.margin;
+  const height = layout.h * metrics.rowHeight + Math.max(0, layout.h - 1) * metrics.margin;
+
+  return {
+    height: height * landingCardShowcaseScale,
+    width: width * landingCardShowcaseScale,
+  };
+}
+
+function HeroShowcaseCardShell({
+  children,
+  gridItem,
+}: {
+  children: ReactNode;
+  gridItem: GridItem;
+}) {
+  const isFullBleedItem = gridItem.itemType === "media" || gridItem.itemType === "map";
+  const shellStyle = gridItem.theme
+    ? {
+        "--grid-card-control-background": gridItem.theme.controlBackgroundColor,
+        "--grid-card-muted-foreground": gridItem.theme.mutedForegroundColor,
+        "--tw-inset-ring-color": `color-mix(in srgb, ${gridItem.theme.backgroundColor} 90%, black)`,
+        backgroundColor: gridItem.theme.backgroundColor,
+        color: gridItem.theme.foregroundColor,
+      }
+    : {
+        "--tw-inset-ring-color": "color-mix(in srgb, var(--border) 80%, transparent)",
+      };
+
+  return (
+    <article
+      className={cn(
+        "relative flex size-full min-h-0 flex-col justify-between rounded-[1.5rem] bg-white shadow-xs",
+        isFullBleedItem ? "p-0 outline-none" : "p-4 outline-border/35 inset-ring-1"
+      )}
+      style={shellStyle satisfies HeroShowcaseCardShellStyle}
+    >
+      <div className="min-h-0 flex-1">{children}</div>
+    </article>
+  );
+}
+
+const showcaseItems = [
+  {
+    content: {
+      caption: "",
+      latitude: 40.7233,
+      longitude: -74.003,
+      url: "https://www.google.com/maps?q=40.7233,-74.0030",
+      zoom: 13,
+    },
+    id: "showcase-map",
+    layout: { compact: { h: 4, w: 2, x: 0, y: 0 }, desktop: { h: 4, w: 2, x: 0, y: 0 } },
+    type: "map",
+  },
+  {
+    content: {
+      alt: "Rainy New York street after dark",
+      caption: "",
+      contentHash: "showcase-media",
+      contentType: "image/jpeg",
+      href: null,
+      mediaType: "image",
+      objectKey: "showcase-media",
+      url: "https://i1-c.pinimg.com/736x/9a/80/20/9a8020c5be385d817b2aa648596aa51c.jpg",
+    },
+    id: "showcase-media",
+    layout: { compact: { h: 4, w: 2, x: 0, y: 0 }, desktop: { h: 4, w: 2, x: 0, y: 0 } },
+    type: "media",
+  },
+  {
+    content: {
+      alt: "Portrait photo used as a tall showcase card",
+      caption: "",
+      contentHash: "showcase-portrait-media",
+      contentType: "image/jpeg",
+      href: null,
+      mediaType: "image",
+      objectKey: "showcase-portrait-media",
+      url: "https://i.pinimg.com/736x/b0/8d/5c/b08d5cfc82d33edc5538bfaba9ad0e65.jpg",
+    },
+    id: "showcase-portrait-media",
+    layout: { compact: { h: 4, w: 1, x: 0, y: 0 }, desktop: { h: 4, w: 1, x: 0, y: 0 } },
+    type: "media",
+  },
+  {
+    content: {
+      style: normalizeGridTextSurfaceStyle({
+        backgroundColor: "#ffffff",
+        textAlign: "start",
+        verticalAlign: "start",
+      }),
+      content: "New York always feels busy, but somehow the calmest moment still shows up here.",
+      url: "https://example.com/new-york-note",
+    },
+    id: "showcase-text",
+    layout: { compact: { h: 2, w: 1, x: 0, y: 0 }, desktop: { h: 2, w: 1, x: 0, y: 0 } },
+    type: "text",
+  },
+  {
+    content: {
+      description: null,
+      favicon: `${providerIconBaseUrl}/spotify.svg`,
+      domain: "open.spotify.com",
+      thumbnail: null,
+      title: "Night walk playlist",
+      url: "https://open.spotify.com/",
+    },
+    id: "showcase-spotify",
+    layout: { compact: { h: 2, w: 1, x: 0, y: 0 }, desktop: { h: 2, w: 1, x: 0, y: 0 } },
+    type: "link",
+  },
+  {
+    content: {
+      description: null,
+      favicon: `${providerIconBaseUrl}/youtube.svg`,
+      domain: "youtube.com",
+      thumbnail: null,
+      title: "Street interview cut",
+      url: "https://www.youtube.com/",
+    },
+    id: "showcase-youtube",
+    layout: { compact: { h: 2, w: 2, x: 0, y: 0 }, desktop: { h: 2, w: 2, x: 0, y: 0 } },
+    type: "link",
+  },
+  {
+    content: {
+      description: null,
+      favicon: `${providerIconBaseUrl}/x.svg`,
+      domain: "x.com",
+      thumbnail: null,
+      title: "@Ethan_Vale",
+      url: "https://x.com/",
+    },
+    id: "showcase-twitter",
+    layout: { compact: { h: 2, w: 1, x: 0, y: 0 }, desktop: { h: 2, w: 1, x: 0, y: 0 } },
+    type: "link",
+  },
+] satisfies ProfileBentoItem[];
+
+function HeroShowcaseCard({
+  activeBreakpoint,
+  item,
+}: {
+  activeBreakpoint: LandingCardShowcaseBreakpoint;
+  item: ProfileBentoItem;
+}) {
+  const gridItem = toBentoGridItem(item);
+
+  return (
+    <HeroShowcaseCardShell gridItem={gridItem}>
+      <ProfileBentoGridCard
+        activeBreakpoint={activeBreakpoint}
+        item={item}
+        layoutSize={
+          item.type === "link"
+            ? getProfileBentoLinkSize(
+                item.layout[activeBreakpoint].w,
+                item.layout[activeBreakpoint].h
+              )
+            : undefined
+        }
+        preventNavigation
+      />
+    </HeroShowcaseCardShell>
+  );
+}
+
+function LandingShowcaseItem({
+  item,
+  mobileHeight,
+  mobileWidth,
+  width,
+  height,
+}: {
+  item: ProfileBentoItem;
+  mobileHeight: number;
+  mobileWidth: number;
+  width: number;
+  height: number;
+}) {
+  return (
+    <>
+      <div
+        className="block shrink-0 min-[819px]:hidden"
+        style={{
+          height: `${mobileHeight}px`,
+          width: `${mobileWidth}px`,
+        }}
+      >
+        <HeroShowcaseCard activeBreakpoint="compact" item={item} />
+      </div>
+
+      <div
+        className="hidden shrink-0 min-[819px]:block"
+        style={{
+          height: `${height}px`,
+          width: `${width}px`,
+        }}
+      >
+        <HeroShowcaseCard activeBreakpoint="desktop" item={item} />
+      </div>
+    </>
+  );
+}
 
 const heroShowcasePlacements = {
   "showcase-map": {
@@ -190,7 +428,12 @@ export default function MainHeroSection() {
             <span className="hidden uppercase sm:inline">Sign Up For Free</span>
           </AppEntryCtaButton>
           {signInEnabled && (
-            <AppEntryCtaButton next="/" size="sm" variant="ghost" className="text-sm font-medium text-muted-foreground">
+            <AppEntryCtaButton
+              next="/"
+              size="sm"
+              variant="ghost"
+              className="text-sm font-medium text-muted-foreground"
+            >
               Log In
             </AppEntryCtaButton>
           )}

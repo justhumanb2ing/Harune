@@ -16,9 +16,9 @@ export function Footer() {
             </div>
             
             <p>
-              Quietly built by{" "}
-              <a href="https://x.com/kinmongsang" target="_blank" rel="noopener noreferrer" className="underline">
-                one person
+              built by{" "}
+              <a href="https://x.com/kinmongsang" target="_blank" rel="noopener noreferrer" className="font-bold">
+                someone
               </a>
             </p>
           </div>

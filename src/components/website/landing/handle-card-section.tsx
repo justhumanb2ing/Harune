@@ -1,75 +1,56 @@
 import type { Variants } from "motion/react";
 import * as motion from "motion/react-client";
+import { TextLoop } from "@/components/ui/text-loop";
 
 type HandleChip = {
-  className: string;
   handle: string;
-  tone: string;
+  tone?: string;
 };
 
-const handleChips: HandleChip[] = [
+type HandleSliderRow = {
+  handles: HandleChip[];
+  reverse?: boolean;
+  speed: number;
+};
+
+const handleSliderRows: HandleSliderRow[] = [
   {
-    className:
-      "left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2 text-5xl sm:text-6xl md:text-7xl",
-    handle: "@kai",
-    tone: "bg-foreground text-background",
+    speed: 64,
+    handles: [
+      { handle: "@kai", tone: "bg-foreground text-background" },
+      { handle: "@mika_studio", tone: "bg-indigo-400 text-white" },
+      { handle: "@NOVA7", tone: "bg-emerald-400 text-white" },
+      { handle: "@juno", tone: "bg-orange-400 text-white" },
+      { handle: "@zara", tone: "bg-fuchsia-400 text-white" },
+      { handle: "@arlo_42", tone: "bg-background text-foreground" },
+    ],
   },
   {
-    className: "left-[8%] top-[8%] -rotate-6 text-2xl sm:text-4xl",
-    handle: "@DONNY",
-    tone: "bg-sky-400 text-white",
+    reverse: true,
+    speed: 78,
+    handles: [
+      { handle: "@DONNY", tone: "bg-sky-400 text-white" },
+      { handle: "@lee_works", tone: "bg-rose-400 text-white" },
+      { handle: "@MAY_LI", tone: "bg-amber-300 text-foreground" },
+      { handle: "@echo_lab", tone: "bg-background text-foreground" },
+      { handle: "@chloeZ", tone: "bg-cyan-300 text-foreground" },
+      { handle: "@ren_01", tone: "bg-lime-300 text-foreground" },
+    ],
   },
   {
-    className: "right-[7%] top-[12%] rotate-5 text-xl sm:text-3xl md:text-4xl",
-    handle: "@mika_studio",
-    tone: "bg-indigo-400 text-white",
-  },
-  {
-    className: "left-[6%] top-[42%] rotate-3 text-xl sm:text-3xl md:text-4xl",
-    handle: "@NOVA7",
-    tone: "bg-emerald-400 text-white",
-  },
-  {
-    className: "right-[8%] top-[45%] -rotate-4 text-xl sm:text-3xl md:text-4xl",
-    handle: "@lee_works",
-    tone: "bg-rose-400 text-white",
-  },
-  {
-    className: "bottom-[14%] left-[16%] -rotate-3 text-2xl sm:text-4xl",
-    handle: "@juno",
-    tone: "bg-orange-400 text-white",
-  },
-  {
-    className: "bottom-[13%] right-[16%] rotate-6 text-2xl sm:text-4xl",
-    handle: "@MAY_LI",
-    tone: "bg-amber-300 text-foreground",
-  },
-  {
-    className: "left-[27%] top-[26%] rotate-2 text-lg sm:text-2xl md:text-3xl",
-    handle: "@arlo_42",
-    tone: "bg-background/80 text-foreground",
-  },
-  {
-    className: "right-[29%] top-[30%] -rotate-2 text-lg sm:text-2xl md:text-3xl",
-    handle: "@zara",
-    tone: "bg-fuchsia-400 text-white",
-  },
-  {
-    className: "bottom-[30%] left-[28%] -rotate-5 text-lg sm:text-2xl md:text-3xl",
-    handle: "@echo_lab",
-    tone: "bg-background/80 text-foreground",
-  },
-  {
-    className: "bottom-[29%] right-[28%] rotate-4 text-lg sm:text-2xl md:text-3xl",
-    handle: "@chloeZ",
-    tone: "bg-cyan-300 text-foreground",
-  },
-  {
-    className: "left-[43%] top-[8%] hidden -rotate-2 text-2xl sm:block md:text-4xl",
-    handle: "@ren_01",
-    tone: "bg-lime-300 text-foreground",
+    speed: 58,
+    handles: [
+      { handle: "@studio_nami", tone: "bg-violet-400 text-white" },
+      { handle: "@min.archive", tone: "bg-stone-900 text-white" },
+      { handle: "@river", tone: "bg-teal-300 text-foreground" },
+      { handle: "@seoulafter", tone: "bg-red-400 text-white" },
+      { handle: "@noah_lab", tone: "bg-yellow-300 text-foreground" },
+      { handle: "@yuri", tone: "bg-blue-400 text-white" },
+    ],
   },
 ];
+
+const featuredHandles = ["kai", "mika_studio", "NOVA7", "studio_nami"] as const;
 
 const sectionVariants: Variants = {
   hidden: {
@@ -104,31 +85,11 @@ const itemVariants: Variants = {
   },
 };
 
-const getChipEntryVariants = (index: number): Variants => ({
-  hidden: {
-    opacity: 0,
-    scale: 0.88,
-    y: 28,
-  },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: {
-      delay: 0.18 + index * 0.045,
-      damping: 18,
-      mass: 0.7,
-      stiffness: 420,
-      type: "spring",
-    },
-    y: 0,
-  },
-});
-
 export default function HandleCardSection() {
   return (
-    <section className="flex min-h-dvh flex-col items-center justify-center overflow-hidden px-4 py-16">
+    <section className="flex flex-col items-center justify-center overflow-hidden px-4 py-16">
       <motion.div
-        className="flex w-full max-w-6xl flex-col items-center gap-52 md:gap-64"
+        className="flex w-full max-w-6xl flex-col items-center gap-16 md:gap-20"
         initial="hidden"
         variants={sectionVariants}
         viewport={{ once: true, margin: "-80px" }}
@@ -145,50 +106,46 @@ export default function HandleCardSection() {
           <p className="text-xl font-normal md:text-2xl">Choose a unique name for your page.</p>
         </motion.header>
 
-        <div className="flex flex-col items-center gap-16 w-full">
-          <motion.div
-            className="relative h-[520px] w-full overflow-hidden rounded-[2rem] sm:h-[580px]"
-            variants={itemVariants}
-          >
-            <div className="pointer-events-none absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-background/70 blur-3xl" />
-            {handleChips.map((chip, index) => (
-              <div className={`absolute ${chip.className}`} key={chip.handle}>
-                <motion.div
-                  initial="hidden"
-                  variants={getChipEntryVariants(index)}
-                  viewport={{ once: true, margin: "-120px" }}
-                  whileInView="visible"
-                >
-                  <motion.div
-                    className={`flex w-fit select-none items-center rounded-2xl px-4 py-3 font-semibold tracking-normal shadow-float transition-shadow duration-150 ease-out hover:shadow-xl sm:rounded-3xl sm:px-5 sm:py-4 ${chip.tone}`}
-                    whileHover={{
-                      scale: 1.025,
-                      y: -8,
-                    }}
-                    transition={{
-                      damping: 30,
-                      mass: 0.45,
-                      stiffness: 520,
-                      type: "spring",
-                    }}
-                  >
-                    {chip.handle}
-                  </motion.div>
-                </motion.div>
-              </div>
-            ))}
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{
-              delay: 0.45,
-              duration: 0.45,
-              ease: [0.16, 1, 0.3, 1],
-            }}
-          >
-            <p className="text-lg text-muted-foreground md:text-2xl">and much more...</p>
+        <div className="flex w-full flex-col items-center gap-16">
+          <motion.div className="flex w-full justify-center" variants={itemVariants}>
+            <div className="inline-flex max-w-full items-center gap-2 overflow-hidden rounded-2xl bg-secondary px-5 py-4 text-xl font-semibold tracking-tight sm:px-7 sm:py-5 sm:text-3xl md:text-3xl">
+              <span className="shrink-0 ">harune.me/</span>
+              <TextLoop
+                className="overflow-y-clip text-indigo-400 [perspective:1000px]"
+                transition={{
+                  type: "spring",
+                  stiffness: 900,
+                  damping: 80,
+                  mass: 10,
+                }}
+                variants={{
+                  initial: {
+                    y: 20,
+                    rotateX: 90,
+                    opacity: 0,
+                    filter: "blur(4px)",
+                  },
+                  animate: {
+                    y: 0,
+                    rotateX: 0,
+                    opacity: 1,
+                    filter: "blur(0px)",
+                  },
+                  exit: {
+                    y: -20,
+                    rotateX: -90,
+                    opacity: 0,
+                    filter: "blur(4px)",
+                  },
+                }}
+              >
+                {featuredHandles.map((handle) => (
+                  <span className="inline-block" key={handle}>
+                    {handle}
+                  </span>
+                ))}
+              </TextLoop>
+            </div>
           </motion.div>
         </div>
       </motion.div>

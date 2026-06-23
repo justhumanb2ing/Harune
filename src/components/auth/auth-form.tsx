@@ -127,13 +127,14 @@ export function AuthForm({
   const shouldShowEmailButton = hasEmailInputValue || !enableGoogle;
 
   return (
-    <div className={cn("flex flex-col gap-8", className)} {...props}>
+    <div className={cn("flex flex-col gap-12", className)} {...props}>
       <div className="space-y-2">
         <EmailPasswordForm
           formId={formId}
           mode={mode}
           defaultName={defaultName}
           isDisabled={isLoading}
+          showSocialAccountReset={mode === "sign-in" && enableGoogle && hasEmailInputValue}
           onInputValueChange={setHasEmailInputValue}
           onSubmit={(event) => handleEmailAuth(mode, event)}
         />
@@ -198,6 +199,7 @@ type EmailPasswordFormProps = {
   mode: AuthMode;
   defaultName?: string;
   isDisabled: boolean;
+  showSocialAccountReset: boolean;
   onInputValueChange: (hasValue: boolean) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 };
@@ -207,11 +209,13 @@ function EmailPasswordForm({
   mode,
   defaultName,
   isDisabled,
+  showSocialAccountReset,
   onInputValueChange,
   onSubmit,
 }: EmailPasswordFormProps) {
   const isSignUp = mode === "sign-up";
   const [passwordVisible, setPasswordVisible] = React.useState(false);
+  const formRef = React.useRef<HTMLFormElement>(null);
 
   const handleTogglePasswordVisiblity = () => setPasswordVisible((prev) => !prev);
   const handleInputChange = (event: React.FormEvent<HTMLFormElement>) => {
@@ -222,9 +226,28 @@ function EmailPasswordForm({
 
     onInputValueChange(hasValue);
   };
+  const handleClearInputs = () => {
+    if (!formRef.current) {
+      return;
+    }
+
+    for (const element of formRef.current.elements) {
+      if (element instanceof HTMLInputElement) {
+        element.value = "";
+      }
+    }
+
+    onInputValueChange(false);
+  };
 
   return (
-    <form id={formId} onSubmit={onSubmit} onInput={handleInputChange} className="space-y-2">
+    <form
+      ref={formRef}
+      id={formId}
+      onSubmit={onSubmit}
+      onInput={handleInputChange}
+      className="relative space-y-2"
+    >
       {isSignUp ? (
         <div>
           <Input
@@ -272,7 +295,7 @@ function EmailPasswordForm({
                 aria-label={passwordVisible ? "Hide password" : "Show password"}
                 title="Toggle Password"
                 onClick={handleTogglePasswordVisiblity}
-                className="bg-background h-8 text-black font-semibold shadow-xs px-3 hover:bg-background"
+                className="h-8 text-black font-semibold shadow-xs px-3"
               >
                 {passwordVisible ? "Hide" : "Show"}
               </InputGroupButton>
@@ -280,6 +303,17 @@ function EmailPasswordForm({
           </InputGroup>
         </div>
       </div>
+
+      {showSocialAccountReset ? (
+        <button
+          type="button"
+          disabled={isDisabled}
+          onClick={handleClearInputs}
+          className="absolute top-[calc(100%+0.5rem)] text-sm font-medium underline underline-offset-2 text-[#768CFF] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          continue with a social account
+        </button>
+      ) : null}
     </form>
   );
 }

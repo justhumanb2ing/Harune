@@ -51,8 +51,8 @@ const imageVariants: Variants = {
 
 export default function LiveCardSection() {
   return (
-    <section className="overflow-hidden px-4 py-20 md:py-28">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
+    <section className="box-border flex h-lvh overflow-hidden px-4 py-20 md:py-28">
+      <div className="mx-auto flex w-full max-w-7xl flex-col justify-center gap-20">
         <motion.div
           className="mx-auto flex w-full max-w-[52rem] flex-col items-center gap-3 text-center"
           initial="hidden"
@@ -64,49 +64,18 @@ export default function LiveCardSection() {
             A simple page, just for you
             <span className="text-indigo-400">.</span>
           </h2>
-          {/*<p className="max-w-[42rem] text-pretty text-xl font-normal leading-relaxed md:text-2xl">
-            Add maps, text, links, images, and videos into one page.
-          </p>*/}
         </motion.div>
 
         <div className="relative">
-          <motion.div
-            className="hidden lg:block"
-            initial="hidden"
-            variants={imageVariants}
-            viewport={{ once: true, margin: "-120px" }}
-            whileInView="visible"
-          >
-            <Image
-              alt={demoScreenshots.desktop.alt}
-              className="h-auto w-full"
-              height={demoScreenshots.desktop.height}
-              priority
-              quality={92}
-              sizes="(min-width: 1024px) 74vw, 100vw"
-              src={demoScreenshots.desktop.src}
-              width={demoScreenshots.desktop.width}
-            />
-          </motion.div>
-
-          <motion.div
-            className="mx-auto block w-full max-w-[26.875rem] lg:hidden"
-            initial="hidden"
-            variants={imageVariants}
-            viewport={{ once: true, margin: "-120px" }}
-            whileInView="visible"
-          >
-            <Image
-              alt={demoScreenshots.mobile.alt}
-              className="h-auto w-full"
-              height={demoScreenshots.mobile.height}
-              priority
-              quality={92}
-              sizes="(max-width: 1023px) min(100vw - 2rem, 26.875rem)"
-              src={demoScreenshots.mobile.src}
-              width={demoScreenshots.mobile.width}
-            />
-          </motion.div>
+          <video
+            src="https://cdn.harune.me/public/assets/landing_showcase.webm"
+            autoPlay
+            className="size-full object-cover rounded-2xl"
+            loop
+            muted
+            playsInline
+            preload="metadata"
+          />
         </div>
       </div>
     </section>

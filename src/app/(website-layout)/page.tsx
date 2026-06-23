@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import { WebPageStructuredData } from "@/components/site-instrumentation/structured-data";
 import { AppEntryCtaButton } from "@/components/website/app-entry-cta-button";
 import HandleCardSection from "@/components/website/landing/handle-card-section";
+import LinkProviderSection from "@/components/website/landing/link-provider-section";
 import LiveCardSection from "@/components/website/landing/live-card-section";
 import MainHeroSection from "@/components/website/landing/main-hero-section";
+import ProviderCardSection from "@/components/website/landing/provider-card-section";
 import { appConfig } from "@/lib/config";
 import { createPageMetadata } from "@/lib/seo";
-import LinkProviderSection from "@/components/website/landing/link-provider-section";
 
 const homepageTitle = "Harune, A Link in bio: One page, all of you.";
 const homepageDescription = `Create a free ${appConfig.projectName} page to share your links, social profiles in one place.`;
@@ -26,10 +27,9 @@ export default function WebsiteHomepage() {
       <main className="relative h-full">
         <MainHeroSection />
         <LiveCardSection />
+        <ProviderCardSection />
         <LinkProviderSection />
         <HandleCardSection />
-        {/*<AnalyticsCardSection />*/}
-        {/*<DonateSection />*/}
         <section className="h-[20rem] flex flex-col justify-center items-center">
           <div className="flex flex-col justify-center items-center gap-2">
             <AppEntryCtaButton
@@ -39,7 +39,7 @@ export default function WebsiteHomepage() {
             >
               Get Started
             </AppEntryCtaButton>
-            {/*<p className="text-sm text-muted-foreground">It's all free.</p>*/}
+            <p className="text-sm text-muted-foreground md:text-base">Unique handles are still available!</p>
           </div>
         </section>
       </main>

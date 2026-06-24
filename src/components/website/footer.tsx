@@ -10,6 +10,11 @@ export function Footer() {
         <div className="flex flex-col items-center gap-18 text-neutral-500">
           {/* Hooking Title */}
           <div className="text-sm font-medium flex flex-col gap-4 text-center">
+
+            <div className="relative">
+              <Image src="/assets/logo.png" alt="Harune logo" width={400} height={400} className="mx-auto size-24" />
+            </div>
+            
             <div className="flex flex-row gap-2">
               <p>Crafted somewhere on earth.</p>
               <p>Built for Makers.</p>
@@ -23,6 +28,7 @@ export function Footer() {
             </p>
           </div>
 
+          
           {/* Legal Links */}
           <div className="flex-1">
             <ul className="flex flex-col items-center md:flex-row gap-10 text-sm font-medium ">

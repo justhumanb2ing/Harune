@@ -470,13 +470,6 @@ html[data-onboarding-step-transition="back"]::view-transition-new(onboarding-ste
         0 0.5px 2.125px rgba(0, 0, 0, 0.01);
   }
   
-  .react-grid-item.react-draggable-dragging input,
-  .react-grid-item.react-draggable-dragging textarea {
-    caret-color: transparent;
-    -webkit-user-select: none;
-    user-select: none;
-  }
-
   .profile-bento-grid-dragging input,
   .profile-bento-grid-dragging textarea {
     pointer-events: none;
@@ -493,10 +486,21 @@ html[data-onboarding-step-transition="back"]::view-transition-new(onboarding-ste
     background-color: transparent;
   }
 
-  .react-grid-item.react-draggable-dragging input::selection,
-  .react-grid-item.react-draggable-dragging textarea::selection,
   .profile-bento-grid-dragging input::selection,
   .profile-bento-grid-dragging textarea::selection {
+    background: transparent;
+    color: inherit;
+  }
+
+  .react-grid-item.react-draggable-dragging input,
+  .react-grid-item.react-draggable-dragging textarea {
+    caret-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .react-grid-item.react-draggable-dragging input::selection,
+  .react-grid-item.react-draggable-dragging textarea::selection {
     background: transparent;
     color: inherit;
   }

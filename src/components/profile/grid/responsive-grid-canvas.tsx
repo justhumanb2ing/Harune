@@ -159,6 +159,7 @@ export function ResponsiveGridCanvas({
             activeBreakpoint={activeBreakpoint}
             cardRotate={cardRotate}
             cardX={cardX}
+            isGridDragging={activeDragItemId !== null}
             isDragIntentActive={isDragIntentActive}
             isDragActive={isDragActive}
             item={item}
@@ -181,7 +182,7 @@ export function ResponsiveGridCanvas({
 
         return (
           <div
-            className={`relative overflow-visible ${radiusClassName} ${isVisuallyThinItem ? "flex items-end" : ""} ${sectionItemTopMarginClassName} ${item.id === THIN_PLACEHOLDER_ITEM_ID ? "pointer-events-none" : ""}`}
+            className={`relative overflow-visible ${radiusClassName} ${isVisuallyThinItem ? "flex items-end" : ""} ${sectionItemTopMarginClassName} ${item.id === THIN_PLACEHOLDER_ITEM_ID ? "pointer-events-none" : ""} ${isDragActive || isDragIntentActive ? "z-40" : ""}`}
             data-profile-bento-grid-item-id={item.id}
             key={item.id}
           >

@@ -32,6 +32,8 @@ Section item은 React Grid Layout 상으로는 h=2 영역을 예약하지만, �
 - Drag 중 active item wrapper에는 별도 `drop-shadow-*` filter를 붙이지 않는다.
 - Section item은 hover, 내부 input focus, drag 상태에서 `shadow-float`를 표시해야 한다.
 - Section item의 `shadow-float`는 h=2 RGL wrapper가 아니라 h=1로 보이는 item body에 적용해야 한다.
+- Section item drag placeholder radius는 실제 visible section shell과 같은 `rounded-2xl`을 유지해야 한다.
+- Grid drag가 시작되면 active section item wrapper는 hover sibling보다 먼저 위로 올라와야 하며, drag 시작 프레임에서 다른 item 뒤로 내려가면 안 된다.
 
 ## Allowed Fixes
 
@@ -44,6 +46,7 @@ Drag motion 때문에 pointer가 내부 input/textarea를 스치면서 생기는
 - Drag 중인 item 내부 input/textarea의 text selection을 잠시 끈다.
 - Grid가 drag 중인 동안 grid 내부 모든 input/textarea의 pointer hit-test를 잠시 끈다.
 - Grid가 drag 중인 동안 grid 내부 모든 input/textarea의 selection highlight를 투명하게 처리한다.
+- Grid가 drag 중인 동안 inactive section item의 hover/focus chrome은 잠시 꺼야 한다.
 - Drag 중인 item에서는 Remove button과 resize controls를 숨긴다.
 
 금지되는 해결:

@@ -112,6 +112,10 @@ import {
   ProfileBentoSuggestionCard,
   profileBentoSuggestionItemId,
 } from "./profile-bento-empty-grid-state";
+import {
+  getGridPlaceholderRadiusClassName,
+  getSectionDragSiblingGuardClassName,
+} from "./profile-bento-grid-style";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
@@ -855,8 +859,14 @@ export function ProfileBentoInteractiveGrid({
       ? "[&_.react-grid-placeholder]:translate-y-[var(--section-item-top-margin)]!"
       : "",
     isThinPlaceholderShapeActive
-      ? "[&_.react-grid-placeholder]:h-[var(--thin-placeholder-height)]! [&_.react-grid-placeholder]:translate-y-[var(--thin-placeholder-offset)]! [&_.react-grid-placeholder]:rounded-2xl!"
-      : "[&_.react-grid-placeholder]:rounded-[1.5rem]!"
+      ? "[&_.react-grid-placeholder]:h-[var(--thin-placeholder-height)]! [&_.react-grid-placeholder]:translate-y-[var(--thin-placeholder-offset)]!"
+      : "",
+    getGridPlaceholderRadiusClassName({
+      isSectionDragActive,
+      isThinPlaceholderShapeActive,
+    }),
+    getSectionDragSiblingGuardClassName(isSectionDragActive),
+    activeDragItemId ? "profile-bento-grid-dragging" : ""
   );
   const sectionItemTopMargin = previewBreakpoint === "compact" ? "1rem" : "2rem";
   const gridStyle = {

@@ -1117,7 +1117,10 @@ function EditableSectionBento({
   }, [autoFocus, onFocusReady]);
 
   return (
-    <span className="grid-action inline-grid h-full min-w-32 max-w-full overflow-hidden rounded-lg hover:bg-secondary focus-within:bg-secondary">
+    <span
+      className="grid-action inline-grid h-full min-w-32 max-w-full overflow-hidden rounded-lg hover:bg-secondary focus-within:bg-secondary"
+      data-section-editable="true"
+    >
       <span
         aria-hidden
         className="invisible col-start-1 row-start-1 min-w-32 max-w-full overflow-hidden whitespace-pre font-bold text-xl tracking-tight"

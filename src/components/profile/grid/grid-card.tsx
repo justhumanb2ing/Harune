@@ -26,6 +26,7 @@ type GridCardProps = {
   activeBreakpoint: GridBreakpoint;
   cardRotate: MotionValue<number>;
   cardX: MotionValue<number>;
+  isGridDragging: boolean;
   isDragIntentActive: boolean;
   isDragActive: boolean;
   item: GridItem;
@@ -101,21 +102,38 @@ export function getGridCardTapScale(
     return 1;
   }
 
-  if (itemType === "section" && readOnly) {
+  if (itemType === "section") {
     return 1;
   }
 
-  if (itemType === "text" || itemType === "section") {
+  if (itemType === "text") {
     return 1.025;
   }
 
   return 1;
 }
 
+export function shouldEnableSectionHoverDuringGridDrag(
+  itemType: GridItem["itemType"],
+  isGridDragging: boolean,
+  isDragActive: boolean
+) {
+  if (itemType !== "section") {
+    return true;
+  }
+
+  if (!isGridDragging) {
+    return true;
+  }
+
+  return isDragActive;
+}
+
 export function GridCard({
   activeBreakpoint,
   cardRotate,
   cardX,
+  isGridDragging,
   isDragIntentActive,
   isDragActive,
   item,
@@ -151,9 +169,16 @@ export function GridCard({
     ? getGridTextSurfaceClassNames(textSurfaceStyle)
     : null;
   const isLiftActive = isDragActive || isDragIntentActive;
-  const dragScale = shouldReduceMotion || !isLiftActive ? 1 : 1.025;
+  const isSectionHoverEnabled = shouldEnableSectionHoverDuringGridDrag(
+    item.itemType,
+    isGridDragging,
+    isDragActive
+  );
+  const dragScale = shouldReduceMotion || !isLiftActive || isSectionItem ? 1 : 1.025;
   const shouldShowSectionShadow =
-    isSectionItem && !readOnly && (isSectionPointerActive || isSectionFocusActive || isLiftActive);
+    isSectionItem &&
+    !readOnly &&
+    ((isSectionHoverEnabled && (isSectionPointerActive || isSectionFocusActive)) || isLiftActive);
   const shadowClassName = !isSectionItem || shouldShowSectionShadow ? "shadow-xs" : "shadow-none";
   const isFullBleedItem =
     item.isFullBleed ||
@@ -186,6 +211,10 @@ export function GridCard({
   const dragInteractionClassName = isLiftActive
     ? "select-none [&_.grid-action]:pointer-events-none [&_.grid-action]:select-none [&_input:not(.grid-caption-input)]:pointer-events-none [&_input:not(.grid-caption-input)]:select-none [&_input:not(.grid-caption-input)]:!bg-transparent [&_textarea:not(.grid-caption-input)]:pointer-events-none [&_textarea:not(.grid-caption-input)]:select-none [&_textarea:not(.grid-caption-input)]:!bg-transparent"
     : "";
+  const sectionDragChromeClassName =
+    isSectionItem && isGridDragging && !isDragActive
+      ? "[&_[data-section-editable='true']]:pointer-events-none [&_[data-section-editable='true']]:bg-transparent [&_[data-section-editable='true']]:hover:bg-transparent [&_[data-section-editable='true']]:focus-within:bg-transparent"
+      : "";
   const isExiting = motionPhase === "exiting";
   const shouldShowActions = !readOnly && !isLiftActive && !isExiting;
   const motionProps = getGridCardMotion(motionPhase, shouldReduceMotion);
@@ -234,7 +263,7 @@ export function GridCard({
 
   return (
     <motion.div
-      className={`group/item relative w-full pointer-events-auto ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} ${dragInteractionClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)]" : "h-full"} ${isLiftActive || motionPhase ? "will-change-transform" : ""} ${isExiting ? "pointer-events-none select-none" : ""}`}
+      className={`group/item relative w-full pointer-events-auto ${readOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"} ${dragInteractionClassName} ${sectionDragChromeClassName} ${isVisuallyThinItem ? "h-[var(--thin-item-visible-height)]" : "h-full"} ${isLiftActive || motionPhase ? "will-change-transform" : ""} ${isExiting ? "pointer-events-none select-none" : ""}`}
       data-link-provider-theme={item.theme ? "true" : undefined}
       onPointerDownCapture={(event) => {
         if (readOnly || isLiftActive) {
@@ -267,12 +296,12 @@ export function GridCard({
         setIsSectionFocusActive(false);
       }}
       onFocusCapture={() => {
-        if (isSectionItem) {
+        if (isSectionItem && isSectionHoverEnabled) {
           setIsSectionFocusActive(true);
         }
       }}
       onMouseEnter={() => {
-        if (isSectionItem) {
+        if (isSectionItem && isSectionHoverEnabled) {
           setIsSectionPointerActive(true);
         }
       }}
